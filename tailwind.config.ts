@@ -12,6 +12,7 @@ export default {
         primaryDark: "var(--primaryDark)",
         secondaryDark: "var(--secondaryDark)",
         hover: "var(--hover)",
+        smoothWhite: "var(--smoothWhite)"
       },
       fontFamily: {
         parkinsans: ["var(--parkinsans)", "sans-serif"],

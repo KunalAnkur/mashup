@@ -1,10 +1,9 @@
-import Image from "next/image";
-import logo from "../public/assets/logo.png";
+import { Logo } from '../components';
 const page = () => {
   return (
-    <div className="bg-secondaryDark hover:bg-hover text-white">
+    <div className="bg-secondaryDark hover:bg-hover">
+      <Logo />
       <div>Hello world</div>
-      <Image src={logo} alt="logo" />
     </div>
   );
 };

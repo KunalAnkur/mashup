@@ -1,3 +1,3 @@
 import * as seo from "./seo";
-
-export { seo };
+import * as assets from "./assets";
+export { seo, assets };
