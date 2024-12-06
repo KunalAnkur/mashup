@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import * as constants from "../constants";
 import "./globals.css";
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-poppins",
-});
-
 export const metadata: Metadata = {
-  title: "StoreIt",
-  description: "StoreIt - The only storage solution you need.",
+  title: constants.seo.BRAND_NAME,
+  description: constants.seo.BRAND_DESCRIPTION,
+  icons: {
+    icon: constants.seo.FAVICON_URL,
+    shortcut: constants.seo.FAVICON_URL,
+    apple: constants.seo.FAVICON_URL,
+  },
 };
 
 export default function RootLayout({
@@ -20,10 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${poppins.variable} font-poppins antialiased`}
-        suppressHydrationWarning
-      >
+      <body className="font-parkinsans antialiased" suppressHydrationWarning>
         {children}
       </body>
     </html>
