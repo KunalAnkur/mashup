@@ -1,7 +1,9 @@
+import { Logo } from '../components';
 const page = () => {
   return (
-    <div>
-      <h1>home</h1>
+    <div className="bg-secondaryDark hover:bg-hover">
+      <Logo />
+      <div>Hello world</div>
     </div>
   );
 };

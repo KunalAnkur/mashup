@@ -9,8 +9,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        primaryDark: "var(--primaryDark)",
+        secondaryDark: "var(--secondaryDark)",
+        hover: "var(--hover)",
+        smoothWhite: "var(--smoothWhite)"
+      },
+      fontFamily: {
+        parkinsans: ["var(--parkinsans)", "sans-serif"],
       },
     },
   },
