@@ -1,11 +1,34 @@
-import { Logo } from '../components';
-const page = () => {
+"use client";
+import Button from "@/components/UI/Button";
+import { Logo } from "../components";
+import { FaArrowRight } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import LinkComp from "@/components/UI/Link";
+import { sidebarLinks } from "@/components/Sidebar/config/sidebar";
+const Page = () => {
+  const router = useRouter();
   return (
-    <div className="bg-secondaryDark hover:bg-hover">
+    <div className="bg-black">
       <Logo />
-      <div>Hello world</div>
+      <Button
+        name="GO TO TEST-PAGE"
+        onClick={() => {
+          console.log("Button clicked!");
+          router.push("/test-page");
+        }}
+        style="party"
+        icon={<FaArrowRight />}
+      />
+      =========================
+      <LinkComp
+        name={sidebarLinks[0].name}
+        url={sidebarLinks[0].url}
+        icon={<FaArrowRight />}
+        hasDropdown
+        style="sidebar"
+      />
     </div>
   );
 };
 
-export default page;
+export default Page;
