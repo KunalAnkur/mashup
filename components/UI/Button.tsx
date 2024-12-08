@@ -3,27 +3,25 @@ import { button } from "./config";
 type Props = {
   name: string;
   icon?: ReactNode;
-
   className?: string;
-  style?: "sidebar" | "general" | "party";
+  style?: "general" | "party" | "gradientBtn";
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const Button = ({
   name,
   icon,
   className,
-
   style = "general",
   ...rest
 }: Props) => {
   return (
     <button
       {...rest}
-      className={`flex items-center p-3 border ${
+      className={`flex items-center ${
         button.styles[style as keyof typeof button.styles]
       } ${className}`}
     >
-      <div className="flex items-center gap-2">
+      <div className={`flex items-center text-sm gap-2 `}>
         {icon && <span>{icon}</span>}
         <span>{name}</span>
       </div>

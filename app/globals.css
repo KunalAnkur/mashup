@@ -13,4 +13,20 @@
   --hover: #474747;
   --parkinsans: "Parkinsans", sans-serif;
   --smoothWhite: #c5c5c5;
+  --gradientBg: linear-gradient(85deg, #ce78f2 0%, #5125e0 25%, #b6218c 77%);
+}
+
+@layer utilities {
+  .border-image-gradient {
+    border-style: solid;
+    border-width: 2px;
+    border-image: repeating-linear-gradient(
+      to right,
+      var(--smoothWhite) 0,
+      var(--smoothWhite) 6px,
+      transparent 8px,
+      transparent 16px
+    );
+    border-image-slice: 1;
+  }
 }

@@ -1,4 +1,4 @@
-import * as constants from "../constants";
+import * as constants from "../../constants";
 import Link from "next/link";
 import Image from "next/image";
 

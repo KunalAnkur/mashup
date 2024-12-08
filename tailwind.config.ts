@@ -13,9 +13,13 @@ export default {
         secondaryDark: "var(--secondaryDark)",
         hover: "var(--hover)",
         smoothWhite: "var(--smoothWhite)",
+        cardBg: "var(--cardBg)",
       },
       fontFamily: {
         parkinsans: ["var(--parkinsans)", "sans-serif"],
+      },
+      backgroundImage: {
+        gradientBg: "var(--gradientBg)", // Define your gradient variable here
       },
     },
   },

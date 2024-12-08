@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
+import { AnchorHTMLAttributes, ReactNode } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import { link } from "./config";
 import Link from "next/link";
+
 type Props = {
   name: string;
   icon?: ReactNode;
@@ -9,7 +10,8 @@ type Props = {
   className?: string;
   style?: "sidebar" | "general";
   url: string;
-};
+  isSelected?: boolean;
+} & AnchorHTMLAttributes<HTMLAnchorElement>;
 
 const LinkComp = ({
   name,
@@ -18,13 +20,16 @@ const LinkComp = ({
   className,
   hasDropdown = false,
   style = "general",
+  isSelected = false,
+  ...rest
 }: Props) => {
   return (
     <Link
       href={url}
-      className={` flex items-center p-3  ${
-        link.styles[style as keyof typeof link.styles]
-      } ${className}`}
+      {...rest}
+      className={` flex items-center p-2   ${
+        isSelected && "bg-secondaryDark rounded-md  "
+      }   ${link.styles[style as keyof typeof link.styles]} ${className}`}
     >
       <div className="flex items-center gap-2 ">
         {icon && <span>{icon}</span>}
