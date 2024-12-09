@@ -1,7 +1,7 @@
 export const styles = {
   general: "justify-center p-3",
   party:
-    "bg-[#303030] p-5 rounded-lg border-2 hover:bg-secondaryDark border-dashed border-smoothWhite",
+    "bg-[#303030] py-4 rounded-lg border-2 hover:bg-secondaryDark border-dashed border-smoothWhite flex items-center justify-center gap-2",
   gradientBtn:
     "bg-gradientBg hover:bg-image-none font-semibold rounded-lg text-white py-2 px-6",
 };

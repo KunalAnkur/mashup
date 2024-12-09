@@ -9,7 +9,7 @@ type Props = {
   hasDropdown?: boolean;
   className?: string;
   style?: "sidebar" | "general";
-  url: string;
+  url?: string;
   isSelected?: boolean;
 } & AnchorHTMLAttributes<HTMLAnchorElement>;
 
@@ -25,10 +25,10 @@ const LinkComp = ({
 }: Props) => {
   return (
     <Link
-      href={url}
+      href={url || "#"}
       {...rest}
-      className={` flex items-center p-2   ${
-        isSelected && "bg-secondaryDark rounded-md  "
+      className={` flex items-center p-2 text-xs  ${
+        isSelected && "bg-hover rounded-md"
       }   ${link.styles[style as keyof typeof link.styles]} ${className}`}
     >
       <div className="flex items-center gap-2 ">

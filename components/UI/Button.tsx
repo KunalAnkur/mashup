@@ -17,11 +17,13 @@ const Button = ({
   return (
     <button
       {...rest}
-      className={`flex items-center ${
-        button.styles[style as keyof typeof button.styles]
-      } ${className}`}
+      className={`flex items-center w-[150px] font-semibold  ${className}`}
     >
-      <div className={`flex items-center text-sm gap-2 `}>
+      <div
+        className={`flex items-center w-full text-sm gap-2 ${
+          button.styles[style as keyof typeof button.styles]
+        }`}
+      >
         {icon && <span>{icon}</span>}
         <span className="text-sm">{name}</span>
       </div>
