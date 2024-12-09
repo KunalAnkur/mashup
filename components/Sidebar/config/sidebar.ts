@@ -4,3 +4,5 @@ export const sidebarLinks = [
   { name: "Netflix", url: "/netflix" },
   { name: "Youtube", url: "/youtube" },
 ];
+
+export const sidebarTitles = ["Home", "Create Party", "Global Parties"];

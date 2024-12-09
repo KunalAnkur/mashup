@@ -10,6 +10,7 @@ import {
   Button,
   PartyCard,
   Input,
+  Sidebar,
 } from "../components";
 
 import { FaArrowRight } from "react-icons/fa";
@@ -61,6 +62,8 @@ const Page = () => {
         icon={<FaMagnifyingGlass color="white" />}
         type="text"
       />
+      <Separator />
+      <Sidebar />
     </div>
   );
 };

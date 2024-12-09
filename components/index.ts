@@ -1,5 +1,6 @@
 import { Avatar, Button, LinkComp, Separator, Logo, Input } from "./UI";
 import { PartyCard, HostDetails, Footer } from "./Card";
+import { Sidebar } from "./Sidebar";
 
 export {
   Logo,
@@ -11,4 +12,5 @@ export {
   HostDetails,
   Footer,
   Input,
+  Sidebar,
 };

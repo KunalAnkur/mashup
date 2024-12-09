@@ -1,2 +1,3 @@
 import * as config from "./config";
-export { config };
+import Sidebar from "./Sidebar";
+export { config, Sidebar };
