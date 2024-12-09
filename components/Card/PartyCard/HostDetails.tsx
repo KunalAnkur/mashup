@@ -9,11 +9,11 @@ type Props = {
 
 const HostDetails = ({ hostName, avatarUrl, playingAt, size }: Props) => {
   return (
-    <div className="flex gap-4 items-center justify-start text-white">
+    <div className="flex gap-2 items-center justify-start text-white">
       <Avatar url={avatarUrl} alt={hostName} size={size} />
       <div className="flex flex-col text-left ">
-        <h1 className="font-semibold text-3xl">{hostName}&apos;s Party</h1>
-        <span className="text-sm">playing at {playingAt}</span>
+        <h1 className="font-semibold text-lg">{hostName}&apos;s Party</h1>
+        <span className="text-[10px]">playing at {playingAt}</span>
       </div>
     </div>
   );

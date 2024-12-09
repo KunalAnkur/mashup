@@ -7,9 +7,10 @@ type Props = {
   alt: string;
   size: number; // Use size instead of separate width and height
   className?: string;
+  onClick?: () => void;
 };
 
-const Avatar = ({ url, alt, size, className }: Props) => {
+const Avatar = ({ url, alt, size, className, onClick }: Props) => {
   const [source, setSource] = useState(url || constants.assets.defaultAvatar);
 
   const handleOnError = () => {
@@ -19,6 +20,7 @@ const Avatar = ({ url, alt, size, className }: Props) => {
   return (
     <div
       className={`rounded-full overflow-hidden ${className}`}
+      onClick={onClick}
       style={{
         width: size,
         height: size,

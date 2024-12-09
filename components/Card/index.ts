@@ -1,4 +1,3 @@
-import PartyCard from "./PartyCard";
-import { LiveNowButton, JoinButton, HostDetails, Footer } from "./Details";
+import { PartyCard, Footer, HostDetails, AvatarGroup } from "./PartyCard";
 
-export { PartyCard, LiveNowButton, JoinButton, HostDetails, Footer };
+export { PartyCard, Footer, HostDetails, AvatarGroup };

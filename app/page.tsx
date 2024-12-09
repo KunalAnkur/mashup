@@ -9,13 +9,12 @@ import {
   Avatar,
   Button,
   PartyCard,
-  LiveNowButton,
-  JoinButton,
-  // Footer,
+  Input,
 } from "../components";
 
 import { FaArrowRight } from "react-icons/fa";
 import { sidebarLinks } from "@/components/Sidebar/config/sidebar";
+import { FaMagnifyingGlass } from "react-icons/fa6";
 
 const Page = () => {
   const router = useRouter();
@@ -37,9 +36,7 @@ const Page = () => {
         }}
         style="party"
         icon={<FaArrowRight />}
-      />{" "}
-      <Separator />
-      <PartyCard />
+      />
       <Separator />
       <LinkComp
         name={sidebarLinks[0].name}
@@ -51,20 +48,19 @@ const Page = () => {
         onClick={() => handleLinkClick(sidebarLinks[0].name)}
       />
       <Separator />
-      <JoinButton />
-      <Separator />
-      <LiveNowButton />
-      <Separator />
       <Avatar
         url="https://img.freepik.com/free-vector/smiling-redhaired-boy-illustration_1308-175803.jpg?t=st=1733684954~exp=1733688554~hmac=e9ff778edf2b98f64ef4c545f38e54df1cbdd79eaf53e5e6b6060d0ee51c4251&w=996"
         alt="Avatar"
         size={70}
       />
       <Separator />
-      {/* <div className="bg-[url('/assets/img3.jpg')] bg-cover bg-center h-96 w-[500px] pt-64">
-        <Footer />
-      </div> */}
       <PartyCard />
+      <Separator />
+      <Input
+        placeholder="Search"
+        icon={<FaMagnifyingGlass color="white" />}
+        type="text"
+      />
     </div>
   );
 };

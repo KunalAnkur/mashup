@@ -23,7 +23,7 @@ const Button = ({
     >
       <div className={`flex items-center text-sm gap-2 `}>
         {icon && <span>{icon}</span>}
-        <span>{name}</span>
+        <span className="text-sm">{name}</span>
       </div>
     </button>
   );

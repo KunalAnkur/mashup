@@ -1,11 +1,5 @@
-import { Avatar, Button, LinkComp, Separator, Logo } from "./UI";
-import {
-  PartyCard,
-  LiveNowButton,
-  JoinButton,
-  HostDetails,
-  Footer,
-} from "./Card";
+import { Avatar, Button, LinkComp, Separator, Logo, Input } from "./UI";
+import { PartyCard, HostDetails, Footer } from "./Card";
 
 export {
   Logo,
@@ -14,8 +8,7 @@ export {
   LinkComp,
   Separator,
   PartyCard,
-  LiveNowButton,
-  JoinButton,
   HostDetails,
   Footer,
+  Input,
 };
