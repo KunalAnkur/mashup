@@ -1,11 +1,12 @@
 "use client";
 
-import { Sidebar } from "../components";
+import { Avatar, Sidebar } from "../components";
 
 const Page = () => {
   return (
-    <div className=" max-w-7xl mx-auto py-5 h-screen">
+    <div className="  p-5 h-screen">
       <Sidebar />
+      <Avatar alt="" url="" size={40} className="" />
     </div>
   );
 };
