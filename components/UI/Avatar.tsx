@@ -21,6 +21,10 @@ const Avatar = ({ url, alt, size, className, onClick }: Props) => {
     <div
       className={`rounded-full overflow-hidden ${className}`}
       onClick={onClick}
+      style={{
+        width: size,
+        height: size,
+      }}
     >
       <Image
         src={source}
@@ -28,7 +32,7 @@ const Avatar = ({ url, alt, size, className, onClick }: Props) => {
         width={size}
         height={size}
         onError={handleOnError}
-        className="object-cover"
+        className="object-cover rounded-full  "
       />
     </div>
   );

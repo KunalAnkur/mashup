@@ -8,7 +8,7 @@ const AvatarContainer = () => {
       <Notification />
       <Avatar
         alt="Avatar"
-        size={65}
+        size={70}
         url="https://pngtree.com/freepng/female-avatar-vector-icon_3725439.html"
       />
     </div>
