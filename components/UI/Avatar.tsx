@@ -19,7 +19,7 @@ const Avatar = ({ url, alt, size, className, onClick }: Props) => {
 
   return (
     <div
-      className={`rounded-full overflow-hidden ${className}`}
+      className={`rounded-full overflow-hidden cursor-pointer ${className}`}
       onClick={onClick}
       style={{
         width: size,

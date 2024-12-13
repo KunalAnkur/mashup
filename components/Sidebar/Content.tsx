@@ -7,7 +7,14 @@ const Content = () => {
   const [selectedLink, setSelectedLink] = useState<string | null>(null);
   const [openDropdowns, setOpenDropdowns] = useState<{
     [key: string]: boolean;
-  }>({});
+  }>(
+    menuConfig.top.reduce((acc, menuItem) => {
+      if (menuItem.hasSubcategory) {
+        acc[menuItem.name] = true; // Open by default
+      }
+      return acc;
+    }, {} as { [key: string]: boolean })
+  );
 
   const handleLinkClick = (name: string) => {
     setSelectedLink(name);
@@ -31,7 +38,7 @@ const Content = () => {
 
             {/* MAIN LINK */}
             <div
-              className="flex items-center justify-between cursor-pointer"
+              className="  flex items-center justify-between cursor-pointer hover:bg-hover hover:rounded-md"
               onClick={() =>
                 menuItem.hasSubcategory
                   ? toggleDropdown(menuItem.name)
@@ -48,7 +55,7 @@ const Content = () => {
                 className="flex flex-1"
               />
               {menuItem.hasSubcategory && (
-                <div className="flex items-center">
+                <div className="flex items-center mr-1">
                   {openDropdowns[menuItem.name] ? (
                     <LuChevronDown size={20} />
                   ) : (
