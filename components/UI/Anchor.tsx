@@ -1,0 +1,47 @@
+import { AnchorHTMLAttributes, ReactNode } from "react";
+import { FaChevronDown } from "react-icons/fa";
+import { link } from "./config";
+import Link from "next/link";
+
+type Props = {
+  name: string;
+  icon?: ReactNode;
+  hasDropdown?: boolean;
+  className?: string;
+  style?: "sidebar" | "general";
+  url?: string;
+  isSelected?: boolean;
+} & AnchorHTMLAttributes<HTMLAnchorElement>;
+
+const Anchor = ({
+  name,
+  icon,
+  url,
+  className,
+  hasDropdown = false,
+  style = "general",
+  isSelected = false,
+  ...rest
+}: Props) => {
+  return (
+    <Link
+      href={url || "#"}
+      {...rest}
+      className={` flex items-center p-2 text-xs  ${
+        isSelected && "bg-hover rounded-md"
+      }   ${link.styles[style as keyof typeof link.styles]} ${className}`}
+    >
+      <div className="flex items-center gap-2 ">
+        {icon && <span>{icon}</span>}
+        <span>{name}</span>
+      </div>
+      {hasDropdown && (
+        <span className="">
+          <FaChevronDown />
+        </span>
+      )}
+    </Link>
+  );
+};
+
+export default Anchor;

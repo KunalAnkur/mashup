@@ -1,11 +1,16 @@
-import { Logo } from '../components';
-const page = () => {
+"use client";
+
+import { HomeContent } from "@/components/Container";
+import { Sidebar } from "../components";
+
+const Page = () => {
   return (
-    <div className="bg-secondaryDark hover:bg-hover">
-      <Logo />
-      <div>Hello world</div>
+    <div className=" h-screen flex items-center justify-center gap-4">
+      <Sidebar />
+
+      <HomeContent />
     </div>
   );
 };
 
-export default page;
+export default Page;
