@@ -5,7 +5,7 @@ const AvatarContainer = () => {
   return (
     <div className="flex gap-2  items-center justify-center">
       <Input placeholder="Search" type="text" icon={<BiSearch />} />
-      <Notification />
+      <Notification isNotified={true} />
       <Avatar
         alt="Avatar"
         size={70}
