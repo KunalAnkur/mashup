@@ -7,9 +7,12 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Enable Static Export
-  output: "export", // Add this line for static export
 
+  /*  experimental: {
+    serverActions: {
+      bodySizeLimit: "100MB",
+    },
+  }, */
   images: {
     remotePatterns: [
       {
