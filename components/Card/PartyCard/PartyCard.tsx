@@ -5,7 +5,7 @@ import AvatarGroup from "./AvatarGroup";
 const PartyCard = ({ btnName }: { btnName: string }) => {
   /* GLOBAL PARTY CARD COMPONENT */
   return (
-    <div className="rounded-lg overflow-hidden bg-[url('/assets/img3.jpg')] bg-cover bg-center h-[230px] w-[400px] flex flex-col justify-between">
+    <div className="rounded-lg overflow-hidden bg-[url('/assets/img3.jpg')] bg-cover bg-center h-full  flex flex-col justify-between">
       <div className="flex justify-between">
         <Button
           name={btnName}

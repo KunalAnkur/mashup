@@ -5,7 +5,7 @@ const CreateParties = () => {
   return (
     <div className="space-y-4">
       <h3 className="text-smoothWhite font-semibold">Create Party</h3>
-      <div className=" flex gap-4">
+      <div className=" flex gap-4 flex-wrap">
         <Button
           style={"primary"}
           name="Device"
