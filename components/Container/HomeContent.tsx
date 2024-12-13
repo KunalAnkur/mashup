@@ -4,7 +4,7 @@ import GlobalParties from "./GlobalParties";
 
 const HomeContent = () => {
   return (
-    <div className="flex-1 space-y-8 h-full overflow-y-auto hide-scrollbar  ">
+    <div className="flex-1 space-y-8 h-full overflow-y-auto hide-scrollbar  pr-4">
       <div className="flex justify-end ">
         <AvatarContainer />
       </div>

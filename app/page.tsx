@@ -5,7 +5,7 @@ import { Sidebar } from "../components";
 
 const Page = () => {
   return (
-    <div className="  p-4 h-screen flex items-center justify-center gap-8">
+    <div className=" h-screen flex items-center justify-center gap-4">
       <Sidebar />
 
       <HomeContent />
