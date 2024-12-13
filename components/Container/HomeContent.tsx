@@ -1,0 +1,17 @@
+import AvatarContainer from "./AvatarContainer";
+import CreateParties from "./CreateParties";
+import GlobalParties from "./GlobalParties";
+
+const HomeContent = () => {
+  return (
+    <div className="flex-1 space-y-8 h-full overflow-y-auto hide-scrollbar  ">
+      <div className="flex justify-end ">
+        <AvatarContainer />
+      </div>
+      <CreateParties />
+      <GlobalParties />
+    </div>
+  );
+};
+
+export default HomeContent;

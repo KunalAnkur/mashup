@@ -1,12 +1,14 @@
 "use client";
 
-import { Avatar, Sidebar } from "../components";
+import { HomeContent } from "@/components/Container";
+import { Sidebar } from "../components";
 
 const Page = () => {
   return (
-    <div className="  p-5 h-screen">
+    <div className="  p-4 h-screen flex items-center justify-center gap-8">
       <Sidebar />
-      <Avatar alt="" url="" size={40} className="" />
+
+      <HomeContent />
     </div>
   );
 };

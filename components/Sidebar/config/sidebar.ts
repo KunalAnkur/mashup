@@ -1,6 +1,6 @@
 import { HiHome } from "react-icons/hi";
 import { IoMdSettings } from "react-icons/io";
-import { LuChevronLeft, LuGlobe, LuRadio } from "react-icons/lu";
+import { LuGlobe, LuRadio } from "react-icons/lu";
 import { MdFeedback } from "react-icons/md";
 export const sidebarLinks = [
   { name: "Device", url: "/device" },

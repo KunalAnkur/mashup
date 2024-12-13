@@ -9,7 +9,7 @@ type Props = {
 
 const Input = ({ placeholder, type, className, icon, ...rest }: Props) => {
   return (
-    <div className="py-2  px-3 flex gap-2 items-center  bg-white/50 rounded-md w-fit text-sm  text-smoothWhite ">
+    <div className=" h-fit px-3 py-1.5 flex gap-2 items-center  bg-white/50 rounded-md w-fit text-sm  text-smoothWhite ">
       <span>{icon}</span>
       <input
         {...rest}
