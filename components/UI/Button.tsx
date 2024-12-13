@@ -4,7 +4,7 @@ type Props = {
   name: string;
   icon?: ReactNode;
   className?: string;
-  style?: "general" | "primaryBtn" | "secondaryBtn";
+  style?: "general" | "primary" | "secondary";
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const Button = ({

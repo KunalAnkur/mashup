@@ -1,4 +1,4 @@
-import { Avatar, Button, LinkComp, Separator, Logo, Input } from "./UI";
+import { Avatar, Button, Anchor, Separator, Logo, Input } from "./UI";
 import { PartyCard, HostDetails, Footer } from "./Card";
 import { Sidebar } from "./Sidebar";
 
@@ -6,7 +6,7 @@ export {
   Logo,
   Avatar,
   Button,
-  LinkComp,
+  Anchor,
   Separator,
   PartyCard,
   HostDetails,

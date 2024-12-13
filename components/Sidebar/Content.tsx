@@ -1,4 +1,4 @@
-import { LinkComp, Separator } from "../UI";
+import { Anchor, Separator } from "../UI";
 import { menuConfig } from "./config/sidebar";
 import { useState } from "react";
 import { LuChevronDown, LuChevronRight } from "react-icons/lu";
@@ -38,7 +38,7 @@ const Content = () => {
                   : handleLinkClick(menuItem.name)
               }
             >
-              <LinkComp
+              <Anchor
                 name={menuItem.name}
                 icon={
                   menuItem.icon && <menuItem.icon size={20} strokeWidth={2} />
@@ -62,7 +62,7 @@ const Content = () => {
             {menuItem.hasSubcategory && openDropdowns[menuItem.name] && (
               <div className="flex flex-col gap-2 pl-6">
                 {menuItem.subcategory.map((subItem, subIndex) => (
-                  <LinkComp
+                  <Anchor
                     key={subIndex}
                     name={subItem.name}
                     style="sidebar"
@@ -84,7 +84,7 @@ const Content = () => {
             {/* Render a separator if hasSeparator is true */}
             {menuItem.hasSeparator && <Separator />}
             {/* Main Link */}
-            <LinkComp
+            <Anchor
               name={menuItem.name}
               icon={menuItem.icon && <menuItem.icon size={20} />}
               style="sidebar"

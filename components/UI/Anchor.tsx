@@ -13,7 +13,7 @@ type Props = {
   isSelected?: boolean;
 } & AnchorHTMLAttributes<HTMLAnchorElement>;
 
-const LinkComp = ({
+const Anchor = ({
   name,
   icon,
   url,
@@ -44,4 +44,4 @@ const LinkComp = ({
   );
 };
 
-export default LinkComp;
+export default Anchor;
