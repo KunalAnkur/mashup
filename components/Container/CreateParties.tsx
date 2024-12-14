@@ -10,26 +10,31 @@ const CreateParties = () => {
           style={"primary"}
           name="Device"
           icon={<FaUpload size={20} color="white" />}
+          className="border-dashed border-smoothWhite border-2"
         />
         <Button
           style={"primary"}
           name="Device"
           icon={<FaUpload size={20} color="white" />}
+          className="border-dashed border-smoothWhite border-2"
         />
         <Button
           style={"primary"}
           name="Device"
           icon={<FaUpload size={20} color="white" />}
+          className="border-dashed border-smoothWhite border-2"
         />
         <Button
           style={"primary"}
           name="Device"
           icon={<FaUpload size={20} color="white" />}
+          className="border-dashed border-smoothWhite border-2"
         />
         <Button
           style={"primary"}
           name="Device"
           icon={<FaUpload size={20} color="white" />}
+          className="border-dashed border-smoothWhite border-2"
         />
       </div>
     </div>
