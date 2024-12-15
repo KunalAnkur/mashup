@@ -1,3 +1,4 @@
+"use client";
 import HostDetails from "./HostDetails";
 import { Button } from "@/components/UI";
 import { useRouter } from "next/navigation";

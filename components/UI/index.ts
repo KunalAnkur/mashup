@@ -5,4 +5,14 @@ import Separator from "./Separator";
 import Logo from "./Logo";
 import Input from "./Input";
 import Notification from "./Notification";
-export { Avatar, Button, Anchor, Separator, Logo, Input, Notification };
+import AuthHeader from "./AuthHeader";
+export {
+  Avatar,
+  Button,
+  Anchor,
+  Separator,
+  Logo,
+  Input,
+  Notification,
+  AuthHeader,
+};

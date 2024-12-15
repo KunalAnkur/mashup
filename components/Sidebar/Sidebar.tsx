@@ -1,3 +1,4 @@
+"use client";
 import "react-icons/lu";
 import Header from "./Header";
 import Content from "./Content";

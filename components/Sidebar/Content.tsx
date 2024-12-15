@@ -1,3 +1,4 @@
+"use client";
 import { Anchor, Separator } from "../UI";
 import { menuConfig } from "./config/sidebar";
 import { useState } from "react";
