@@ -27,7 +27,7 @@ const Anchor = ({
     <Link
       href={url || "#"}
       {...rest}
-      className={` flex items-center p-2 text-xs  ${
+      className={` flex items-center text-xs  ${
         isSelected && "bg-hover rounded-md"
       }   ${link.styles[style as keyof typeof link.styles]} ${className}`}
     >
