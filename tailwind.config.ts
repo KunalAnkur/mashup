@@ -19,7 +19,8 @@ export default {
         parkinsans: ["var(--parkinsans)", "sans-serif"],
       },
       backgroundImage: {
-        gradientBg: "var(--gradientBg)", // Define your gradient variable here
+        secondary: "var(--secondary)", // Define your gradient variable here
+        logoColor: "var(--logoColor)",
       },
     },
   },

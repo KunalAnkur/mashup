@@ -42,8 +42,8 @@ const Input = ({
     if (style === "auth" && !isPassword) {
       return isChecked ? (
         <FaCircleCheck
-          size={20}
-          className="text-green-500 bg-white rounded-full"
+          size={16}
+          className="text-green-500 bg-white rounded-full overflow-hidden    "
         />
       ) : (
         <RxCross2

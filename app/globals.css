@@ -13,7 +13,15 @@
   --hover: #474747;
   --parkinsans: "Parkinsans", sans-serif;
   --smoothWhite: #c5c5c5;
-  --gradientBg: linear-gradient(85deg, #ce78f2 0%, #5125e0 25%, #b6218c 77%);
+  --secondary: linear-gradient(85deg, #ce78f2 0%, #5125e0 25%, #b6218c 77%);
+  --logoColor: linear-gradient(
+    -170deg,
+    #ff0000 0%,
+    #f900e0 0%,
+    #b800f9 0%,
+    #ed0028 64%,
+    #f70000 100%
+  );
 }
 
 @layer utilities {
