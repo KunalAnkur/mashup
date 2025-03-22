@@ -16,18 +16,18 @@ const LoginContainer = () => {
       <Input
         placeholder="Enter your email address"
         label="Email"
-        type="email" // Default type is password
-        style="auth" // Use auth styling
+        type="email"
+        style="auth"
         isChecked={false}
       />
       <Input
         placeholder="Enter your password"
         label="Password"
-        type="password" // Default type is password
-        isPassword={true} // Indicates this is a password field
-        showPassword={showPassword} // Control visibility state
-        style="auth" // Use auth styling
-        onTogglePassword={handleTogglePassword} // Toggle visibility on click
+        type="password"
+        isPassword={true}
+        showPassword={showPassword}
+        style="auth"
+        onTogglePassword={handleTogglePassword}
       />
       <div className="flex flex-col gap-4">
         <Button
