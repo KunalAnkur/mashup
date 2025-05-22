@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import * as constants from "../constants";
 import "./globals.css";
+import ClientRoot from "./ClientRoot";
 
 export const metadata: Metadata = {
   title: constants.seo.BRAND_NAME,
@@ -23,7 +24,7 @@ export default function RootLayout({
         className="font-parkinsans antialiased text-smoothWhite bg-primaryDark "
         suppressHydrationWarning
       >
-        {children}
+        <ClientRoot>{children}</ClientRoot>
       </body>
     </html>
   );
