@@ -4,6 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { HomeContent } from "./Container";
 import { AvatarContainer, LoginContainer, SignupContainer } from "./Container";
 import { Notification, AuthHeader } from "./UI";
+import { SourceSelection, UrlSelection, AuthWrapper, FileSelection } from "./Onboard";
 export {
   Logo,
   Avatar,
@@ -21,4 +22,8 @@ export {
   LoginContainer,
   SignupContainer,
   AuthHeader,
+  SourceSelection,
+  UrlSelection,
+  AuthWrapper,
+  FileSelection,
 };

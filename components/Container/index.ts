@@ -4,6 +4,7 @@ import HomeContent from "./HomeContent";
 import AvatarContainer from "./AvatarContainer";
 import LoginContainer from "./LoginContainer";
 import SignupContainer from "./SignupContainer";
+import PlayerContainer from "./PlayerContainer";
 export {
   GlobalParties,
   CreateParties,
@@ -11,4 +12,5 @@ export {
   AvatarContainer,
   LoginContainer,
   SignupContainer,
+  PlayerContainer,
 };

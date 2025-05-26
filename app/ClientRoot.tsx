@@ -3,11 +3,23 @@
 
 import { ReactNode } from "react";
 import { SocketProvider } from "@/context/SocketContext"; // adjust the path
-
+import { store, persistor } from '@/lib/store';
+import { Provider } from 'react-redux';
+import { PersistGate } from "redux-persist/integration/react";
+import AuthGuard from "@/context/AuthGuard";
+import { FileProvider } from "@/context/FileContext";
 export default function ClientRoot({ children }: { children: ReactNode }) {
     return (
-        <SocketProvider>
-            {children}
-        </SocketProvider>
+        <Provider store={store}>
+            <PersistGate loading={null} persistor={persistor}>
+                <AuthGuard>
+                    <FileProvider>
+                        {/* <SocketProvider> */}
+                            {children}
+                        {/* </SocketProvider> */}
+                    </FileProvider>
+                </AuthGuard>
+            </PersistGate>
+        </Provider>
     );
 }
