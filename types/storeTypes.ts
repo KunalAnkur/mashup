@@ -13,6 +13,7 @@ export interface RoomState {
   roomId: string | null;
   url?: string | null;
   file?: string[] | null;
+  selectedFileIndex: number;
 }
 
 

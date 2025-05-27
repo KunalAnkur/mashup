@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ReactNode } from "react";
 import ReactPlayer from "react-player";
 import screenfull from "screenfull";
 import { PlayPauseOverlay } from "@/components/VideoPlayer/PlayPauseOverlay";
@@ -23,6 +23,8 @@ type VideoPlayerProps = {
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
     loop?: boolean;
+    fullscreenTargetRef?: React.RefObject<HTMLElement>;
+    overlayUI?: ReactNode
 };
 
 const VideoPlayer = ({
@@ -44,6 +46,8 @@ const VideoPlayer = ({
     controls = true,
     loop = false,
     playerRef: externalPlayerRef,
+    fullscreenTargetRef,
+    overlayUI,
 }: VideoPlayerProps) => {
     // State management
     const [playing, setPlaying] = useState(externalPlaying);
@@ -107,19 +111,41 @@ const VideoPlayer = ({
         if (controls) handleUserActivity();
     };
 
+    // const toggleFullscreen = () => {
+    //     const targetElement = fullscreenTargetRef?.current || playerContainerRef.current;
+    //     console.log(targetElement)
+    //     if (screenfull.isEnabled && targetElement) {
+    //         if (screenfull.isFullscreen) {
+    //             screenfull.exit();
+    //             setFullscreen(false);
+    //         } else {
+    //             screenfull.request(targetElement);
+    //             setFullscreen(true);
+    //         }
+    //         const newFullscreen = !fullscreen;
+    //         setFullscreen(newFullscreen);
+    //         onFullscreenChange?.(newFullscreen);
+    //     }
+    //     if (controls) handleUserActivity();
+    // };
+
     const toggleFullscreen = () => {
-        if (screenfull.isEnabled && playerContainerRef.current) {
+        const targetRef = fullscreenTargetRef || playerContainerRef;
+
+        if (screenfull.isEnabled && targetRef.current) {
             if (screenfull.isFullscreen) {
                 screenfull.exit();
                 setFullscreen(false);
             } else {
-                screenfull.request(playerContainerRef.current);
+                screenfull.request(targetRef.current);
                 setFullscreen(true);
             }
+
             const newFullscreen = !fullscreen;
             setFullscreen(newFullscreen);
             onFullscreenChange?.(newFullscreen);
         }
+
         if (controls) handleUserActivity();
     };
 
@@ -182,15 +208,16 @@ const VideoPlayer = ({
     };
 
     return (
+        // TODO: Need to check about the fullscreen if there is no external control for fullscreen
         <div
-            ref={playerContainerRef}
-            className={`flex items-center justify-center ${fullscreen ? "fixed inset-0 z-50 bg-black" : ""
+            // ref={playerContainerRef}
+            className={`flex items-center justify-center h-full ${false ? "fixed inset-0 z-50 bg-black" : ""
                 }`}
             onMouseMove={controls ? handleUserActivity : undefined}
             onMouseEnter={controls ? handleUserActivity : undefined}
         >
             <div
-                className={`${fullscreen ? "w-full h-full" : "h-[50vh] min-w-[50vw] w-full"
+                className={`${false ? "w-full h-full" : "h-full min-w-[50vw] w-full"
                     } relative overflow-hidden rounded-2xl shadow-2xl`}
             >
                 <ReactPlayer
@@ -219,6 +246,9 @@ const VideoPlayer = ({
                     }}
                 />
 
+                <div className="z-20 absolute bottom-20 right-0">
+                    {overlayUI}
+                </div>
                 <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} />
 
                 {controls && (

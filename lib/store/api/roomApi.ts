@@ -18,9 +18,9 @@ export const roomApi = createApi({
     // POST /api/v1/room/
     createRoom: builder.mutation<
       RoomCreateResponse,
-      { url: string; sourceType: "file" | "url" }
+      { url?: string; sourceType: "file" | "url" }
     >({
-      query: (body: { url: string; sourceType: "file" | "url" }) => ({
+      query: (body: { url?: string; sourceType: "file" | "url" }) => ({
         url: `/`,
         method: "POST",
         body: {

@@ -7,6 +7,7 @@ const initialState: RoomState = {
   sourceType: null,
   roomId: null,
   url: null,
+  selectedFileIndex: 0,
   loading: false,
 };
 
@@ -31,6 +32,9 @@ const authSlice = createSlice({
       state.roomId = null;
       state.sourceType = null;
     },
+    setSelectedFileIndex: (state, action: PayloadAction<number>) => {
+      state.selectedFileIndex = action.payload;
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
@@ -38,5 +42,6 @@ const authSlice = createSlice({
   extraReducers: (builder) => {},
 });
 
-export const { setRoom, exitRoom, setLoading, setFile } = authSlice.actions;
+export const { setRoom, exitRoom, setLoading, setFile, setSelectedFileIndex } =
+  authSlice.actions;
 export default authSlice;
