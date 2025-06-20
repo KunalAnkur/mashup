@@ -18,13 +18,13 @@ export const roomApi = createApi({
     // POST /api/v1/room/
     createRoom: builder.mutation<
       RoomCreateResponse,
-      { url?: string; sourceType: "file" | "url" }
+      { urls?: string[]; sourceType: "file" | "url" }
     >({
-      query: (body: { url?: string; sourceType: "file" | "url" }) => ({
+      query: (body: { urls?: string[]; sourceType: "file" | "url" }) => ({
         url: `/`,
         method: "POST",
         body: {
-          url: body.url,
+          urls: body.urls,
           source_type: body.sourceType,
         },
       }),
@@ -45,9 +45,15 @@ export const roomApi = createApi({
       }),
     }),
     // GET /api/v1/room/:id
-    getRoomById: builder.query<any, string>({
+    getRoomById: builder.mutation<any, string>({
       query: (id) => ({
         url: `/${id}`,
+        method: "GET",
+      }),
+    }),
+    getRoomByRoomId: builder.mutation<any, string>({
+      query: (roomId) => ({
+        url: `/room-info/${roomId}`,
         method: "GET",
       }),
     }),
@@ -87,7 +93,8 @@ export const {
   useCreateRoomMutation,
   useGetMyRoomMutation,
   useGetRoomsByQueryQuery,
-  useGetRoomByIdQuery,
+  useGetRoomByIdMutation,
+  useGetRoomByRoomIdMutation,
   useUpdateRoomMutation,
   useInactiveRoomMutation,
   useDeleteRoomMutation,

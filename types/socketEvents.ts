@@ -1,7 +1,12 @@
 export enum SocketEvent {
   DISCONNECT = "disconnect",
   CONNECTION = "connection",
-  JOIN_ROOM = "join_room",
-  JUDGE_PANEL = "judge_panel",
-  ENROLLMENT_LIST = "enrollment_list",
+  JOIN_ROOM = "joinroom",
+  ONPLAY = "onplay",
+  ONPAUSE = "onpause",
+  ONSEEKED = "onseeked",
+  SYNCWITHHOST = "syncwithhost",
+  HOSTVIDEOSTATE = "hostvideostate",
+  NOTIFY = "notify",
+  CHATMESSAGE = "chatmessage",
 }

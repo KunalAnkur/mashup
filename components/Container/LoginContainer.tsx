@@ -8,8 +8,9 @@ import { setUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 type Prop = {
   setContainer: (container: "login" | "signup") => void | null;
+  isModel?: boolean; // Optional prop to indicate if it's a modal
 }
-const LoginContainer = ({ setContainer }: Prop) => {
+const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");

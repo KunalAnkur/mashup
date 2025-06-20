@@ -38,7 +38,7 @@ const Page = () => {
   };
 
   const handleJoinRoom = () => {
-    joinRoom("my-room", isHost); // Room ID can be dynamic
+    joinRoom("my-room", isHost, "random"); // Room ID can be dynamic
   };
 
   return (

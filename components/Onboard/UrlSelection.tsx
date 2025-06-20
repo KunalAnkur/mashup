@@ -3,32 +3,53 @@ import { AuthState, OnboardStep, RoomState } from "@/types/storeTypes";
 import { Button, Input } from "../UI";
 import { useDispatch, useSelector } from "react-redux";
 import { changeStep } from "@/lib/store/slices/onboardSlice";
-import { setRoom } from "@/lib/store/slices/roomSlice";
+import { setRefers, setRoom } from "@/lib/store/slices/roomSlice";
 import type { RootState } from "@/lib/store";
 import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
 import { FaYoutube, FaVimeo, FaTwitch, FaFileVideo, FaArrowLeft } from "react-icons/fa";
 import { MdOndemandVideo } from "react-icons/md";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 const UrlSelection = () => {
-    const state = useSelector((state: RootState) => state);
-    const [sourceUrl, setSourceUrl] = useState<string>(state.room.url || "");
-    const [isEnterDisabled, setEnterDisabled] = useState<boolean>(!ReactPlayer.canPlay(state.room.url || ""));
+    const authState = useSelector((state: RootState) => state.auth);
+    const roomState = useSelector((state: RootState) => state.room);
+    const selectedFileIndex = useSelector((state: RootState) => state.room.selectedFileIndex);
+    const [sourceUrl, setSourceUrl] = useState<string[]>([]);
+    const [sourceUrlInput, setSourceUrlInput] = useState<string>("");
+    useEffect(() => {
+        if (roomState.urls) {
+            setSourceUrl(roomState.urls);
+        }
+    }
+    ,[roomState.urls]);
+
+    const [isEnterDisabled, setEnterDisabled] = useState<boolean>(!ReactPlayer.canPlay(sourceUrl[selectedFileIndex] || ""));
     const [createRoomApi] = useCreateRoomMutation();
     const dispatch = useDispatch();
 
     const handleOnSourceUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSourceUrl(e.target.value);
+        // setSourceUrl((prev) => Array.from(new Set([...prev, e.target.value])));
+        setSourceUrlInput(e.target.value);
         setEnterDisabled(!ReactPlayer.canPlay(e.target.value));
     };
 
     const handleOnEnterRoom = async () => {
-        if (state.auth.isAuthenticated) {
-            const response = await createRoomApi({ url: sourceUrl, sourceType: "url" }).unwrap();
-            if (response.success) {
-                dispatch(setRoom(response));
-            }
+        setSourceUrl([sourceUrlInput]);
+        dispatch(setRefers({
+            refer: true,
+            sourceType: "url",
+            urls: [sourceUrlInput]
+        }));
+        if (authState.isAuthenticated) {
+            // const response = await createRoomApi({ urls: [sourceUrlInput], sourceType: "url" }).unwrap();
+            // if (response.success) {
+            //     const roomWithAuth = { ...response, authId: authState.user!.id };
+            //     dispatch(setRoom(roomWithAuth));
+            // }
         } else {
+            // TODO: Here we need to handle the case when user authenticate then it should redirect to room.
+            // I think we need to send the redirect Information to the global state.
+            
             dispatch(changeStep(OnboardStep.AUTH_STEP));
         }
     };
@@ -52,7 +73,7 @@ const UrlSelection = () => {
                     <input
                         type="text"
                         placeholder="Paste your source link here"
-                        value={sourceUrl}
+                        value={sourceUrlInput}
                         onChange={handleOnSourceUrlChange}
                         className="flex-1 rounded-lg w-full bg-zinc-800 text-gray-100 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
                     />

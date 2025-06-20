@@ -22,7 +22,7 @@ const Button = ({
       }  ${className}`}
     >
       {icon && <span>{icon}</span>}
-      <span className="text-sm">{name}</span>
+      <span>{name}</span>
     </button>
   );
 };

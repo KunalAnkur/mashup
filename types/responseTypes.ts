@@ -19,12 +19,14 @@ export interface RoomCreateResponse {
   success: boolean;
   status: string;
   message: string;
+  authId: string;
   data: {
     id: string;
     user_id: string;
     source_type: string;
     room_id: string;
     url: string;
+    urls: string[];
     is_active: boolean;
     createdAt: string;
     updatedAt: string;

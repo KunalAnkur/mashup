@@ -6,12 +6,13 @@ import * as constants from "../../constants";
 type Props = {
   url?: string;
   alt: string;
-  size: number; // Use size instead of separate width and height
+  size: number;
   className?: string;
+  isDefault?: boolean; // renamed from 'default'
   onClick?: () => void;
 };
 
-const Avatar = ({ url, alt, size, className, onClick }: Props) => {
+const Avatar = ({ url, alt, size, className, onClick, isDefault }: Props) => {
   const [source, setSource] = useState(url || constants.assets.defaultAvatar);
 
   const handleOnError = () => {
@@ -27,14 +28,25 @@ const Avatar = ({ url, alt, size, className, onClick }: Props) => {
         height: size,
       }}
     >
-      <Image
-        src={source}
-        alt={alt}
-        width={size}
-        height={size}
-        onError={handleOnError}
-        className="object-cover rounded-full  "
-      />
+      {!isDefault ? (
+        // Next.js <Image /> does NOT support onError
+        <Image
+          src={source}
+          alt={alt}
+          width={size}
+          height={size}
+          className="object-cover rounded-full"
+        />
+      ) : (
+        <img
+          src={source}
+          alt={alt}
+          width={size}
+          height={size}
+          onError={handleOnError}
+          className="object-cover rounded-full"
+        />
+      )}
     </div>
   );
 };

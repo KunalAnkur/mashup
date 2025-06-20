@@ -11,6 +11,8 @@ type VideoPlayerProps = {
     volume?: number;
     progress?: number;
     duration?: number;
+    width?: string;
+    height?: string;
     onPlay?: (event: string) => void;
     onPause?: (event: string) => void;
     onVolumeChange?: (volume: number) => void;
@@ -24,7 +26,8 @@ type VideoPlayerProps = {
     controls?: boolean;
     loop?: boolean;
     fullscreenTargetRef?: React.RefObject<HTMLElement>;
-    overlayUI?: ReactNode
+    children?: ReactNode;
+    className?: string
 };
 
 const VideoPlayer = ({
@@ -47,7 +50,10 @@ const VideoPlayer = ({
     loop = false,
     playerRef: externalPlayerRef,
     fullscreenTargetRef,
-    overlayUI,
+    className,
+    width,
+    height,
+    children
 }: VideoPlayerProps) => {
     // State management
     const [playing, setPlaying] = useState(externalPlaying);
@@ -217,14 +223,14 @@ const VideoPlayer = ({
             onMouseEnter={controls ? handleUserActivity : undefined}
         >
             <div
-                className={`${false ? "w-full h-full" : "h-full min-w-[50vw] w-full"
-                    } relative overflow-hidden rounded-2xl shadow-2xl`}
+                className={`${false ? "w-full h-full" : "h-full w-full"
+                    } relative overflow-hidden shadow-2xl ${className}`}
             >
                 <ReactPlayer
                     ref={playerRef as React.RefObject<ReactPlayer>}
                     url={url}
-                    width="100%"
-                    height="100%"
+                    width={width || "100%"}
+                    height={height || "100%"}
                     playing={playing}
                     loop={loop}
                     muted={muted}
@@ -246,9 +252,10 @@ const VideoPlayer = ({
                     }}
                 />
 
-                <div className="z-20 absolute bottom-20 right-0">
-                    {overlayUI}
-                </div>
+                {/* NOTE: UI Overlay component */}
+                {children}
+                
+
                 <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} />
 
                 {controls && (

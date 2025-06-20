@@ -72,7 +72,7 @@ const Input = ({
   };
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col gap-0.5 w-full">
       <div className={wrapperClass}>
         {style === "auth" && label && (
           <label className="text-xs text-white">{label}</label>

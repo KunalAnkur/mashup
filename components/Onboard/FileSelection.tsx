@@ -16,7 +16,7 @@ import {
 import { Button } from "../UI";
 import { useState, useEffect } from "react";
 import { useFileContext } from "@/context/FileContext";
-import { setRoom, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
+import { setRefers, setRoom, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
 import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
 
@@ -69,12 +69,22 @@ const FileSelection = () => {
     };
 
     const handleOnStartWatching = async () => {
+        const urlList = files.map(file => URL.createObjectURL(file));
+        dispatch(setRefers({
+            refer: true,
+            sourceType: "file",
+            urls: urlList
+        }));
         if (authState.isAuthenticated) {
-            const response = await createRoomApi({ sourceType: "file" }).unwrap();
-            if (response.success) {
-                dispatch(setRoom(response));
-            }
+            // const response = await createRoomApi({ sourceType: "file" }).unwrap();
+            // if (response.success) {
+            //     const result = {...response, authId: authState.user!.id}
+            //     dispatch(setRoom(result));
+            // }
         } else {
+            // TODO: Here we need to handle the case when user authenticate then it should redirect to room.
+            // I think we need to send the redirect Information to the global state.
+            
             dispatch(changeStep(OnboardStep.AUTH_STEP));
         }
     };

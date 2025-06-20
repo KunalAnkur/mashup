@@ -9,13 +9,19 @@ export type User = {
 export interface RoomState {
   haveRoom: boolean;
   loading: boolean;
-  sourceType: "file" | "url" | null;
+  sourceType: "file" | "url";
   roomId: string | null;
-  url?: string | null;
-  file?: string[] | null;
+  urls: string[];
+  files: string[];
+  host: boolean;
+  settings: RoomSetting;
   selectedFileIndex: number;
+  refer: boolean;
 }
 
+export type RoomSetting = {
+  panelCollapsed: boolean
+}
 
 export interface AuthState {
   user: User | null;

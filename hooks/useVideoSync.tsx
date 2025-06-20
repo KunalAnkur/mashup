@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import type ReactPlayer from "react-player";
 import { useSocket } from "@/context/SocketContext";
+import { SocketEvent } from "@/types/socketEvents";
 
 interface UseVideoSyncParams {
     playerRef: React.RefObject<ReactPlayer | null>;
@@ -50,7 +51,7 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
         if (!isJoined) return;
         if (!isHost) {
             console.log("Syncing with host started");
-            socket?.emit("syncwithhost", { roomId });
+            socket?.emit(SocketEvent.SYNCWITHHOST, { roomId });
         }
     }, [isHost, socket, roomId, isJoined]);
 
@@ -65,7 +66,7 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
         }
         console.log("Host event: ", isHost)
         updateState();
-        socket?.emit("onplay", {
+        socket?.emit(SocketEvent.ONPLAY, {
             roomId, videoState: {
                 playing: true,
                 currentTime: playerRef.current?.getCurrentTime()
@@ -83,7 +84,7 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
             return;
         }
         updateState();
-        socket?.emit("onpause", {
+        socket?.emit(SocketEvent.ONPAUSE, {
             roomId, videoState: {
                 playing: false,
                 currentTime: playerRef.current?.getCurrentTime()
@@ -99,15 +100,16 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
             return;
         }
         const state = updateState();
-        socket?.emit("onseeked", {
+        socket?.emit(SocketEvent.ONSEEKED, {
             roomId, videoState: state
         });
     }, [isHost, roomId, socket, syncVideoWithHost, updateState]);
 
-    const joinRoom = (room: string, isHostFlag: boolean) => {
+    const joinRoom = (room: string, isHostFlag: boolean, username: string) => {
         setRoomId(room);
         setIsJoined(true);
-        socket?.emit("joinroom", { roomId: room, host: isHostFlag, name: "random" });
+        console.log({ roomId: room, host: isHostFlag, name: username }, socket);
+        socket?.emit(SocketEvent.JOIN_ROOM, { roomId: room, host: isHostFlag, name: username });
     };
 
     useEffect(() => {
@@ -118,13 +120,14 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
         };
 
         const handleSyncWithHost = () => {
+            console.log("sync with host requested", isHost);
             if (!isHost) return;
             const state = updateState();
             console.log('host video state request', {
                 roomId: roomId ?? "room",
                 videoState: state,
             });
-            socket.emit("hostvideostate", {
+            socket.emit(SocketEvent.HOSTVIDEOSTATE, {
                 roomId: roomId ?? "room",
                 videoState: state,
             });
@@ -134,11 +137,11 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
             if (!isHost) syncVideoTo(hostVideoState);
         };
 
-        socket.on("onpause", handleVideoEvent);
-        socket.on("onplay", handleVideoEvent);
-        socket.on("onseeked", handleVideoEvent);
-        socket.on("syncwithhost", handleSyncWithHost);
-        socket.on("hostvideostate", handleHostVideoState);
+        socket.on(SocketEvent.ONPAUSE, handleVideoEvent);
+        socket.on(SocketEvent.ONPLAY, handleVideoEvent);
+        socket.on(SocketEvent.ONSEEKED, handleVideoEvent);
+        socket.on(SocketEvent.SYNCWITHHOST, handleSyncWithHost);
+        socket.on(SocketEvent.HOSTVIDEOSTATE, handleHostVideoState);
 
         // if (!isHost){ 
         //     console.log("initiated sync video with host")
@@ -146,13 +149,13 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
         // };
 
         return () => {
-            socket.off("onpause", handleVideoEvent);
-            socket.off("onplay", handleVideoEvent);
-            socket.off("onseeked", handleVideoEvent);
-            socket.off("syncwithhost", handleSyncWithHost);
-            socket.off("hostvideostate", handleHostVideoState);
+            socket.off(SocketEvent.ONPAUSE, handleVideoEvent);
+            socket.off(SocketEvent.ONPLAY, handleVideoEvent);
+            socket.off(SocketEvent.ONSEEKED, handleVideoEvent);
+            socket.off(SocketEvent.SYNCWITHHOST, handleSyncWithHost);
+            socket.off(SocketEvent.HOSTVIDEOSTATE, handleHostVideoState);
         };
     }, [socket, isHost, playerRef, roomId, updateState]);
 
-    return { onPlay, onPause, onSeeked, isPlaying, joinRoom, isConnected };
+    return { socket, onPlay, onPause, onSeeked, isPlaying, joinRoom, isConnected };
 };
