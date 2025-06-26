@@ -8,15 +8,18 @@ import { Provider } from 'react-redux';
 import { PersistGate } from "redux-persist/integration/react";
 import AuthGuard from "@/context/AuthGuard";
 import { FileProvider } from "@/context/FileContext";
+import { MediaStreamProvider } from "@/context/MediaStreamContext";
 export default function ClientRoot({ children }: { children: ReactNode }) {
     return (
         <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
                 <AuthGuard>
                     <FileProvider>
-                        {/* <SocketProvider> */}
-                            {children}
-                        {/* </SocketProvider> */}
+                        <MediaStreamProvider>
+                            {/* <SocketProvider> */}
+                                {children}
+                            {/* </SocketProvider> */}
+                        </MediaStreamProvider>
                     </FileProvider>
                 </AuthGuard>
             </PersistGate>

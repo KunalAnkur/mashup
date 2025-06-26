@@ -90,7 +90,7 @@ export class SocketService {
 
   private setupSocketListeners(socket: Socket) {
     socket.on("connect", () => {
-      console.log(`Socket connected: ${socket.id}`);
+      console.log(`Socket connected: ${socket.id}`, socket);
     });
 
     socket.on("disconnect", (reason) => {
@@ -102,11 +102,11 @@ export class SocketService {
     });
 
     // Listen for judge_panel events
-    socket.on(SocketEvent.JUDGE_PANEL, (data) => {
-      console.log("judge_panel", data);
-      // Notify any registered listeners
-      this.notifyListeners(SocketEvent.JUDGE_PANEL, data);
-    });
+    // socket.on(SocketEvent.JUDGE_PANEL, (data) => {
+    //   console.log("judge_panel", data);
+    //   // Notify any registered listeners
+    //   this.notifyListeners(SocketEvent.JUDGE_PANEL, data);
+    // });
   }
 
   // Method to register event listeners
@@ -135,8 +135,8 @@ export class SocketService {
 }
 
 // Create singleton instance
-export const socketService = new SocketService({
-//   namespaces: ['/']
-});
+// export const socketService = new SocketService({
+// //   namespaces: ['/']
+// });
 
-export default socketService;
+export default SocketService;

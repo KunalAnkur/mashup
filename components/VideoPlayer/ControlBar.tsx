@@ -1,5 +1,6 @@
 import ProgressBar from "@/components/VideoPlayer/ProgressBar";
 import PlayerControls from "@/components/VideoPlayer/PlayerControls";
+import { ControlComponents } from "./Player";
 
 interface ControlBarProps {
     showControls: boolean;
@@ -19,6 +20,7 @@ interface ControlBarProps {
     onVolumeChange: (volume: number) => void;
     onFullscreenToggle: () => void;
     formatTime: (seconds: number) => string;
+    hideControls: ControlComponents[];
 }
 
 export const ControlBar = ({
@@ -39,12 +41,14 @@ export const ControlBar = ({
     onVolumeChange,
     onFullscreenToggle,
     formatTime,
+    hideControls = []
 }: ControlBarProps) => (
     <div
         className={`absolute bottom-0 left-4 right-4 z-30 p-1 rounded-xl transition-all duration-300 ${showControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
             }`}
         style={{ pointerEvents: showControls ? "auto" : "none" }}
     >
+        {!hideControls.includes(ControlComponents.PROGRESS) &&
         <ProgressBar
             progress={progress}
             buffered={buffered}
@@ -53,7 +57,7 @@ export const ControlBar = ({
             handleSeekStart={onSeekStart}
             handleSeekEnd={onSeekEnd}
             duration={duration}
-        />
+        />}
 
         <PlayerControls
             playing={playing}
@@ -67,6 +71,7 @@ export const ControlBar = ({
             onVolumeChange={onVolumeChange}
             onFullscreenToggle={onFullscreenToggle}
             formatTime={formatTime}
+            hideControls={hideControls}
         />
     </div>
 );

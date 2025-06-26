@@ -1,4 +1,5 @@
 import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp, FaExpand, FaCompress } from "react-icons/fa";
+import { ControlComponents } from "./Player";
 
 interface PlayerControlsProps {
     playing: boolean;
@@ -12,6 +13,7 @@ interface PlayerControlsProps {
     onVolumeChange: (volume: number) => void;
     onFullscreenToggle: () => void;
     formatTime: (seconds: number) => string;
+    hideControls: ControlComponents[];
 }
 
 const PlayerControls = ({
@@ -26,18 +28,18 @@ const PlayerControls = ({
     onVolumeChange,
     onFullscreenToggle,
     formatTime,
+    hideControls
 }: PlayerControlsProps) => (
     <div className="flex items-center pt-2 justify-between shadow-lg rounded-xl">
         <div className="flex items-center gap-4 text-white">
-            <button
+            {!hideControls.includes(ControlComponents.PLAY) && <button
                 onClick={onPlayPause}
                 className="p-2 hover:bg-white/20 rounded-full transition-colors"
                 aria-label={playing ? "Pause" : "Play"}
             >
                 {playing ? <FaPause size={18} /> : <FaPlay size={18} />}
-            </button>
-
-            <div className="flex items-center gap-2 group/volume">
+            </button>}
+            {!hideControls.includes(ControlComponents.VOLUME) && <div className="flex items-center gap-2 group/volume">
                 <button
                     onClick={onMuteToggle}
                     className="p-2 hover:bg-white/20 rounded-full transition-colors"
@@ -67,20 +69,25 @@ const PlayerControls = ({
                         </div>
                     </div>
                 </div>
-            </div>
-
+            </div>}
+            
+            {!hideControls.includes(ControlComponents.DURATION) && 
             <span className="text-sm font-medium text-white/90">
                 {formatTime((progress / 100) * duration)} / {formatTime(duration)}
             </span>
+            }
+            
         </div>
 
+        {!hideControls.includes(ControlComponents.FULLSCREEN) && 
         <button
             onClick={onFullscreenToggle}
             className="p-2 text-white hover:bg-white/20 rounded-full transition-colors"
             aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
         >
             {fullscreen ? <FaCompress size={18} /> : <FaExpand size={18} />}
-        </button>
+        </button>}
+        
     </div>
 );
 

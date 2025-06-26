@@ -4,8 +4,18 @@ import ReactPlayer from "react-player";
 import screenfull from "screenfull";
 import { PlayPauseOverlay } from "@/components/VideoPlayer/PlayPauseOverlay";
 import { ControlBar } from "@/components/VideoPlayer/ControlBar";
+import { SourceProps } from "react-player/base";
+import { FileConfig } from "react-player/file";
+export enum ControlComponents {
+    PLAY = 'play',
+    VOLUME = 'volume',
+    PROGRESS = 'progress',
+    DURATION = 'duration',
+    OVERLAY = 'overlay',
+    FULLSCREEN = 'fullscreen'
+}
 type VideoPlayerProps = {
-    url: string | string[]
+    url?: string | string[] | SourceProps[] | MediaStream
     playing?: boolean;
     muted?: boolean;
     volume?: number;
@@ -22,12 +32,16 @@ type VideoPlayerProps = {
     onSeekEnd?: () => void;
     onDuration?: (duration: number) => void;
     onFullscreenChange?: (isFullscreen: boolean) => void;
+    onReady?: () => void;
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
     loop?: boolean;
     fullscreenTargetRef?: React.RefObject<HTMLElement>;
     children?: ReactNode;
-    className?: string
+    className?: string;
+    FileConfig?: FileConfig;
+    disableControls?: ControlComponents[];
+    hideControls?: ControlComponents[];
 };
 
 const VideoPlayer = ({
@@ -45,6 +59,7 @@ const VideoPlayer = ({
     onSeekStart,
     onSeekEnd,
     onDuration,
+    onReady,
     onFullscreenChange,
     controls = true,
     loop = false,
@@ -53,6 +68,8 @@ const VideoPlayer = ({
     className,
     width,
     height,
+    disableControls = [],
+    hideControls = [],
     children
 }: VideoPlayerProps) => {
     // State management
@@ -101,6 +118,7 @@ const VideoPlayer = ({
 
     // Player controls
     const togglePlay = () => {
+        if (disableControls.includes(ControlComponents.PLAY)) return;
         const newPlaying = !playing;
         setPlaying(newPlaying);
 
@@ -111,6 +129,7 @@ const VideoPlayer = ({
     };
 
     const toggleMute = () => {
+        if(disableControls.includes(ControlComponents.VOLUME)) return;
         const newMuted = !muted;
         setMuted(newMuted);
         onMute?.(newMuted);
@@ -136,6 +155,7 @@ const VideoPlayer = ({
     // };
 
     const toggleFullscreen = () => {
+        if (disableControls.includes(ControlComponents.FULLSCREEN)) return;
         const targetRef = fullscreenTargetRef || playerContainerRef;
 
         if (screenfull.isEnabled && targetRef.current) {
@@ -169,6 +189,7 @@ const VideoPlayer = ({
     };
 
     const handleSeekStart = () => {
+        if (disableControls.includes(ControlComponents.PROGRESS)) return;
         wasPlayingBeforeSeek.current = playing;
         if (playing) {
             setPlaying(false);
@@ -178,6 +199,7 @@ const VideoPlayer = ({
     };
 
     const handleSeekTo = (percent: number) => {
+        if (disableControls.includes(ControlComponents.PROGRESS)) return;
         if (!playerRef.current) return;
         const seekToTime = duration * (percent / 100);
         playerRef.current.seekTo(seekToTime, "seconds");
@@ -186,6 +208,7 @@ const VideoPlayer = ({
     };
 
     const handleSeekEnd = () => {
+        if (disableControls.includes(ControlComponents.PROGRESS)) return;
         if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
         onSeekEnd?.();
         seekDebounceRef.current = setTimeout(() => {
@@ -240,6 +263,7 @@ const VideoPlayer = ({
                     onBuffer={() => setIsBuffering(true)}
                     onBufferEnd={onBufferEnd}
                     onClick={togglePlay}
+                    onReady={onReady}
                     config={{
                         youtube: {
                             playerVars: {
@@ -248,7 +272,7 @@ const VideoPlayer = ({
                                 modestbranding: 0,
                                 showinfo: 0,
                             },
-                        }
+                        },
                     }}
                 />
 
@@ -256,7 +280,7 @@ const VideoPlayer = ({
                 {children}
                 
 
-                <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} />
+                {!hideControls.includes(ControlComponents.OVERLAY) && <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} />}
 
                 {controls && (
                     <ControlBar
@@ -277,6 +301,7 @@ const VideoPlayer = ({
                         onVolumeChange={handleVolumeChange}
                         onFullscreenToggle={toggleFullscreen}
                         formatTime={formatTime}
+                        hideControls={hideControls}
                     />
                 )}
             </div>

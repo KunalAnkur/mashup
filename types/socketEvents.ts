@@ -9,4 +9,10 @@ export enum SocketEvent {
   HOSTVIDEOSTATE = "hostvideostate",
   NOTIFY = "notify",
   CHATMESSAGE = "chatmessage",
+
+  CONNECT_TRANSPORT = "connectTransport",
+  PRODUCE = "produce",
+  CONSUME = "consume",
+  LEAVER_ROOM = "leaveRoom",
+  UNPAUSE_CONSUMERS = "unpauseConsumers"
 }

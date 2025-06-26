@@ -4,7 +4,7 @@ import { RoomCreateResponse, UserLoginResp } from "@/types/responseTypes";
 
 const initialState: RoomState = {
   haveRoom: false,
-  sourceType: 'file',
+  sourceType: 'url',
   roomId: null,
   urls: [],
   files: [],
@@ -38,7 +38,7 @@ const authSlice = createSlice({
       state.haveRoom = false;
       state.loading = false;
       state.roomId = null;
-      state.sourceType = 'file';
+      state.sourceType = 'url';
       // state.event = action.payload;
     },
     setSelectedFileIndex: (state, action: PayloadAction<number>) => {
