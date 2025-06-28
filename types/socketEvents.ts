@@ -13,6 +13,7 @@ export enum SocketEvent {
   CONNECT_TRANSPORT = "connectTransport",
   PRODUCE = "produce",
   CONSUME = "consume",
-  LEAVER_ROOM = "leaveRoom",
-  UNPAUSE_CONSUMERS = "unpauseConsumers"
+  LEAVE_ROOM = "leaveRoom",
+  UNPAUSE_CONSUMERS = "unpauseConsumers",
+  INCOMING_PRODUCER = "incomingProducer"
 }

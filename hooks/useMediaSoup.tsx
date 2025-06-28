@@ -5,6 +5,7 @@ import * as mediasoupClient from "mediasoup-client";
 import { Transport, Producer, Consumer, RtpCapabilities } from "mediasoup-client/types";
 import { SocketEvent } from "@/types/socketEvents";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
+import { useFileContext } from "@/context/FileContext";
 
 interface UseMediaSoupParams {
     playerRef: React.RefObject<ReactPlayer | null>;
@@ -30,6 +31,7 @@ interface MediaSoupState {
 export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
     const { socket, isConnected } = useSocket('filestream');
     const { setStream } = useMediaStreamContext();
+    const { files } = useFileContext();
     const [roomState, setRoomState] = useState<RoomState>({
         name: '',
         isHost,
@@ -53,6 +55,7 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
     // Initialize MediaSoup device
     const initializeDevice = useCallback(async (routerRtpCapabilities: RtpCapabilities) => {
         try {
+            // debugger
             const device = await mediasoupClient.Device.factory();
             await device.load({ routerRtpCapabilities });
             setMediaSoupState(prev => ({ ...prev, device }));
@@ -166,10 +169,9 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
             console.error('Video element or captureStream not available');
             return null;
         }
-
         const stream = videoElement.captureStream();
         return stream;
-    }, [playerRef]);
+    }, [playerRef, files]);
 
     // Consume media from producer
     const consume = useCallback(async (
@@ -178,6 +180,7 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
         roomId: string,
         transport: mediasoupClient.types.Transport
     ) => {
+        console.log('consuming =>', producerInfo, device, roomId, transport);
         if (!socket) return;
         const videoProducer = producerInfo.find(info => info.kind === 'video');
         const audioProducer = producerInfo.find(info => info.kind === 'audio');
@@ -283,22 +286,22 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
                             //     maxBitrate: 600_000,
                             // },
 
-                            {
-                                scaleResolutionDownBy: 4.0, // ~180p
-                                maxBitrate: 150_000,
-                            },
-                            {
-                                scaleResolutionDownBy: 2.0, // ~360p
-                                maxBitrate: 300_000,
-                            },
-                            {
-                                scaleResolutionDownBy: 1.5, // ~480p
-                                maxBitrate: 600_000,
-                            },
-                            {
-                                scaleResolutionDownBy: 1.0, // 720p (original)
-                                maxBitrate: 1_000_000, // 1 Mbps for HD
-                              }
+                            // {
+                            //     scaleResolutionDownBy: 4.0, // ~180p
+                            //     maxBitrate: 150_000,
+                            // },
+                            // {
+                            //     scaleResolutionDownBy: 2.0, // ~360p
+                            //     maxBitrate: 300_000,
+                            // },
+                            // {
+                            //     scaleResolutionDownBy: 1.5, // ~480p
+                            //     maxBitrate: 600_000,
+                            // },
+                            // {
+                            //     scaleResolutionDownBy: 1.0, // 720p (original)
+                            //     maxBitrate: 1_000_000, // 1 Mbps for HD
+                            //   }
                         ],
                         codecOptions: {
                             videoGoogleStartBitrate: 300,
@@ -315,6 +318,17 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
                 audioProducer.on('trackended', () => console.log('Audio track ended'));
                 audioProducer.on('transportclose', () => console.log('Audio transport closed'));
 
+                socket.emit(SocketEvent.INCOMING_PRODUCER, (
+                    { 
+                        roomId: room, 
+                        producers: { 
+                            [socket.id!]: [
+                                { kind: videoProducer.kind, peerId: socket.id, producerId: videoProducer.id }, 
+                                { kind: audioProducer.kind, peerId: socket.id, producerId: audioProducer.id }
+                            ] 
+                        }
+                    }
+                ));
                 setMediaSoupState((prev) => {
                     const producers = new Map<string, Producer[]>(prev.producers);
                     producers.set(socket.id as string, [videoProducer, audioProducer]);
@@ -360,6 +374,27 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
         if (producers) producers.forEach(producer => producer.pause());
     }, [isHost, socket]);
 
+    useEffect(() => {
+        if(!socket) return;
+        const handleIncomingProducer = async (data: any) => {
+            const existingConsumer = mediaSoupStateRef.current.consumers.get(socket.id!);
+            existingConsumer?.forEach(existingConsumer => existingConsumer.close());
+            mediaSoupStateRef.current.consumers.delete(socket.id!);
+            console.log('iteration is now starting', data.producers)
+
+            for (const peerId in data.producers) {
+                console.log('iteration is started', peerId)
+                await consume(data.producers[peerId], mediaSoupStateRef.current.device!, roomState.name, mediaSoupStateRef.current.consumerTransport!);
+            }
+            console.log(mediaSoupStateRef.current);
+            console.log("Producer Incoming:", data);
+        }
+        socket.on(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer)
+
+        return () => {
+            socket.off(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer)
+        }
+    }, [socket, roomState.name])
 
     
     let isMounted = true;
@@ -368,7 +403,8 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
         return () => {
             isMounted = false;
             if (!socket) return;
-            socket.emit(SocketEvent.LEAVER_ROOM);
+            // console.log('disconnect event trigger');
+            socket.emit(SocketEvent.LEAVE_ROOM);
 
             const state = mediaSoupStateRef.current;
 
