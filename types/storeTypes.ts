@@ -54,3 +54,15 @@ export interface OnboardSourceInfo {
     selection: "url" | "file";
     value: string;
 }
+
+
+export interface Chat {
+  message: string,
+  type: 'text',
+  sendBy: User
+}
+export interface PanelState {
+  chats: Chat[],
+  people: User[],
+  loading: boolean
+}
