@@ -40,8 +40,8 @@ const SignupContainer = ({ setContainer }: Prop) => {
       <Input
         placeholder="Enter your username"
         label="Username"
-        type="text" // Default type is password
-        style="auth" // Use auth styling
+        type="text"
+        style="auth"
         isChecked={true}
         value={username}
         onChange={(e) => setUsername(e.target.value)}
@@ -49,8 +49,8 @@ const SignupContainer = ({ setContainer }: Prop) => {
       <Input
         placeholder="Enter your email address"
         label="Email"
-        type="email" // Default type is password
-        style="auth" // Use auth styling
+        type="email"
+        style="auth"
         isChecked={false}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
