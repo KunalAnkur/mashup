@@ -64,12 +64,12 @@ export const authApi = createApi({
         },
       }),
     }),
-    googleLogin: builder.mutation<UserLoginResp, { accessToken: string }>(
+    googleLogin: builder.mutation<UserLoginResp, { email: string; name: string; picture: string }>(
       {
-        query: ({ accessToken }) => ({
+        query: ({ email, name, picture }) => ({
           url: "/google-login",
           method: "POST",
-          body: { accessToken },
+          body: { email, name, picture },
         }),
       }
     ),

@@ -33,8 +33,22 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
 
   const handleGoogleLoginSuccess = async (tokenResponse: Omit<TokenResponse, "error" | "error_description" | "error_uri">) => {
     try {
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: {
+          'Authorization': `Bearer ${tokenResponse.access_token}`
+        }
+      });
+
+      if (!userInfoResponse.ok) {
+        throw new Error('Failed to fetch user info from Google');
+      }
+
+      const userInfo = await userInfoResponse.json();
+
       const response = await googleLogin({
-        accessToken: tokenResponse.access_token,
+        email: userInfo.email,
+        name: userInfo.name,
+        picture: userInfo.picture,
       }).unwrap();
       dispatch(setUser(response));
     } catch (error) {
