@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Input, Button, Separator, Anchor } from "../UI";
 import * as constants from "@/constants/common";
 import { FcGoogle } from "react-icons/fc";
-import { useSignupMutation } from "@/lib/store/api/authApi";
+import { useProviderSignupMutation, useSignupMutation } from "@/lib/store/api/authApi";
 import { setUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
+import GoogleButton from "../GoogleAuth/GoogleButton";
 type Prop = {
   setContainer: (container: "login" | "signup") => void;
 }
@@ -13,7 +14,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [username, setUsername] = useState<string>("");
-
+  const [googleSignup, googleSignupState] = useProviderSignupMutation();
   const [showPassword, setShowPassword] = useState(false);
 
   const [signupUser, signupState] = useSignupMutation();
@@ -35,6 +36,23 @@ const SignupContainer = ({ setContainer }: Prop) => {
       setContainer("login");
     }
   }
+
+  const handleGoogleSignupSuccess = async (userInfo: any) => {
+    try {
+      console.log({ userInfo })
+      const response = await googleSignup({
+        email: userInfo.email,
+        name: userInfo.name,
+        picture: userInfo.picture,
+        sub: userInfo.sub,
+        provider_name: "google",
+      }).unwrap();
+      dispatch(setUser(response));
+    } catch (error) {
+      console.error("Google login failed", error);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 w-full">
       <Input
@@ -78,11 +96,13 @@ const SignupContainer = ({ setContainer }: Prop) => {
           <span>or</span>
           <Separator />
         </div>
-        <Button
-          name={"Signup with Google"}
-          style="general"
-          className="w-full py-3 border border-white/40 text-smoothWhite hover:bg-hover hover:border-transparent"
-          icon={<FcGoogle size={20} />}
+        <GoogleButton
+          name="Signup with Google"
+          onSuccess={handleGoogleSignupSuccess}
+          onError={() => {
+            console.log("Login Failed");
+            // Handle login failure, e.g., show a notification
+          }}
         />
         <div className=" ">
           <span className="flex items-center justify-center font-semibold text-xs ">

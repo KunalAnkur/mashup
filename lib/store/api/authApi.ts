@@ -64,7 +64,62 @@ export const authApi = createApi({
         },
       }),
     }),
+    providerLogin: builder.mutation<
+      UserLoginResp,
+      {
+        email: string;
+        name: string;
+        picture: string;
+        sub: string;
+        provider_name: string;
+      }
+    >({
+      query: ({ email, name, picture, sub, provider_name }) => ({
+        url: "/login-provider",
+        method: "POST",
+        body: {
+          email,
+          name,
+          picture,
+          provider: {
+            provider_name,
+            provider_user_id: sub,
+          },
+        },
+      }),
+    }),
+    providerSignup: builder.mutation<
+      UserLoginResp,
+      {
+        email: string;
+        name: string;
+        picture: string;
+        sub: string;
+        provider_name: string;
+      }
+    >({
+      query: ({ email, name, picture, sub, provider_name }) => ({
+        url: "/signup-provider",
+        method: "POST",
+        body: {
+          email,
+          name,
+          picture,
+          provider: {
+            provider_name,
+            provider_user_id: sub,
+          },
+        },
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useSignupMutation, useVerifyTokenMutation, useCheckTokenQuery } = authApi;
+export const {
+  useLoginMutation,
+  useSignupMutation,
+  useVerifyTokenMutation,
+  useCheckTokenQuery,
+  useProviderLoginMutation,
+  useProviderSignupMutation
+} = authApi;

@@ -1,20 +1,24 @@
 "use client";
 import { useState } from "react";
 import { Input, Button, Separator, Anchor } from "../UI";
+import GoogleButton from "../GoogleAuth/GoogleButton";
 import * as constants from "@/constants/common";
 import { FcGoogle } from "react-icons/fc";
-import { useLoginMutation } from "@/lib/store/api/authApi"
+import { useLoginMutation, useProviderLoginMutation } from "@/lib/store/api/authApi";
 import { setUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
+import { TokenResponse } from "@react-oauth/google";
+
 type Prop = {
   setContainer: (container: "login" | "signup") => void | null;
   isModel?: boolean; // Optional prop to indicate if it's a modal
-}
+};
 const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loginUser, loginState] = useLoginMutation();
+  const [googleLogin, googleLoginState] = useProviderLoginMutation();
   const dispatch = useDispatch();
   const handleTogglePassword = () => {
     setShowPassword((prevState) => !prevState);
@@ -25,7 +29,23 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
     const response = await loginUser({ email, password }).unwrap();
     console.log(response.data, loginState);
     dispatch(setUser(response));
-  }
+  };
+
+  const handleGoogleLoginSuccess = async (userInfo: any) => {
+    try {
+      console.log({ userInfo })
+      const response = await googleLogin({
+        email: userInfo.email,
+        name: userInfo.name,
+        picture: userInfo.picture,
+        sub: userInfo.sub,
+        provider_name: "google",
+      }).unwrap();
+      dispatch(setUser(response));
+    } catch (error) {
+      console.error("Google login failed", error);
+    }
+  };
 
   const handleOnEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)
   const handleOnPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)
@@ -68,11 +88,13 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
           <span>or</span>
           <Separator />
         </div>
-        <Button
-          name={"Login with Google"}
-          style="general"
-          className="w-full py-3 border border-white/40 text-smoothWhite hover:bg-white/40"
-          icon={<FcGoogle size={20} />}
+        <GoogleButton
+          name="Login with Google"
+          onSuccess={handleGoogleLoginSuccess}
+          onError={() => {
+            console.log("Login Failed");
+            // Handle login failure, e.g., show a notification
+          }}
         />
         <div className=" ">
           <span className="flex items-center justify-center font-semibold text-xs ">

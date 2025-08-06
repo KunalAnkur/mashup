@@ -9,19 +9,22 @@ import { PersistGate } from "redux-persist/integration/react";
 import AuthGuard from "@/context/AuthGuard";
 import { FileProvider } from "@/context/FileContext";
 import { MediaStreamProvider } from "@/context/MediaStreamContext";
+import GoogleAuthProvider from "@/components/GoogleAuth/GoogleOAuthProvider";
 export default function ClientRoot({ children }: { children: ReactNode }) {
     return (
         <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
-                <AuthGuard>
-                    <FileProvider>
-                        <MediaStreamProvider>
-                            {/* <SocketProvider> */}
+                <GoogleAuthProvider>
+                    <AuthGuard>
+                        <FileProvider>
+                            <MediaStreamProvider>
+                                {/* <SocketProvider> */}
                                 {children}
-                            {/* </SocketProvider> */}
-                        </MediaStreamProvider>
-                    </FileProvider>
-                </AuthGuard>
+                                {/* </SocketProvider> */}
+                            </MediaStreamProvider>
+                        </FileProvider>
+                    </AuthGuard>
+                </GoogleAuthProvider>
             </PersistGate>
         </Provider>
     );
