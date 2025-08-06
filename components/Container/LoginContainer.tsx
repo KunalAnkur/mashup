@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
 import { Input, Button, Separator, Anchor } from "../UI";
-import GoogleLoginButton from "../GoogleAuth/GoogleLoginButton";
+import GoogleButton from "../GoogleAuth/GoogleButton";
 import * as constants from "@/constants/common";
 import { FcGoogle } from "react-icons/fc";
-import { useLoginMutation, useGoogleLoginMutation } from "@/lib/store/api/authApi";
+import { useLoginMutation, useProviderLoginMutation } from "@/lib/store/api/authApi";
 import { setUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { TokenResponse } from "@react-oauth/google";
@@ -18,7 +18,7 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loginUser, loginState] = useLoginMutation();
-  const [googleLogin, googleLoginState] = useGoogleLoginMutation();
+  const [googleLogin, googleLoginState] = useProviderLoginMutation();
   const dispatch = useDispatch();
   const handleTogglePassword = () => {
     setShowPassword((prevState) => !prevState);
@@ -31,24 +31,15 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
     dispatch(setUser(response));
   };
 
-  const handleGoogleLoginSuccess = async (tokenResponse: Omit<TokenResponse, "error" | "error_description" | "error_uri">) => {
+  const handleGoogleLoginSuccess = async (userInfo: any) => {
     try {
-      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: {
-          'Authorization': `Bearer ${tokenResponse.access_token}`
-        }
-      });
-
-      if (!userInfoResponse.ok) {
-        throw new Error('Failed to fetch user info from Google');
-      }
-
-      const userInfo = await userInfoResponse.json();
-
+      console.log({ userInfo })
       const response = await googleLogin({
         email: userInfo.email,
         name: userInfo.name,
         picture: userInfo.picture,
+        sub: userInfo.sub,
+        provider_name: "google",
       }).unwrap();
       dispatch(setUser(response));
     } catch (error) {
@@ -97,7 +88,8 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
           <span>or</span>
           <Separator />
         </div>
-        <GoogleLoginButton
+        <GoogleButton
+          name="Login with Google"
           onSuccess={handleGoogleLoginSuccess}
           onError={() => {
             console.log("Login Failed");
