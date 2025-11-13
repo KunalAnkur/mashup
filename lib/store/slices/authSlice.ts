@@ -18,16 +18,25 @@ const authSlice = createSlice({
         console.log(action.payload)
         const user = action.payload.data.user;
         state.user = {
-            name: user.name,
+            name: user.name || user.username || 'User', // Fallback to username or 'User'
             email: user.email,
-            profile: user.profile,
-            username: user.username ,
+            profile: user.profile || '', // Fallback to empty string
+            username: user.username,
             sessionId: user.session_id,
             id: user.id,
         };
         state.isAuthenticated = true;
         state.loading = false;
         state.token = action.payload.data.token;
+    },
+    
+    // Special action for Google OAuth users to set profile picture
+    setGoogleUser: (state, action: PayloadAction<{ profilePicture: string; name: string; email: string }>) => {
+        if (state.user) {
+            state.user.profile = action.payload.profilePicture;
+            state.user.name = action.payload.name;
+            state.user.email = action.payload.email;
+        }
     },
     logout(state) {
       state.user = null;
@@ -48,5 +57,5 @@ const authSlice = createSlice({
   extraReducers: (builder) => {},
 });
 
-export const { logout, setUser, checkUserToken, setLoading } = authSlice.actions;
+export const { logout, setUser, setGoogleUser, checkUserToken, setLoading } = authSlice.actions;
 export default authSlice;

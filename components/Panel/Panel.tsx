@@ -1,14 +1,17 @@
 "use client"
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { Avatar, Input, Logo } from "../UI";
+import { Input, Logo } from "../UI";
+import AvatarDropdown from "../UI/AvatarDropdown";
 import { MdContentCopy } from "react-icons/md";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
 import SourceTab from "./SourceTab";
 import SettingTab from "./SettingTab";
+import { RootState } from "@/lib/store";
+import { setUser } from "@/lib/store/slices/authSlice";
 
 const TABS = Object.values(Tabs);
 
@@ -16,6 +19,12 @@ const Panel = () => {
     const dispatch = useDispatch();
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
     const roomUrl = "https://movmash.com/room/3wJz21";
+    
+    // Get user data from Redux store (for room URL display)
+    const { user, isAuthenticated, token } = useSelector((state: RootState) => state.auth);
+    
+    // Debug authentication state
+    console.log("Panel - Auth state:", { isAuthenticated, user, token: token ? "Token exists" : "No token" });
     const renderTabContent = (tab: Tabs) => {
         switch (tab) {
             case Tabs.PEOPLE:
@@ -40,8 +49,40 @@ const Panel = () => {
                     <MdContentCopy size={22} className=" text-gray-400 cursor-pointer hover:text-yellow-400" />
                     {/* <BsDot className="text-green-400 text-2xl ml-2" /> */}
                 </div>
-                {/* Avatar */}
-                <Avatar url="https://randomuser.me/api/portraits/women/44.jpg" alt="avatar" size={40} isDefault={true} />
+                {/* Debug info */}
+                <div className="text-xs text-gray-400">
+                  Auth: {isAuthenticated ? 'Yes' : 'No'} | 
+                  User: {user?.name || user?.username || 'None'} |
+                  Token: {token ? 'Yes' : 'No'}
+                </div>
+                {/* Test login button */}
+                {!isAuthenticated && (
+                  <button 
+                    onClick={() => {
+                      console.log("Test login clicked");
+                      dispatch(setUser({
+                        data: {
+                          user: {
+                            id: "test-user",
+                            email: "test@example.com",
+                            name: "Test User",
+                            username: "testuser",
+                            session_id: "test-session"
+                          },
+                          token: "test-token"
+                        },
+                        success: true,
+                        status: "success",
+                        message: "Test login"
+                      }));
+                    }}
+                    className="px-2 py-1 bg-blue-600 text-white text-xs rounded"
+                  >
+                    Test Login
+                  </button>
+                )}
+                {/* Avatar with dropdown */}
+                <AvatarDropdown size={40} />
             </div>
 
             {/* Tabs */}

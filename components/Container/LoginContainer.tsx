@@ -5,7 +5,7 @@ import GoogleButton from "../GoogleAuth/GoogleButton";
 import * as constants from "@/constants/common";
 import { FcGoogle } from "react-icons/fc";
 import { useLoginMutation, useProviderLoginMutation } from "@/lib/store/api/authApi";
-import { setUser } from "@/lib/store/slices/authSlice";
+import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { TokenResponse } from "@react-oauth/google";
 
@@ -41,7 +41,16 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
         sub: userInfo.sub,
         provider_name: "google",
       }).unwrap();
+      
+      // First set the user with backend response
       dispatch(setUser(response));
+      
+      // Then update with Google OAuth specific data (profile picture, name)
+      dispatch(setGoogleUser({
+        profilePicture: userInfo.picture,
+        name: userInfo.name,
+        email: userInfo.email
+      }));
     } catch (error) {
       console.error("Google login failed", error);
     }

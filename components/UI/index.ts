@@ -1,4 +1,5 @@
 import Avatar from "./Avatar";
+import AvatarDropdown from "./AvatarDropdown";
 import Button from "./Button";
 import Anchor from "./Anchor";
 import Separator from "./Separator";
@@ -8,6 +9,7 @@ import Notification from "./Notification";
 import AuthHeader from "./AuthHeader";
 export {
   Avatar,
+  AvatarDropdown,
   Button,
   Anchor,
   Separator,

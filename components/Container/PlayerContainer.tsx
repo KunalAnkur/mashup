@@ -24,7 +24,7 @@ const PlayerContainer = () => {
     };
 
     const handleJoinRoom = () => {
-        joinRoom("my-room", isHost); // Room ID can be dynamic
+        // joinRoom("my-room", isHost); // Room ID can be dynamic
     };
     return (
         <Player

@@ -82,6 +82,7 @@ export const authApi = createApi({
           name,
           picture,
           provider: {
+            user_id: sub, // This should be the user_id from the provider
             provider_name,
             provider_user_id: sub,
           },
@@ -106,10 +107,18 @@ export const authApi = createApi({
           name,
           picture,
           provider: {
+            user_id: sub, // This should be the user_id from the provider
             provider_name,
             provider_user_id: sub,
           },
         },
+      }),
+    }),
+    
+    logout: builder.mutation<any, void>({
+      query: () => ({
+        url: "/logout",
+        method: "POST",
       }),
     }),
   }),
@@ -121,5 +130,6 @@ export const {
   useVerifyTokenMutation,
   useCheckTokenQuery,
   useProviderLoginMutation,
-  useProviderSignupMutation
+  useProviderSignupMutation,
+  useLogoutMutation
 } = authApi;
