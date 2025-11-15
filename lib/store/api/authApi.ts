@@ -79,8 +79,6 @@ export const authApi = createApi({
         method: "POST",
         body: {
           email,
-          name,
-          picture,
           provider: {
             user_id: sub, // This should be the user_id from the provider
             provider_name,
