@@ -4,7 +4,7 @@ import { Input, Button, Separator, Anchor } from "../UI";
 import * as constants from "@/constants/common";
 import { FcGoogle } from "react-icons/fc";
 import { useProviderSignupMutation, useSignupMutation } from "@/lib/store/api/authApi";
-import { setUser } from "@/lib/store/slices/authSlice";
+import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import GoogleButton from "../GoogleAuth/GoogleButton";
 type Prop = {
@@ -47,7 +47,16 @@ const SignupContainer = ({ setContainer }: Prop) => {
         sub: userInfo.sub,
         provider_name: "google",
       }).unwrap();
+      
+      // First set the user with backend response
       dispatch(setUser(response));
+      
+      // Then update with Google OAuth specific data (profile picture, name)
+      dispatch(setGoogleUser({
+        profilePicture: userInfo.picture,
+        name: userInfo.name,
+        email: userInfo.email
+      }));
     } catch (error) {
       console.error("Google login failed", error);
     }

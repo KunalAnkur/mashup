@@ -1,7 +1,5 @@
 "use client";
-import Image from "next/image";
 import { useState } from "react";
-import * as constants from "../../constants";
 
 type Props = {
   url?: string;
@@ -13,10 +11,11 @@ type Props = {
 };
 
 const Avatar = ({ url, alt, size, className, onClick, isDefault }: Props) => {
-  const [source, setSource] = useState(url || constants.assets.defaultAvatar);
+  const defaultAvatar = "https://png.pngtree.com/png-vector/20231019/ourmid/pngtree-user-profile-avatar-png-image_10211471.png";
+  const [source, setSource] = useState(url || defaultAvatar);
 
   const handleOnError = () => {
-    setSource(constants.assets.defaultAvatar);
+    setSource(defaultAvatar);
   };
 
   return (
@@ -28,25 +27,14 @@ const Avatar = ({ url, alt, size, className, onClick, isDefault }: Props) => {
         height: size,
       }}
     >
-      {!isDefault ? (
-        // Next.js <Image /> does NOT support onError
-        <Image
-          src={source}
-          alt={alt}
-          width={size}
-          height={size}
-          className="object-cover rounded-full"
-        />
-      ) : (
-        <img
-          src={source}
-          alt={alt}
-          width={size}
-          height={size}
-          onError={handleOnError}
-          className="object-cover rounded-full"
-        />
-      )}
+      <img
+        src={source}
+        alt={alt}
+        width={size}
+        height={size}
+        onError={handleOnError}
+        className="object-cover rounded-full"
+      />
     </div>
   );
 };

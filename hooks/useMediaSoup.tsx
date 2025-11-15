@@ -240,7 +240,6 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
             console.log('Socket not connected');
             return;
         }
-
         try {
             const response = await socket.emitWithAck(SocketEvent.JOIN_ROOM, {
                 roomId: room,
@@ -261,56 +260,57 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
                 }
                 console.log({ videoTrack: stream.getVideoTracks(), audioTrack:stream.getAudioTracks() })
                 const [videoTrack, audioTrack] = [stream.getVideoTracks()[0], stream.getAudioTracks()[0]];
-                const [videoProducer, audioProducer] = await Promise.all([
-                    transport.produce({
-                        track: videoTrack, 
-                        // encodings: [
-                        //     { maxBitrate: 150_000, scaleResolutionDownBy: 4.0 }, // Low (240p)
-                        //     { maxBitrate: 400_000, scaleResolutionDownBy: 2.0 }, // Medium (480p)
-                        //     { maxBitrate: 1_000_000 } // High (720p)
-                        //   ],
-                        // codecOptions: {
-                        //     videoGoogleStartBitrate: 1000
-                        // }
-                        encodings: [
-                            // {
-                            //     scaleResolutionDownBy: 4.0, // 240p
-                            //     maxBitrate: 150_000,
-                            // },
-                            // {
-                            //     scaleResolutionDownBy: 2.0, // 360p
-                            //     maxBitrate: 300_000,
-                            // },
-                            // {
-                            //     scaleResolutionDownBy: 1.0, // 480p
-                            //     maxBitrate: 600_000,
-                            // },
+                // const [videoProducer, audioProducer] = await Promise.all([
+                //     transport.produce({
+                //         track: videoTrack, 
+                //         // encodings: [
+                //         //     { maxBitrate: 150_000, scaleResolutionDownBy: 4.0 }, // Low (240p)
+                //         //     { maxBitrate: 400_000, scaleResolutionDownBy: 2.0 }, // Medium (480p)
+                //         //     { maxBitrate: 1_000_000 } // High (720p)
+                //         //   ],
+                //         // codecOptions: {
+                //         //     videoGoogleStartBitrate: 1000
+                //         // }
+                //         encodings: [
+                //             // {
+                //             //     scaleResolutionDownBy: 4.0, // 240p
+                //             //     maxBitrate: 150_000,
+                //             // },
+                //             // {
+                //             //     scaleResolutionDownBy: 2.0, // 360p
+                //             //     maxBitrate: 300_000,
+                //             // },
+                //             // {
+                //             //     scaleResolutionDownBy: 1.0, // 480p
+                //             //     maxBitrate: 600_000,
+                //             // },
 
-                            // {
-                            //     scaleResolutionDownBy: 4.0, // ~180p
-                            //     maxBitrate: 150_000,
-                            // },
-                            // {
-                            //     scaleResolutionDownBy: 2.0, // ~360p
-                            //     maxBitrate: 300_000,
-                            // },
-                            // {
-                            //     scaleResolutionDownBy: 1.5, // ~480p
-                            //     maxBitrate: 600_000,
-                            // },
-                            // {
-                            //     scaleResolutionDownBy: 1.0, // 720p (original)
-                            //     maxBitrate: 1_000_000, // 1 Mbps for HD
-                            //   }
-                        ],
-                        codecOptions: {
-                            videoGoogleStartBitrate: 300,
-                        },
-                        codec: device.rtpCapabilities.codecs?.find(c => c.mimeType === "video/VP8" )
-                    }),
-                    transport.produce({ track: audioTrack }),
-                ]);
-                
+                //             // {
+                //             //     scaleResolutionDownBy: 4.0, // ~180p
+                //             //     maxBitrate: 150_000,
+                //             // },
+                //             // {
+                //             //     scaleResolutionDownBy: 2.0, // ~360p
+                //             //     maxBitrate: 300_000,
+                //             // },
+                //             // {
+                //             //     scaleResolutionDownBy: 1.5, // ~480p
+                //             //     maxBitrate: 600_000,
+                //             // },
+                //             // {
+                //             //     scaleResolutionDownBy: 1.0, // 720p (original)
+                //             //     maxBitrate: 1_000_000, // 1 Mbps for HD
+                //             //   }
+                //         ],
+                //         codecOptions: {
+                //             videoGoogleStartBitrate: 300,
+                //         },
+                //         codec: device.rtpCapabilities.codecs?.find(c => c.mimeType === "video/VP8" )
+                //     }),
+                //     transport.produce({ track: audioTrack }),
+                // ]);
+                const audioProducer = await transport.produce({ track: audioTrack })
+                const videoProducer = await transport.produce({ track: videoTrack })
 
                 // TODO: NEED TO HANDLE THESE ALL EVENTS
                 videoProducer.on('trackended', () => console.log('Video track ended'));
