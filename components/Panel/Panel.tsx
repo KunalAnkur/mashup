@@ -1,112 +1,174 @@
-"use client"
+"use client";
 
-import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { Input, Logo } from "../UI";
-import AvatarDropdown from "../UI/AvatarDropdown";
 import { MdContentCopy } from "react-icons/md";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
 import SourceTab from "./SourceTab";
 import SettingTab from "./SettingTab";
+import { useDispatch, useSelector } from "react-redux";
+import { useInactiveMyRoomMutation } from "@/lib/store/api/roomApi";
+import { exitRoom } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
-import { setUser } from "@/lib/store/slices/authSlice";
+import { useRouter } from "next/navigation";
 
 const TABS = Object.values(Tabs);
 
 const Panel = () => {
-    const dispatch = useDispatch();
-    const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
-    const roomUrl = "https://movmash.com/room/3wJz21";
-    
-    // Get user data from Redux store (for room URL display)
-    const { user, isAuthenticated, token } = useSelector((state: RootState) => state.auth);
-    
-    // Debug authentication state
-    console.log("Panel - Auth state:", { isAuthenticated, user, token: token ? "Token exists" : "No token" });
-    const renderTabContent = (tab: Tabs) => {
-        switch (tab) {
-            case Tabs.PEOPLE:
-                return <PeopleTab />
-            case Tabs.SOURCE:
-                return <SourceTab />
-            case Tabs.SETTINGS:
-                return <SettingTab />
-            default:
-                return <ChatTab />
-        }
+  const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const roomUrl = "https://movmash.com/room/3wJz21";
+  const router = useRouter();
+  const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
+  const host = useSelector((state: RootState) => state.room.host);
+  const dispatch = useDispatch();
+
+  const renderTabContent = (tab: Tabs) => {
+    switch (tab) {
+      case Tabs.PEOPLE:
+        return <PeopleTab />;
+      case Tabs.SOURCE:
+        return <SourceTab />;
+      case Tabs.SETTINGS:
+        return <SettingTab />;
+      default:
+        return <ChatTab />;
     }
-    return (
-        <div className="flex flex-col h-full w-full p-4 gap-3 bg-[#191919]">
-            {/* Header */}
-            <div className="flex items-center gap-3">
-                {/* Logo */}
-                <Logo showText={false} />
-                {/* Room Link */}
-                <div className="flex-1 flex items-center bg-zinc-900 justify-between gap-3 rounded-lg px-3 py-2">
-                    <Input className="text-gray-100 w-full text-sm font-semibold" defaultValue={roomUrl} />
-                    <MdContentCopy size={22} className=" text-gray-400 cursor-pointer hover:text-yellow-400" />
-                    {/* <BsDot className="text-green-400 text-2xl ml-2" /> */}
-                </div>
-                {/* Debug info */}
-                <div className="text-xs text-gray-400">
-                  Auth: {isAuthenticated ? 'Yes' : 'No'} | 
-                  User: {user?.name || user?.username || 'None'} |
-                  Token: {token ? 'Yes' : 'No'}
-                </div>
-                {/* Test login button */}
-                {!isAuthenticated && (
-                  <button 
-                    onClick={() => {
-                      console.log("Test login clicked");
-                      dispatch(setUser({
-                        data: {
-                          user: {
-                            id: "test-user",
-                            email: "test@example.com",
-                            name: "Test User",
-                            username: "testuser",
-                            session_id: "test-session"
-                          },
-                          token: "test-token"
-                        },
-                        success: true,
-                        status: "success",
-                        message: "Test login"
-                      }));
-                    }}
-                    className="px-2 py-1 bg-blue-600 text-white text-xs rounded"
-                  >
-                    Test Login
-                  </button>
-                )}
-                {/* Avatar with dropdown */}
-                <AvatarDropdown size={40} />
-            </div>
+  };
 
-            {/* Tabs */}
-            <div className="flex bg-[#000000] p-2 rounded-lg justify-between items-center gap-2 overflow-x-auto hide-scrollbar">
-                {TABS.map(tab => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 rounded-lg font-semibold text-sm transition
-                            ${activeTab === tab
-                                ? "bg-zinc-800 text-white shadow"
-                                : " text-gray-400 hover:bg-zinc-800"}`}
-                    >
-                        {tab}
-                    </button>
-                ))}
-            </div>
+  const handleLeaveParty = async () => {
+    const response = await inactiveMyRoomApi();
+    if (host) {
+      console.log(response);
+    } else {
+    }
+    dispatch(exitRoom());
+    router.push("/");
+    setShowLeaveConfirm(false);
+  };
 
-            {/* Tab Content */}
-            <div className="overflow-y-auto bg-[#191919] flex-1">
-                {renderTabContent(activeTab)}
+  const handleLeaveClick = () => {
+    setShowLeaveConfirm(true);
+  };
+
+  const handleStay = () => {
+    setShowLeaveConfirm(false);
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(roomUrl);
+    // TODO: Show toast notification
+    console.log("Link copied!");
+  };
+
+  // Mock data - replace with real data
+  const peopleCount = 6;
+
+  return (
+    <div className="flex flex-col h-full w-full bg-[#18181b]">
+      {/* Leave Confirmation Modal */}
+      {showLeaveConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-zinc-800 rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-white text-lg font-bold mb-2">Leave Party?</h3>
+            <p className="text-gray-400 text-sm mb-6">
+              Are you sure you want to leave this party?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleStay}
+                className="flex-1 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                No, Stay
+              </button>
+              <button
+                onClick={handleLeaveParty}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Yes, Leave
+              </button>
             </div>
+          </div>
         </div>
-    );
+      )}
+
+      {/* Header */}
+      <div className="p-4 border-b border-zinc-800">
+        {/* Top Row - People Count & Leave Button */}
+        <div className="flex items-center justify-between mb-4">
+          {/* People Avatars */}
+          <div className="flex items-center gap-2">
+            <div className="flex -space-x-2">
+              {[1, 2, 3].map((_, i) => (
+                <div
+                  key={i}
+                  className="w-8 h-8 rounded-full bg-gradient-to-r from-rose-600 to-fuchsia-600 border-2 border-[#18181b] flex items-center justify-center text-white text-xs font-bold"
+                >
+                  {String.fromCharCode(65 + i)}
+                </div>
+              ))}
+              {peopleCount > 3 && (
+                <div className="w-8 h-8 rounded-full bg-zinc-700 border-2 border-[#18181b] flex items-center justify-center text-white text-xs font-bold">
+                  +{peopleCount - 3}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Leave Party Button */}
+          <button
+            onClick={handleLeaveClick}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            Leave Party
+          </button>
+        </div>
+
+        {/* Room Link */}
+        <div className="flex items-center bg-zinc-800 rounded-lg px-3 py-2 gap-2">
+          <input
+            type="text"
+            value={roomUrl}
+            readOnly
+            className="flex-1 bg-transparent text-gray-400 text-sm outline-none"
+          />
+          <button onClick={handleCopyLink}>
+            <MdContentCopy
+              size={18}
+              className="text-gray-400 hover:text-pink-500 transition-colors cursor-pointer"
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs - Simple underline style */}
+      <div className="flex border-b border-zinc-800 px-4">
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-3 font-medium text-sm transition relative
+                            ${
+                              activeTab === tab
+                                ? "text-white"
+                                : "text-gray-500 hover:text-gray-300"
+                            }`}
+          >
+            {tab}
+            {activeTab === tab && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div className="flex-1 overflow-hidden p-4">
+        {renderTabContent(activeTab)}
+      </div>
+    </div>
+  );
 };
 
 export default Panel;
