@@ -14,15 +14,10 @@ import {
   FaCheck,
 } from "react-icons/fa";
 import { Button } from "../UI";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useFileContext } from "@/context/FileContext";
-import {
-  setRefers,
-  setRoom,
-  setSelectedFileIndex,
-} from "@/lib/store/slices/roomSlice";
+import { setRefers, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
-import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
 
 const FileSelection = () => {
   const dispatch = useDispatch();
@@ -30,8 +25,7 @@ const FileSelection = () => {
     (state: RootState) => state.room.selectedFileIndex
   );
   const authState = useSelector((state: RootState) => state.auth);
-  const [roomId, setRoomId] = useState<string>("");
-  const [createRoomApi] = useCreateRoomMutation();
+
   const { files, removeFile } = useFileContext();
   const selectedFile = files[selectedFileIndex] ?? null;
 
@@ -50,9 +44,9 @@ const FileSelection = () => {
 
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith("video/"))
-      return <FaFileVideo className="text-purple-500 text-xl" />;
+      return <FaFileVideo className="text-pink-600 text-xl" />;
     if (fileType.startsWith("audio/"))
-      return <FaFileAudio className="text-blue-500 text-xl" />;
+      return <FaFileAudio className="text-fuchsia-600 text-xl" />;
     if (fileType.startsWith("image/"))
       return <FaFileImage className="text-green-500 text-xl" />;
     return <FaFileAlt className="text-gray-400 text-xl" />;

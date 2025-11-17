@@ -1,18 +1,11 @@
 "use client";
-import { AuthState, OnboardStep, RoomState } from "@/types/storeTypes";
-import { Button, Input } from "../UI";
+import { OnboardStep } from "@/types/storeTypes";
+import { Button } from "../UI";
 import { useDispatch, useSelector } from "react-redux";
 import { changeStep } from "@/lib/store/slices/onboardSlice";
-import { setRefers, setRoom } from "@/lib/store/slices/roomSlice";
+import { setRefers } from "@/lib/store/slices/roomSlice";
 import type { RootState } from "@/lib/store";
-import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
-import {
-  FaYoutube,
-  FaVimeo,
-  FaTwitch,
-  FaFileVideo,
-  FaArrowLeft,
-} from "react-icons/fa";
+import { FaYoutube, FaVimeo, FaTwitch, FaFileVideo } from "react-icons/fa";
 import { MdOndemandVideo } from "react-icons/md";
 import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
@@ -33,7 +26,6 @@ const UrlSelection = () => {
   const [isEnterDisabled, setEnterDisabled] = useState<boolean>(
     !ReactPlayer.canPlay(sourceUrl[selectedFileIndex] || "")
   );
-  const [createRoomApi] = useCreateRoomMutation();
   const dispatch = useDispatch();
 
   const handleOnSourceUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,11 +80,11 @@ const UrlSelection = () => {
             placeholder="Paste your source link here"
             value={sourceUrlInput}
             onChange={handleOnSourceUrlChange}
-            className="flex-1 rounded-lg w-full bg-zinc-800 text-gray-100 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+            className="flex-1 rounded-lg w-full bg-zinc-800 text-gray-100 px-4 py-3 focus:outline-none focus:ring-2   focus:ring-pink-600 "
           />
           <Button
             onClick={handleOnEnterRoom}
-            className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-8 py-3 rounded-lg transition
+            className="bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:bg-gradient-to-r hover:from-rose-900 hover:via-pink-700 hover:to-fuchsia-600 text-white font-bold px-8 py-3 rounded-lg transition
                         disabled:bg-zinc-700 disabled:text-zinc-400 disabled:cursor-not-allowed"
             name="Enter"
             disabled={isEnterDisabled}

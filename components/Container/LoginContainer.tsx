@@ -4,7 +4,10 @@ import { Input, Button, Separator, Anchor } from "../UI";
 import GoogleButton from "../GoogleAuth/GoogleButton";
 import * as constants from "@/constants/common";
 import { FcGoogle } from "react-icons/fc";
-import { useLoginMutation, useProviderLoginMutation } from "@/lib/store/api/authApi";
+import {
+  useLoginMutation,
+  useProviderLoginMutation,
+} from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { TokenResponse } from "@react-oauth/google";
@@ -33,7 +36,7 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
 
   const handleGoogleLoginSuccess = async (userInfo: any) => {
     try {
-      console.log({ userInfo })
+      console.log({ userInfo });
       const response = await googleLogin({
         email: userInfo.email,
         name: userInfo.name,
@@ -41,23 +44,27 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
         sub: userInfo.sub,
         provider_name: "google",
       }).unwrap();
-      
+
       // First set the user with backend response
       dispatch(setUser(response));
-      
+
       // Then update with Google OAuth specific data (profile picture, name)
-      dispatch(setGoogleUser({
-        profilePicture: userInfo.picture,
-        name: userInfo.name,
-        email: userInfo.email
-      }));
+      dispatch(
+        setGoogleUser({
+          profilePicture: userInfo.picture,
+          name: userInfo.name,
+          email: userInfo.email,
+        })
+      );
     } catch (error) {
       console.error("Google login failed", error);
     }
   };
 
-  const handleOnEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)
-  const handleOnPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)
+  const handleOnEmailChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setEmail(e.target.value);
+  const handleOnPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setPassword(e.target.value);
   const handleOnSignupClick = () => {
     if (setContainer) {
       setContainer("signup");
@@ -108,11 +115,20 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
         <div className=" ">
           <span className="flex items-center justify-center font-semibold text-xs ">
             New on movmash?{" "}
-            {!!setContainer ? <span onClick={handleOnSignupClick} className=" m-0 p-0 pl-1 cursor-pointer text-purple-500">SIGNUP NOW</span> : <Anchor
-              name="SIGNUP NOW"
-              url={constants.pageType.signup}
-              className=" m-0 p-0 text-purple-500"
-            /> }
+            {!!setContainer ? (
+              <span
+                onClick={handleOnSignupClick}
+                className=" m-0 p-0 pl-1 cursor-pointer text-pink-500"
+              >
+                SIGNUP NOW
+              </span>
+            ) : (
+              <Anchor
+                name="SIGNUP NOW"
+                url={constants.pageType.signup}
+                className=" m-0 p-0 text-pink-500"
+              />
+            )}
           </span>
         </div>
       </div>

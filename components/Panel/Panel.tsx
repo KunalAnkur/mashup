@@ -12,6 +12,7 @@ import { useInactiveMyRoomMutation } from "@/lib/store/api/roomApi";
 import { exitRoom } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
 import { useRouter } from "next/navigation";
+import { AvatarDropdown } from "../UI";
 
 const TABS = Object.values(Tabs);
 
@@ -95,34 +96,16 @@ const Panel = () => {
 
       {/* Header */}
       <div className="p-4 border-b border-zinc-800">
-        {/* Top Row - People Count & Leave Button */}
-        <div className="flex items-center justify-between mb-4">
-          {/* People Avatars */}
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">
-              {[1, 2, 3].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-8 h-8 rounded-full bg-gradient-to-r from-rose-600 to-fuchsia-600 border-2 border-[#18181b] flex items-center justify-center text-white text-xs font-bold"
-                >
-                  {String.fromCharCode(65 + i)}
-                </div>
-              ))}
-              {peopleCount > 3 && (
-                <div className="w-8 h-8 rounded-full bg-zinc-700 border-2 border-[#18181b] flex items-center justify-center text-white text-xs font-bold">
-                  +{peopleCount - 3}
-                </div>
-              )}
-            </div>
-          </div>
-
+        <div className="flex items-center justify-end gap-2 mb-4 ">
           {/* Leave Party Button */}
           <button
             onClick={handleLeaveClick}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
           >
             Leave Party
-          </button>
+          </button>{" "}
+          {/* Avatar Dropdown */}
+          <AvatarDropdown size={34} />
         </div>
 
         {/* Room Link */}
