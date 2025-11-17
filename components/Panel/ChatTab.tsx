@@ -105,17 +105,17 @@ const ChatTab = () => {
     },
   ];
 
-  const videoParticipants = [
+  /*  const videoParticipants = [
     { name: "Chloe", avatar: "C", active: true },
     { name: "Alex", avatar: "A", active: true },
     { name: "David", avatar: "D", active: true },
     { name: "Marco", avatar: "M", active: false },
-  ];
+  ]; */
 
   return (
-    <div className="flex flex-col h-full w-full gap-4">
+    <div className="flex flex-col h-full w-full gap-2">
       {/* Video Grid Area */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* <div className="grid grid-cols-2 gap-3">
         {videoParticipants.map((participant, i) => (
           <div
             key={i}
@@ -123,7 +123,6 @@ const ChatTab = () => {
           >
             {participant.active ? (
               <>
-                {/* Placeholder for video - in real app this would be video element */}
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20"></div>
                 <div className="relative z-10 bg-zinc-900/80 px-2 py-1 rounded text-white text-xs font-medium">
                   {participant.name}
@@ -139,28 +138,25 @@ const ChatTab = () => {
             )}
           </div>
         ))}
-      </div>
-
+      </div> */}
       {/* Chat Messages Area */}
-      <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2">
+      <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 ">
         {messages.map((msg, i) => (
           <div key={i} className="flex items-start gap-2">
             {/* Avatar */}
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-rose-600 to-fuchsia-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-rose-600 to-fuchsia-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
               {msg.user.charAt(0).toUpperCase()}
             </div>
 
             {/* Message Content */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 ">
               <div className="flex items-baseline gap-2 mb-1">
                 <span className={`font-bold text-sm ${msg.color}`}>
                   {msg.user}
                 </span>
                 <span className="text-gray-500 text-xs">{msg.time}</span>
               </div>
-              <p className="text-gray-100 text-sm leading-relaxed break-words">
-                {msg.text}
-              </p>
+              <p className="text-white/70 text-sm  break-words">{msg.text}</p>
             </div>
           </div>
         ))}
@@ -208,11 +204,11 @@ const ChatTab = () => {
       )}
 
       {/* Input Area */}
-      <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-4 py-3">
+      <div className="flex items-center gap-2 bg-zinc-700 rounded-xl px-3 py-2.5">
         <input
           type="text"
           placeholder="Send a message..."
-          className="flex-1 bg-transparent outline-none text-gray-100 text-sm placeholder:text-gray-500"
+          className="flex-1 bg-transparent outline-none text-white/70 text-sm placeholder:text-white/50"
         />
         <button
           onClick={() => setShowEmojis(!showEmojis)}

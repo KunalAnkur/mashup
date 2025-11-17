@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { AvatarDropdown } from "../UI";
 import Image from "next/image";
 import * as constants from "../../constants";
+import { CgLogIn } from "react-icons/cg";
 
 const TABS = Object.values(Tabs);
 
@@ -66,7 +67,7 @@ const Panel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#18181b]">
+    <div className="flex flex-col h-full w-full bg-[#18181b] ">
       {/* Leave Confirmation Modal */}
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -94,7 +95,7 @@ const Panel = () => {
       )}
 
       {/* Header */}
-      <div className="p-4 border-b border-zinc-800">
+      <div className="px-4 py-3 ">
         <div className="flex items-center justify-between mb-4">
           {/* Logo */}
           <button
@@ -114,35 +115,37 @@ const Panel = () => {
             {/* Leave Party Button */}
             <button
               onClick={handleLeaveClick}
-              className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white/90 text-sm font-medium rounded-lg transition-colors"
+              className="flex gap-1  items-center justify-center text-sm   text-white hover:text-white/60 rounded-lg transition-colors     px-2 py-1"
             >
-              Leave Party
-            </button>{" "}
+              Leave
+              <CgLogIn />
+            </button>
             {/* Avatar Dropdown */}
             <AvatarDropdown size={34} />
           </div>
         </div>
 
-        {/* Room Link */}
-
-        <div className="flex items-center bg-zinc-800 rounded-lg px-3 py-2 gap-2">
-          <input
-            type="text"
-            value={roomUrl}
-            readOnly
-            className="flex-1 bg-transparent text-gray-400 text-sm outline-none"
-          />
-          <button onClick={handleCopyLink}>
-            <MdContentCopy
-              size={18}
-              className="text-gray-400 hover:text-pink-500 transition-colors cursor-pointer"
+        <div className="flex justify-between gap-2">
+          {/* Room Link */}
+          <div className="flex flex-1 items-center bg-zinc-800 rounded-lg px-3 py-2 gap-2">
+            <input
+              type="text"
+              value={roomUrl}
+              readOnly
+              className="flex-1 bg-transparent text-gray-400 text-sm outline-none"
             />
-          </button>
+            <button onClick={handleCopyLink}>
+              <MdContentCopy
+                size={18}
+                className="text-gray-400 hover:text-pink-500 transition-colors cursor-pointer"
+              />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Tabs - Simple underline style */}
-      <div className="flex border-b border-zinc-800 px-4">
+      <div className="flex border-b border-zinc-800 px-4 justify-between">
         {TABS.map((tab) => (
           <button
             key={tab}
