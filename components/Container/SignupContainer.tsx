@@ -72,7 +72,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-3 sm:gap-4 w-full">
       <Input
         placeholder="Enter your username"
         label="Username"
@@ -102,11 +102,11 @@ const SignupContainer = ({ setContainer }: Prop) => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <Button
           name={"Signup"}
           style="secondary"
-          className="w-full py-3 bg-logoColor "
+          className="w-full py-2.5 sm:py-3 bg-logoColor text-sm sm:text-base"
           onClick={handleOnSignUp}
         />
         <div className="flex gap-1 items-center justify-center opacity-50 text-xs">
@@ -122,13 +122,13 @@ const SignupContainer = ({ setContainer }: Prop) => {
             // Handle login failure, e.g., show a notification
           }}
         />
-        <div className=" ">
-          <span className="flex items-center justify-center font-semibold text-xs ">
+        <div className="">
+          <span className="flex items-center justify-center font-semibold text-xs sm:text-sm">
             Already have an account?
             {!!setContainer ? (
               <span
                 onClick={handleOnLoginClick}
-                className=" m-0 p-0 pl-1 cursor-pointer text-pink-500"
+                className="m-0 p-0 pl-1 cursor-pointer text-pink-500"
               >
                 LOGIN
               </span>
@@ -136,7 +136,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
               <Anchor
                 name="LOGIN"
                 url={constants.pageType.login}
-                className=" m-0 p-0 text-pink-500"
+                className="m-0 p-0 text-pink-500"
               />
             )}
           </span>

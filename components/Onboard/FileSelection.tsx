@@ -44,12 +44,12 @@ const FileSelection = () => {
 
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith("video/"))
-      return <FaFileVideo className="text-pink-600 text-xl" />;
+      return <FaFileVideo className="text-pink-600 text-lg sm:text-xl" />;
     if (fileType.startsWith("audio/"))
-      return <FaFileAudio className="text-fuchsia-600 text-xl" />;
+      return <FaFileAudio className="text-fuchsia-600 text-lg sm:text-xl" />;
     if (fileType.startsWith("image/"))
-      return <FaFileImage className="text-green-500 text-xl" />;
-    return <FaFileAlt className="text-gray-400 text-xl" />;
+      return <FaFileImage className="text-green-500 text-lg sm:text-xl" />;
+    return <FaFileAlt className="text-gray-400 text-lg sm:text-xl" />;
   };
 
   const handleFileSelect = (index: number) => {
@@ -95,13 +95,13 @@ const FileSelection = () => {
     }
   };
   return (
-    <div className="flex items-center justify-center h-full bg-[#18181b] p-6">
-      <div className="w-full max-w-lg space-y-8">
+    <div className="flex items-center justify-center h-full bg-[#18181b] p-4 sm:p-6">
+      <div className="w-full max-w-lg space-y-6 sm:space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-white font-parkinsans">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white font-parkinsans">
             Your Files
           </h2>
-          <p className="text-gray-400 mt-2">
+          <p className="text-gray-400 text-sm sm:text-base mt-2">
             {files.length
               ? "Select a file to start watching"
               : "No files selected yet"}
@@ -109,24 +109,24 @@ const FileSelection = () => {
         </div>
 
         {files.length ? (
-          <div className="overflow-y-auto max-h-96 space-y-3 p-1 pr-4">
+          <div className="overflow-y-auto max-h-72 sm:max-h-96 space-y-2 sm:space-y-3 p-1 pr-2 sm:pr-4">
             {files.map((file, index) => (
               <div
                 key={index}
                 onClick={() => handleFileSelect(index)}
-                className={`flex justify-between items-center p-4 rounded-xl bg-zinc-800 cursor-pointer hover:bg-zinc-700 transition
+                className={`flex justify-between items-center p-3 sm:p-4 rounded-xl bg-zinc-800 cursor-pointer hover:bg-zinc-700 transition
                                     ${
                                       selectedFileIndex === index
-                                        ? "ring-2 ring-rose-500  to-fuchsia-600"
+                                        ? "ring-2 ring-rose-500 to-fuchsia-600"
                                         : ""
                                     }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-full bg-zinc-700">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div className="p-2 sm:p-3 rounded-full bg-zinc-700 flex-shrink-0">
                     {getFileIcon(file.type)}
                   </div>
-                  <div>
-                    <h4 className="text-white text-sm font-semibold truncate w-44">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-white text-xs sm:text-sm font-semibold truncate">
                       {file.name}
                     </h4>
                     <p className="text-gray-400 text-xs">
@@ -134,16 +134,16 @@ const FileSelection = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   {selectedFileIndex === index && (
-                    <FaCheck className="text-pink-600 " />
+                    <FaCheck className="text-pink-600 text-sm sm:text-base" />
                   )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleFileRemove(index);
                     }}
-                    className="text-gray-400 hover:text-red-500 transition"
+                    className="text-gray-400 hover:text-red-500 transition text-sm sm:text-base"
                   >
                     <FaTrash />
                   </button>
@@ -152,36 +152,36 @@ const FileSelection = () => {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center gap-4 p-8 bg-zinc-800 rounded-xl text-center">
-            <div className="p-4 rounded-full bg-zinc-700">
-              <FaUpload className="text-2xl text-gray-400" />
+          <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 p-6 sm:p-8 bg-zinc-800 rounded-xl text-center">
+            <div className="p-3 sm:p-4 rounded-full bg-zinc-700">
+              <FaUpload className="text-xl sm:text-2xl text-gray-400" />
             </div>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-xs sm:text-sm">
               Drag and drop files or browse manually
             </p>
             <Button
               onClick={handleOnUploadSelection}
-              className=" bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:bg-gradient-to-r hover:from-rose-900 hover:via-pink-700 hover:to-fuchsia-600 text-white font-semibold px-6 py-2 rounded-lg"
+              className="bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:bg-gradient-to-r hover:from-rose-900 hover:via-pink-700 hover:to-fuchsia-600 text-white font-semibold text-sm sm:text-base px-5 sm:px-6 py-2 rounded-lg"
               name="Select Files"
             />
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col md:flex-row gap-2 sm:gap-3">
           <Button
             onClick={handleBack}
-            className="flex-1 rounded-lg flex items-center justify-center gap-2 bg-zinc-800 text-white px-4 py-3 hover:bg-zinc-700"
+            className="w-full rounded-lg flex items-center justify-center gap-2 bg-zinc-800 text-white text-sm sm:text-base px-4 py-2.5 sm:py-3 hover:bg-zinc-700"
             name="Back"
           >
-            <FaArrowLeft className="text-sm" />
+            <FaArrowLeft className="text-xs sm:text-sm" />
             Back
           </Button>
           <Button
             onClick={handleOnURLSelection}
-            className="flex-1 rounded-lg flex items-center justify-center gap-2 bg-zinc-800 text-white px-4 py-3 hover:bg-zinc-700"
+            className="w-full  rounded-lg flex items-center justify-center gap-2 bg-zinc-800 text-white text-sm sm:text-base px-4 py-2.5 sm:py-3 hover:bg-zinc-700"
             name="Use URL"
           >
-            <FaLink className="text-sm" />
+            <FaLink className="text-xs sm:text-sm" />
             Use URL
           </Button>
         </div>
@@ -189,7 +189,7 @@ const FileSelection = () => {
         <Button
           disabled={!selectedFile}
           onClick={handleOnStartWatching}
-          className={`w-full rounded-lg font-bold px-4 py-3 transition ${
+          className={`w-full rounded-lg font-bold text-sm sm:text-base px-4 py-2.5 sm:py-3 transition ${
             selectedFile
               ? "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:bg-gradient-to-r hover:from-rose-900 hover:via-pink-700 hover:to-fuchsia-600 text-white"
               : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 text-white opacity-50 cursor-not-allowed"

@@ -62,29 +62,29 @@ const UrlSelection = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full bg-[#18181b]">
-      <div className="w-full max-w-md flex flex-col items-center gap-8 px-4">
+    <div className="flex flex-col items-center justify-center h-full bg-[#18181b] px-4 py-6">
+      <div className="w-full max-w-md flex flex-col items-center gap-6 sm:gap-8">
         {/* Back button */}
 
-        <div className="gap-4 flex flex-col items-center">
-          <h2 className="text-3xl font-extrabold text-gray-100 text-center  font-parkinsans">
+        <div className="gap-3 sm:gap-4 flex flex-col items-center">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-100 text-center font-parkinsans">
             Enter Source URL
           </h2>
-          <p className="text-gray-300 text-center mb-4 text-sm font-medium">
+          <p className="text-gray-300 text-center mb-2 sm:mb-4 text-xs sm:text-sm font-medium px-4">
             Paste a video URL to start your party.
           </p>
         </div>
-        <div className="flex w-full gap-4">
+        <div className="flex flex-col md:flex-row  items-center md:items-start  w-full gap-3 sm:gap-4">
           <input
             type="text"
             placeholder="Paste your source link here"
             value={sourceUrlInput}
             onChange={handleOnSourceUrlChange}
-            className="flex-1 rounded-lg w-full bg-zinc-800 text-gray-100 px-4 py-3 focus:outline-none focus:ring-2   focus:ring-pink-600 "
+            className="flex-1 rounded-lg w-full bg-zinc-800 text-gray-100 text-sm sm:text-base px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
           />
           <Button
             onClick={handleOnEnterRoom}
-            className="bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:bg-gradient-to-r hover:from-rose-900 hover:via-pink-700 hover:to-fuchsia-600 text-white font-bold px-8 py-3 rounded-lg transition
+            className="bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:bg-gradient-to-r hover:from-rose-900 hover:via-pink-700 hover:to-fuchsia-600 text-white font-bold text-sm sm:text-base px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg transition
                         disabled:bg-zinc-700 disabled:text-zinc-400 disabled:cursor-not-allowed"
             name="Enter"
             disabled={isEnterDisabled}
@@ -94,33 +94,41 @@ const UrlSelection = () => {
         </div>
 
         {/* Supported sources */}
-        <div className="flex flex-col items-center gap-2 mt-4">
+        <div className="flex flex-col items-center gap-2 mt-2 sm:mt-4">
           <span className="text-xs text-gray-400 mb-1">Supported sources:</span>
-          <div className="flex gap-6 justify-center">
+          <div className="flex gap-4 sm:gap-6 justify-center flex-wrap">
             {[
               {
-                icon: <FaYoutube className="text-2xl text-red-500" />,
+                icon: (
+                  <FaYoutube className="text-xl sm:text-2xl text-red-500" />
+                ),
                 name: "YouTube",
               },
               {
-                icon: <MdOndemandVideo className="text-2xl text-green-400" />,
+                icon: (
+                  <MdOndemandVideo className="text-xl sm:text-2xl text-green-400" />
+                ),
                 name: "HLS",
               },
               {
-                icon: <FaFileVideo className="text-2xl text-blue-400" />,
+                icon: (
+                  <FaFileVideo className="text-xl sm:text-2xl text-blue-400" />
+                ),
                 name: "FLV",
               },
               {
-                icon: <FaVimeo className="text-2xl text-blue-500" />,
+                icon: <FaVimeo className="text-xl sm:text-2xl text-blue-500" />,
                 name: "Vimeo",
               },
               {
-                icon: <FaTwitch className="text-2xl text-purple-500" />,
+                icon: (
+                  <FaTwitch className="text-xl sm:text-2xl text-purple-500" />
+                ),
                 name: "Twitch",
               },
             ].map((source, index) => (
               <div key={index} className="flex flex-col items-center">
-                <div className="p-2 rounded-full bg-zinc-800">
+                <div className="p-1.5 sm:p-2 rounded-full bg-zinc-800">
                   {source.icon}
                 </div>
                 <span className="text-xs text-gray-400 mt-1">
@@ -133,7 +141,7 @@ const UrlSelection = () => {
 
         <Button
           onClick={handleBack}
-          className="self-start w-full rounded-lg flex items-center justify-center gap-2 bg-zinc-800 text-gray-100 px-4 py-3 hover:bg-red-800 transition-colors"
+          className="self-stretch w-full rounded-lg flex items-center justify-center gap-2 bg-zinc-800 text-gray-100 text-sm sm:text-base px-4 py-2.5 sm:py-3 hover:bg-red-800 transition-colors"
           name="Cancel"
         >
           {/* <FaArrowLeft className="text-sm" /> */}
