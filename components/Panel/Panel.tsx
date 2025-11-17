@@ -13,6 +13,8 @@ import { exitRoom } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { AvatarDropdown } from "../UI";
+import Image from "next/image";
+import * as constants from "../../constants";
 
 const TABS = Object.values(Tabs);
 
@@ -63,9 +65,6 @@ const Panel = () => {
     console.log("Link copied!");
   };
 
-  // Mock data - replace with real data
-  const peopleCount = 6;
-
   return (
     <div className="flex flex-col h-full w-full bg-[#18181b]">
       {/* Leave Confirmation Modal */}
@@ -96,19 +95,36 @@ const Panel = () => {
 
       {/* Header */}
       <div className="p-4 border-b border-zinc-800">
-        <div className="flex items-center justify-end gap-2 mb-4 ">
-          {/* Leave Party Button */}
+        <div className="flex items-center justify-between mb-4">
+          {/* Logo */}
           <button
-            onClick={handleLeaveClick}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+            className="flex items-center justify-center gap-2 "
+            /* onClick={() => router.push("/")} landing page direciton*/
           >
-            Leave Party
-          </button>{" "}
-          {/* Avatar Dropdown */}
-          <AvatarDropdown size={34} />
+            <Image
+              src={constants.assets.logo}
+              alt="Logo"
+              width={30}
+              height={30}
+            />
+            <h2 className="text-lg font-semibold text-white/90">Movmash</h2>
+          </button>
+
+          <div className="flex items-center justify-end gap-2  ">
+            {/* Leave Party Button */}
+            <button
+              onClick={handleLeaveClick}
+              className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white/90 text-sm font-medium rounded-lg transition-colors"
+            >
+              Leave Party
+            </button>{" "}
+            {/* Avatar Dropdown */}
+            <AvatarDropdown size={34} />
+          </div>
         </div>
 
         {/* Room Link */}
+
         <div className="flex items-center bg-zinc-800 rounded-lg px-3 py-2 gap-2">
           <input
             type="text"
