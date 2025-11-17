@@ -151,7 +151,7 @@ const ChatTab = () => {
             {/* Message Content */}
             <div className="flex-1 min-w-0 ">
               <div className="flex items-baseline gap-2 mb-1">
-                <span className={`font-bold text-sm ${msg.color}`}>
+                <span className={`font-semibold text-sm ${msg.color}`}>
                   {msg.user}
                 </span>
                 <span className="text-gray-500 text-xs">{msg.time}</span>
