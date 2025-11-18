@@ -8,6 +8,7 @@ import {
   FaSurprise,
   FaHeart,
   FaGrinHearts,
+  FaArrowCircleUp,
 } from "react-icons/fa";
 
 const ChatTab = () => {
@@ -16,91 +17,91 @@ const ChatTab = () => {
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-sky-400",
+
       time: "10:22 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-red-400",
+
       time: "10:33 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-sky-400",
+
       time: "10:35 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-red-400",
+
       time: "10:38 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-sky-400",
+
       time: "10:40 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-red-400",
+
       time: "10:42 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-sky-400",
+
       time: "10:45 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-red-400",
+
       time: "10:47 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-sky-400",
+
       time: "10:50 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-red-400",
+
       time: "10:52 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-sky-400",
+
       time: "10:55 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-red-400",
+
       time: "10:57 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-sky-400",
+
       time: "11:00 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-red-400",
+
       time: "11:02 PM",
     },
     {
       user: "ankurkunal",
       text: "when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries,",
-      color: "text-red-400",
+
       time: "11:05 PM",
     },
   ];
@@ -113,7 +114,7 @@ const ChatTab = () => {
   ]; */
 
   return (
-    <div className="flex flex-col h-full w-full gap-2">
+    <div className="flex flex-col h-full w-full gap-4">
       {/* Video Grid Area */}
       {/* <div className="grid grid-cols-2 gap-3">
         {videoParticipants.map((participant, i) => (
@@ -140,18 +141,21 @@ const ChatTab = () => {
         ))}
       </div> */}
       {/* Chat Messages Area */}
-      <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 ">
+      <div className="flex-1 flex flex-col gap-3 overflow-y-auto hide-scrollbar ">
         {messages.map((msg, i) => (
           <div key={i} className="flex items-start gap-2">
             {/* Avatar */}
-            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-rose-600 to-fuchsia-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            <div
+              className="w-6 h-6 rounded-full bg-fuchsia-800
+              flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+            >
               {msg.user.charAt(0).toUpperCase()}
             </div>
 
             {/* Message Content */}
-            <div className="flex-1 min-w-0 ">
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className={`font-semibold text-sm ${msg.color}`}>
+            <div className="flex-1 min-w-0 flex flex-col gap-1  ">
+              <div className="flex items-baseline gap-2 ">
+                <span className={`font-semibold text-sm text-fuchsia-800`}>
                   {msg.user}
                 </span>
                 <span className="text-gray-500 text-xs">{msg.time}</span>
@@ -161,55 +165,62 @@ const ChatTab = () => {
           </div>
         ))}
 
-        {/* System Message Example */}
-        <div className="flex justify-center my-2">
+        {/* If somebody joins message Example */}
+        <div className="flex justify-center ">
           <span className="text-gray-500 text-xs">
-            Marco has joined the party.
+            <span className="font-semibold text-fuchsia-800">Marco</span> has
+            joined the party.
           </span>
         </div>
       </div>
 
       {/* Emoji Bar (shown when emoji button clicked) */}
       {showEmojis && (
-        <div className="flex gap-2 bg-zinc-800 p-3 w-full rounded-lg overflow-x-auto">
+        <div className="flex gap-2 bg-zinc-800/70 p-2 w-full rounded-xl overflow-x-auto">
           <FaSmile
-            size={30}
+            size={22}
             className="text-2xl text-yellow-400 cursor-pointer"
           />
           <FaSadTear
-            size={30}
+            size={22}
             className="text-2xl text-blue-400 cursor-pointer"
           />
           <FaLaughSquint
-            size={30}
+            size={22}
             className="text-2xl text-yellow-300 cursor-pointer"
           />
           <FaSurprise
-            size={30}
+            size={22}
             className="text-2xl text-pink-400 cursor-pointer"
           />
-          <FaHeart size={30} className="text-2xl text-red-500 cursor-pointer" />
+          <FaHeart size={22} className="text-2xl text-red-500 cursor-pointer" />
           <FaGrinHearts
-            size={30}
+            size={22}
             className="text-2xl text-pink-500 cursor-pointer"
           />
           <FaSurprise
-            size={30}
+            size={22}
             className="text-2xl text-pink-400 cursor-pointer"
           />
-          <FaHeart size={30} className="text-2xl text-red-500 cursor-pointer" />
-          <FaHeart size={30} className="text-2xl text-red-500 cursor-pointer" />
-          <FaHeart size={30} className="text-2xl text-red-500 cursor-pointer" />
+          <FaHeart size={22} className="text-2xl text-red-500 cursor-pointer" />
+          <FaHeart size={22} className="text-2xl text-red-500 cursor-pointer" />
+          <FaHeart size={22} className="text-2xl text-red-500 cursor-pointer" />
         </div>
       )}
 
       {/* Input Area */}
-      <div className="flex items-center gap-2 bg-zinc-700 rounded-xl px-3 py-2.5">
+      <div className="flex items-center gap-2 bg-zinc-800 rounded-xl px-3 py-2.5">
         <input
           type="text"
           placeholder="Send a message..."
-          className="flex-1 bg-transparent outline-none text-white/70 text-sm placeholder:text-white/50"
+          className="flex-1 bg-transparent outline-none text-white/70 text-sm placeholder:text-zinc-400"
         />
+        <button
+          onClick={() => console.log("send button triggered")}
+          className="text-gray-400 hover:text-gray-300 transition"
+        >
+          <FaArrowCircleUp size={20} />
+        </button>
         <button
           onClick={() => setShowEmojis(!showEmojis)}
           className="text-gray-400 hover:text-gray-300 transition"

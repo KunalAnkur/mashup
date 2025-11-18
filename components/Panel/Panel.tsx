@@ -67,7 +67,7 @@ const Panel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#18181b] ">
+    <div className="flex flex-col h-full w-full bg-[#18181b] px-4 gap-4 py-6">
       {/* Leave Confirmation Modal */}
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -95,8 +95,8 @@ const Panel = () => {
       )}
 
       {/* Header */}
-      <div className="px-4 py-3 ">
-        <div className="flex items-center justify-between mb-4">
+      <div className=" flex flex-col gap-4">
+        <div className="flex items-center justify-between ">
           {/* Logo */}
           <button
             className="flex items-center justify-center gap-2 "
@@ -145,12 +145,12 @@ const Panel = () => {
       </div>
 
       {/* Tabs - Simple underline style */}
-      <div className="flex border-b border-zinc-800 px-4 justify-between">
+      <div className="flex   justify-between ">
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-3 font-medium text-sm transition relative
+            className={`px-4 py-2 font-medium text-sm transition relative
                             ${
                               activeTab === tab
                                 ? "text-white"
@@ -159,14 +159,14 @@ const Panel = () => {
           >
             {tab}
             {activeTab === tab && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600" />
+              <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600" />
             )}
           </button>
         ))}
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-hidden p-4">
+      <div className="flex-1 overflow-hidden ">
         {renderTabContent(activeTab)}
       </div>
     </div>
