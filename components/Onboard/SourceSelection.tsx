@@ -23,7 +23,7 @@ const SourceSelection = () => {
     console.log(files);
     if (files && files.length > 0) {
       setFiles(Array.from(files));
-      setIsDeviceModalOpen(false); // Close modal after file selection
+      // setIsDeviceModalOpen(false); // Close modal after file selection
       dispatch(changeStep(OnboardStep.FILE_SELECTION));
     }
   };

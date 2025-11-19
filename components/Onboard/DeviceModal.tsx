@@ -1,5 +1,8 @@
 import React from "react";
-
+import { useSelector } from 'react-redux';
+import { RootState } from "@/lib/store";
+import { OnboardStep } from "@/types/storeTypes";
+import FileSelection from "./FileSelection";
 interface DeviceModalProps {
   open: boolean;
   onClose: () => void;
@@ -14,7 +17,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
   fileInputRef,
 }) => {
   if (!open) return null;
-
+  const step = useSelector((state: RootState) => state.onboard.step);
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
@@ -209,7 +212,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
             {/* Divider */}
             <div className="my-auto border-r border border-white/50 h-[300px]"></div>
             {/* Right Side - Choose Platform (75%) */}
-            <div className="w-full md:w-3/4 flex flex-col ">
+            {step === OnboardStep.FILE_SELECTION ? <FileSelection />: <div className="w-full md:w-3/4 flex flex-col ">
               <h3 className="text-lg sm:text-xl font-bold text-gray-100 mb-4 sm:mb-6 font-parkinsans text-center">
                 Choose a platform to screenshare
               </h3>
@@ -230,7 +233,8 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
                   </button>
                 ))}
               </div>
-            </div>
+            </div>}
+            
           </div>
         </div>
       </div>
