@@ -1,6 +1,6 @@
 export enum Tabs {
-    CHAT = 'Chat',
-    PEOPLE = 'People',
-    SOURCE = 'Source',
-    SETTINGS = 'Settings'
+  CHAT = "Chat",
+  PEOPLE = "People",
+
+  SETTINGS = "Settings",
 }
