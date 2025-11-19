@@ -30,8 +30,8 @@ const Page = () => {
     switch (state.step) {
       case OnboardStep.URL_SELECTION:
         return <UrlSelection />;
-      case OnboardStep.FILE_SELECTION:
-        return <FileSelection />;
+      /* case OnboardStep.FILE_SELECTION:
+        return <FileSelection />; */
       case OnboardStep.AUTH_STEP:
         return <AuthWrapper />;
       default:

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { MdCheck } from "react-icons/md";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
