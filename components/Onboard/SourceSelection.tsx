@@ -9,11 +9,14 @@ import { useRef, useState } from "react";
 import { useFileContext } from "@/context/FileContext";
 import Image from "next/image";
 import DeviceModal from "../Modals/DeviceModal";
+import UrlModal from "../Modals/UrlModal";
+// import UrlModal from "../Modals/UrlModal"; // Uncomment when UrlModal is created
 
 const SourceSelection = () => {
   const [isJoinDisabled, setIsJoinDisabled] = useState<boolean>(true);
   const [roomId, setRoomId] = useState<string>("");
   const [isDeviceModalOpen, setIsDeviceModalOpen] = useState<boolean>(false);
+  const [isUrlModalOpen, setIsUrlModalOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch();
   const { setFiles } = useFileContext();
@@ -29,20 +32,24 @@ const SourceSelection = () => {
   };
 
   const handleOnUploadSelection = () => {
-    setIsDeviceModalOpen(true); // Open the modal
+    setIsDeviceModalOpen(true); // Open the device modal
   };
 
   const handleCloseDeviceModal = () => {
     setIsDeviceModalOpen(false);
   };
 
+  const handleOnURLSelection = () => {
+    setIsUrlModalOpen(true); // Open the URL modal
+  };
+
+  const handleCloseUrlModal = () => {
+    setIsUrlModalOpen(false);
+  };
+
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRoomId(e.target.value.trim());
     setIsJoinDisabled(e.target.value.trim().length !== 4);
-  };
-
-  const handleOnURLSelection = () => {
-    dispatch(changeStep(OnboardStep.URL_SELECTION));
   };
 
   return (
@@ -144,13 +151,15 @@ const SourceSelection = () => {
         </div>
       </div>
 
-      {/* Upload Modal */}
+      {/* Device Modal */}
       <DeviceModal
         open={isDeviceModalOpen}
         onClose={handleCloseDeviceModal}
         onFileSelect={handleOnVideoChange}
         fileInputRef={fileInputRef}
       />
+
+      <UrlModal open={isUrlModalOpen} onClose={handleCloseUrlModal} />
     </>
   );
 };

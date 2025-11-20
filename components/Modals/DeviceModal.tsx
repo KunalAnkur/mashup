@@ -67,9 +67,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
           {/* Content */}
           <div
             className={`flex gap-12 w-full max-w-7xl ${
-              step === OnboardStep.FILE_SELECTION
-                ? "justify-center"
-                : "items-start"
+              step === OnboardStep.FILE_SELECTION ? "justify-center" : ""
             } `}
           >
             {/* Left Side - Upload from Device */}
