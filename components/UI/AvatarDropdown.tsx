@@ -21,13 +21,18 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const router = useRouter();
-  const { user, isAuthenticated, token } = useSelector((state: RootState) => state.auth);
+  const { user, isAuthenticated, token } = useSelector(
+    (state: RootState) => state.auth
+  );
   const [logoutApi, logoutState] = useLogoutMutation();
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -38,7 +43,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
 
   // Close confirmation dialog when clicking outside or pressing Escape
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = () => {
       if (showLogoutConfirm) {
         setShowLogoutConfirm(false);
       }
@@ -68,7 +73,9 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
     // Fallback to default avatar based on user info
     if (isAuthenticated && user?.name) {
       // Generate initials-based avatar or use a default image
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&color=fff&size=200`;
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        user.name
+      )}&background=random&color=fff&size=200`;
     }
     // Ultimate fallback
     return "https://randomuser.me/api/portraits/women/44.jpg";
@@ -96,7 +103,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
     console.log("Current auth state:", { isAuthenticated, user });
     console.log("Current URL:", window.location.href);
     console.log("Current pathname:", window.location.pathname);
-    
+
     try {
       if (isAuthenticated) {
         console.log("Making logout API call...");
@@ -107,7 +114,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
       } else {
         console.log("User not authenticated, skipping API call");
       }
-      
+
       // Always clear local state
       dispatch(logout());
       setShowLogoutConfirm(false);
@@ -115,7 +122,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
       // Redirect to home page after logout
       router.push("/");
       console.log("Router.push called");
-      
+
       // Fallback redirect using window.location
       setTimeout(() => {
         console.log("Fallback redirect using window.location");
@@ -126,11 +133,13 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
       // Even if API call fails, clear local state
       dispatch(logout());
       setShowLogoutConfirm(false);
-      console.log("Local state cleared after error, redirecting to home page...");
+      console.log(
+        "Local state cleared after error, redirecting to home page..."
+      );
       // Redirect to home page after logout
       router.push("/");
       console.log("Router.push called (error case)");
-      
+
       // Fallback redirect using window.location
       setTimeout(() => {
         console.log("Fallback redirect using window.location (error case)");
@@ -144,21 +153,25 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   };
 
   const toggleDropdown = () => {
-    console.log("Toggle dropdown clicked, auth state:", { isAuthenticated, user, token: token ? "Token exists" : "No token" });
+    console.log("Toggle dropdown clicked, auth state:", {
+      isAuthenticated,
+      user,
+      token: token ? "Token exists" : "No token",
+    });
     console.log("Environment variables:", {
       API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-      NODE_ENV: process.env.NODE_ENV
+      NODE_ENV: process.env.NODE_ENV,
     });
     // Allow dropdown to open even when not authenticated for testing
     setIsOpen(!isOpen);
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative inline-block " ref={dropdownRef}>
       {/* Avatar Button */}
       <button
         onClick={toggleDropdown}
-        className={`cursor-pointer transition-transform hover:scale-105 ${className}`}
+        className={`cursor-pointer transition-transform hover:scale-105 block leading-none ${className}`}
       >
         <Avatar
           url={getAvatarUrl()}
@@ -166,7 +179,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           size={size}
           isDefault={!isAuthenticated || !user?.profile}
         />
-        
+
         {/* Google OAuth indicator */}
         {isAuthenticated && user?.profile && (
           <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-md">
@@ -177,7 +190,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-[#1a1a1a] border border-gray-700 rounded-lg shadow-xl z-50">
+        <div className="absolute right-0 top-full mt-2 w-64 bg-[#1a1a1a] border border-gray-700 rounded-lg shadow-xl z-50">
           {/* User Info Section */}
           <div className="p-4 border-b border-gray-700">
             <div className="flex items-center gap-3">
@@ -188,7 +201,9 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                 isDefault={!user?.profile}
               />
               <div className="flex-1 min-w-0">
-                <h3 className="text-white font-semibold truncate">{getUserDisplayName()}</h3>
+                <h3 className="text-white font-semibold truncate">
+                  {getUserDisplayName()}
+                </h3>
                 {user?.email && (
                   <p className="text-gray-400 text-sm truncate">{user.email}</p>
                 )}
@@ -198,7 +213,9 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                 {user?.profile && (
                   <div className="flex items-center gap-1 mt-1">
                     <FcGoogle size={12} />
-                    <span className="text-green-400 text-xs">Google Account</span>
+                    <span className="text-green-400 text-xs">
+                      Google Account
+                    </span>
                   </div>
                 )}
               </div>
@@ -214,7 +231,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
               <IoLogOutOutline size={18} />
               <span>Logout</span>
             </button>
-            
+
             {/* Test logout button that works without authentication */}
             {!isAuthenticated && (
               <button
@@ -225,10 +242,12 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                   console.log("Redirecting to home page from test logout...");
                   router.push("/");
                   console.log("Router.push called (test logout)");
-                  
+
                   // Fallback redirect using window.location
                   setTimeout(() => {
-                    console.log("Fallback redirect using window.location (test logout)");
+                    console.log(
+                      "Fallback redirect using window.location (test logout)"
+                    );
                     window.location.href = "/";
                   }, 100);
                 }}
@@ -238,21 +257,29 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                 <span>Test Logout (No Auth)</span>
               </button>
             )}
-            
+
             {/* Test API call button */}
             <button
               onClick={async () => {
                 console.log("Test API call clicked");
                 console.log("Current token:", token || "No token");
                 try {
-                  console.log("Testing API call to:", `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/auth/logout`);
-                  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/auth/logout`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': token ? `Bearer ${token}` : 'Bearer test-token'
+                  console.log(
+                    "Testing API call to:",
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/auth/logout`
+                  );
+                  const response = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/auth/logout`,
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: token
+                          ? `Bearer ${token}`
+                          : "Bearer test-token",
+                      },
                     }
-                  });
+                  );
                   const result = await response.json();
                   console.log("API call result:", result);
                 } catch (error) {
@@ -271,9 +298,12 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
       {showLogoutConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-white text-lg font-semibold mb-4">Confirm Logout</h3>
+            <h3 className="text-white text-lg font-semibold mb-4">
+              Confirm Logout
+            </h3>
             <p className="text-gray-300 mb-6">
-              Are you sure you want to logout? You will be redirected to the home page.
+              Are you sure you want to logout? You will be redirected to the
+              home page.
             </p>
             <div className="flex gap-3 justify-end">
               <button

@@ -1,16 +1,14 @@
 "use client";
 import {
   AuthWrapper,
-  Button,
   UrlSelection,
   SourceSelection,
   FileSelection,
 } from "@/components";
-import { Player } from "@/components/VideoPlayer";
 import { useFileContext } from "@/context/FileContext";
 import { RootState } from "@/lib/store";
 import { OnboardState, OnboardStep } from "@/types/storeTypes";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 const Page = () => {
@@ -32,8 +30,8 @@ const Page = () => {
     switch (state.step) {
       case OnboardStep.URL_SELECTION:
         return <UrlSelection />;
-      case OnboardStep.FILE_SELECTION:
-        return <FileSelection />;
+      /* case OnboardStep.FILE_SELECTION:
+        return <FileSelection />; */
       case OnboardStep.AUTH_STEP:
         return <AuthWrapper />;
       default:
@@ -42,7 +40,7 @@ const Page = () => {
   };
   return (
     <div className="flex h-screen bg-[#030712] select-none">
-      <div className="bg-zinc-800 w-[50%]">
+      <div className="hidden lg:block bg-zinc-800 lg:w-[50%]">
         <video
           poster="https://i.ibb.co/PGNvtC0w/Screenshot-2025-05-28-at-13-49-03.png"
           className="object-cover w-full h-full"
