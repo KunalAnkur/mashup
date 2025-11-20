@@ -3,22 +3,23 @@ import { useState } from "react";
 import { Input, Button, Separator, Anchor } from "../UI";
 import GoogleButton from "../GoogleAuth/GoogleButton";
 import * as constants from "@/constants/common";
-import { FcGoogle } from "react-icons/fc";
-import { useLoginMutation, useProviderLoginMutation } from "@/lib/store/api/authApi";
+import {
+  useLoginMutation,
+  useProviderLoginMutation,
+} from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
-import { TokenResponse } from "@react-oauth/google";
 
 type Prop = {
   setContainer: (container: "login" | "signup") => void | null;
   isModel?: boolean; // Optional prop to indicate if it's a modal
 };
-const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
+const LoginContainer = ({ setContainer }: Prop) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loginUser, loginState] = useLoginMutation();
-  const [googleLogin, googleLoginState] = useProviderLoginMutation();
+  const [googleLogin] = useProviderLoginMutation();
   const dispatch = useDispatch();
   const handleTogglePassword = () => {
     setShowPassword((prevState) => !prevState);
@@ -33,7 +34,7 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
 
   const handleGoogleLoginSuccess = async (userInfo: any) => {
     try {
-      console.log({ userInfo })
+      console.log({ userInfo });
       const response = await googleLogin({
         email: userInfo.email,
         name: userInfo.name,
@@ -41,30 +42,34 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
         sub: userInfo.sub,
         provider_name: "google",
       }).unwrap();
-      
+
       // First set the user with backend response
       dispatch(setUser(response));
-      
+
       // Then update with Google OAuth specific data (profile picture, name)
-      dispatch(setGoogleUser({
-        profilePicture: userInfo.picture,
-        name: userInfo.name,
-        email: userInfo.email
-      }));
+      dispatch(
+        setGoogleUser({
+          profilePicture: userInfo.picture,
+          name: userInfo.name,
+          email: userInfo.email,
+        })
+      );
     } catch (error) {
       console.error("Google login failed", error);
     }
   };
 
-  const handleOnEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)
-  const handleOnPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)
+  const handleOnEmailChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setEmail(e.target.value);
+  const handleOnPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setPassword(e.target.value);
   const handleOnSignupClick = () => {
     if (setContainer) {
       setContainer("signup");
     }
   };
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-3 sm:gap-4 w-full ">
       <Input
         placeholder="Enter your email address"
         label="Email"
@@ -85,11 +90,11 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
         value={password}
         onChange={handleOnPasswordChange}
       />
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <Button
           name={"Login"}
           style="secondary"
-          className="w-full py-3 bg-logoColor "
+          className="w-full py-2.5 sm:py-3 bg-logoColor text-sm sm:text-base"
           onClick={handleLogin}
         />
         <div className="flex gap-1 items-center justify-center opacity-50 text-xs">
@@ -105,14 +110,23 @@ const LoginContainer = ({ setContainer, isModel = false }: Prop) => {
             // Handle login failure, e.g., show a notification
           }}
         />
-        <div className=" ">
-          <span className="flex items-center justify-center font-semibold text-xs ">
+        <div className="">
+          <span className="flex items-center justify-center font-semibold text-xs sm:text-sm">
             New on movmash?{" "}
-            {!!setContainer ? <span onClick={handleOnSignupClick} className=" m-0 p-0 pl-1 cursor-pointer text-purple-500">SIGNUP NOW</span> : <Anchor
-              name="SIGNUP NOW"
-              url={constants.pageType.signup}
-              className=" m-0 p-0 text-purple-500"
-            /> }
+            {!!setContainer ? (
+              <span
+                onClick={handleOnSignupClick}
+                className="m-0 p-0 pl-1 cursor-pointer text-pink-500"
+              >
+                SIGNUP NOW
+              </span>
+            ) : (
+              <Anchor
+                name="SIGNUP NOW"
+                url={constants.pageType.signup}
+                className="m-0 p-0 text-pink-500"
+              />
+            )}
           </span>
         </div>
       </div>

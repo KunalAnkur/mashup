@@ -3,13 +3,16 @@ import { useState } from "react";
 import { Input, Button, Separator, Anchor } from "../UI";
 import * as constants from "@/constants/common";
 import { FcGoogle } from "react-icons/fc";
-import { useProviderSignupMutation, useSignupMutation } from "@/lib/store/api/authApi";
+import {
+  useProviderSignupMutation,
+  useSignupMutation,
+} from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import GoogleButton from "../GoogleAuth/GoogleButton";
 type Prop = {
   setContainer: (container: "login" | "signup") => void;
-}
+};
 const SignupContainer = ({ setContainer }: Prop) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -20,11 +23,15 @@ const SignupContainer = ({ setContainer }: Prop) => {
   const [signupUser, signupState] = useSignupMutation();
   const dispatch = useDispatch();
   const handleOnSignUp = async () => {
-    const data = await signupUser({ email, password, confirmPassword: password, username }).unwrap();
+    const data = await signupUser({
+      email,
+      password,
+      confirmPassword: password,
+      username,
+    }).unwrap();
     dispatch(setUser(data));
     console.log(data, signupState);
-
-  }
+  };
 
   const handleTogglePassword = () => {
     setShowPassword((prevState) => !prevState);
@@ -35,11 +42,11 @@ const SignupContainer = ({ setContainer }: Prop) => {
     if (setContainer) {
       setContainer("login");
     }
-  }
+  };
 
   const handleGoogleSignupSuccess = async (userInfo: any) => {
     try {
-      console.log({ userInfo })
+      console.log({ userInfo });
       const response = await googleSignup({
         email: userInfo.email,
         name: userInfo.name,
@@ -47,23 +54,25 @@ const SignupContainer = ({ setContainer }: Prop) => {
         sub: userInfo.sub,
         provider_name: "google",
       }).unwrap();
-      
+
       // First set the user with backend response
       dispatch(setUser(response));
-      
+
       // Then update with Google OAuth specific data (profile picture, name)
-      dispatch(setGoogleUser({
-        profilePicture: userInfo.picture,
-        name: userInfo.name,
-        email: userInfo.email
-      }));
+      dispatch(
+        setGoogleUser({
+          profilePicture: userInfo.picture,
+          name: userInfo.name,
+          email: userInfo.email,
+        })
+      );
     } catch (error) {
       console.error("Google login failed", error);
     }
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-3 sm:gap-4 w-full">
       <Input
         placeholder="Enter your username"
         label="Username"
@@ -93,11 +102,11 @@ const SignupContainer = ({ setContainer }: Prop) => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <Button
           name={"Signup"}
           style="secondary"
-          className="w-full py-3 bg-logoColor "
+          className="w-full py-2.5 sm:py-3 bg-logoColor text-sm sm:text-base"
           onClick={handleOnSignUp}
         />
         <div className="flex gap-1 items-center justify-center opacity-50 text-xs">
@@ -113,15 +122,23 @@ const SignupContainer = ({ setContainer }: Prop) => {
             // Handle login failure, e.g., show a notification
           }}
         />
-        <div className=" ">
-          <span className="flex items-center justify-center font-semibold text-xs ">
+        <div className="">
+          <span className="flex items-center justify-center font-semibold text-xs sm:text-sm">
             Already have an account?
-            {!!setContainer ? <span onClick={handleOnLoginClick} className=" m-0 p-0 pl-1 cursor-pointer text-purple-500">LOGIN</span> :  <Anchor
-              name="LOGIN"
-              url={constants.pageType.login}
-              className=" m-0 p-0 text-purple-500"
-            />
-            }
+            {!!setContainer ? (
+              <span
+                onClick={handleOnLoginClick}
+                className="m-0 p-0 pl-1 cursor-pointer text-pink-500"
+              >
+                LOGIN
+              </span>
+            ) : (
+              <Anchor
+                name="LOGIN"
+                url={constants.pageType.login}
+                className="m-0 p-0 text-pink-500"
+              />
+            )}
           </span>
         </div>
       </div>
