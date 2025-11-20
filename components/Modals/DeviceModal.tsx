@@ -65,7 +65,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
 
         <div className="flex flex-1 justify-center items-center w-full px-8">
           {/* Content */}
-          <div className="flex gap-12 w-full max-w-7xl">
+          <div className={`flex gap-12 max-w-7xl ${step === OnboardStep.FILE_SELECTION ? "w-fit" : "w-full"}`}>
             {/* Left Side - Upload from Device */}
             <div className="w-1/4 min-w-[250px] flex flex-col">
               <h3 className="text-lg sm:text-xl font-bold text-gray-100 mb-4 sm:mb-6 font-parkinsans text-center">
