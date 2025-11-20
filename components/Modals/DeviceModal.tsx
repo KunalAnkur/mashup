@@ -121,7 +121,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
             <div className="border-r border-white/50 h-[300px] self-center"></div>
 
             {/* Right Side - Choose Platform or FileSelection */}
-            <div className={`flex-1 flex flex-col`}>
+            <div className={`flex-1 flex flex-col `}>
               {step === OnboardStep.FILE_SELECTION ? (
                 <div className=" max-w-xl">
                   <FileSelection />
@@ -136,7 +136,8 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
                       <button
                         key={index}
                         onClick={() => handlePlatformClick(platform.url)}
-                        className={`aspect-square flex flex-col items-center justify-center ${platform.bgGradient} hover:scale-105 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer shadow-lg p-4 sm:p-6 group`}
+                        style={platform.bgStyle}
+                        className={`aspect-square flex flex-col items-center justify-center hover:scale-105 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer shadow-lg p-4 sm:p-6 group`}
                       >
                         <div className="text-white group-hover:scale-110 transition-transform duration-300">
                           {platform.logo}
