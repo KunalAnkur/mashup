@@ -8,7 +8,7 @@ import { Button } from "../UI";
 import { useRef, useState } from "react";
 import { useFileContext } from "@/context/FileContext";
 import Image from "next/image";
-import DeviceModal from "./DeviceModal";
+import DeviceModal from "../Modals/DeviceModal";
 
 const SourceSelection = () => {
   const [isJoinDisabled, setIsJoinDisabled] = useState<boolean>(true);

@@ -1,6 +1,10 @@
+import React from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { OnboardStep } from "@/types/storeTypes";
+import { FileSelection } from "../Onboard";
 import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 import { DeviceModalProps } from "@/types/deviceModalTypes";
-import React from "react";
 
 const DeviceModal: React.FC<DeviceModalProps> = ({
   open,
@@ -8,6 +12,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
   onFileSelect,
   fileInputRef,
 }) => {
+  const step = useSelector((state: RootState) => state.onboard.step);
   if (!open) return null;
 
   const handleUploadClick = () => {
@@ -29,16 +34,16 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center  ">
+      <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center">
         {/* Header */}
-        <div className="w-full flex items-center justify-center  py-6">
-          <h2 className="w-[95%] text-xl text-center  sm:text-2xl font-bold text-gray-100 font-parkinsans">
+        <div className="w-full flex items-center justify-center py-6">
+          <h2 className="w-[95%] text-xl text-center sm:text-2xl font-bold text-gray-100 font-parkinsans">
             Choose Your Source
           </h2>
           <div className="flex flex-1 items-end">
             <button
               onClick={onClose}
-              className="  p-2 rounded-lg text-gray-400 hover:text-gray-100 hover:bg-[#27272a] transition-all duration-200"
+              className="p-2 rounded-lg text-gray-400 hover:text-gray-100 hover:bg-[#27272a] transition-all duration-200"
               aria-label="Close"
             >
               <svg
@@ -57,11 +62,12 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
             </button>
           </div>
         </div>
-        <div className="flex  flex-1 justify-center items-center">
+
+        <div className="flex flex-1 justify-center items-center w-full px-8">
           {/* Content */}
-          <div className=" flex  gap-20 w-full justify-between  ">
-            {/* Left Side - Upload from Device (25%) */}
-            <div className="w-full  md:w-1/4 flex flex-col   ">
+          <div className="flex gap-12 w-full max-w-7xl">
+            {/* Left Side - Upload from Device */}
+            <div className="w-1/4 min-w-[250px] flex flex-col">
               <h3 className="text-lg sm:text-xl font-bold text-gray-100 mb-4 sm:mb-6 font-parkinsans text-center">
                 Choose from your files
               </h3>
@@ -74,15 +80,16 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
                 multiple
                 className="hidden"
               />
+
               <div className="flex flex-1 flex-col justify-center">
                 {/* Upload Area */}
                 <button
                   onClick={handleUploadClick}
-                  className=" aspect-square flex flex-col items-center justify-center bg-[#27272a] hover:bg-gradient-to-r hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer group shadow-xl"
+                  className="aspect-square flex flex-col items-center justify-center bg-[#27272a] hover:bg-gradient-to-r hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer group shadow-xl"
                 >
                   <div className="flex items-center justify-center p-6 rounded-full bg-[#18181b] group-hover:bg-transparent transition-all duration-300 mb-2 sm:mb-4">
                     <svg
-                      className=" md:w-12 md:h-12 text-gray-400 group-hover:text-gray-100 transition-all duration-300"
+                      className="w-10 h-10 md:w-12 md:h-12 text-gray-400 group-hover:text-gray-100 transition-all duration-300"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -95,7 +102,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
                       />
                     </svg>
                   </div>
-                  <span className="text-md  md:text-xl font-semibold text-gray-400 group-hover:text-gray-100 transition-all duration-300">
+                  <span className="text-md md:text-xl font-semibold text-gray-400 group-hover:text-gray-100 transition-all duration-300">
                     Click to Upload
                   </span>
                   <span className="text-sm text-gray-500 group-hover:text-gray-200 transition-all duration-300 mt-1">
@@ -104,36 +111,44 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
                 </button>
 
                 {/* Info Text */}
-
                 <p className="text-gray-400 text-xs sm:text-sm font-medium mt-2 text-center">
                   Supported formats: MP4, MP3, MKV, WebM, AVI, and more
                 </p>
               </div>
             </div>
-            {/* Divider */}
-            <div className="my-auto border-r border border-white/50 h-[300px]"></div>
-            {/* Right Side - Choose Platform (75%) */}
-            <div className="w-full md:w-3/4 flex flex-col ">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-100 mb-4 sm:mb-6 font-parkinsans text-center">
-                Choose a platform to screenshare
-              </h3>
 
-              <div className="grid  grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5  ">
-                {STREAMING_PLATFORMS.map((platform, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handlePlatformClick(platform.url)}
-                    className={`aspect-square flex flex-col items-center justify-center ${platform.bgGradient} hover:scale-105 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer shadow-lg p-4 sm:p-6 group`}
-                  >
-                    <div className="text-white group-hover:scale-110 transition-transform duration-300">
-                      {platform.logo}
-                    </div>
-                    <span className="text-xs sm:text-sm md:text-base font-bold text-white mt-2 sm:mt-3 text-center">
-                      {platform.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
+            {/* Divider */}
+            <div className="border-r border-white/50 h-[300px] self-center"></div>
+
+            {/* Right Side - Choose Platform or FileSelection */}
+            <div className={`flex-1 flex flex-col`}>
+              {step === OnboardStep.FILE_SELECTION ? (
+                <div className=" max-w-xl">
+                  <FileSelection />
+                </div>
+              ) : (
+                <>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-100 mb-4 sm:mb-6 font-parkinsans text-center">
+                    Choose a platform to screenshare
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+                    {STREAMING_PLATFORMS.map((platform, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handlePlatformClick(platform.url)}
+                        className={`aspect-square flex flex-col items-center justify-center ${platform.bgGradient} hover:scale-105 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer shadow-lg p-4 sm:p-6 group`}
+                      >
+                        <div className="text-white group-hover:scale-110 transition-transform duration-300">
+                          {platform.logo}
+                        </div>
+                        <span className="text-xs sm:text-sm md:text-base font-bold text-white mt-2 sm:mt-3 text-center">
+                          {platform.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

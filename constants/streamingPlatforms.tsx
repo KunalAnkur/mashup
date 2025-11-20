@@ -1,7 +1,6 @@
 import React from "react";
-import { StreamingPlatform } from "@/types/streamingTypes";
 
-export const STREAMING_PLATFORMS: StreamingPlatform[] = [
+export const STREAMING_PLATFORMS = [
   {
     name: "Netflix",
     url: "https://www.netflix.com",

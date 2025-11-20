@@ -95,8 +95,8 @@ const FileSelection = () => {
     }
   };
   return (
-    <div className="flex items-center justify-center h-full bg-[#18181b] p-4 sm:p-6">
-      <div className="w-full max-w-lg space-y-6 sm:space-y-8">
+    <div className="flex items-center justify-center h-full bg-[#18181b] p-4 sm:p-6 ">
+      <div className="w-full space-y-6 sm:space-y-8">
         <div className="text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-white font-parkinsans">
             Your Files
