@@ -65,7 +65,13 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
 
         <div className="flex flex-1 justify-center items-center w-full px-8">
           {/* Content */}
-          <div className={`flex gap-12 max-w-7xl ${step === OnboardStep.FILE_SELECTION ? "w-fit" : "w-full"}`}>
+          <div
+            className={`flex gap-12 w-full max-w-7xl ${
+              step === OnboardStep.FILE_SELECTION
+                ? "justify-center"
+                : "items-start"
+            } `}
+          >
             {/* Left Side - Upload from Device */}
             <div className="w-1/4 min-w-[250px] flex flex-col">
               <h3 className="text-lg sm:text-xl font-bold text-gray-100 mb-4 sm:mb-6 font-parkinsans text-center">
@@ -121,11 +127,13 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
             <div className="border-r border-white/50 h-[300px] self-center"></div>
 
             {/* Right Side - Choose Platform or FileSelection */}
-            <div className={`flex-1 flex flex-col `}>
+            <div
+              className={`${
+                step === OnboardStep.FILE_SELECTION ? "w-2/4" : "w-3/4"
+              } flex flex-col `}
+            >
               {step === OnboardStep.FILE_SELECTION ? (
-                <div className=" max-w-xl">
-                  <FileSelection />
-                </div>
+                <FileSelection />
               ) : (
                 <>
                   <h3 className="text-lg sm:text-xl font-bold text-gray-100 mb-4 sm:mb-6 font-parkinsans text-center">
