@@ -41,8 +41,6 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
 
   const validateUrl = (url: string): { valid: boolean; tooltip: string } => {
     if (!url.trim()) return { valid: false, tooltip: "Enter a URL" };
-    if (addedUrls.some((item) => item.url === url.trim()))
-      return { valid: false, tooltip: "URL already added" };
     if (!ReactPlayer.canPlay(url))
       return { valid: false, tooltip: "URL is not supported" };
     return { valid: true, tooltip: "" };
@@ -57,7 +55,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
     const { valid, tooltip } = validateUrl(sourceUrlInput);
     setAddDisabled(!valid);
     setTooltipMessage(tooltip);
-  }, [sourceUrlInput, addedUrls]);
+  }, [sourceUrlInput]);
 
   if (!open) return null;
 
@@ -67,6 +65,12 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
 
   const handleOnSourceUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSourceUrlInput(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !isAddDisabled) {
+      handleAddUrl();
+    }
   };
 
   const handleAddUrl = () => {
@@ -80,8 +84,8 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
     setSourceUrlInput("");
   };
 
-  const handleRemoveUrl = (urlToRemove: string) => {
-    setAddedUrls((prev) => prev.filter((item) => item.url !== urlToRemove));
+  const handleRemoveUrl = (indexToRemove: number) => {
+    setAddedUrls((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const handleOnEnterRoom = async () => {
@@ -187,6 +191,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                       placeholder="Paste your video URL here"
                       value={sourceUrlInput}
                       onChange={handleOnSourceUrlChange}
+                      onKeyDown={handleKeyDown}
                       className="flex-1 min-w-0 rounded-xl bg-white/5 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500"
                     />
                     <div className="relative group shrink-0">
@@ -219,7 +224,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                           const platform = getPlatformById(item.platformId);
                           return (
                             <div
-                              key={index}
+                              key={`${item.url}-${index}`}
                               className="flex items-center justify-between bg-white/5 hover:bg-white/10 rounded-xl px-3 py-2 transition-all duration-200"
                             >
                               <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -241,7 +246,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                               </div>
 
                               <button
-                                onClick={() => handleRemoveUrl(item.url)}
+                                onClick={() => handleRemoveUrl(index)}
                                 className="p-2 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 shrink-0 ml-2"
                               >
                                 <FaTimes className="text-sm" />
