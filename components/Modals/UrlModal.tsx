@@ -5,13 +5,7 @@ import { OnboardStep } from "@/types/storeTypes";
 import { changeStep } from "@/lib/store/slices/onboardSlice";
 import { setRefers } from "@/lib/store/slices/roomSlice";
 import { Button } from "../UI";
-import {
-  FaTimes,
-  FaVideo,
-  FaLink,
-  FaPlay,
-  FaCheckCircle,
-} from "react-icons/fa";
+import { FaTimes, FaVideo, FaLink, FaCheckCircle } from "react-icons/fa";
 import ReactPlayer from "react-player";
 import { UrlModalProps } from "@/types/urlModalProps";
 import { Platform } from "@/types/urlPlatformTypes";
