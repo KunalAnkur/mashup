@@ -39,7 +39,7 @@ const Page = () => {
     }
   };
   return (
-    <div className="flex h-screen bg-[#030712] select-none">
+    <div className="flex h-screen bg-[#030712]">
       <div className="hidden lg:block bg-zinc-800 lg:w-[50%]">
         <video
           poster="https://i.ibb.co/PGNvtC0w/Screenshot-2025-05-28-at-13-49-03.png"
