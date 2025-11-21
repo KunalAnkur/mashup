@@ -20,6 +20,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
   const [addedUrls, setAddedUrls] = useState<AddedUrl[]>([]);
   const [isAddDisabled, setAddDisabled] = useState<boolean>(true);
   const [tooltipMessage, setTooltipMessage] = useState<string>("");
+  const [loadingMetadata, setLoadingMetadata] = useState<Set<number>>(new Set());
 
   const detectPlatform = (url: string): string => {
     for (const platform of platforms) {
@@ -67,15 +68,68 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
     }
   };
 
-  const handleAddUrl = () => {
+  const fetchUrlMetadata = async (url: string): Promise<AddedUrl['metadata']> => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const token = authState.token;
+      
+      const response = await fetch(`${baseUrl}/api/v1/url/metadata`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch metadata: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Handle the response structure from the backend
+      return {
+        title: data.data?.title || undefined,
+        description: data.data?.description || undefined,
+        thumbnail: data.data?.thumbnail || undefined,
+        author: data.data?.author || data.data?.siteName || undefined,
+      };
+    } catch (error) {
+      console.error("Error fetching metadata:", error);
+      return {};
+    }
+  };
+
+  const handleAddUrl = async () => {
     const validation = validateUrl(sourceUrlInput);
     if (!validation.valid) return;
     const detectedPlatform = detectPlatform(sourceUrlInput);
+    const url = sourceUrlInput.trim();
+    
+    // Add URL immediately with empty metadata
+    const newIndex = addedUrls.length;
     setAddedUrls((prev) => [
       ...prev,
-      { url: sourceUrlInput.trim(), platformId: detectedPlatform },
+      { url, platformId: detectedPlatform },
     ]);
     setSourceUrlInput("");
+
+    // Fetch metadata asynchronously
+    setLoadingMetadata((prev) => new Set(prev).add(newIndex));
+    const metadata = await fetchUrlMetadata(url);
+    setAddedUrls((prev) => {
+      const updated = [...prev];
+      if (updated[newIndex]) {
+        updated[newIndex] = { ...updated[newIndex], metadata };
+      }
+      return updated;
+    });
+    setLoadingMetadata((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(newIndex);
+      return newSet;
+    });
   };
 
   const handleRemoveUrl = (indexToRemove: number) => {
@@ -221,43 +275,114 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                   </div>
 
                   {/* Added URLs List / Empty State - MIDDLE */}
-                  <div className="flex-1 min-h-0">
+                  <div className="flex-1 min-h-0 max-h-full overflow-hidden">
                     {addedUrls.length > 0 ? (
                       <div
-                        className={`flex flex-col gap-2 pr-1 ${
-                          addedUrls.length > 4
-                            ? "max-h-[220px] overflow-y-auto"
-                            : "max-h-[160px]"
+                        className={`flex flex-col gap-2 pr-1 overflow-y-auto ${
+                          addedUrls.length > 3
+                            ? "max-h-[280px]"
+                            : addedUrls.length > 2
+                            ? "max-h-[240px]"
+                            : "max-h-[200px]"
                         }`}
                       >
                         {addedUrls.map((item, index) => {
                           const platform = getPlatformById(item.platformId);
+                          const isLoading = loadingMetadata.has(index);
+                          const hasMetadata = item.metadata && (item.metadata.title || item.metadata.thumbnail);
+                          
                           return (
                             <div
                               key={`${item.url}-${index}`}
-                              className="flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2 transition-all duration-200"
+                              className="group flex gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-2.5 transition-all duration-200 h-[72px] shrink-0"
                             >
-                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                              {/* Thumbnail */}
+                              <div className="relative w-20 h-14 rounded-lg overflow-hidden shrink-0 bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-white/10">
+                                {isLoading ? (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-white/5 animate-pulse">
+                                    <div className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin"></div>
+                                  </div>
+                                ) : item.metadata?.thumbnail ? (
+                                  <img
+                                    src={item.metadata.thumbnail}
+                                    alt={item.metadata.title || "Video thumbnail"}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.style.display = 'none';
+                                      if (target.nextElementSibling) {
+                                        (target.nextElementSibling as HTMLElement).style.display = 'flex';
+                                      }
+                                    }}
+                                  />
+                                ) : null}
                                 <div
-                                  className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${
+                                  className={`absolute inset-0 flex items-center justify-center ${
+                                    item.metadata?.thumbnail && !isLoading ? 'hidden' : ''
+                                  } ${
                                     platform?.iconBg ||
                                     "bg-gradient-to-br from-pink-500 to-fuchsia-600"
                                   }`}
                                 >
-                                  <span className="text-base text-white">
+                                  <span className="text-white text-lg">
                                     {platform?.smallIcon || (
                                       <FaVideo className="text-white text-sm" />
                                     )}
                                   </span>
                                 </div>
-                                <span className="text-gray-200 text-sm truncate font-medium">
-                                  {getUrlDisplayName(item.url)}
-                                </span>
+                                {/* Play icon overlay */}
+                                {item.metadata?.thumbnail && !isLoading && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    <FaPlay className="text-white text-xs" />
+                                  </div>
+                                )}
                               </div>
 
+                              {/* Metadata Info */}
+                              <div className="flex flex-col gap-0.5 min-w-0 flex-1 justify-center overflow-hidden">
+                                {isLoading ? (
+                                  <div className="space-y-1.5">
+                                    <div className="h-3.5 bg-white/10 rounded animate-pulse"></div>
+                                    <div className="h-2.5 bg-white/5 rounded w-2/3 animate-pulse"></div>
+                                  </div>
+                                ) : hasMetadata && item.metadata ? (
+                                  <>
+                                    <p className="text-gray-200 text-xs font-semibold line-clamp-1 leading-tight">
+                                      {item.metadata.title || getUrlDisplayName(item.url)}
+                                    </p>
+                                    {item.metadata.description && (
+                                      <p className="text-gray-500 text-[10px] line-clamp-1 leading-tight">
+                                        {item.metadata.description}
+                                      </p>
+                                    )}
+                                    <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mt-0.5">
+                                      {item.metadata.author && (
+                                        <span className="truncate max-w-[80px]">{item.metadata.author}</span>
+                                      )}
+                                      {item.metadata.author && platform && <span>•</span>}
+                                      {platform && (
+                                        <span className="truncate">{platform.name}</span>
+                                      )}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className="text-gray-200 text-xs font-medium truncate">
+                                      {getUrlDisplayName(item.url)}
+                                    </p>
+                                    {platform && (
+                                      <p className="text-gray-500 text-[10px] truncate">
+                                        {platform.name}
+                                      </p>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+
+                              {/* Remove Button */}
                               <button
                                 onClick={() => handleRemoveUrl(index)}
-                                className="p-2 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 shrink-0 ml-2"
+                                className="p-2 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 shrink-0 opacity-0 group-hover:opacity-100 self-start mt-1"
                               >
                                 <FaTimes className="text-sm" />
                               </button>
