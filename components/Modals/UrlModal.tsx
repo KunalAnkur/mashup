@@ -172,69 +172,21 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                 Paste Your URLs
               </h3>
 
-              <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a]  rounded-2xl p-6 md:p-8 shadow-xl flex flex-col justify-center flex-1">
-                <div className="flex flex-col gap-3   justify-center">
-                  {/* Added URLs List */}
-                  {addedUrls.length > 0 && (
-                    <div
-                      className={`flex flex-col gap-2 mb-2 pr-1 
-      ${
-        addedUrls.length > 3
-          ? "max-h-[150px]  overflow-y-auto"
-          : "max-h-[150px]"
-      }
-    `}
-                    >
-                      {addedUrls.map((item, index) => {
-                        const platform = getPlatformById(item.platformId);
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between bg-white/5 hover:bg-white/10 rounded-xl  px-3 py-2 transition-all duration-200"
-                          >
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <div
-                                className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${
-                                  platform?.iconBg ||
-                                  "bg-gradient-to-br from-pink-500 to-fuchsia-600"
-                                }`}
-                              >
-                                <span className="text-base text-white">
-                                  {platform?.smallIcon || (
-                                    <FaVideo className="text-white text-sm" />
-                                  )}
-                                </span>
-                              </div>
-                              <span className="text-gray-200 text-sm truncate font-medium">
-                                {getUrlDisplayName(item.url)}
-                              </span>
-                            </div>
-
-                            <button
-                              onClick={() => handleRemoveUrl(item.url)}
-                              className="p-2 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 shrink-0 ml-2"
-                            >
-                              <FaTimes className="text-sm" />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* URL Input Area */}
+              <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-5 shadow-xl flex flex-col flex-1">
+                <div className="flex flex-col h-full gap-3">
+                  {/* URL Input Area - TOP */}
                   <div className="flex gap-3">
                     <input
                       type="text"
                       placeholder="Paste your video URL here"
                       value={sourceUrlInput}
                       onChange={handleOnSourceUrlChange}
-                      className="flex-1 min-w-0 rounded-xl bg-white/5   text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500"
+                      className="flex-1 min-w-0 rounded-xl bg-white/5 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500"
                     />
                     <div className="relative group shrink-0">
                       <Button
                         onClick={handleAddUrl}
-                        className="bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-5 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:bg-none disabled:shadow-none "
+                        className="bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-5 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:bg-none disabled:shadow-none"
                         name="Add"
                         disabled={isAddDisabled}
                       />
@@ -247,8 +199,62 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 ">
+                  {/* Added URLs List - MIDDLE */}
+                  <div className="flex-1 min-h-0">
+                    {addedUrls.length > 0 ? (
+                      <div
+                        className={`flex flex-col gap-2 pr-1 ${
+                          addedUrls.length > 4
+                            ? "max-h-[220px] overflow-y-auto"
+                            : "max-h-[160px]"
+                        }`}
+                      >
+                        {addedUrls.map((item, index) => {
+                          const platform = getPlatformById(item.platformId);
+                          return (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between bg-white/5 hover:bg-white/10 rounded-xl px-3 py-2 transition-all duration-200"
+                            >
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div
+                                  className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${
+                                    platform?.iconBg ||
+                                    "bg-gradient-to-br from-pink-500 to-fuchsia-600"
+                                  }`}
+                                >
+                                  <span className="text-base text-white">
+                                    {platform?.smallIcon || (
+                                      <FaVideo className="text-white text-sm" />
+                                    )}
+                                  </span>
+                                </div>
+                                <span className="text-gray-200 text-sm truncate font-medium">
+                                  {getUrlDisplayName(item.url)}
+                                </span>
+                              </div>
+
+                              <button
+                                onClick={() => handleRemoveUrl(item.url)}
+                                className="p-2 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200 shrink-0 ml-2"
+                              >
+                                <FaTimes className="text-sm" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-gray-500 text-sm">
+                          No URLs added yet
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons - BOTTOM */}
+                  <div className="flex gap-3">
                     <Button
                       onClick={onClose}
                       className="flex-1 rounded-xl flex items-center justify-center bg-white/5 text-gray-300 text-sm px-4 py-3 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium"
@@ -261,15 +267,6 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                       disabled={addedUrls.length === 0}
                     />
                   </div>
-
-                  {/* Helper Text */}
-                  {/* <p className="text-gray-500 text-xs font-medium text-center">
-                    {addedUrls.length === 0
-                      ? "Add URLs to start your party"
-                      : `${addedUrls.length} URL${
-                          addedUrls.length > 1 ? "s" : ""
-                        } added`}
-                  </p> */}
                 </div>
               </div>
             </div>
