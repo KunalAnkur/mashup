@@ -123,12 +123,22 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
       onClick={handleBackdropClick}
     >
       <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden">
-        {/* Header */}
-        <div className="w-full flex items-center justify-between px-6 md:px-10 py-5 md:py-6 shrink-0">
+        {/* Header - Improved */}
+        <div className="w-full flex items-center justify-between px-6 md:px-10 py-5 md:py-6 shrink-0 border-b border-white/5">
           <div className="w-10" />
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white font-parkinsans">
-            Enter Source URL
-          </h2>
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-2 rounded-lg">
+                <FaLink className="text-white text-lg" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white font-parkinsans">
+                Add Video Source
+              </h2>
+            </div>
+            <p className="text-gray-400 text-xs md:text-sm">
+              Import videos from YouTube, Twitch, Vimeo, and more
+            </p>
+          </div>
           <button
             onClick={onClose}
             className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
@@ -150,14 +160,17 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
           </button>
         </div>
 
-        {/* Content */}
+        {/* Content - Left/Right Layout */}
         <div className="flex h-full flex-1 items-center justify-center w-full overflow-y-auto overflow-x-hidden py-6 md:py-10">
-          <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-12 xl:gap-16 w-full max-w-7xl mx-auto px-6 md:px-10 ">
+          <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-12 xl:gap-16 w-full max-w-7xl mx-auto px-6 md:px-10">
             {/* Left Side - Supported Platforms */}
-            <div className="w-full lg:w-1/2 flex flex-col flex-1">
-              <h3 className="text-lg md:text-xl font-bold text-white mb-6 font-parkinsans text-center lg:text-left">
-                Supported Platforms
-              </h3>
+            <div className="w-full lg:w-1/2 flex flex-col">
+              <div className="flex items-center gap-2 mb-6">
+                <span className="w-1 h-6 bg-gradient-to-b from-rose-500 to-pink-500 rounded-full"></span>
+                <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
+                  Supported Platforms
+                </h3>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
                 {platforms.map((platform) => (
                   <div
@@ -177,10 +190,13 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
             </div>
 
             {/* Right Side - URL Input */}
-            <div className="w-full lg:w-1/2 flex flex-col flex-1">
-              <h3 className="text-lg md:text-xl font-bold text-white mb-6 font-parkinsans text-center lg:text-left">
-                Paste Your URLs
-              </h3>
+            <div className="w-full lg:w-1/2 flex flex-col">
+              <div className="flex items-center gap-2 mb-6">
+                <span className="w-1 h-6 bg-gradient-to-b from-fuchsia-500 to-purple-500 rounded-full"></span>
+                <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
+                  Paste Your URLs
+                </h3>
+              </div>
 
               <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-5 shadow-xl flex flex-col flex-1">
                 <div className="flex flex-col h-full gap-3">
@@ -192,7 +208,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                       value={sourceUrlInput}
                       onChange={handleOnSourceUrlChange}
                       onKeyDown={handleKeyDown}
-                      className="flex-1 min-w-0 rounded-xl bg-white/5 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500"
+                      className="flex-1 min-w-0 rounded-xl bg-white/5 border border-white/10 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500"
                     />
                     <div className="relative group shrink-0">
                       <Button
@@ -225,7 +241,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                           return (
                             <div
                               key={`${item.url}-${index}`}
-                              className="flex items-center justify-between bg-white/5 hover:bg-white/10 rounded-xl px-3 py-2 transition-all duration-200"
+                              className="flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2 transition-all duration-200"
                             >
                               <div className="flex items-center gap-3 min-w-0 flex-1">
                                 <div
@@ -256,7 +272,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                         })}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-full gap-4 ">
+                      <div className="flex flex-col items-center justify-center h-full gap-4">
                         {/* Preview Placeholder Cards */}
                         <div className="w-full space-y-2 mb-3">
                           {[1, 2].map((i) => (
@@ -304,7 +320,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                   <div className="flex gap-3">
                     <Button
                       onClick={onClose}
-                      className="flex-1 rounded-xl flex items-center justify-center bg-white/5 text-gray-300 text-sm px-4 py-3 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium"
+                      className="flex-1 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 text-gray-300 text-sm px-4 py-3 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium"
                       name="Cancel"
                     />
                     <Button
