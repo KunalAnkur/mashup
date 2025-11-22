@@ -3,9 +3,15 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { OnboardStep } from "@/types/storeTypes";
 import { FileSelection } from "../Onboard";
-import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 import { DeviceModalProps } from "@/types/deviceModalTypes";
-import { FaUpload, FaCloud } from "react-icons/fa";
+import {
+  DragOverlay,
+  ModalHeader,
+  UploadSection,
+  PlatformGrid,
+  ContentDivider,
+  useDragAndDrop,
+} from "./DeviceModalComponents";
 
 const DeviceModal: React.FC<DeviceModalProps> = ({
   open,
@@ -14,60 +20,21 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
   fileInputRef,
 }) => {
   const step = useSelector((state: RootState) => state.onboard.step);
-  const [isDragging, setIsDragging] = React.useState(false);
-  const accumulatedFilesRef = React.useRef<File[]>([]);
+  const { isDragging, dragHandlers } = useDragAndDrop(
+    fileInputRef,
+    onFileSelect
+  );
 
-  // Reset accumulated files when modal closes
-  React.useEffect(() => {
-    if (!open) {
-      accumulatedFilesRef.current = [];
-    }
-  }, [open]);
-
-  if (!open) return null;
-
+  // Event Handlers
   const handleUploadClick = () => {
-    // Store current files before opening picker
-    if (fileInputRef.current?.files) {
-      accumulatedFilesRef.current = Array.from(fileInputRef.current.files);
-    }
     fileInputRef.current?.click();
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = e.target.files;
     if (newFiles && newFiles.length > 0 && fileInputRef.current) {
-      try {
-        const dataTransfer = new DataTransfer();
-
-        // Add accumulated files from ref (existing files)
-        if (accumulatedFilesRef.current.length > 0) {
-          accumulatedFilesRef.current.forEach((file) =>
-            dataTransfer.items.add(file)
-          );
-        }
-
-        // Add new files
-        Array.from(newFiles).forEach((file) => dataTransfer.items.add(file));
-
-        // Update accumulated files ref
-        accumulatedFilesRef.current = Array.from(dataTransfer.files);
-
-        // Update the input with all files
-        fileInputRef.current.files = dataTransfer.files;
-
-        // Call the parent's onFileSelect with merged files
-        const syntheticEvent = {
-          ...e,
-          target: { ...e.target, files: dataTransfer.files },
-          currentTarget: { ...e.currentTarget, files: dataTransfer.files },
-        } as React.ChangeEvent<HTMLInputElement>;
-
-        onFileSelect(syntheticEvent);
-      } catch {
-        // Fallback: just pass through
-        onFileSelect(e);
-      }
+      onFileSelect(e);
+      fileInputRef.current.value = "";
     }
   };
 
@@ -81,82 +48,10 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.dataTransfer.types.includes("Files")) {
-      setIsDragging(true);
-    }
-  };
+  // Early return if modal is closed
+  if (!open) return null;
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Only set to false if leaving the main container
-    if (e.currentTarget === e.target) {
-      setIsDragging(false);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.dataTransfer.types.includes("Files")) {
-      e.dataTransfer.dropEffect = "copy";
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
-    const newFiles = e.dataTransfer.files;
-    if (newFiles && newFiles.length > 0 && fileInputRef.current) {
-      try {
-        const dataTransfer = new DataTransfer();
-
-        // Add accumulated files from ref (existing files)
-        if (accumulatedFilesRef.current.length > 0) {
-          accumulatedFilesRef.current.forEach((file) =>
-            dataTransfer.items.add(file)
-          );
-        }
-
-        // Add new files
-        Array.from(newFiles).forEach((file) => dataTransfer.items.add(file));
-
-        // Update accumulated files ref
-        accumulatedFilesRef.current = Array.from(dataTransfer.files);
-
-        // Update the input with all files
-        fileInputRef.current.files = dataTransfer.files;
-
-        // Trigger the change event
-        const event = new Event("change", { bubbles: true });
-        fileInputRef.current.dispatchEvent(event);
-      } catch {
-        // Fallback: create synthetic event with merged files
-        const dataTransfer = new DataTransfer();
-
-        if (accumulatedFilesRef.current.length > 0) {
-          accumulatedFilesRef.current.forEach((file) =>
-            dataTransfer.items.add(file)
-          );
-        }
-        Array.from(newFiles).forEach((file) => dataTransfer.items.add(file));
-
-        // Update accumulated files ref
-        accumulatedFilesRef.current = Array.from(dataTransfer.files);
-
-        const syntheticEvent = {
-          target: { files: dataTransfer.files },
-          currentTarget: { files: dataTransfer.files },
-        } as unknown as React.ChangeEvent<HTMLInputElement>;
-        onFileSelect(syntheticEvent);
-      }
-    }
-  };
+  const showFileSelection = step === OnboardStep.FILE_SELECTION;
 
   return (
     <div
@@ -165,149 +60,29 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
     >
       <div
         className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden"
-        onDragEnter={handleDragEnter}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        {...dragHandlers}
       >
-        {/* Drag and Drop Overlay */}
-        {isDragging && (
-          <div className="absolute inset-0 z-50 bg-gradient-to-br from-rose-600/30 via-pink-600/30 to-fuchsia-600/30 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-            <div className="bg-white/10 border-4 border-dashed border-pink-500 rounded-3xl p-12 flex flex-col items-center gap-4">
-              <FaUpload className="w-20 h-20 text-white animate-bounce" />
-              <p className="text-white text-2xl md:text-3xl font-bold font-parkinsans">
-                Drop your files here
-              </p>
-              <p className="text-gray-200 text-sm md:text-base">
-                Release to upload
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Header - Improved */}
-        <div className="w-full flex items-center justify-between px-6 md:px-10 py-5 md:py-6 shrink-0 border-b border-white/5">
-          <div className="w-10" />
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-2 rounded-lg">
-                <FaCloud className="text-white text-lg" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white font-parkinsans">
-                Choose Your Source
-              </h2>
-            </div>
-            <p className="text-gray-400 text-xs md:text-sm">
-              Upload from device or select a streaming platform
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
-            aria-label="Close"
-          >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+        <DragOverlay isVisible={isDragging} />
+        <ModalHeader onClose={onClose} />
 
         {/* Content */}
         <div className="flex h-full flex-1 items-center justify-center w-full overflow-y-auto overflow-x-hidden py-4 md:py-6">
-          <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-12 xl:gap-16 w-full  max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-6 md:px-10  ">
-            {/* Left Side - Upload from Device */}
-            <div className="w-full lg:w-1/3 flex flex-col">
-              <div className="flex items-center gap-2 mb-6">
-                <span className="w-1 h-6 bg-gradient-to-b from-rose-500 to-pink-500 rounded-full"></span>
-                <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
-                  Choose from your files
-                </h3>
-              </div>
+          <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-12 xl:gap-16 w-full max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-6 md:px-10">
+            {/* Left Side - Upload Section */}
+            <UploadSection
+              fileInputRef={fileInputRef}
+              onUploadClick={handleUploadClick}
+              onFileChange={handleFileInputChange}
+            />
 
-              <input
-                ref={fileInputRef}
-                onChange={handleFileInputChange}
-                type="file"
-                accept="video/*,audio/*,.mp4,.mp3,.mkv,.webm,.3gp,.avi,.mpeg,.mpg,.ogg,.wmv,.wav,.mov"
-                multiple
-                className="hidden"
-              />
+            <ContentDivider />
 
-              <div className="flex flex-1 flex-col gap-4">
-                {/* Upload Area */}
-                <button
-                  onClick={handleUploadClick}
-                  className="flex flex-col items-center justify-center bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 border border-white/10 hover:border-pink-500/50 rounded-2xl transition-all duration-300 cursor-pointer group shadow-xl flex-1"
-                >
-                  <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/5 group-hover:bg-white/10 transition-all duration-300 mb-4">
-                    <FaUpload className="w-10 h-10 text-gray-400 group-hover:text-white transition-all duration-300" />
-                  </div>
-                  <span className="text-lg md:text-xl font-semibold text-gray-300 group-hover:text-white transition-all duration-300">
-                    Click to Upload
-                  </span>
-                  <span className="text-sm text-gray-500 group-hover:text-gray-200 transition-all duration-300 mt-2">
-                    or drag and drop
-                  </span>
-                </button>
-
-                {/* Info Text */}
-                <div className="p-4 bg-white/[0.03] border border-white/5 rounded-xl">
-                  <p className="text-gray-400 text-xs text-center leading-relaxed">
-                    <span className="text-gray-300 font-medium">
-                      Supported formats:
-                    </span>
-                    <br />
-                    MP4, MP3, MKV, WebM, AVI, and more
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="hidden lg:block w-px bg-gradient-to-b from-transparent via-white/20 to-transparent self-stretch my-8"></div>
-
-            {/* Right Side - Choose Platform or FileSelection */}
+            {/* Right Side - Platform Grid or File Selection */}
             <div className="w-full lg:w-2/3 flex flex-col">
-              {step === OnboardStep.FILE_SELECTION ? (
+              {showFileSelection ? (
                 <FileSelection />
               ) : (
-                <>
-                  <div className="flex items-center gap-2 mb-6">
-                    <span className="w-1 h-6 bg-gradient-to-b from-fuchsia-500 to-purple-500 rounded-full"></span>
-                    <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
-                      Choose a platform to screenshare
-                    </h3>
-                  </div>
-                  <div className="flex-1 flex flex-col">
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 content-start">
-                      {STREAMING_PLATFORMS.map((platform, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handlePlatformClick(platform.url)}
-                          style={platform.bgStyle}
-                          className="aspect-square flex flex-col items-center justify-center hover:scale-105 rounded-2xl transition-all duration-300 cursor-pointer shadow-lg p-6 md:p-7 group min-h-[140px] md:min-h-[160px]"
-                        >
-                          <div className="text-white group-hover:scale-110 transition-transform duration-300 text-4xl md:text-5xl">
-                            {platform.logo}
-                          </div>
-                          <span className="text-sm md:text-base font-bold text-white mt-3 text-center">
-                            {platform.name}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </>
+                <PlatformGrid onPlatformClick={handlePlatformClick} />
               )}
             </div>
           </div>

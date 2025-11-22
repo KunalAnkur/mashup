@@ -177,7 +177,7 @@ const FileSelection = () => {
         </div>
 
         {/* Info Section */}
-        <div className="flex items-start gap-2 p-3 bg-white/[0.03] border border-white/5 rounded-xl">
+        <div className="flex items-start gap-2 p-3 bg-white/[0.03]  rounded-xl">
           <div className="shrink-0 mt-0.5">
             <svg
               className="w-4 h-4 text-fuchsia-500"
@@ -202,7 +202,7 @@ const FileSelection = () => {
         <div className="flex gap-3 ">
           <Button
             onClick={handleBack}
-            className="w-full rounded-xl flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-sm px-4 py-3 transition-all duration-200"
+            className="w-full rounded-xl flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10  hover:border-white/20 text-white text-sm px-4 py-3 transition-all duration-200"
             name="Back"
           >
             <FaArrowLeft className="text-xs" />
@@ -210,7 +210,7 @@ const FileSelection = () => {
           </Button>
           <Button
             onClick={handleOnURLSelection}
-            className="w-full rounded-xl flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white text-sm px-4 py-3 transition-all duration-200"
+            className="w-full rounded-xl flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10  hover:border-white/20 text-white text-sm px-4 py-3 transition-all duration-200"
             name="Use URL"
           >
             <FaLink className="text-xs" />
