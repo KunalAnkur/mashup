@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store/index";
@@ -20,7 +19,6 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
-  const router = useRouter();
   const { user, isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth
   );

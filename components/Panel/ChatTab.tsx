@@ -133,30 +133,24 @@ const ChatTab = () => {
           return (
             <div
               key={i}
-              className={`flex items-start gap-2 group animate-fade-in ${
-                isCurrentUser ? "flex-row-reverse" : ""
-              }`}
+              className="flex items-start gap-2 group animate-fade-in"
               style={{ animationDelay: `${i * 0.05}s` }}
             >
-              {/* Avatar - Only show for other users */}
-              {!isCurrentUser && (
-                <div className="relative flex-shrink-0 mt-0.5">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg bg-gradient-to-br ${userColor.bg}`}
-                  >
-                    {msg.user.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[#18181b] rounded-full"></div>
+              {/* Avatar - Show for all users */}
+              <div className="relative flex-shrink-0 mt-0.5">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg bg-gradient-to-br ${userColor.bg}`}
+                >
+                  {msg.user.charAt(0).toUpperCase()}
                 </div>
-              )}
+                {!isCurrentUser && (
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[#18181b] rounded-full"></div>
+                )}
+              </div>
 
               {/* Message Content */}
               <div className="flex-1 min-w-0 flex flex-col gap-1">
-                <div
-                  className={`flex items-baseline gap-2 ${
-                    isCurrentUser ? "flex-row-reverse" : ""
-                  }`}
-                >
+                <div className="flex items-baseline gap-2">
                   <span
                     className={`font-semibold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
                   >
@@ -165,10 +159,10 @@ const ChatTab = () => {
                   <span className="text-gray-500 text-xs">{msg.time}</span>
                 </div>
                 <div
-                  className={` rounded-xl px-3 py-2  transition-all duration-200 ${
+                  className={`rounded-xl px-3 py-2 transition-all duration-200 rounded-tl-none ${
                     isCurrentUser
-                      ? `bg-gradient-to-br from-rose-600/20 via-pink-600/20 to-fuchsia-600/20  rounded-tr-none`
-                      : "bg-gradient-to-br from-white/5 to-white/[0.02]  rounded-tl-none"
+                      ? `bg-gradient-to-br from-rose-600/20 via-pink-600/20 to-fuchsia-600/20`
+                      : "bg-gradient-to-br from-white/5 to-white/[0.02]"
                   }`}
                 >
                   <p className="text-white/90 text-sm leading-relaxed break-words">
