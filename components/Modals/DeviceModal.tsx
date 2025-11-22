@@ -14,6 +14,8 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
   fileInputRef,
 }) => {
   const step = useSelector((state: RootState) => state.onboard.step);
+  const [isDragging, setIsDragging] = React.useState(false);
+
   if (!open) return null;
 
   const handleUploadClick = () => {
@@ -28,6 +30,50 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
 
   const handlePlatformClick = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0 && fileInputRef.current) {
+      // Use Object.defineProperty to set files on the input element
+      try {
+        const dataTransfer = new DataTransfer();
+        Array.from(files).forEach((file) => dataTransfer.items.add(file));
+        fileInputRef.current.files = dataTransfer.files;
+
+        // Trigger the change event
+        const event = new Event("change", { bubbles: true });
+        fileInputRef.current.dispatchEvent(event);
+      } catch {
+        // Fallback: create synthetic event
+        const syntheticEvent = {
+          target: { files },
+          currentTarget: { files },
+        } as unknown as React.ChangeEvent<HTMLInputElement>;
+        onFileSelect(syntheticEvent);
+      }
+    }
   };
 
   return (
@@ -98,7 +144,15 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
                 {/* Upload Area */}
                 <button
                   onClick={handleUploadClick}
-                  className=" flex flex-col items-center justify-center bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 border border-white/10 hover:border-pink-500/50 rounded-2xl transition-all duration-300 cursor-pointer group shadow-xl flex-1"
+                  onDragEnter={handleDragEnter}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`flex flex-col items-center justify-center bg-gradient-to-br rounded-2xl transition-all duration-300 cursor-pointer group shadow-xl flex-1 ${
+                    isDragging
+                      ? "from-rose-600 via-pink-600 to-fuchsia-600 border-pink-500 scale-[1.02]"
+                      : "from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 border-white/10 hover:border-pink-500/50"
+                  } border`}
                 >
                   <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/5 group-hover:bg-white/10 transition-all duration-300 mb-4">
                     <FaUpload className="w-10 h-10 text-gray-400 group-hover:text-white transition-all duration-300" />
