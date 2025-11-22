@@ -5,7 +5,13 @@ import { OnboardStep } from "@/types/storeTypes";
 import { changeStep } from "@/lib/store/slices/onboardSlice";
 import { setRefers } from "@/lib/store/slices/roomSlice";
 import { Button } from "../UI";
-import { FaTimes, FaVideo, FaLink, FaCheckCircle, FaPlay } from "react-icons/fa";
+import {
+  FaTimes,
+  FaVideo,
+  FaLink,
+  FaCheckCircle,
+  FaPlay,
+} from "react-icons/fa";
 import ReactPlayer from "react-player";
 import { UrlModalProps } from "@/types/urlModalProps";
 import { Platform } from "@/types/urlPlatformTypes";
@@ -20,7 +26,9 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
   const [addedUrls, setAddedUrls] = useState<AddedUrl[]>([]);
   const [isAddDisabled, setAddDisabled] = useState<boolean>(true);
   const [tooltipMessage, setTooltipMessage] = useState<string>("");
-  const [loadingMetadata, setLoadingMetadata] = useState<Set<number>>(new Set());
+  const [loadingMetadata, setLoadingMetadata] = useState<Set<number>>(
+    new Set()
+  );
 
   const detectPlatform = (url: string): string => {
     for (const platform of platforms) {
@@ -68,11 +76,13 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
     }
   };
 
-  const fetchUrlMetadata = async (url: string): Promise<AddedUrl['metadata']> => {
+  const fetchUrlMetadata = async (
+    url: string
+  ): Promise<AddedUrl["metadata"]> => {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
       const token = authState.token;
-      
+
       const response = await fetch(`${baseUrl}/api/v1/url/metadata`, {
         method: "POST",
         headers: {
@@ -87,7 +97,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
       }
 
       const data = await response.json();
-      
+
       // Handle the response structure from the backend
       return {
         title: data.data?.title || undefined,
@@ -106,13 +116,10 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
     if (!validation.valid) return;
     const detectedPlatform = detectPlatform(sourceUrlInput);
     const url = sourceUrlInput.trim();
-    
+
     // Add URL immediately with empty metadata
     const newIndex = addedUrls.length;
-    setAddedUrls((prev) => [
-      ...prev,
-      { url, platformId: detectedPlatform },
-    ]);
+    setAddedUrls((prev) => [...prev, { url, platformId: detectedPlatform }]);
     setSourceUrlInput("");
 
     // Fetch metadata asynchronously
@@ -219,7 +226,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                   Supported Platforms
                 </h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {platforms.map((platform) => (
                   <div
                     key={platform.id}
@@ -246,7 +253,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                 </h3>
               </div>
 
-              <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-5 shadow-xl flex flex-col flex-1">
+              <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-4 shadow-xl flex flex-col flex-1">
                 <div className="flex flex-col h-full gap-3">
                   {/* URL Input Area - TOP */}
                   <div className="flex gap-3">
@@ -256,7 +263,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                       value={sourceUrlInput}
                       onChange={handleOnSourceUrlChange}
                       onKeyDown={handleKeyDown}
-                      className="flex-1 min-w-0 rounded-xl bg-white/5 border border-white/10 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500"
+                      className="flex-1 min-w-0 rounded-xl bg-white/5  text-white text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500"
                     />
                     <div className="relative group shrink-0">
                       <Button
@@ -280,24 +287,24 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                       <div
                         className={`flex flex-col gap-2 pr-1 overflow-y-auto ${
                           addedUrls.length > 3
-                            ? "max-h-[280px]"
-                            : addedUrls.length > 2
-                            ? "max-h-[240px]"
-                            : "max-h-[200px]"
+                            ? "max-h-[230px]"
+                            : "max-h-[230px]"
                         }`}
                       >
                         {addedUrls.map((item, index) => {
                           const platform = getPlatformById(item.platformId);
                           const isLoading = loadingMetadata.has(index);
-                          const hasMetadata = item.metadata && (item.metadata.title || item.metadata.thumbnail);
-                          
+                          const hasMetadata =
+                            item.metadata &&
+                            (item.metadata.title || item.metadata.thumbnail);
+
                           return (
                             <div
                               key={`${item.url}-${index}`}
-                              className="group flex gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-2.5 transition-all duration-200 h-[72px] shrink-0"
+                              className="group flex gap-3 bg-white/5 hover:bg-white/10  rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0"
                             >
                               {/* Thumbnail */}
-                              <div className="relative w-20 h-14 rounded-lg overflow-hidden shrink-0 bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-white/10">
+                              <div className="relative w-20 h-13 rounded-lg overflow-hidden shrink-0 bg-gradient-to-br from-[#1f1f23] to-[#27272a] ">
                                 {isLoading ? (
                                   <div className="absolute inset-0 flex items-center justify-center bg-white/5 animate-pulse">
                                     <div className="w-6 h-6 border-2 border-white/20 border-t-white/60 rounded-full animate-spin"></div>
@@ -305,20 +312,27 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                                 ) : item.metadata?.thumbnail ? (
                                   <img
                                     src={item.metadata.thumbnail}
-                                    alt={item.metadata.title || "Video thumbnail"}
+                                    alt={
+                                      item.metadata.title || "Video thumbnail"
+                                    }
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.style.display = 'none';
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.style.display = "none";
                                       if (target.nextElementSibling) {
-                                        (target.nextElementSibling as HTMLElement).style.display = 'flex';
+                                        (
+                                          target.nextElementSibling as HTMLElement
+                                        ).style.display = "flex";
                                       }
                                     }}
                                   />
                                 ) : null}
                                 <div
                                   className={`absolute inset-0 flex items-center justify-center ${
-                                    item.metadata?.thumbnail && !isLoading ? 'hidden' : ''
+                                    item.metadata?.thumbnail && !isLoading
+                                      ? "hidden"
+                                      : ""
                                   } ${
                                     platform?.iconBg ||
                                     "bg-gradient-to-br from-pink-500 to-fuchsia-600"
@@ -348,7 +362,8 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                                 ) : hasMetadata && item.metadata ? (
                                   <>
                                     <p className="text-gray-200 text-xs font-semibold line-clamp-1 leading-tight">
-                                      {item.metadata.title || getUrlDisplayName(item.url)}
+                                      {item.metadata.title ||
+                                        getUrlDisplayName(item.url)}
                                     </p>
                                     {item.metadata.description && (
                                       <p className="text-gray-500 text-[10px] line-clamp-1 leading-tight">
@@ -357,11 +372,17 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                                     )}
                                     <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mt-0.5">
                                       {item.metadata.author && (
-                                        <span className="truncate max-w-[80px]">{item.metadata.author}</span>
+                                        <span className="truncate max-w-[80px]">
+                                          {item.metadata.author}
+                                        </span>
                                       )}
-                                      {item.metadata.author && platform && <span>•</span>}
+                                      {item.metadata.author && platform && (
+                                        <span>•</span>
+                                      )}
                                       {platform && (
-                                        <span className="truncate">{platform.name}</span>
+                                        <span className="truncate">
+                                          {platform.name}
+                                        </span>
                                       )}
                                     </div>
                                   </>
@@ -439,7 +460,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
                   <div className="flex gap-3">
                     <Button
                       onClick={onClose}
-                      className="flex-1 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 text-gray-300 text-sm px-4 py-3 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium"
+                      className="flex-1 rounded-xl flex items-center justify-center bg-white/5  text-gray-300 text-sm px-4 py-3 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium"
                       name="Cancel"
                     />
                     <Button
