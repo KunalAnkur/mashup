@@ -15,11 +15,60 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
 }) => {
   const step = useSelector((state: RootState) => state.onboard.step);
   const [isDragging, setIsDragging] = React.useState(false);
+  const accumulatedFilesRef = React.useRef<File[]>([]);
+
+  // Reset accumulated files when modal closes
+  React.useEffect(() => {
+    if (!open) {
+      accumulatedFilesRef.current = [];
+    }
+  }, [open]);
 
   if (!open) return null;
 
   const handleUploadClick = () => {
+    // Store current files before opening picker
+    if (fileInputRef.current?.files) {
+      accumulatedFilesRef.current = Array.from(fileInputRef.current.files);
+    }
     fileInputRef.current?.click();
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = e.target.files;
+    if (newFiles && newFiles.length > 0 && fileInputRef.current) {
+      try {
+        const dataTransfer = new DataTransfer();
+
+        // Add accumulated files from ref (existing files)
+        if (accumulatedFilesRef.current.length > 0) {
+          accumulatedFilesRef.current.forEach((file) =>
+            dataTransfer.items.add(file)
+          );
+        }
+
+        // Add new files
+        Array.from(newFiles).forEach((file) => dataTransfer.items.add(file));
+
+        // Update accumulated files ref
+        accumulatedFilesRef.current = Array.from(dataTransfer.files);
+
+        // Update the input with all files
+        fileInputRef.current.files = dataTransfer.files;
+
+        // Call the parent's onFileSelect with merged files
+        const syntheticEvent = {
+          ...e,
+          target: { ...e.target, files: dataTransfer.files },
+          currentTarget: { ...e.currentTarget, files: dataTransfer.files },
+        } as React.ChangeEvent<HTMLInputElement>;
+
+        onFileSelect(syntheticEvent);
+      } catch {
+        // Fallback: just pass through
+        onFileSelect(e);
+      }
+    }
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -35,18 +84,26 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
+    // Only set to false if leaving the main container
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (e.dataTransfer.types.includes("Files")) {
+      e.dataTransfer.dropEffect = "copy";
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -54,22 +111,47 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
     e.stopPropagation();
     setIsDragging(false);
 
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0 && fileInputRef.current) {
-      // Use Object.defineProperty to set files on the input element
+    const newFiles = e.dataTransfer.files;
+    if (newFiles && newFiles.length > 0 && fileInputRef.current) {
       try {
         const dataTransfer = new DataTransfer();
-        Array.from(files).forEach((file) => dataTransfer.items.add(file));
+
+        // Add accumulated files from ref (existing files)
+        if (accumulatedFilesRef.current.length > 0) {
+          accumulatedFilesRef.current.forEach((file) =>
+            dataTransfer.items.add(file)
+          );
+        }
+
+        // Add new files
+        Array.from(newFiles).forEach((file) => dataTransfer.items.add(file));
+
+        // Update accumulated files ref
+        accumulatedFilesRef.current = Array.from(dataTransfer.files);
+
+        // Update the input with all files
         fileInputRef.current.files = dataTransfer.files;
 
         // Trigger the change event
         const event = new Event("change", { bubbles: true });
         fileInputRef.current.dispatchEvent(event);
       } catch {
-        // Fallback: create synthetic event
+        // Fallback: create synthetic event with merged files
+        const dataTransfer = new DataTransfer();
+
+        if (accumulatedFilesRef.current.length > 0) {
+          accumulatedFilesRef.current.forEach((file) =>
+            dataTransfer.items.add(file)
+          );
+        }
+        Array.from(newFiles).forEach((file) => dataTransfer.items.add(file));
+
+        // Update accumulated files ref
+        accumulatedFilesRef.current = Array.from(dataTransfer.files);
+
         const syntheticEvent = {
-          target: { files },
-          currentTarget: { files },
+          target: { files: dataTransfer.files },
+          currentTarget: { files: dataTransfer.files },
         } as unknown as React.ChangeEvent<HTMLInputElement>;
         onFileSelect(syntheticEvent);
       }
@@ -81,7 +163,28 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden">
+      <div
+        className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden"
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* Drag and Drop Overlay */}
+        {isDragging && (
+          <div className="absolute inset-0 z-50 bg-gradient-to-br from-rose-600/30 via-pink-600/30 to-fuchsia-600/30 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+            <div className="bg-white/10 border-4 border-dashed border-pink-500 rounded-3xl p-12 flex flex-col items-center gap-4">
+              <FaUpload className="w-20 h-20 text-white animate-bounce" />
+              <p className="text-white text-2xl md:text-3xl font-bold font-parkinsans">
+                Drop your files here
+              </p>
+              <p className="text-gray-200 text-sm md:text-base">
+                Release to upload
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Header - Improved */}
         <div className="w-full flex items-center justify-between px-6 md:px-10 py-5 md:py-6 shrink-0 border-b border-white/5">
           <div className="w-10" />
@@ -133,7 +236,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
 
               <input
                 ref={fileInputRef}
-                onChange={onFileSelect}
+                onChange={handleFileInputChange}
                 type="file"
                 accept="video/*,audio/*,.mp4,.mp3,.mkv,.webm,.3gp,.avi,.mpeg,.mpg,.ogg,.wmv,.wav,.mov"
                 multiple
@@ -144,15 +247,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
                 {/* Upload Area */}
                 <button
                   onClick={handleUploadClick}
-                  onDragEnter={handleDragEnter}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className={`flex flex-col items-center justify-center bg-gradient-to-br rounded-2xl transition-all duration-300 cursor-pointer group shadow-xl flex-1 ${
-                    isDragging
-                      ? "from-rose-600 via-pink-600 to-fuchsia-600 border-pink-500 scale-[1.02]"
-                      : "from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 border-white/10 hover:border-pink-500/50"
-                  } border`}
+                  className="flex flex-col items-center justify-center bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 border border-white/10 hover:border-pink-500/50 rounded-2xl transition-all duration-300 cursor-pointer group shadow-xl flex-1"
                 >
                   <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/5 group-hover:bg-white/10 transition-all duration-300 mb-4">
                     <FaUpload className="w-10 h-10 text-gray-400 group-hover:text-white transition-all duration-300" />
