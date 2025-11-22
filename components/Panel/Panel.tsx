@@ -65,7 +65,7 @@ const Panel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#18181b] px-4 py-6">
+    <div className="flex flex-col h-full w-full bg-[#18181b] px-4 py-4">
       {/* Leave Confirmation Modal */}
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -142,9 +142,9 @@ const Panel = () => {
                 />
               )}
               {copied && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-[#2a2a2e] text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl border border-white/10 animate-fade-in">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-[#2a2a2e] text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl border border-white/10 animate-fade-in">
                   Link copied!
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#2a2a2e]"></div>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-[#2a2a2e]"></div>
                 </div>
               )}
             </button>

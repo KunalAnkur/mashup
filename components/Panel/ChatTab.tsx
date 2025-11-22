@@ -124,7 +124,7 @@ const ChatTab = () => {
   ]; */
 
   return (
-    <div className="flex flex-col h-full w-full gap-4">
+    <div className="flex flex-col h-full w-full gap-3">
       {/* Chat Messages Area */}
       <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {messages.map((msg, i) => {
@@ -199,7 +199,7 @@ const ChatTab = () => {
 
       {/* Emoji Bar */}
       {showEmojis && (
-        <div className="flex gap-2 bg-gradient-to-br from-[#1f1f23] to-[#27272a] p-3 rounded-xl overflow-x-auto scrollbar-hide animate-slide-up">
+        <div className="flex gap-2 bg-gradient-to-br from-[#1f1f23] to-[#27272a] p-2 rounded-xl overflow-x-auto scrollbar-hide animate-slide-up">
           {[
             { icon: FaSmile, color: "text-yellow-400" },
             { icon: FaSadTear, color: "text-blue-400" },
@@ -212,9 +212,9 @@ const ChatTab = () => {
             return (
               <button
                 key={i}
-                className={`p-2.5 rounded-xl bg-white/5 hover:bg-white/10  transition-all duration-200 hover:scale-110 ${emoji.color}`}
+                className={`p-2 rounded-xl bg-white/5 hover:bg-white/10  transition-all duration-200 hover:scale-110 ${emoji.color}`}
               >
-                <Icon size={22} />
+                <Icon size={18} />
               </button>
             );
           })}
@@ -222,7 +222,7 @@ const ChatTab = () => {
       )}
 
       {/* Input Area */}
-      <div className="flex items-center gap-2 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl px-4  shadow-lg">
+      <div className="flex items-center gap-1 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl px-3  py-1 shadow-lg">
         <input
           type="text"
           placeholder="Send a message..."
@@ -230,7 +230,7 @@ const ChatTab = () => {
         />
         <button
           onClick={() => console.log("send button triggered")}
-          className="p-2 rounded-lg text-gray-400 hover:text-pink-400 hover:bg-white/5 transition-all duration-200"
+          className=" p-2 rounded-lg text-gray-400 hover:text-pink-400 hover:bg-white/5 transition-all duration-200"
         >
           <FaArrowCircleUp size={20} />
         </button>
