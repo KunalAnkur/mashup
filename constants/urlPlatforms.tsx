@@ -1,4 +1,4 @@
-import { Platform } from "@/types/urlPlatformTypes";
+import { Platform } from "@/types/ModalTypes/urlPlatformTypes";
 import {
   FaYoutube,
   FaVimeo,

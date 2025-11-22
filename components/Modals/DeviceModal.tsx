@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { OnboardStep } from "@/types/storeTypes";
 import { FileSelection } from "../Onboard";
-import { DeviceModalProps } from "@/types/deviceModalTypes";
+import { DeviceModalProps } from "@/types/ModalTypes/deviceModalTypes";
 import {
   DragOverlay,
   ModalHeader,

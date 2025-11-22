@@ -1,7 +1,7 @@
 import React from "react";
 import { FaUpload } from "react-icons/fa";
 import { SectionTitle } from "./SectionTitle";
-import { ACCEPTED_FILE_TYPES } from "../../../types/acceptedFileTypes";
+import { ACCEPTED_FILE_TYPES } from "../../../types/ModalTypes/acceptedFileTypes";
 
 interface UploadButtonProps {
   onClick: () => void;
