@@ -10,16 +10,21 @@ import { useFileContext } from "@/context/FileContext";
 import Image from "next/image";
 import DeviceModal from "../Modals/DeviceModal";
 import UrlModal from "../Modals/UrlModal";
-// import UrlModal from "../Modals/UrlModal"; // Uncomment when UrlModal is created
+import { useRouter } from "next/navigation";
+import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 
 const SourceSelection = () => {
   const [isJoinDisabled, setIsJoinDisabled] = useState<boolean>(true);
   const [roomId, setRoomId] = useState<string>("");
   const [isDeviceModalOpen, setIsDeviceModalOpen] = useState<boolean>(false);
   const [isUrlModalOpen, setIsUrlModalOpen] = useState<boolean>(false);
+  const [isJoining, setIsJoining] = useState<boolean>(false);
+  const [joinError, setJoinError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch();
+  const router = useRouter();
   const { setFiles } = useFileContext();
+  const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
 
   const handleOnVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -48,8 +53,50 @@ const SourceSelection = () => {
   };
 
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRoomId(e.target.value.trim());
-    setIsJoinDisabled(e.target.value.trim().length !== 4);
+    const value = e.target.value.trim();
+    setRoomId(value);
+    setIsJoinDisabled(value.length !== 4);
+    setJoinError(""); // Clear error when user types
+  };
+
+  const handleJoinRoom = async () => {
+    const trimmedRoomId = roomId.trim();
+    if (trimmedRoomId.length !== 4 || isJoining) return;
+
+    setIsJoining(true);
+    setJoinError("");
+
+    try {
+      const response = await getRoomByRoomId(trimmedRoomId).unwrap();
+
+      if (response?.success && response?.data) {
+        // Room exists and is active, navigate to it
+        router.push(`/room/${trimmedRoomId}`);
+      } else {
+        setJoinError("Room not found. Please check the Room ID.");
+      }
+    } catch (error: unknown) {
+      // Handle API errors (404, network errors, etc.)
+      const err = error as {
+        status?: number | string;
+        data?: { status?: number };
+      };
+      if (err?.status === 404 || err?.data?.status === 404) {
+        setJoinError("Room not found. Please check the Room ID.");
+      } else if (err?.status === "FETCH_ERROR") {
+        setJoinError("Network error. Please try again.");
+      } else {
+        setJoinError("Failed to join room. Please try again.");
+      }
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !isJoinDisabled && !isJoining) {
+      handleJoinRoom();
+    }
   };
 
   return (
@@ -150,33 +197,58 @@ const SourceSelection = () => {
             <p className="text-gray-400 text-center mb-3 sm:mb-4 text-xs sm:text-sm font-medium px-2">
               Enter a Room ID to join an existing session.
             </p>
-            <div className="flex w-full gap-2 sm:gap-3">
-              <input
-                type="text"
-                placeholder="Room ID"
-                value={roomId}
-                onChange={handleOnRoomIdChange}
-                maxLength={4}
-                className="text-sm sm:text-base flex-1 rounded-xl bg-white/5 border border-white/10 text-gray-100 placeholder:text-gray-500 p-2.5 sm:p-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200"
-              />
-              <div className="relative">
-                <div className="group">
-                  <Button
-                    name="Join"
-                    className="text-sm sm:text-base md:text-lg font-bold px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 rounded-xl transition-all duration-200 shadow-lg whitespace-nowrap
-                                    enabled:bg-gradient-to-r enabled:from-rose-600 enabled:via-pink-600 enabled:to-fuchsia-600 enabled:text-white enabled:shadow-pink-500/25
-                                    enabled:hover:from-rose-500 enabled:hover:via-pink-500 enabled:hover:to-fuchsia-500 enabled:hover:shadow-pink-500/40
-                                    disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:shadow-none"
-                    disabled={isJoinDisabled}
-                  />
-                  {isJoinDisabled && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#2a2a2e] text-gray-200 text-xs md:text-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10 max-w-[calc(100vw-2rem)] shadow-xl border border-white/10">
-                      Room ID must be 4 characters
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#2a2a2e]"></div>
-                    </div>
-                  )}
+            <div className="flex flex-col w-full gap-2 sm:gap-3">
+              <div className="flex w-full gap-2 sm:gap-3">
+                <input
+                  type="text"
+                  placeholder="Room ID"
+                  value={roomId}
+                  onChange={handleOnRoomIdChange}
+                  onKeyDown={handleKeyDown}
+                  maxLength={4}
+                  disabled={isJoining}
+                  className={`text-sm sm:text-base flex-1 rounded-xl bg-white/5 border text-gray-100 placeholder:text-gray-500 p-2.5 sm:p-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 ${
+                    joinError
+                      ? "border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50"
+                      : "border-white/10"
+                  } ${isJoining ? "opacity-50 cursor-not-allowed" : ""}`}
+                />
+                <div className="relative">
+                  <div className="group">
+                    <Button
+                      name={isJoining ? "Joining..." : "Join"}
+                      onClick={handleJoinRoom}
+                      className="text-sm sm:text-base md:text-lg font-bold px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 rounded-xl transition-all duration-200 shadow-lg whitespace-nowrap
+                                      enabled:bg-gradient-to-r enabled:from-rose-600 enabled:via-pink-600 enabled:to-fuchsia-600 enabled:text-white enabled:shadow-pink-500/25
+                                      enabled:hover:from-rose-500 enabled:hover:via-pink-500 enabled:hover:to-fuchsia-500 enabled:hover:shadow-pink-500/40
+                                      disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:shadow-none"
+                      disabled={isJoinDisabled || isJoining}
+                    />
+                    {isJoinDisabled && !isJoining && (
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#2a2a2e] text-gray-200 text-xs md:text-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10 max-w-[calc(100vw-2rem)] shadow-xl border border-white/10">
+                        Room ID must be 4 characters
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#2a2a2e]"></div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+              {joinError && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-xl animate-fade-in">
+                  <svg
+                    className="w-4 h-4 text-red-400 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <p className="text-red-400 text-xs sm:text-sm">{joinError}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
