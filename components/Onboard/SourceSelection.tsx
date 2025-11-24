@@ -53,15 +53,15 @@ const SourceSelection = () => {
   };
 
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim();
+    const value = e.target.value;
     setRoomId(value);
-    setIsJoinDisabled(value.length !== 4);
+    setIsJoinDisabled(value.trim().length === 0);
     setJoinError(""); // Clear error when user types
   };
 
   const handleJoinRoom = async () => {
     const trimmedRoomId = roomId.trim();
-    if (trimmedRoomId.length !== 4 || isJoining) return;
+    if (trimmedRoomId.length === 0 || isJoining) return;
 
     setIsJoining(true);
     setJoinError("");
@@ -205,7 +205,6 @@ const SourceSelection = () => {
                   value={roomId}
                   onChange={handleOnRoomIdChange}
                   onKeyDown={handleKeyDown}
-                  maxLength={4}
                   disabled={isJoining}
                   className={`text-sm sm:text-base flex-1 rounded-xl bg-white/5 border text-gray-100 placeholder:text-gray-500 p-2.5 sm:p-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 ${
                     joinError
@@ -224,12 +223,12 @@ const SourceSelection = () => {
                                       disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:shadow-none"
                       disabled={isJoinDisabled || isJoining}
                     />
-                    {isJoinDisabled && !isJoining && (
+                    {/*  {isJoinDisabled && !isJoining && (
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#2a2a2e] text-gray-200 text-xs md:text-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10 max-w-[calc(100vw-2rem)] shadow-xl border border-white/10">
                         Room ID must be 4 characters
                         <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#2a2a2e]"></div>
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>
