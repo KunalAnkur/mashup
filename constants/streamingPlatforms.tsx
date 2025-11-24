@@ -1,11 +1,12 @@
 import React from "react";
-import { StreamingPlatform } from "@/types/streamingTypes";
 
-export const STREAMING_PLATFORMS: StreamingPlatform[] = [
+export const STREAMING_PLATFORMS = [
   {
     name: "Netflix",
     url: "https://www.netflix.com",
-    bgGradient: "bg-gradient-to-br from-red-600 to-red-700",
+    bgStyle: {
+      background: "linear-gradient(to bottom right, #dc2626, #b91c1c)",
+    },
     logo: (
       <svg
         className="w-16 h-16 sm:w-20 sm:h-20"
@@ -19,7 +20,9 @@ export const STREAMING_PLATFORMS: StreamingPlatform[] = [
   {
     name: "Disney+",
     url: "https://www.disneyplus.com",
-    bgGradient: "bg-gradient-to-br from-blue-600 to-blue-800",
+    bgStyle: {
+      background: "linear-gradient(to bottom right, #2563eb, #1e40af)",
+    },
     logo: (
       <svg
         className="w-16 h-16 sm:w-20 sm:h-20"
@@ -35,7 +38,9 @@ export const STREAMING_PLATFORMS: StreamingPlatform[] = [
   {
     name: "Amazon Prime",
     url: "https://www.primevideo.com",
-    bgGradient: "bg-gradient-to-br from-cyan-500 to-blue-600",
+    bgStyle: {
+      background: "linear-gradient(to bottom right, #06b6d4, #2563eb)",
+    },
     logo: (
       <svg
         className="w-16 h-16 sm:w-20 sm:h-20"
@@ -51,7 +56,9 @@ export const STREAMING_PLATFORMS: StreamingPlatform[] = [
   {
     name: "Dailymotion",
     url: "https://www.dailymotion.com",
-    bgGradient: "bg-gradient-to-br from-blue-500 to-indigo-600",
+    bgStyle: {
+      background: "linear-gradient(to bottom right, #3b82f6, #4f46e5)",
+    },
     logo: (
       <svg
         className="w-16 h-16 sm:w-20 sm:h-20"
@@ -65,7 +72,9 @@ export const STREAMING_PLATFORMS: StreamingPlatform[] = [
   {
     name: "YouTube",
     url: "https://www.youtube.com",
-    bgGradient: "bg-gradient-to-br from-red-500 to-red-600",
+    bgStyle: {
+      background: "linear-gradient(to bottom right, #ef4444, #dc2626)",
+    },
     logo: (
       <svg
         className="w-16 h-16 sm:w-20 sm:h-20"
@@ -79,7 +88,9 @@ export const STREAMING_PLATFORMS: StreamingPlatform[] = [
   {
     name: "Twitch",
     url: "https://www.twitch.tv",
-    bgGradient: "bg-gradient-to-br from-purple-600 to-purple-700",
+    bgStyle: {
+      background: "linear-gradient(to bottom right, #9333ea, #7e22ce)",
+    },
     logo: (
       <svg
         className="w-16 h-16 sm:w-20 sm:h-20"

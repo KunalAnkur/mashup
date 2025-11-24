@@ -9,7 +9,7 @@ const Page = () => {
   const roomState = useSelector((state: RootState) => state.room);
   const containerRef = useRef<HTMLDivElement>(null);
   return (
-    <div ref={containerRef} className="flex h-screen bg-[#030712] select-none">
+    <div ref={containerRef} className="flex h-screen bg-[#030712]">
       <div
         className={`
                     bg-black flex-1 transition-all duration-300 h-full w-full

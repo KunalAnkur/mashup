@@ -658,5 +658,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     ]);
 
     
-    return <>{roomState.loading || authState.loading || skeleton ? <Skeleton auth={authState.isAuthenticated} type="room" /> : children}</>
+    // Don't show skeleton on home page or auth pages
+    const shouldShowSkeleton = (roomState.loading || authState.loading || skeleton) && 
+                                pathname !== "/" && 
+                                pathname !== "/login" && 
+                                pathname !== "/signup" &&
+                                !pathname.startsWith("/login") &&
+                                !pathname.startsWith("/signup");
+    
+    return <>{shouldShowSkeleton ? <Skeleton auth={authState.isAuthenticated} type="room" /> : children}</>
 }
