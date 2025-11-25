@@ -5,7 +5,7 @@ import GoogleButton from "../GoogleAuth/GoogleButton";
 import * as constants from "@/constants/common";
 import {
   useLoginMutation,
-  useProviderLoginMutation,
+  useAuthProviderMutation,
 } from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
@@ -22,7 +22,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loginUser, loginState] = useLoginMutation();
-  const [googleLogin] = useProviderLoginMutation();
+  const [authProvider] = useAuthProviderMutation();
   const dispatch = useDispatch();
   const handleTogglePassword = () => {
     setShowPassword((prevState) => !prevState);
@@ -35,10 +35,9 @@ const LoginContainer = ({ setContainer }: Prop) => {
     dispatch(setUser(response));
   };
 
-  const handleGoogleLoginSuccess = async (userInfo: any) => {
+  const handleGoogleAuthSuccess = async (userInfo: any) => {
     try {
-      console.log({ userInfo });
-      const response = await googleLogin({
+      const response = await authProvider({
         email: userInfo.email,
         name: userInfo.name,
         picture: userInfo.picture,
@@ -46,10 +45,10 @@ const LoginContainer = ({ setContainer }: Prop) => {
         provider_name: "google",
       }).unwrap();
 
-      // First set the user with backend response
+      // Set the user with backend response
       dispatch(setUser(response));
 
-      // Then update with Google OAuth specific data (profile picture, name)
+      // Update with Google OAuth specific data (profile picture, name)
       dispatch(
         setGoogleUser({
           profilePicture: userInfo.picture,
@@ -58,7 +57,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
         })
       );
     } catch (error) {
-      console.error("Google login failed", error);
+      console.error("Google authentication failed", error);
     }
   };
 
@@ -130,11 +129,11 @@ const LoginContainer = ({ setContainer }: Prop) => {
 
           {/* Google Button */}
           <GoogleButton
-            name="Login with Google"
-            onSuccess={handleGoogleLoginSuccess}
+            name="Continue with Google"
+            onSuccess={handleGoogleAuthSuccess}
             onError={() => {
-              console.log("Login Failed");
-              // Handle login failure, e.g., show a notification
+              console.log("Google authentication failed");
+              // Handle authentication failure, e.g., show a notification
             }}
           />
 
