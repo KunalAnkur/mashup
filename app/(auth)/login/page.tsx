@@ -1,7 +1,11 @@
+"use client";
 import { LoginContainer } from "@/components";
+import { useRouter } from "next/navigation";
 
 const Login = () => {
-  return <LoginContainer />;
+  const router = useRouter();
+  
+  return <LoginContainer setContainer={null} />;
 };
 
 export default Login;

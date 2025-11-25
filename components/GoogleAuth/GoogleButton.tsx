@@ -30,8 +30,7 @@ const GoogleButton = ({ onSuccess, onError, name }: Props) => {
   return (
     <Button
       name={name}
-      style="general"
-      className="w-full py-3 border border-white/40 text-smoothWhite hover:bg-white/40"
+      className="w-full py-3 rounded-xl bg-white/5 text-gray-300 text-sm px-4 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium border border-white/10"
       icon={<FcGoogle size={20} />}
       onClick={() => login()}
     />
