@@ -1,10 +1,9 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { OnboardStep } from "@/types/storeTypes";
-import { changeStep } from "@/lib/store/slices/onboardSlice";
 import { setRefers } from "@/lib/store/slices/roomSlice";
 import { UrlModalProps } from "@/types/ModalTypes/urlModalProps";
+import { useRouter } from "next/navigation";
 import {
   UrlModalHeader,
   SupportedPlatformsGrid,
@@ -16,6 +15,7 @@ import {
 
 const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
 
   const {
@@ -54,7 +54,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
       })
     );
     onClose();
-    if (!authState.isAuthenticated) dispatch(changeStep(OnboardStep.AUTH_STEP));
+    router.push("/sync");
   };
 
   // Early return if modal is closed

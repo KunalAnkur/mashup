@@ -1,6 +1,4 @@
 "use client";
-import { changeStep } from "@/lib/store/slices/onboardSlice";
-import { OnboardStep } from "@/types/storeTypes";
 import { useDispatch, useSelector } from "react-redux";
 import {
   FaLink,
@@ -17,9 +15,11 @@ import { useEffect } from "react";
 import { useFileContext } from "@/context/FileContext";
 import { setRefers, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
+import { useRouter } from "next/navigation";
 
 const FileSelection = () => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const selectedFileIndex = useSelector(
     (state: RootState) => state.room.selectedFileIndex
   );
@@ -34,9 +34,11 @@ const FileSelection = () => {
     }
   }, [files, selectedFileIndex, dispatch]);
 
-  const handleBack = () => dispatch(changeStep(OnboardStep.SELECT_SOURCE));
-  const handleOnURLSelection = () =>
-    dispatch(changeStep(OnboardStep.URL_SELECTION));
+  const handleBack = () => {
+    router.push("/stream");
+  };
+  
+  const handleOnURLSelection = () => router.push("/sync");
 
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith("video/"))
@@ -77,18 +79,11 @@ const FileSelection = () => {
         urls: urlList,
       })
     );
-    if (authState.isAuthenticated) {
-      // const response = await createRoomApi({ sourceType: "file" }).unwrap();
-      // if (response.success) {
-      //     const result = {...response, authId: authState.user!.id}
-      //     dispatch(setRoom(result));
-      // }
-    } else {
-      // TODO: Here we need to handle the case when user authenticate then it should redirect to room.
-      // I think we need to send the redirect Information to the global state.
-
-      dispatch(changeStep(OnboardStep.AUTH_STEP));
+    
+    if (!authState.isAuthenticated) {
+      router.push("/login");
     }
+    // If authenticated, AuthGuard will handle room creation and navigation
   };
   return (
     <div className="flex flex-col h-full bg-[#18181b]">
