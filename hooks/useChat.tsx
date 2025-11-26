@@ -126,7 +126,10 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
     }
 
     lastTypingEmitRef.current = now;
-    socket.emit(SocketEvent.USER_TYPING, { roomId });
+    socket.emit(SocketEvent.USER_TYPING, {
+      roomId,
+      userName: user?.username || "User",
+    });
 
     // Clear existing timeout
     if (typingTimeoutRef.current) {
@@ -136,7 +139,10 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
     // Set timeout to stop typing after 3 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
       if (socket && roomId) {
-        socket.emit(SocketEvent.USER_STOPPED_TYPING, { roomId });
+        socket.emit(SocketEvent.USER_STOPPED_TYPING, {
+          roomId,
+          userName: user?.username || "User",
+        });
       }
     }, 3000);
   }, [socket, roomId, user]);
@@ -145,15 +151,18 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
    * Stop typing indicator
    */
   const stopTyping = useCallback(() => {
-    if (!socket || !roomId) return;
+    if (!socket || !roomId || !user) return;
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
     }
 
-    socket.emit(SocketEvent.USER_STOPPED_TYPING, { roomId });
-  }, [socket, roomId]);
+    socket.emit(SocketEvent.USER_STOPPED_TYPING, {
+      roomId,
+      userName: user?.username || "User",
+    });
+  }, [socket, roomId, user]);
 
   /**
    * Get chat history
