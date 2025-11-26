@@ -1,15 +1,15 @@
 "use client";
-import { OnboardStep } from "@/types/storeTypes";
 import { Button } from "../UI";
 import { useDispatch, useSelector } from "react-redux";
-import { changeStep } from "@/lib/store/slices/onboardSlice";
 import { setRefers } from "@/lib/store/slices/roomSlice";
 import type { RootState } from "@/lib/store";
 import { FaYoutube, FaVimeo, FaTwitch, FaFileVideo } from "react-icons/fa";
 import { MdOndemandVideo } from "react-icons/md";
 import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
+import { useRouter } from "next/navigation";
 const UrlSelection = () => {
+  const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
   const roomState = useSelector((state: RootState) => state.room);
   const selectedFileIndex = useSelector(
@@ -43,22 +43,14 @@ const UrlSelection = () => {
         urls: [sourceUrlInput],
       })
     );
-    if (authState.isAuthenticated) {
-      // const response = await createRoomApi({ urls: [sourceUrlInput], sourceType: "url" }).unwrap();
-      // if (response.success) {
-      //     const roomWithAuth = { ...response, authId: authState.user!.id };
-      //     dispatch(setRoom(roomWithAuth));
-      // }
-    } else {
-      // TODO: Here we need to handle the case when user authenticate then it should redirect to room.
-      // I think we need to send the redirect Information to the global state.
-
-      dispatch(changeStep(OnboardStep.AUTH_STEP));
+    if (!authState.isAuthenticated) {
+      router.push("/login");
     }
+    // If authenticated, AuthGuard will handle room creation and navigation
   };
 
   const handleBack = () => {
-    dispatch(changeStep(OnboardStep.SELECT_SOURCE));
+    router.push("/");
   };
 
   return (
