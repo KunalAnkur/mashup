@@ -208,7 +208,6 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
     leaveChatRoom,
   ]);
 
-  // Listen for incoming messages
   useEffect(() => {
     if (!socket) return;
 
@@ -231,20 +230,9 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
       });
     };
 
-    socket.on(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
-
-    return () => {
-      socket.off(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
-    };
-  }, [socket]);
-
-  // Listen for typing indicators
-  useEffect(() => {
-    if (!socket || !user) return;
-
     const handleUserTyping = (data: TypingUser) => {
       // Don't show typing indicator for current user
-      if (data.userId === socket.id) return;
+      if (!user || data.userId === socket.id) return;
 
       setTypingUsers((prev) => {
         const exists = prev.some((u) => u.userId === data.userId);
@@ -257,23 +245,23 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
       setTypingUsers((prev) => prev.filter((u) => u.userId !== data.userId));
     };
 
+    // Register all socket event listeners
+    socket.on(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
     socket.on(SocketEvent.USER_TYPING, handleUserTyping);
     socket.on(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
 
+    // Cleanup all socket event listeners and typing timeout
     return () => {
+      socket.off(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
       socket.off(SocketEvent.USER_TYPING, handleUserTyping);
       socket.off(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
-    };
-  }, [socket, user]);
 
-  // Cleanup typing timeout on unmount
-  useEffect(() => {
-    return () => {
+      // Cleanup typing timeout on unmount
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, []);
+  }, [socket, user]);
 
   return {
     messages,
