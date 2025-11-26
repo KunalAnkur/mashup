@@ -356,7 +356,7 @@ const ChatTab = () => {
         {showEmojis && (
           <div
             ref={emojiPickerRef}
-            className="absolute bottom-full left-0 right-0 mb-2 rounded-2xl shadow-2xl animate-slide-up z-[100] overflow-hidden"
+            className="absolute bottom-full left-0 right-0 mb-2 rounded-2xl animate-slide-up z-[100] overflow-hidden"
             style={{ minWidth: "280px" }}
           >
             <EmojiPicker
@@ -375,18 +375,28 @@ const ChatTab = () => {
                 {
                   "--epr-bg-color": "#1f1f23",
                   "--epr-category-label-bg-color": "#1f1f23",
-                  "--epr-picker-border-color": "rgba(255, 255, 255, 0.1)",
                   "--epr-search-input-bg-color": "rgba(255, 255, 255, 0.05)",
                   "--epr-search-input-bg-color-active":
                     "rgba(255, 255, 255, 0.1)",
                   "--epr-search-input-text-color": "#ffffff",
                   "--epr-search-input-placeholder-color": "#9ca3af",
-                  "--epr-search-border-color": "rgba(255, 255, 255, 0.1)",
-                  "--epr-category-icon-active-color": "#ec4899",
+                  "--epr-category-icon-active-color": "transparent",
                   "--epr-skin-tone-picker-menu-color": "#27272a",
-                  "--epr-horizontal-padding": "12px",
-                  "--epr-emoji-size": "28px",
-                  "--epr-category-padding": "8px",
+                  "--epr-horizontal-padding": "8px",
+                  "--epr-emoji-size": "24px",
+                  "--epr-category-padding": "4px",
+                  "--epr-search-input-height": "32px",
+                  "--epr-search-input-padding": "6px 10px 6px 32px",
+                  "--epr-search-input-font-size": "12px",
+                  "--epr-category-navigation-button-size": "28px",
+                  "--epr-header-padding": "6px 8px 4px 8px",
+                  "--epr-category-label-height": "24px",
+                  "--epr-category-label-padding": "0 8px",
+                  "--epr-text-color": "#9ca3af",
+                  "--epr-category-label-text-color": "#9ca3af",
+                  "--epr-skin-tone-picker-menu-padding": "10px 12px",
+                  "--epr-skin-tone-picker-menu-border-radius": "8px",
+                  "--epr-skin-tone-picker-menu-margin": "8px 8px 0 0",
                 } as React.CSSProperties
               }
             />
