@@ -1,6 +1,6 @@
 "use client";
 import { useSelector, useDispatch } from "react-redux";
-import { useRouter, usePathname, useParams } from "next/navigation";
+import { useRouter, usePathname, useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { RootState } from "@/lib/store";
 import { logout } from "@/lib/store/slices/authSlice";
@@ -23,6 +23,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { roomId: roomRoutId } = useParams();
+    const searchParams = useSearchParams();
 
     const refreshAuthState = async () => {
         try {
@@ -107,9 +108,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             // Auth routes
             const authRoutes = ["/login", "/signup"];
             const isAuthRoute = authRoutes.includes(pathname);
+            const redirectParam = searchParams?.get("redirect");
+            const safeRedirect =
+                redirectParam && redirectParam.startsWith("/") ? redirectParam : null;
 
             // If authenticated user is on auth pages, check for refer data and redirect accordingly
             if (isAuthRoute && authState.isAuthenticated) {
+                if (safeRedirect) {
+                    router.replace(safeRedirect);
+                    return;
+                }
                 // If user has refer data, create room and redirect
                 if (roomState.refer && roomState.sourceType) {
                     const result = await createRoomWithRefer();
@@ -159,6 +167,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         pathname,
         authState.isAuthenticated,
         authState.loading,
+        searchParams,
         roomState.haveRoom,
         roomState.roomId,
         roomState.refer,
@@ -203,8 +212,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                         }
                     }, 150);
                 } else {
-                    // Redirect to login if not authenticated
-                    router.replace("/login");
+                    // Redirect to login if not authenticated, preserving intended destination
+                    const queryString =
+                        typeof window !== "undefined" ? window.location.search : "";
+                    const redirectPath = `${pathname || "/"}` + queryString;
+                    router.replace(`/login?redirect=${encodeURIComponent(redirectPath)}`);
                     setIsRoomLoading(false);
                     setSkeleton(false);
                 }
