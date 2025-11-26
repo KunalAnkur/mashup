@@ -40,7 +40,10 @@ const SourceSelection = () => {
     try {
       const response = await getRoomByRoomId(trimmedRoomId).unwrap();
 
-      if (response?.success && response?.data) {
+      if (
+        response?.statusCode === 401 ||
+        (response?.success && response?.data)
+      ) {
         // Room exists and is active, navigate to it
         router.push(`/room/${trimmedRoomId}`);
       } else {

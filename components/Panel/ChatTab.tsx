@@ -1,19 +1,23 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import {
-  FaSmile,
-  FaSadTear,
-  FaLaughSquint,
-  FaSurprise,
-  FaHeart,
-  FaGrinHearts,
-  FaArrowCircleUp,
-} from "react-icons/fa";
+import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
+import dynamic from "next/dynamic";
 import { useChat } from "@/hooks/useChat";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { ChatMessage } from "@/types/chatTypes";
+import type { EmojiClickData, Theme } from "emoji-picker-react";
+
+// Dynamically import EmojiPicker to avoid SSR issues
+const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center p-4">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+    </div>
+  ),
+});
 
 // Generate consistent color for a username
 const getUserColor = (username: string | undefined | null) => {
@@ -86,6 +90,7 @@ const ChatTab = () => {
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   // Get room and user info from Redux
   const roomId = useSelector((state: RootState) => state.room.roomId);
@@ -108,6 +113,34 @@ const ChatTab = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node) &&
+        !inputRef.current?.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest("[data-emoji-button]")
+      ) {
+        setShowEmojis(false);
+      }
+    };
+
+    if (showEmojis) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojis]);
+
+  // Handle emoji selection from emoji-picker-react
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    setMessageInput((prev) => prev + emojiData.emoji);
+    // Don't close the picker, allow multiple emojis
+  };
 
   // Handle sending message
   const handleSendMessage = async () => {
@@ -148,7 +181,7 @@ const ChatTab = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full gap-3">
+    <div className="flex flex-col h-full w-full gap-3 overflow-visible">
       {/* Connection Status (for debugging) */}
       {!isConnected && (
         <div className="px-3 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
@@ -317,36 +350,48 @@ const ChatTab = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Emoji Bar */}
-      {showEmojis && (
-        <div className="flex gap-2 bg-gradient-to-br from-[#1f1f23] to-[#27272a] p-2 rounded-xl overflow-x-auto scrollbar-hide animate-slide-up">
-          {[
-            { icon: FaSmile, color: "text-yellow-400" },
-            { icon: FaSadTear, color: "text-blue-400" },
-            { icon: FaLaughSquint, color: "text-yellow-300" },
-            { icon: FaSurprise, color: "text-pink-400" },
-            { icon: FaHeart, color: "text-red-500" },
-            { icon: FaGrinHearts, color: "text-pink-500" },
-          ].map((emoji, i) => {
-            const Icon = emoji.icon;
-            return (
-              <button
-                key={i}
-                onClick={() => {
-                  setMessageInput((prev) => prev + " 😊");
-                  setShowEmojis(false);
-                }}
-                className={`p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 hover:scale-110 ${emoji.color}`}
-              >
-                <Icon size={18} />
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       {/* Input Area */}
-      <div className="flex items-center gap-1 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl px-3 py-1 shadow-lg">
+      <div className="relative flex items-center gap-1 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl px-3 py-1 shadow-lg overflow-visible">
+        {/* Emoji Picker */}
+        {showEmojis && (
+          <div
+            ref={emojiPickerRef}
+            className="absolute bottom-full left-0 right-0 mb-2 rounded-2xl shadow-2xl animate-slide-up z-[100] overflow-hidden"
+            style={{ minWidth: "280px" }}
+          >
+            <EmojiPicker
+              onEmojiClick={handleEmojiClick}
+              theme={"dark" as Theme}
+              searchPlaceHolder="Search emojis..."
+              width="100%"
+              height="400px"
+              previewConfig={{
+                showPreview: false,
+              }}
+              skinTonesDisabled={false}
+              searchDisabled={false}
+              lazyLoadEmojis={true}
+              style={
+                {
+                  "--epr-bg-color": "#1f1f23",
+                  "--epr-category-label-bg-color": "#1f1f23",
+                  "--epr-picker-border-color": "rgba(255, 255, 255, 0.1)",
+                  "--epr-search-input-bg-color": "rgba(255, 255, 255, 0.05)",
+                  "--epr-search-input-bg-color-active":
+                    "rgba(255, 255, 255, 0.1)",
+                  "--epr-search-input-text-color": "#ffffff",
+                  "--epr-search-input-placeholder-color": "#9ca3af",
+                  "--epr-search-border-color": "rgba(255, 255, 255, 0.1)",
+                  "--epr-category-icon-active-color": "#ec4899",
+                  "--epr-skin-tone-picker-menu-color": "#27272a",
+                  "--epr-horizontal-padding": "12px",
+                  "--epr-emoji-size": "28px",
+                  "--epr-category-padding": "8px",
+                } as React.CSSProperties
+              }
+            />
+          </div>
+        )}
         <input
           ref={inputRef}
           type="text"
@@ -365,6 +410,7 @@ const ChatTab = () => {
           <FaArrowCircleUp size={20} />
         </button>
         <button
+          data-emoji-button
           onClick={() => setShowEmojis(!showEmojis)}
           className={`p-2 rounded-lg transition-all duration-200 ${
             showEmojis
