@@ -1,55 +1,26 @@
 "use client";
 
-import { changeStep } from "@/lib/store/slices/onboardSlice";
-import { OnboardStep } from "@/types/storeTypes";
-import { useDispatch } from "react-redux";
 import { FaUpload, FaLink } from "react-icons/fa";
 import { Button } from "../UI";
-import { useRef, useState } from "react";
-import { useFileContext } from "@/context/FileContext";
+import { useState } from "react";
 import Image from "next/image";
-import DeviceModal from "../Modals/DeviceModal";
-import UrlModal from "../Modals/UrlModal";
 import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 
 const SourceSelection = () => {
   const [isJoinDisabled, setIsJoinDisabled] = useState<boolean>(true);
   const [roomId, setRoomId] = useState<string>("");
-  const [isDeviceModalOpen, setIsDeviceModalOpen] = useState<boolean>(false);
-  const [isUrlModalOpen, setIsUrlModalOpen] = useState<boolean>(false);
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [joinError, setJoinError] = useState<string>("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const dispatch = useDispatch();
   const router = useRouter();
-  const { setFiles } = useFileContext();
   const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
 
-  const handleOnVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    console.log(files);
-    if (files && files.length > 0) {
-      setFiles(Array.from(files));
-      // setIsDeviceModalOpen(false); // Close modal after file selection
-      dispatch(changeStep(OnboardStep.FILE_SELECTION));
-    }
-  };
-
   const handleOnUploadSelection = () => {
-    setIsDeviceModalOpen(true); // Open the device modal
-  };
-
-  const handleCloseDeviceModal = () => {
-    setIsDeviceModalOpen(false);
+    router.push("/stream");
   };
 
   const handleOnURLSelection = () => {
-    setIsUrlModalOpen(true); // Open the URL modal
-  };
-
-  const handleCloseUrlModal = () => {
-    setIsUrlModalOpen(false);
+    router.push("/sync");
   };
 
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -314,16 +285,6 @@ const SourceSelection = () => {
           animation: float 3s ease-in-out infinite;
         }
       `}</style>
-
-      {/* Device Modal */}
-      <DeviceModal
-        open={isDeviceModalOpen}
-        onClose={handleCloseDeviceModal}
-        onFileSelect={handleOnVideoChange}
-        fileInputRef={fileInputRef}
-      />
-
-      <UrlModal open={isUrlModalOpen} onClose={handleCloseUrlModal} />
     </>
   );
 };

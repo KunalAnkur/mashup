@@ -30,6 +30,7 @@ export const authApi = createApi({
         username: string;
         password: string;
         confirmPassword: string;
+        name?: string;
       }
     >({
       query: ({
@@ -37,15 +38,23 @@ export const authApi = createApi({
         password,
         username,
         confirmPassword,
+        name,
       }: {
         email: string;
         username: string;
         password: string;
         confirmPassword: string;
+        name?: string;
       }) => ({
         url: "/signup",
         method: "POST",
-        body: { email, password, confirm_password: confirmPassword, username },
+        body: { 
+          email, 
+          password, 
+          confirm_password: confirmPassword, 
+          username,
+          name: name || username, // Use name if provided, otherwise use username
+        },
       }),
     }),
     verifyToken: builder.mutation<any, void>({
@@ -112,6 +121,31 @@ export const authApi = createApi({
         },
       }),
     }),
+    authProvider: builder.mutation<
+      UserLoginResp,
+      {
+        email: string;
+        name: string;
+        picture?: string;
+        sub: string;
+        provider_name: string;
+      }
+    >({
+      query: ({ email, name, picture, sub, provider_name }) => ({
+        url: "/auth-provider",
+        method: "POST",
+        body: {
+          email,
+          name,
+          picture,
+          provider: {
+            user_id: sub,
+            provider_name,
+            provider_user_id: sub,
+          },
+        },
+      }),
+    }),
     
     logout: builder.mutation<any, void>({
       query: () => ({
@@ -129,5 +163,6 @@ export const {
   useCheckTokenQuery,
   useProviderLoginMutation,
   useProviderSignupMutation,
+  useAuthProviderMutation,
   useLogoutMutation
 } = authApi;
