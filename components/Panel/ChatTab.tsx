@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   FaSmile,
   FaSadTear,
@@ -10,9 +10,23 @@ import {
   FaGrinHearts,
   FaArrowCircleUp,
 } from "react-icons/fa";
+import { useChat } from "@/hooks/useChat";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { ChatMessage } from "@/types/chatTypes";
 
 // Generate consistent color for a username
-const getUserColor = (username: string) => {
+const getUserColor = (username: string | undefined | null) => {
+  // Default color if username is not provided
+  const defaultColor = {
+    gradient: "from-rose-400 via-pink-400 to-fuchsia-400",
+    bg: "from-rose-500 via-pink-500 to-fuchsia-500",
+  };
+
+  if (!username || typeof username !== "string" || username.length === 0) {
+    return defaultColor;
+  }
+
   const colors = [
     {
       gradient: "from-rose-400 via-pink-400 to-fuchsia-400",
@@ -56,93 +70,190 @@ const getUserColor = (username: string) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
+// Format timestamp to readable time
+const formatTime = (timestamp: number): string => {
+  const date = new Date(timestamp);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours % 12 || 12;
+  const displayMinutes = minutes.toString().padStart(2, "0");
+  return `${displayHours}:${displayMinutes} ${ampm}`;
+};
+
 const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);
-  const currentUser = "You"; // This would come from auth state
-  const messages = [
-    {
-      user: "ankurkunal",
-      text: "Hey everyone! This video is amazing!",
-      time: "10:22 PM",
-      isCurrentUser: false,
-    },
-    {
-      user: "You",
-      text: "I totally agree! The cinematography is stunning.",
-      time: "10:25 PM",
-      isCurrentUser: true,
-    },
-    {
-      user: "maria_s",
-      text: "Can we pause at 15:30? I need to grab some snacks 🍿",
-      time: "10:28 PM",
-      isCurrentUser: false,
-    },
-    {
-      user: "You",
-      text: "Sure thing! Just let me know when you're back.",
-      time: "10:29 PM",
-      isCurrentUser: true,
-    },
-    {
-      user: "ankurkunal",
-      text: "No problem, take your time!",
-      time: "10:30 PM",
-      isCurrentUser: false,
-    },
-    {
-      user: "jake_doe",
-      text: "This is my first time watching this. So excited!",
-      time: "10:32 PM",
-      isCurrentUser: false,
-    },
-    {
-      user: "sarah_m",
-      text: "The soundtrack is incredible! 🎵",
-      time: "10:35 PM",
-      isCurrentUser: false,
-    },
-    {
-      user: "You",
-      text: "Right? I've been listening to it on repeat!",
-      time: "10:36 PM",
-      isCurrentUser: true,
-    },
-    {
-      user: "alex_t",
-      text: "Can someone explain what happened at 20:15?",
-      time: "10:38 PM",
-      isCurrentUser: false,
-    },
-  ];
+  const [messageInput, setMessageInput] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  /*  const videoParticipants = [
-    { name: "Chloe", avatar: "C", active: true },
-    { name: "Alex", avatar: "A", active: true },
-    { name: "David", avatar: "D", active: true },
-    { name: "Marco", avatar: "M", active: false },
-  ]; */
+  // Get room and user info from Redux
+  const roomId = useSelector((state: RootState) => state.room.roomId);
+  const isHost = useSelector((state: RootState) => state.room.host);
+  const user = useSelector((state: RootState) => state.auth.user);
+
+  // Use chat hook
+  const {
+    messages,
+    typingUsers,
+    sendMessage,
+    handleTyping,
+    stopTyping,
+    isJoined,
+    isLoading,
+    isConnected,
+  } = useChat({ roomId, isHost });
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Handle sending message
+  const handleSendMessage = async () => {
+    if (!messageInput.trim() || !isJoined) return;
+
+    const result = await sendMessage(messageInput);
+    if (result.success) {
+      setMessageInput("");
+      stopTyping();
+    } else {
+      console.error("Failed to send message:", result.error);
+    }
+  };
+
+  // Handle Enter key press
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // Handle input change with typing indicator
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessageInput(e.target.value);
+    if (e.target.value.trim()) {
+      handleTyping();
+    } else {
+      stopTyping();
+    }
+  };
+
+  // Check if message is from current user
+  const isCurrentUserMessage = (message: ChatMessage) => {
+    // We'll compare by socket ID or user name
+    // For now, we'll use the user's name from Redux
+    return user && message.userName === user.name;
+  };
 
   return (
     <div className="flex flex-col h-full w-full gap-3">
+      {/* Connection Status (for debugging) */}
+      {!isConnected && (
+        <div className="px-3 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+          <p className="text-yellow-400 text-xs">Connecting to chat...</p>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="px-3 py-2 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+          <p className="text-blue-400 text-xs">Joining chat room...</p>
+        </div>
+      )}
+
       {/* Chat Messages Area */}
       <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        {messages.length === 0 && isJoined && !isLoading && (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500 text-sm">
+              No messages yet. Start the conversation!
+            </p>
+          </div>
+        )}
+
         {messages.map((msg, i) => {
-          const isCurrentUser = msg.isCurrentUser || msg.user === currentUser;
-          const userColor = getUserColor(msg.user);
+          // Safety check: ensure message has required fields
+          if (!msg || !msg.message) {
+            return null;
+          }
+
+          const userName = msg.userName || "Unknown User";
+          const isCurrentUser = isCurrentUserMessage(msg);
+          const userColor = getUserColor(userName);
+          const isSystemMessage = msg.type === "system";
+
+          // System messages (user joined/left)
+          if (isSystemMessage) {
+            // Extract just the name from the message (remove " joined the chat" or " left the chat" part)
+            // If userName is available and not "Unknown User", use it; otherwise extract from message
+            let displayName = userName;
+            if (!displayName || displayName === "Unknown User") {
+              displayName = msg.message
+                .replace(" joined the chat", "")
+                .replace(" left the chat", "")
+                .trim();
+            }
+            // Remove "Unknown User" prefix if it exists
+            displayName = displayName.replace(/^Unknown User\s+/i, "");
+
+            return (
+              <div key={msg.id || i} className="flex justify-center py-2">
+                <div className="bg-white/5 rounded-full px-4 py-1.5">
+                  <span className="text-gray-400 text-xs">
+                    <span
+                      className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
+                    >
+                      {displayName}
+                    </span>{" "}
+                    {msg.message.includes("joined")
+                      ? "joined the chat"
+                      : msg.message.includes("left")
+                      ? "left the chat"
+                      : ""}
+                  </span>
+                </div>
+              </div>
+            );
+          }
+
+          // Regular user messages
           return (
             <div
-              key={i}
+              key={msg.id || i}
               className="flex items-start gap-2 group animate-fade-in"
               style={{ animationDelay: `${i * 0.05}s` }}
             >
               {/* Avatar - Show for all users */}
               <div className="relative flex-shrink-0 mt-0.5">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg bg-gradient-to-br ${userColor.bg}`}
-                >
-                  {msg.user.charAt(0).toUpperCase()}
-                </div>
+                {msg.userProfile ? (
+                  <>
+                    <img
+                      src={msg.userProfile}
+                      alt={userName}
+                      className="w-8 h-8 rounded-full object-cover shadow-lg border-2 border-white/10"
+                      onError={(e) => {
+                        // Hide image and show fallback if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const fallback =
+                          target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = "flex";
+                      }}
+                    />
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg bg-gradient-to-br ${userColor.bg} hidden`}
+                    >
+                      {userName.charAt(0).toUpperCase()}
+                    </div>
+                  </>
+                ) : (
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg bg-gradient-to-br ${userColor.bg}`}
+                  >
+                    {userName.charAt(0).toUpperCase()}
+                  </div>
+                )}
                 {!isCurrentUser && (
                   <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[#18181b] rounded-full"></div>
                 )}
@@ -150,13 +261,17 @@ const ChatTab = () => {
 
               {/* Message Content */}
               <div className="flex-1 min-w-0 flex flex-col gap-1">
-                <div className="flex items-baseline gap-2">
+                {/* Show username and email for ALL messages */}
+                <div className="flex items-baseline gap-2 flex-wrap">
                   <span
                     className={`font-semibold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
                   >
-                    {msg.user}
+                    {userName}
                   </span>
-                  <span className="text-gray-500 text-xs">{msg.time}</span>
+
+                  <span className="text-gray-500 text-xs">
+                    {formatTime(msg.timestamp)}
+                  </span>
                 </div>
                 <div
                   className={`rounded-xl px-3 py-2 transition-all duration-200 rounded-tl-none ${
@@ -166,7 +281,7 @@ const ChatTab = () => {
                   }`}
                 >
                   <p className="text-white/90 text-sm leading-relaxed break-words">
-                    {msg.text}
+                    {msg.message}
                   </p>
                 </div>
               </div>
@@ -174,21 +289,32 @@ const ChatTab = () => {
           );
         })}
 
-        {/* Join Notification */}
-        <div className="flex justify-center py-2">
-          <div className="bg-white/5 rounded-full px-4 py-1.5">
+        {/* Typing Indicator */}
+        {typingUsers.length > 0 && (
+          <div className="flex items-center gap-2 px-3 py-2">
+            <div className="flex gap-1">
+              <div
+                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                style={{ animationDelay: "0s" }}
+              ></div>
+              <div
+                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                style={{ animationDelay: "0.2s" }}
+              ></div>
+              <div
+                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                style={{ animationDelay: "0.4s" }}
+              ></div>
+            </div>
             <span className="text-gray-400 text-xs">
-              <span
-                className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${
-                  getUserColor("Marco").gradient
-                }`}
-              >
-                Marco
-              </span>{" "}
-              has joined the party
+              {typingUsers.map((u) => u.userName).join(", ")}
+              {typingUsers.length === 1 ? " is" : " are"} typing...
             </span>
           </div>
-        </div>
+        )}
+
+        {/* Scroll anchor */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Emoji Bar */}
@@ -206,7 +332,11 @@ const ChatTab = () => {
             return (
               <button
                 key={i}
-                className={`p-2 rounded-xl bg-white/5 hover:bg-white/10  transition-all duration-200 hover:scale-110 ${emoji.color}`}
+                onClick={() => {
+                  setMessageInput((prev) => prev + " 😊");
+                  setShowEmojis(false);
+                }}
+                className={`p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 hover:scale-110 ${emoji.color}`}
               >
                 <Icon size={18} />
               </button>
@@ -216,15 +346,21 @@ const ChatTab = () => {
       )}
 
       {/* Input Area */}
-      <div className="flex items-center gap-1 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl px-3  py-1 shadow-lg">
+      <div className="flex items-center gap-1 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl px-3 py-1 shadow-lg">
         <input
+          ref={inputRef}
           type="text"
-          placeholder="Send a message..."
-          className="flex-1 bg-transparent outline-none text-white/90 text-sm placeholder:text-gray-500"
+          placeholder={isJoined ? "Send a message..." : "Connecting..."}
+          value={messageInput}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          disabled={!isJoined || isLoading}
+          className="flex-1 bg-transparent outline-none text-white/90 text-sm placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
         />
         <button
-          onClick={() => console.log("send button triggered")}
-          className=" p-2 rounded-lg text-gray-400 hover:text-pink-400 hover:bg-white/5 transition-all duration-200"
+          onClick={handleSendMessage}
+          disabled={!messageInput.trim() || !isJoined || isLoading}
+          className="p-2 rounded-lg text-gray-400 hover:text-pink-400 hover:bg-white/5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <FaArrowCircleUp size={20} />
         </button>
@@ -232,7 +368,7 @@ const ChatTab = () => {
           onClick={() => setShowEmojis(!showEmojis)}
           className={`p-2 rounded-lg transition-all duration-200 ${
             showEmojis
-              ? "text-pink-400 bg-pink-500/10 "
+              ? "text-pink-400 bg-pink-500/10"
               : "text-gray-400 hover:text-pink-400 hover:bg-white/5"
           }`}
         >

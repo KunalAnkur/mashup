@@ -9,11 +9,19 @@ export enum SocketEvent {
   HOSTVIDEOSTATE = "hostvideostate",
   NOTIFY = "notify",
   CHATMESSAGE = "chatmessage",
-
+  // Chat-specific events
+  JOIN_CHAT_ROOM = "joinChatRoom",
+  SEND_CHAT_MESSAGE = "sendChatMessage",
+  RECEIVE_CHAT_MESSAGE = "receiveChatMessage",
+  USER_TYPING = "userTyping",
+  USER_STOPPED_TYPING = "userStoppedTyping",
+  LEAVE_CHAT_ROOM = "leaveChatRoom",
+  GET_CHAT_HISTORY = "getChatHistory",
+  // MediaSoup events
   CONNECT_TRANSPORT = "connectTransport",
   PRODUCE = "produce",
   CONSUME = "consume",
   LEAVE_ROOM = "leaveRoom",
   UNPAUSE_CONSUMERS = "unpauseConsumers",
-  INCOMING_PRODUCER = "incomingProducer"
+  INCOMING_PRODUCER = "incomingProducer",
 }
