@@ -9,7 +9,7 @@ import {
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import GoogleButton from "../GoogleAuth/GoogleButton";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 
 type Prop = {
@@ -17,6 +17,11 @@ type Prop = {
 };
 const SignupContainer = ({ setContainer }: Prop) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams?.get("redirect");
+
+  const buildAuthRoute = (path: string) =>
+    redirectParam ? `${path}?redirect=${encodeURIComponent(redirectParam)}` : path;
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [username, setUsername] = useState<string>("");
@@ -47,7 +52,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
     if (setContainer) {
       setContainer("login");
     } else {
-      router.push("/login");
+      router.push(buildAuthRoute("/login"));
     }
   };
 
@@ -168,7 +173,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
               ) : (
                 <Anchor
                   name="LOGIN"
-                  url={constants.pageType.login}
+                  url={buildAuthRoute(constants.pageType.login)}
                   className="ml-1 text-pink-500 hover:text-pink-400 font-semibold transition-colors"
                 />
               )}

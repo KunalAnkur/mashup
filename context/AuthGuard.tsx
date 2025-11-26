@@ -37,29 +37,29 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         }
     }
 
-    const refreshRoomDetails = async () => {
-        try {
-            const roomResponse = await getMyRoom().unwrap();
-            if (roomResponse.success) {
-                const data = roomResponse.data;
-                if (Object.keys(data).length) {
-                    const result = { ...roomResponse, authId }
-                    // dispatch(setRoom(result));
-                    return result;
-                }
-                else {
-                    dispatch(exitRoom());
-                    return null;
-                }
-            } else {
-                dispatch(exitRoom());
-                return null;
-            }
-        } catch (error) {
-            dispatch(exitRoom());
-            return null;
-        }
-    }
+    // const refreshRoomDetails = async () => {
+    //     try {
+    //         const roomResponse = await getMyRoom().unwrap();
+    //         if (roomResponse.success) {
+    //             const data = roomResponse.data;
+    //             if (Object.keys(data).length) {
+    //                 const result = { ...roomResponse, authId }
+    //                 // dispatch(setRoom(result));
+    //                 return result;
+    //             }
+    //             else {
+    //                 dispatch(exitRoom());
+    //                 return null;
+    //             }
+    //         } else {
+    //             dispatch(exitRoom());
+    //             return null;
+    //         }
+    //     } catch (error) {
+    //         dispatch(exitRoom());
+    //         return null;
+    //     }
+    // }
 
     const createRoomWithRefer = async () => {
         try {
@@ -180,7 +180,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const [isRoomLoading, setIsRoomLoading] = useState<boolean>(false);
     
     useEffect(() => {
-        let timeoutId: NodeJS.Timeout | null = null;
+        // let timeoutId: NodeJS.Timeout | null = null;
         
         const routeLogic = async () => {
             if (pathname?.startsWith("/room/") && roomRoutId) {
@@ -205,12 +205,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                     
                     // Use a timeout to ensure smooth transition after room is loaded
                     // Check again if room is loaded before hiding skeleton
-                    timeoutId = setTimeout(() => {
-                        if (roomState.haveRoom && roomState.roomId === roomRoutId) {
-                            setIsRoomLoading(false);
-                            setSkeleton(false);
-                        }
-                    }, 150);
+                    if (roomState.haveRoom && roomState.roomId === roomRoutId) {
+                        setIsRoomLoading(false);
+                        setSkeleton(false);
+                    }
+                    // timeoutId = setTimeout(() => {
+                        
+                    // }, 150);
                 } else {
                     // Redirect to login if not authenticated, preserving intended destination
                     const queryString =
@@ -233,9 +234,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         
         // Cleanup timeout on unmount or dependency change
         return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
+            // if (timeoutId) {
+            //     clearTimeout(timeoutId);
+            // }
         };
     }, [
         pathname,
@@ -266,7 +267,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         <>
             {shouldShowSkeleton ? (
                 <div className="animate-fade-in">
-                    <Skeleton auth={authState.isAuthenticated} type="room" />
+                    <Skeleton
+                        auth={authState.isAuthenticated}
+                        type="room"
+                        showAuthOverlay={false}
+                    />
                 </div>
             ) : (
                 <div className="animate-fade-in">

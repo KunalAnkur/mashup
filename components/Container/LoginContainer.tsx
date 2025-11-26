@@ -9,7 +9,7 @@ import {
 } from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 
 type Prop = {
@@ -18,6 +18,11 @@ type Prop = {
 };
 const LoginContainer = ({ setContainer }: Prop) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams?.get("redirect");
+
+  const buildAuthRoute = (path: string) =>
+    redirectParam ? `${path}?redirect=${encodeURIComponent(redirectParam)}` : path;
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -69,7 +74,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
     if (setContainer) {
       setContainer("signup");
     } else {
-      router.push("/signup");
+      router.push(buildAuthRoute("/signup"));
     }
   };
   return (
@@ -151,7 +156,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
               ) : (
                 <Anchor
                   name="SIGNUP NOW"
-                  url={constants.pageType.signup}
+                  url={buildAuthRoute(constants.pageType.signup)}
                   className="ml-1 text-pink-500 hover:text-pink-400 font-semibold transition-colors"
                 />
               )}
