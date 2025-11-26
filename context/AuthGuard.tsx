@@ -196,6 +196,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                             // Wait for Redux state to update and DOM to render
                             await new Promise(resolve => setTimeout(resolve, 250));
                         } catch (error) {
+                            // TODO: Notify User: Handle this error gracefully
+                            console.error("Error fetching room details:", error);
                             router.replace("/");
                             setIsRoomLoading(false);
                             setSkeleton(false);
