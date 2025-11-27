@@ -24,6 +24,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const hasJoinedRef = useRef(false);
     const selectedIndexRef = useRef(roomState.selectedFileIndex);
     const isChangingVideoRef = useRef(false);
+    const videoEndedRef = useRef(false); // Track if video has ended
     
     // Pause overlay state (for consumers)
     const [isPaused, setIsPaused] = useState(false);
@@ -135,7 +136,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         joinRoom, 
         isConnected, 
         onPause, 
-        onPlay, 
+        onPlay: mediaSoupOnPlay, 
         onSeekStart,
         onSeekEnd,
         replaceProducerTracks 
@@ -147,6 +148,30 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         isHost: roomState.host,
         namespace: 'filestream'
     });
+
+    // Wrap onPlay to handle video restart after ending
+    const onPlay = useCallback((event: string) => {
+        // Call the original handler
+        mediaSoupOnPlay(event);
+        
+        // If video is playing after it ended, refresh producer tracks
+        if (roomState.host && videoEndedRef.current && hasJoinedRef.current) {
+            console.log("Video playing after end - refreshing producer tracks");
+            videoEndedRef.current = false;
+            
+            setTimeout(async () => {
+                const newStream = getStream();
+                if (newStream) {
+                    try {
+                        await replaceProducerTracks(newStream);
+                        console.log("Producer tracks refreshed after video restart");
+                    } catch (error) {
+                        console.error("Error refreshing producer tracks:", error);
+                    }
+                }
+            }, 500);
+        }
+    }, [mediaSoupOnPlay, roomState.host, getStream, replaceProducerTracks]);
 
     // Create object URL for current file (host only)
     useEffect(() => {
@@ -170,6 +195,13 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
             URL.revokeObjectURL(url);
         };
     }, [files, roomState.selectedFileIndex, roomState.host]);
+
+    // Handle video ended event (for host)
+    const handleVideoEnded = useCallback(() => {
+        if (!roomState.host) return;
+        console.log("Video ended - marking for track refresh on next play");
+        videoEndedRef.current = true;
+    }, [roomState.host]);
 
     // Handle video ready event
     const handleVideoReady = useCallback(() => {
@@ -278,6 +310,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 playerRef={playerRef}
                 playing={isPlaying} // Host always plays; consumer pauses when host pauses
                 onReady={handleVideoReady}
+                onEnded={handleVideoEnded}
                 onSeekStart={onSeekStart}
                 onSeekEnd={onSeekEnd}
                 fullscreenTargetRef={fullscreenTargetRef}
