@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import { RoomSetting, RoomState } from "@/types/storeTypes";
-import { RoomCreateResponse, UserLoginResp } from "@/types/responseTypes";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RoomSetting, RoomState, UrlMetadata } from "@/types/storeTypes";
+import { RoomCreateResponse } from "@/types/responseTypes";
 
 const initialState: RoomState = {
   haveRoom: false,
@@ -15,6 +15,7 @@ const initialState: RoomState = {
     panelCollapsed: false
   },
   loading: false,
+  urlMetadataCache: {},
 };
 
 const authSlice = createSlice({
@@ -69,6 +70,30 @@ const authSlice = createSlice({
       state.sourceType = action.payload.sourceType;
       state.urls = action.payload.urls || [];
     },
+    
+    /** Cache metadata for a single URL */
+    setUrlMetadata: (
+      state,
+      action: PayloadAction<{ url: string; metadata: UrlMetadata }>
+    ) => {
+      state.urlMetadataCache[action.payload.url] = action.payload.metadata;
+    },
+    
+    /** Cache metadata for multiple URLs at once */
+    setUrlMetadataBatch: (
+      state,
+      action: PayloadAction<Record<string, UrlMetadata>>
+    ) => {
+      state.urlMetadataCache = {
+        ...state.urlMetadataCache,
+        ...action.payload,
+      };
+    },
+    
+    /** Clear URL metadata cache */
+    clearUrlMetadataCache: (state) => {
+      state.urlMetadataCache = {};
+    },
   },
   extraReducers: (builder) => {},
 });
@@ -82,5 +107,8 @@ export const {
   setPanelCollapsed,
   setRefers,
   setUrls,
+  setUrlMetadata,
+  setUrlMetadataBatch,
+  clearUrlMetadataCache,
 } = authSlice.actions;
 export default authSlice;

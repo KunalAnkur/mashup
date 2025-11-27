@@ -1,19 +1,324 @@
 "use client";
 
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
+import { setUrlMetadata } from "@/lib/store/slices/roomSlice";
 import { useFileContext } from "@/context/FileContext";
 import { useVideoSelection } from "@/context/VideoSelectionContext";
 import { LuPlay, LuFilm, LuLock, LuCrown } from "react-icons/lu";
+import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
+import { detectPlatform, getPlatformById, getUrlDisplayName } from "@/types/ModalTypes/urlUtils";
+
+// Playlist URL Card - Modified version for playing state with loading support
+const PlaylistUrlCard = ({
+    url,
+    index,
+    isPlaying,
+    isHost,
+    isLoading = false,
+    onSelect,
+}: {
+    url: AddedUrl;
+    index: number;
+    isPlaying: boolean;
+    isHost: boolean;
+    isLoading?: boolean;
+    onSelect: () => void;
+}) => {
+    const platform = getPlatformById(url.platformId);
+    const hasMetadata = url.metadata && (url.metadata.title || url.metadata.thumbnail);
+
+    return (
+        <button
+            onClick={onSelect}
+            disabled={!isHost}
+            className={`
+                group w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0
+                ${isPlaying
+                    ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
+                    : 'bg-white/5 border border-transparent hover:bg-white/10 hover:border-white/10'
+                }
+                ${!isHost ? 'cursor-default' : 'cursor-pointer'}
+            `}
+        >
+            {/* Thumbnail */}
+            <div className={`
+                relative w-20 h-13 rounded-lg overflow-hidden shrink-0 
+                ${isPlaying ? 'ring-2 ring-pink-500/50' : ''}
+                bg-gradient-to-br from-[#1f1f23] to-[#27272a]
+            `}>
+                {isLoading ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/5 animate-pulse">
+                        <div className="w-5 h-5 border-2 border-white/20 border-t-white/60 rounded-full animate-spin"></div>
+                    </div>
+                ) : url.metadata?.thumbnail ? (
+                    <img
+                        src={url.metadata.thumbnail}
+                        alt={url.metadata?.title || "Video thumbnail"}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                        }}
+                    />
+                ) : null}
+                {!isLoading && (
+                    <div
+                        className={`absolute inset-0 flex items-center justify-center ${
+                            url.metadata?.thumbnail ? "hidden" : ""
+                        } ${platform?.iconBg || "bg-gradient-to-br from-pink-500 to-fuchsia-600"}`}
+                    >
+                        <span className="text-white text-lg">
+                            {platform?.smallIcon || <LuFilm className="text-white text-sm" />}
+                        </span>
+                    </div>
+                )}
+                
+                {/* Play indicator overlay */}
+                {isPlaying && !isLoading && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
+                            <LuPlay className="text-white ml-0.5" size={12} />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Metadata */}
+            <div className="flex flex-col gap-0.5 min-w-0 flex-1 justify-center overflow-hidden text-left">
+                {isLoading ? (
+                    <div className="space-y-1.5">
+                        <div className="h-3.5 bg-white/10 rounded animate-pulse w-3/4"></div>
+                        <div className="h-2.5 bg-white/5 rounded w-1/2 animate-pulse"></div>
+                    </div>
+                ) : hasMetadata && url.metadata ? (
+                    <>
+                        <div className="flex items-center gap-2">
+                            <p className={`text-xs font-semibold line-clamp-1 leading-tight ${
+                                isPlaying ? 'text-pink-400' : 'text-gray-200'
+                            }`}>
+                                {url.metadata.title || getUrlDisplayName(url.url)}
+                            </p>
+                            {isPlaying && (
+                                <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                                    Playing
+                                </span>
+                            )}
+                        </div>
+                        {url.metadata.description && (
+                            <p className="text-gray-500 text-[10px] line-clamp-1 leading-tight">
+                                {url.metadata.description}
+                            </p>
+                        )}
+                        <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mt-0.5">
+                            {url.metadata.author && (
+                                <span className="truncate max-w-[80px]">{url.metadata.author}</span>
+                            )}
+                            {url.metadata.author && platform && <span>•</span>}
+                            {platform && <span className="truncate">{platform.name}</span>}
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="flex items-center gap-2">
+                            <p className={`text-xs font-medium truncate ${
+                                isPlaying ? 'text-pink-400' : 'text-gray-200'
+                            }`}>
+                                {getUrlDisplayName(url.url)}
+                            </p>
+                            {isPlaying && (
+                                <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                                    Playing
+                                </span>
+                            )}
+                        </div>
+                        {platform && (
+                            <p className="text-gray-500 text-[10px] truncate">{platform.name}</p>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* Index number */}
+            <div className={`
+                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+                ${isPlaying
+                    ? 'bg-pink-500/20 text-pink-400'
+                    : 'bg-white/5 text-gray-500 group-hover:bg-white/10'
+                }
+            `}>
+                {index + 1}
+            </div>
+        </button>
+    );
+};
+
+// File Card for local files
+const PlaylistFileCard = ({
+    file,
+    index,
+    isPlaying,
+    isHost,
+    onSelect,
+}: {
+    file: File;
+    index: number;
+    isPlaying: boolean;
+    isHost: boolean;
+    onSelect: () => void;
+}) => {
+    return (
+        <button
+            onClick={onSelect}
+            disabled={!isHost}
+            className={`
+                group w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0
+                ${isPlaying
+                    ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
+                    : 'bg-white/5 border border-transparent hover:bg-white/10 hover:border-white/10'
+                }
+                ${!isHost ? 'cursor-default' : 'cursor-pointer'}
+            `}
+        >
+            {/* Thumbnail placeholder */}
+            <div className={`
+                relative w-20 h-13 rounded-lg overflow-hidden shrink-0 
+                ${isPlaying ? 'ring-2 ring-pink-500/50' : ''}
+                bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center
+            `}>
+                <LuFilm className="text-gray-500" size={20} />
+                
+                {/* Play indicator overlay */}
+                {isPlaying && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
+                            <LuPlay className="text-white ml-0.5" size={12} />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* File info */}
+            <div className="flex flex-col gap-0.5 min-w-0 flex-1 justify-center overflow-hidden text-left">
+                <div className="flex items-center gap-2">
+                    <p className={`text-xs font-semibold line-clamp-1 leading-tight ${
+                        isPlaying ? 'text-pink-400' : 'text-gray-200'
+                    }`}>
+                        {file.name}
+                    </p>
+                    {isPlaying && (
+                        <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                            Playing
+                        </span>
+                    )}
+                </div>
+                <p className="text-gray-500 text-[10px] truncate">
+                    {formatFileSize(file.size)} • Local file
+                </p>
+            </div>
+
+            {/* Index number */}
+            <div className={`
+                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+                ${isPlaying
+                    ? 'bg-pink-500/20 text-pink-400'
+                    : 'bg-white/5 text-gray-500 group-hover:bg-white/10'
+                }
+            `}>
+                {index + 1}
+            </div>
+        </button>
+    );
+};
 
 const PlaylistTab = () => {
+    const dispatch = useDispatch();
     const roomState = useSelector((state: RootState) => state.room);
+    const authState = useSelector((state: RootState) => state.auth);
     const { files } = useFileContext();
     const { selectVideo, isHost } = useVideoSelection();
 
     const isFileMode = roomState.sourceType === "file";
     const urls = roomState.urls;
     const selectedIndex = roomState.selectedFileIndex;
+    const urlMetadataCache = roomState.urlMetadataCache;
+
+    // Track which URLs are currently being fetched
+    const [loadingUrls, setLoadingUrls] = useState<Set<string>>(new Set());
+
+    // Fetch metadata for URLs that aren't cached yet
+    useEffect(() => {
+        if (isFileMode || urls.length === 0) return;
+
+        // Find URLs that need metadata fetching
+        const urlsToFetch = urls.filter(
+            (url) => !urlMetadataCache[url] && !loadingUrls.has(url)
+        );
+
+        if (urlsToFetch.length === 0) return;
+
+        // Mark URLs as loading
+        setLoadingUrls((prev) => {
+            const newSet = new Set(prev);
+            urlsToFetch.forEach((url) => newSet.add(url));
+            return newSet;
+        });
+
+        // Fetch metadata for each URL
+        const fetchMetadata = async () => {
+            for (const url of urlsToFetch) {
+                try {
+                    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+                    const token = authState.token;
+
+                    const response = await fetch(`${baseUrl}/api/v1/url/metadata`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            ...(token && { Authorization: `Bearer ${token}` }),
+                        },
+                        body: JSON.stringify({ url }),
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Cache the metadata in Redux
+                        dispatch(setUrlMetadata({
+                            url,
+                            metadata: {
+                                title: data.data?.title || undefined,
+                                description: data.data?.description || undefined,
+                                thumbnail: data.data?.thumbnail || undefined,
+                                author: data.data?.author || data.data?.siteName || undefined,
+                            },
+                        }));
+                    }
+                } catch (error) {
+                    console.error("Error fetching metadata for URL:", url, error);
+                }
+
+                // Remove from loading set
+                setLoadingUrls((prev) => {
+                    const newSet = new Set(prev);
+                    newSet.delete(url);
+                    return newSet;
+                });
+            }
+        };
+
+        fetchMetadata();
+    }, [urls, isFileMode, authState.token, urlMetadataCache, loadingUrls, dispatch]);
+
+    // Build URL data with cached metadata
+    const getUrlData = (url: string): AddedUrl => ({
+        url,
+        platformId: detectPlatform(url),
+        metadata: urlMetadataCache[url],
+    });
+
+    // Check if a URL is loading
+    const isUrlLoading = (url: string): boolean => loadingUrls.has(url);
 
     // Handle video selection (only host can select)
     const handleSelectVideo = (index: number) => {
@@ -21,63 +326,11 @@ const PlaylistTab = () => {
         selectVideo(index);
     };
 
-    // Get video name from URL or file
-    const getVideoName = (index: number): string => {
-        if (isFileMode && files[index]) {
-            return files[index].name;
-        }
-        
-        if (urls[index]) {
-            try {
-                const url = new URL(urls[index]);
-                // Try to extract a meaningful name from the URL
-                const pathParts = url.pathname.split('/').filter(Boolean);
-                if (pathParts.length > 0) {
-                    const lastPart = pathParts[pathParts.length - 1];
-                    // Decode and clean up the name
-                    return decodeURIComponent(lastPart).replace(/[-_]/g, ' ').slice(0, 40);
-                }
-                return url.hostname;
-            } catch {
-                return `Video ${index + 1}`;
-            }
-        }
-        
-        return `Video ${index + 1}`;
-    };
-
-    // Get thumbnail or placeholder for video
-    const getVideoThumbnail = (index: number): string | null => {
-        // For YouTube URLs, we can generate a thumbnail
-        const url = urls[index];
-        if (url) {
-            try {
-                const urlObj = new URL(url);
-                if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
-                    let videoId = '';
-                    if (urlObj.hostname.includes('youtu.be')) {
-                        videoId = urlObj.pathname.slice(1);
-                    } else {
-                        videoId = urlObj.searchParams.get('v') || '';
-                    }
-                    if (videoId) {
-                        return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-                    }
-                }
-            } catch {
-                return null;
-            }
-        }
-        return null;
-    };
-
-    // Determine what items to show
+    // Get playlist items
     const getPlaylistItems = () => {
         if (isFileMode) {
-            // For file mode, use files array
             return files.map((_, index) => index);
         }
-        // For URL mode, use urls array
         return urls.map((_, index) => index);
     };
 
@@ -92,7 +345,7 @@ const PlaylistTab = () => {
                 </div>
                 <h3 className="text-white font-semibold mb-2">No videos</h3>
                 <p className="text-gray-500 text-sm">
-                    {isFileMode 
+                    {isFileMode
                         ? "No video files have been added to this party yet."
                         : "No video URLs have been added to this party yet."
                     }
@@ -124,86 +377,39 @@ const PlaylistTab = () => {
             {/* Video List */}
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                 {playlistItems.map((index) => {
-                    const isSelected = selectedIndex === index;
-                    const thumbnail = getVideoThumbnail(index);
-                    const videoName = getVideoName(index);
+                    const isPlaying = selectedIndex === index;
 
+                    if (isFileMode) {
+                        const file = files[index];
+                        if (!file) return null;
+                        
+                        return (
+                            <PlaylistFileCard
+                                key={index}
+                                file={file}
+                                index={index}
+                                isPlaying={isPlaying}
+                                isHost={isHost}
+                                onSelect={() => handleSelectVideo(index)}
+                            />
+                        );
+                    }
+
+                    // URL mode - use cached metadata
+                    const url = urls[index];
+                    const urlData = getUrlData(url);
+                    const isLoading = isUrlLoading(url);
+                    
                     return (
-                        <button
+                        <PlaylistUrlCard
                             key={index}
-                            onClick={() => handleSelectVideo(index)}
-                            disabled={!isHost}
-                            className={`
-                                w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200
-                                ${isSelected 
-                                    ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30' 
-                                    : 'bg-white/5 border border-transparent hover:bg-white/10 hover:border-white/10'
-                                }
-                                ${!isHost ? 'cursor-default' : 'cursor-pointer'}
-                                group
-                            `}
-                        >
-                            {/* Thumbnail */}
-                            <div className={`
-                                relative w-16 h-10 rounded-lg overflow-hidden flex-shrink-0
-                                ${isSelected ? 'ring-2 ring-pink-500/50' : ''}
-                            `}>
-                                {thumbnail ? (
-                                    <img 
-                                        src={thumbnail} 
-                                        alt={videoName}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center">
-                                        <LuFilm className="text-gray-500" size={16} />
-                                    </div>
-                                )}
-                                
-                                {/* Play indicator overlay */}
-                                {isSelected && (
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                        <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
-                                            <LuPlay className="text-white ml-0.5" size={12} />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Video Info */}
-                            <div className="flex-1 min-w-0 text-left">
-                                <div className="flex items-center gap-2">
-                                    <p className={`
-                                        text-sm font-medium truncate
-                                        ${isSelected ? 'text-pink-400' : 'text-white'}
-                                    `}>
-                                        {videoName}
-                                    </p>
-                                    {isSelected && (
-                                        <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                                            Playing
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="text-xs text-gray-500 truncate">
-                                    {isFileMode 
-                                        ? (files[index] ? formatFileSize(files[index].size) : 'Local file')
-                                        : (urls[index] ? new URL(urls[index]).hostname : 'URL')
-                                    }
-                                </p>
-                            </div>
-
-                            {/* Index number */}
-                            <div className={`
-                                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0
-                                ${isSelected 
-                                    ? 'bg-pink-500/20 text-pink-400' 
-                                    : 'bg-white/5 text-gray-500 group-hover:bg-white/10'
-                                }
-                            `}>
-                                {index + 1}
-                            </div>
-                        </button>
+                            url={urlData}
+                            index={index}
+                            isPlaying={isPlaying}
+                            isHost={isHost}
+                            isLoading={isLoading}
+                            onSelect={() => handleSelectVideo(index)}
+                        />
                     );
                 })}
             </div>
@@ -231,4 +437,3 @@ function formatFileSize(bytes: number): string {
 }
 
 export default PlaylistTab;
-
