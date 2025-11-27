@@ -9,6 +9,7 @@ import { RootState } from "@/lib/store";
 import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import type { EmojiClickData, Theme } from "emoji-picker-react";
 import AnimatedReaction from "./AnimatedReaction";
+import ReactionPicker from "./ReactionPicker";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -123,8 +124,8 @@ const ChatTab = () => {
     isConnected,
   } = useChatContext();
 
-  // Available reactions
-  const availableReactions: ReactionType[] = [
+  // Default reactions
+  const DEFAULT_REACTIONS: ReactionType[] = [
     "😍",
     "😡",
     "😭",
@@ -133,9 +134,30 @@ const ChatTab = () => {
     "🔥",
   ];
 
+  // Load pinned reactions from localStorage or use defaults
+  const [pinnedReactions, setPinnedReactions] = useState<ReactionType[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("pinnedReactions");
+      return saved ? JSON.parse(saved) : DEFAULT_REACTIONS;
+    }
+    return DEFAULT_REACTIONS;
+  });
+
   // Track which reaction was just clicked for animation
   const [animatingReaction, setAnimatingReaction] =
     useState<ReactionType | null>(null);
+
+  // Save pinned reactions to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("pinnedReactions", JSON.stringify(pinnedReactions));
+    }
+  }, [pinnedReactions]);
+
+  // Handle reaction pin/unpin
+  const handleReactionsChange = (newReactions: ReactionType[]) => {
+    setPinnedReactions(newReactions);
+  };
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -410,25 +432,34 @@ const ChatTab = () => {
       </div>
 
       {/* Reaction Buttons - Always Visible with Animations */}
-      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-[#1a1a1d] to-[#1f1f23] rounded-xl mb-2">
-        {availableReactions.map((emoji) => (
-          <AnimatedReaction
-            key={emoji}
-            emoji={emoji}
-            isAnimating={animatingReaction === emoji}
-            disabled={!isJoined}
-            onClick={() => {
-              console.log("Reaction clicked:", emoji);
-              setAnimatingReaction(emoji);
-              sendReaction(emoji);
+      <div className="flex items-center justify-between gap-2 py-2 px-3 bg-gradient-to-br from-[#1a1a1d] to-[#1f1f23] rounded-xl mb-2">
+        {/* Pinned Reactions */}
+        <div className="flex items-center gap-2 flex-1">
+          {pinnedReactions.map((emoji) => (
+            <AnimatedReaction
+              key={emoji}
+              emoji={emoji}
+              isAnimating={animatingReaction === emoji}
+              disabled={!isJoined}
+              onClick={() => {
+                console.log("Reaction clicked:", emoji);
+                setAnimatingReaction(emoji);
+                sendReaction(emoji);
 
-              // Reset animation after it completes
-              setTimeout(() => {
-                setAnimatingReaction(null);
-              }, 600); // Match the animation duration
-            }}
-          />
-        ))}
+                // Reset animation after it completes
+                setTimeout(() => {
+                  setAnimatingReaction(null);
+                }, 600); // Match the animation duration
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Reaction Picker Button */}
+        <ReactionPicker
+          pinnedReactions={pinnedReactions}
+          onReactionsChange={handleReactionsChange}
+        />
       </div>
 
       {/* Input Area */}

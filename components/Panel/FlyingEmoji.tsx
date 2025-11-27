@@ -26,26 +26,80 @@ const FlyingEmoji = ({ emoji, id, onComplete }: FlyingEmojiProps) => {
     return () => clearTimeout(timer);
   }, [onComplete]);
 
-  // Map our emojis to Microsoft Fluent Animated Emoji URLs
-  const getAnimatedEmojiUrl = (emoji: string): string => {
+  // Map our emojis to Microsoft Fluent Animated Emoji URLs (60 emojis)
+  const getAnimatedEmojiUrl = (emoji: string): string | null => {
     const baseUrl =
       "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Microsoft-Teams-Animated-Emojis/master/Emojis";
 
     switch (emoji as ReactionType) {
-      case "😍":
-        return `${baseUrl}/Smilies/Smiling%20Face%20with%20Heart-Eyes.png`;
-      case "😡":
-        return `${baseUrl}/Smilies/Enraged%20Face.png`;
-      case "😭":
-        return `${baseUrl}/Smilies/Loudly%20Crying%20Face.png`;
-      case "😂":
-        return `${baseUrl}/Smilies/Face%20with%20Tears%20of%20Joy.png`;
-      case "🤯":
-        return `${baseUrl}/Smilies/Exploding%20Head.png`;
-      case "🔥":
-        return `${baseUrl}/Travel%20and%20places/Fire.png`;
+      // Smilies (35)
+      case "😍": return `${baseUrl}/Smilies/Smiling%20Face%20with%20Heart-Eyes.png`;
+      case "😂": return `${baseUrl}/Smilies/Face%20with%20Tears%20of%20Joy.png`;
+      case "😭": return `${baseUrl}/Smilies/Loudly%20Crying%20Face.png`;
+      case "😡": return `${baseUrl}/Smilies/Enraged%20Face.png`;
+      case "🤯": return `${baseUrl}/Smilies/Exploding%20Head.png`;
+      case "😊": return `${baseUrl}/Smilies/Smiling%20Face%20with%20Smiling%20Eyes.png`;
+      case "😢": return `${baseUrl}/Smilies/Crying%20Face.png`;
+      case "😮": return `${baseUrl}/Smilies/Face%20with%20Open%20Mouth.png`;
+      case "🤔": return `${baseUrl}/Smilies/Thinking%20Face.png`;
+      case "😎": return `${baseUrl}/Smilies/Smiling%20Face%20with%20Sunglasses.png`;
+      case "🥳": return `${baseUrl}/Smilies/Partying%20Face.png`;
+      case "😴": return `${baseUrl}/Smilies/Sleeping%20Face.png`;
+      case "🤗": return `${baseUrl}/Smilies/Hugging%20Face.png`;
+      case "❤️": return `${baseUrl}/Smilies/Red%20Heart.png`;
+      case "💔": return `${baseUrl}/Smilies/Broken%20Heart.png`;
+      case "😘": return `${baseUrl}/Smilies/Face%20Blowing%20a%20Kiss.png`;
+      case "🥰": return `${baseUrl}/Smilies/Smiling%20Face%20with%20Hearts.png`;
+      case "😜": return `${baseUrl}/Smilies/Winking%20Face%20with%20Tongue.png`;
+      case "😇": return `${baseUrl}/Smilies/Smiling%20Face%20with%20Halo.png`;
+      case "🤩": return `${baseUrl}/Smilies/Star-Struck.png`;
+      case "😱": return `${baseUrl}/Smilies/Face%20Screaming%20in%20Fear.png`;
+      case "🥺": return `${baseUrl}/Smilies/Pleading%20Face.png`;
+      case "😳": return `${baseUrl}/Smilies/Flushed%20Face.png`;
+      case "🙄": return `${baseUrl}/Smilies/Face%20with%20Rolling%20Eyes.png`;
+      case "😬": return `${baseUrl}/Smilies/Grimacing%20Face.png`;
+      case "🤐": return `${baseUrl}/Smilies/Zipper-Mouth%20Face.png`;
+      case "🤢": return `${baseUrl}/Smilies/Nauseated%20Face.png`;
+      case "🤮": return `${baseUrl}/Smilies/Face%20Vomiting.png`;
+      case "🤧": return `${baseUrl}/Smilies/Sneezing%20Face.png`;
+      case "😷": return `${baseUrl}/Smilies/Face%20with%20Medical%20Mask.png`;
+      case "🤒": return `${baseUrl}/Smilies/Face%20with%20Thermometer.png`;
+      case "😈": return `${baseUrl}/Smilies/Smiling%20Face%20with%20Horns.png`;
+      case "👻": return `${baseUrl}/Smilies/Ghost.png`;
+      case "💀": return `${baseUrl}/Smilies/Skull.png`;
+      case "🤡": return `${baseUrl}/Smilies/Clown%20Face.png`;
+      
+      // Hand gestures (15)
+      case "👍": return `${baseUrl}/Hand%20gestures/Thumbs%20Up.png`;
+      case "👎": return `${baseUrl}/Hand%20gestures/Thumbs%20Down.png`;
+      case "👏": return `${baseUrl}/Hand%20gestures/Clapping%20Hands.png`;
+      case "🙏": return `${baseUrl}/Hand%20gestures/Folded%20Hands.png`;
+      case "💪": return `${baseUrl}/Hand%20gestures/Flexed%20Biceps.png`;
+      case "✌️": return `${baseUrl}/Hand%20gestures/Victory%20Hand.png`;
+      case "🤞": return `${baseUrl}/Hand%20gestures/Crossed%20Fingers.png`;
+      case "🤟": return `${baseUrl}/Hand%20gestures/Love-You%20Gesture.png`;
+      case "🤘": return `${baseUrl}/Hand%20gestures/Sign%20of%20the%20Horns.png`;
+      case "👌": return `${baseUrl}/Hand%20gestures/OK%20Hand.png`;
+      case "🤝": return `${baseUrl}/Hand%20gestures/Handshake.png`;
+      case "✋": return `${baseUrl}/Hand%20gestures/Raised%20Hand.png`;
+      case "👋": return `${baseUrl}/Hand%20gestures/Waving%20Hand.png`;
+      case "🙌": return `${baseUrl}/Hand%20gestures/Raising%20Hands.png`;
+      case "👊": return `${baseUrl}/Hand%20gestures/Oncoming%20Fist.png`;
+      
+      // Objects (10)
+      case "🔥": return `${baseUrl}/Travel%20and%20places/Fire.png`;
+      case "🎉": return `${baseUrl}/Activities/Party%20Popper.png`;
+      case "💯": return `${baseUrl}/Smilies/Hundred%20Points.png`;
+      case "⚡": return `${baseUrl}/Travel%20and%20places/High%20Voltage.png`;
+      case "⭐": return `${baseUrl}/Travel%20and%20places/Star.png`;
+      case "✨": return `${baseUrl}/Travel%20and%20places/Sparkles.png`;
+      case "💥": return `${baseUrl}/Smilies/Collision.png`;
+      case "💫": return `${baseUrl}/Travel%20and%20places/Dizzy.png`;
+      case "🎊": return `${baseUrl}/Activities/Confetti%20Ball.png`;
+      case "🎈": return `${baseUrl}/Activities/Balloon.png`;
+      
       default:
-        return "";
+        return null;
     }
   };
 
@@ -100,6 +154,7 @@ const FlyingEmoji = ({ emoji, id, onComplete }: FlyingEmojiProps) => {
 
   const emojiAnimation = getEmojiAnimation(emoji);
   const emojiUrl = getAnimatedEmojiUrl(emoji);
+  const hasAnimatedVersion = emojiUrl !== null;
 
   return (
     <motion.div
@@ -130,14 +185,20 @@ const FlyingEmoji = ({ emoji, id, onComplete }: FlyingEmojiProps) => {
         filter: "drop-shadow(0 0 10px rgba(236,72,153,0.4))",
       }}
     >
-      <img
-        src={emojiUrl}
-        alt={emoji}
-        width={64}
-        height={64}
-        className="w-16 h-16"
-        style={{ imageRendering: "auto" }}
-      />
+      {hasAnimatedVersion ? (
+        // Use animated PNG if available
+        <img
+          src={emojiUrl}
+          alt={emoji}
+          width={64}
+          height={64}
+          className="w-16 h-16"
+          style={{ imageRendering: "auto" }}
+        />
+      ) : (
+        // Fallback to text emoji if no animated version
+        <span className="text-6xl">{emoji}</span>
+      )}
     </motion.div>
   );
 };
