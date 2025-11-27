@@ -31,3 +31,28 @@ export interface SendMessageResponse {
   timestamp?: number;
   error?: string;
 }
+
+// Reaction types
+export type ReactionType = "😍" | "😡" | "😭" | "😂" | "🤯" | "🔥";
+
+export interface Reaction {
+  id: string;
+  roomId: string;
+  userId: string;
+  userName: string;
+  userProfile?: string;
+  emoji: ReactionType;
+  timestamp: number;
+}
+
+export interface SendReactionPayload {
+  roomId: string;
+  userId: string;
+  userName: string;
+  userProfile?: string;
+  emoji: ReactionType;
+}
+
+export interface ReceiveReactionPayload {
+  reaction: Reaction;
+}

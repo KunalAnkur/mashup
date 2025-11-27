@@ -5,6 +5,8 @@ import {
   ChatMessage,
   TypingUser,
   SendMessageResponse,
+  Reaction,
+  ReactionType,
 } from "@/types/chatTypes";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
@@ -20,6 +22,7 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [reactions, setReactions] = useState<Reaction[]>([]);
   const [isJoined, setIsJoined] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -184,6 +187,23 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
   }, [socket, roomId]);
 
   /**
+   * Send a reaction
+   */
+  const sendReaction = useCallback(
+    (emoji: ReactionType) => {
+      if (!socket || !roomId || !user) return;
+
+      socket.emit(SocketEvent.SEND_REACTION, {
+        roomId,
+        emoji,
+        userName: user?.username || "User",
+        userProfile: user?.profile,
+      });
+    },
+    [socket, roomId, user]
+  );
+
+  /**
    * Leave chat room
    */
   const leaveChatRoom = useCallback(() => {
@@ -193,6 +213,7 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
     setIsJoined(false);
     setMessages([]);
     setTypingUsers([]);
+    setReactions([]);
   }, [socket, roomId]);
 
   // Auto-join chat room when roomId is available
@@ -254,16 +275,32 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
       setTypingUsers((prev) => prev.filter((u) => u.userId !== data.userId));
     };
 
+    const handleReceiveReaction = (data: { reaction: Reaction }) => {
+      console.log("Received reaction:", data.reaction);
+      
+      // Add reaction to state (it will be displayed with animation)
+      setReactions((prev) => [...prev, data.reaction]);
+
+      // Remove reaction after animation completes (e.g., 3 seconds)
+      setTimeout(() => {
+        setReactions((prev) =>
+          prev.filter((r) => r.id !== data.reaction.id)
+        );
+      }, 3000);
+    };
+
     // Register all socket event listeners
     socket.on(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
     socket.on(SocketEvent.USER_TYPING, handleUserTyping);
     socket.on(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
+    socket.on(SocketEvent.RECEIVE_REACTION, handleReceiveReaction);
 
     // Cleanup all socket event listeners and typing timeout
     return () => {
       socket.off(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
       socket.off(SocketEvent.USER_TYPING, handleUserTyping);
       socket.off(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
+      socket.off(SocketEvent.RECEIVE_REACTION, handleReceiveReaction);
 
       // Cleanup typing timeout on unmount
       if (typingTimeoutRef.current) {
@@ -275,7 +312,9 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
   return {
     messages,
     typingUsers,
+    reactions,
     sendMessage,
+    sendReaction,
     handleTyping,
     stopTyping,
     getChatHistory,

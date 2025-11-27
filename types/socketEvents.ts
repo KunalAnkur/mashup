@@ -17,6 +17,9 @@ export enum SocketEvent {
   USER_STOPPED_TYPING = "userStoppedTyping",
   LEAVE_CHAT_ROOM = "leaveChatRoom",
   GET_CHAT_HISTORY = "getChatHistory",
+  // Reaction events
+  SEND_REACTION = "sendReaction",
+  RECEIVE_REACTION = "receiveReaction",
   // MediaSoup events
   CONNECT_TRANSPORT = "connectTransport",
   PRODUCE = "produce",

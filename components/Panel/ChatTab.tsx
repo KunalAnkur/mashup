@@ -3,13 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
 import dynamic from "next/dynamic";
-import { useChat } from "@/hooks/useChat";
+import { useChatContext } from "@/context/ChatContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { ChatMessage } from "@/types/chatTypes";
+import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import type { EmojiClickData, Theme } from "emoji-picker-react";
 
-// Dynamically import EmojiPicker to avoid SSR issues
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
   loading: () => (
@@ -89,25 +88,34 @@ const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  // Get room and user info from Redux
-  const roomId = useSelector((state: RootState) => state.room.roomId);
-  const isHost = useSelector((state: RootState) => state.room.host);
+  // Get user info from Redux
   const user = useSelector((state: RootState) => state.auth.user);
 
-  // Use chat hook
+  // Use chat context (shared with ReactionsContainer)
   const {
     messages,
     typingUsers,
     sendMessage,
+    sendReaction,
     handleTyping,
     stopTyping,
     isJoined,
     isLoading,
     isConnected,
-  } = useChat({ roomId, isHost });
+  } = useChatContext();
+
+  // Available reactions
+  const availableReactions: ReactionType[] = [
+    "😍",
+    "😡",
+    "😭",
+    "😂",
+    "🤯",
+    "🔥",
+  ];
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -150,23 +158,37 @@ const ChatTab = () => {
     if (result.success) {
       setMessageInput("");
       stopTyping();
+
+      // Reset textarea height after sending
+      if (inputRef.current) {
+        inputRef.current.style.height = "20px";
+      }
     } else {
       console.error("Failed to send message:", result.error);
     }
   };
 
   // Handle Enter key press
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
+    // Shift+Enter will create a new line (default behavior)
   };
 
-  // Handle input change with typing indicator
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMessageInput(e.target.value);
-    if (e.target.value.trim()) {
+  // Handle input change with typing indicator and line limit
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    const lines = value.split("\n");
+
+    // Limit to 10 lines
+    if (lines.length > 10) {
+      return; // Don't update if exceeds 10 lines
+    }
+
+    setMessageInput(value);
+    if (value.trim()) {
       handleTyping();
     } else {
       stopTyping();
@@ -313,7 +335,7 @@ const ChatTab = () => {
                       : "bg-gradient-to-br from-white/5 to-white/[0.02]"
                   }`}
                 >
-                  <p className="text-white/90 text-sm leading-relaxed break-words">
+                  <p className="text-white/90 text-sm leading-relaxed break-words whitespace-pre-wrap">
                     {msg.message}
                   </p>
                 </div>
@@ -348,6 +370,24 @@ const ChatTab = () => {
 
         {/* Scroll anchor */}
         <div ref={messagesEndRef} />
+      </div>
+
+      {/* Reaction Buttons - Always Visible */}
+      <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-[#1a1a1d] to-[#1f1f23] rounded-xl mb-2">
+        {availableReactions.map((emoji) => (
+          <button
+            key={emoji}
+            onClick={() => {
+              console.log("Reaction clicked:", emoji);
+              sendReaction(emoji);
+            }}
+            disabled={!isJoined}
+            className="text-2xl hover:scale-125 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]"
+            title={`Send ${emoji} reaction`}
+          >
+            {emoji}
+          </button>
+        ))}
       </div>
 
       {/* Input Area */}
@@ -401,15 +441,25 @@ const ChatTab = () => {
             />
           </div>
         )}
-        <input
-          ref={inputRef}
-          type="text"
+        <textarea
+          ref={inputRef as React.RefObject<HTMLTextAreaElement>}
           placeholder={isJoined ? "Send a message..." : "Connecting..."}
           value={messageInput}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           disabled={!isJoined || isLoading}
-          className="flex-1 bg-transparent outline-none text-white/90 text-sm placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          rows={1}
+          className="flex-1 bg-transparent outline-none text-white/90 text-sm placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] py-2"
+          style={{
+            minHeight: "20px",
+            maxHeight: "240px", // ~10 lines (24px per line)
+          }}
+          onInput={(e) => {
+            // Auto-resize textarea based on content
+            const target = e.target as HTMLTextAreaElement;
+            target.style.height = "20px";
+            target.style.height = Math.min(target.scrollHeight, 240) + "px";
+          }}
         />
         <button
           onClick={handleSendMessage}
