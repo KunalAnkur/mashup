@@ -84,6 +84,21 @@ const formatTime = (timestamp: number): string => {
   return `${displayHours}:${displayMinutes} ${ampm}`;
 };
 
+// Check if message contains only emojis (no text)
+const isOnlyEmojis = (text: string): boolean => {
+  // Remove all emojis and whitespace, if nothing left = only emojis
+  const emojiRegex = /[\p{Emoji}\p{Emoji_Component}]/gu;
+  const textWithoutEmojis = text.replace(emojiRegex, "").replace(/\s/g, "");
+  return textWithoutEmojis.length === 0 && text.trim().length > 0;
+};
+
+// Count number of emojis in text
+/* const countEmojis = (text: string): number => {
+  const emojiRegex = /[\p{Emoji}\p{Emoji_Component}]/gu;
+  const matches = text.match(emojiRegex);
+  return matches ? matches.length : 0;
+}; */
+
 const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);
   const [messageInput, setMessageInput] = useState("");
@@ -273,6 +288,12 @@ const ChatTab = () => {
           }
 
           // Regular user messages
+          const onlyEmojis = isOnlyEmojis(msg.message);
+          /*  const emojiCount = onlyEmojis ? countEmojis(msg.message) : 0;
+           */
+
+          const emojiSize = "text-3xl";
+
           return (
             <div
               key={msg.id || i}
@@ -316,7 +337,7 @@ const ChatTab = () => {
 
               {/* Message Content */}
               <div className="flex-1 min-w-0 flex flex-col gap-1">
-                {/* Show username and email for ALL messages */}
+                {/* Show username and timestamp for ALL messages */}
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <span
                     className={`font-semibold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
@@ -328,17 +349,28 @@ const ChatTab = () => {
                     {formatTime(msg.timestamp)}
                   </span>
                 </div>
-                <div
-                  className={`rounded-xl px-3 py-2 transition-all duration-200 rounded-tl-none ${
-                    isCurrentUser
-                      ? `bg-gradient-to-br from-rose-600/20 via-pink-600/20 to-fuchsia-600/20`
-                      : "bg-gradient-to-br from-white/5 to-white/[0.02]"
-                  }`}
-                >
-                  <p className="text-white/90 text-sm leading-relaxed break-words whitespace-pre-wrap">
-                    {msg.message}
-                  </p>
-                </div>
+
+                {/* Emoji-only messages: No bubble, larger size */}
+                {onlyEmojis ? (
+                  <div className="py-1">
+                    <p className={`${emojiSize} leading-tight`}>
+                      {msg.message}
+                    </p>
+                  </div>
+                ) : (
+                  /* Regular messages: With bubble */
+                  <div
+                    className={`rounded-xl px-3 py-2 transition-all duration-200 rounded-tl-none ${
+                      isCurrentUser
+                        ? `bg-gradient-to-br from-rose-600/20 via-pink-600/20 to-fuchsia-600/20`
+                        : "bg-gradient-to-br from-white/5 to-white/[0.02]"
+                    }`}
+                  >
+                    <p className="text-white/90 text-sm leading-relaxed break-words whitespace-pre-wrap">
+                      {msg.message}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -449,7 +481,7 @@ const ChatTab = () => {
           onKeyDown={handleKeyDown}
           disabled={!isJoined || isLoading}
           rows={1}
-          className="flex-1 bg-transparent outline-none text-white/90 text-sm placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] py-2"
+          className="flex-1 bg-transparent outline-none text-white/90 text-sm placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] "
           style={{
             minHeight: "20px",
             maxHeight: "240px", // ~10 lines (24px per line)
