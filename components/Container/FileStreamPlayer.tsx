@@ -24,6 +24,12 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const hasJoinedRef = useRef(false);
     const selectedIndexRef = useRef(roomState.selectedFileIndex);
     const isChangingVideoRef = useRef(false);
+    
+    // Pause overlay state (for consumers)
+    const [isPaused, setIsPaused] = useState(false);
+    const [pauseFrameUrl, setPauseFrameUrl] = useState<string | null>(null);
+    const [isFrameFading, setIsFrameFading] = useState(false);
+    const videoElementRef = useRef<HTMLVideoElement | null>(null);
 
     // Keep selectedIndexRef in sync
     useEffect(() => {
@@ -46,12 +52,39 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
             return null;
         }
         
+        // Store reference to video element for frame capture
+        videoElementRef.current = videoElement;
+        
         const stream = videoElement.captureStream();
         console.log("getStream: captured stream with tracks:", {
             video: stream.getVideoTracks().length,
             audio: stream.getAudioTracks().length
         });
         return stream;
+    }, []);
+
+    // Capture current video frame as image
+    const captureFrame = useCallback(() => {
+        // For consumers, the source is a MediaStream, so we need to get the video element
+        const videoElement = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
+        if (!videoElement) {
+            console.log("captureFrame: No video element available");
+            return null;
+        }
+        
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth || 1920;
+            canvas.height = videoElement.videoHeight || 1080;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                return canvas.toDataURL('image/jpeg', 0.8);
+            }
+        } catch (error) {
+            console.error("captureFrame: Error capturing frame:", error);
+        }
+        return null;
     }, []);
 
     // Handle received stream (for consumers)
@@ -63,20 +96,39 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
             active: stream.active
         });
         
-        // Verify tracks are active
-        const videoTrack = stream.getVideoTracks()[0];
-        const audioTrack = stream.getAudioTracks()[0];
-        
-        if (videoTrack) {
-            console.log("handleStreamReceived: Video track state:", {
-                id: videoTrack.id,
-                enabled: videoTrack.enabled,
-                muted: videoTrack.muted,
-                readyState: videoTrack.readyState
-            });
-        }
+        // Clear pause state when receiving new stream
+        setIsPaused(false);
+        setPauseFrameUrl(null);
         
         setRemoteStream(stream);
+    }, []);
+
+    // Handle stream paused event (for consumers)
+    const handleStreamPaused = useCallback(() => {
+        console.log("handleStreamPaused: Host paused the stream");
+        
+        // Capture the current frame before it goes black
+        const frameUrl = captureFrame();
+        if (frameUrl) {
+            setPauseFrameUrl(frameUrl);
+        }
+        setIsPaused(true);
+    }, [captureFrame]);
+
+    // Handle stream resumed event (for consumers)
+    const handleStreamResumed = useCallback(() => {
+        console.log("handleStreamResumed: Host resumed the stream");
+        setIsPaused(false);
+        
+        // Wait for video stream to start showing frames, then fade out the frozen frame
+        setTimeout(() => {
+            setIsFrameFading(true); // Start fade out
+            // Remove frame after fade animation completes
+            setTimeout(() => {
+                setPauseFrameUrl(null);
+                setIsFrameFading(false);
+            }, 300); // Match CSS transition duration
+        }, 800); // Wait for stream to start
     }, []);
 
     const { 
@@ -90,6 +142,8 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     } = useMediaSoup({ 
         getStream,
         onStreamReceived: handleStreamReceived,
+        onStreamPaused: handleStreamPaused,
+        onStreamResumed: handleStreamResumed,
         isHost: roomState.host,
         namespace: 'filestream'
     });
@@ -156,13 +210,12 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 } catch (error) {
                     console.error("Error replacing producer tracks:", error);
                 }
-            }, 800); // Longer delay to ensure video is fully loaded and playing
+            }, 800);
         }
         
         // Reset the changing flag
         isChangingVideoRef.current = false;
     }, [roomState.host, getStream, replaceProducerTracks]);
-
 
     // Join room when ready
     useEffect(() => {
@@ -214,27 +267,45 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const playerKey = roomState.host 
         ? `host-${roomState.selectedFileIndex}` 
         : remoteStream ? `consumer-${remoteStream.id}` : 'consumer-waiting';
-    
-    console.log("FileStreamPlayer: Rendering with key:", playerKey, "source type:", typeof source);
+
+    // For consumers: when host pauses, set playing to false to show natural player pause UI
+    const isPlaying = roomState.host ? true : !isPaused;
 
     return (
-        <Player
-            key={playerKey}
-            playerRef={playerRef}
-            playing={true} // Always play - needed for captureStream() to work
-            onReady={handleVideoReady}
-            onSeekStart={onSeekStart}
-            onSeekEnd={onSeekEnd}
-            fullscreenTargetRef={fullscreenTargetRef}
-            url={source}
-            muted={roomState.host} // Mute host to avoid echo
-            onPlay={onPlay}
-            onPause={onPause}
-            disableControls={helper.getPlayerControlsConfig(source, roomState.host).disableControls}
-            hideControls={helper.getPlayerControlsConfig(source, roomState.host).hideControls}
-        >
-            <PlayerOverlay />
-        </Player>
+        <div className="relative w-full h-full">
+            <Player
+                key={playerKey}
+                playerRef={playerRef}
+                playing={isPlaying} // Host always plays; consumer pauses when host pauses
+                onReady={handleVideoReady}
+                onSeekStart={onSeekStart}
+                onSeekEnd={onSeekEnd}
+                fullscreenTargetRef={fullscreenTargetRef}
+                url={source}
+                muted={roomState.host} // Mute host to avoid echo
+                onPlay={onPlay}
+                onPause={onPause}
+                disableControls={helper.getPlayerControlsConfig(source, roomState.host).disableControls}
+                hideControls={helper.getPlayerControlsConfig(source, roomState.host).hideControls}
+            >
+                <PlayerOverlay />
+            </Player>
+            
+            {/* Frozen frame overlay for consumers - shows behind controls to prevent black screen */}
+            {!roomState.host && pauseFrameUrl && (
+                <div 
+                    className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-300 ${
+                        isFrameFading ? 'opacity-0' : 'opacity-100'
+                    }`}
+                >
+                    <img 
+                        src={pauseFrameUrl} 
+                        alt="Paused" 
+                        className="w-full h-full object-contain bg-black"
+                    />
+                </div>
+            )}
+        </div>
     );
 };
 

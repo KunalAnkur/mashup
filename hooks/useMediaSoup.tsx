@@ -13,6 +13,10 @@ interface UseMediaSoupParams {
     getStream: () => MediaStream | null;
     /** Callback when receiving a stream from producer (for consumers) */
     onStreamReceived?: (stream: MediaStream) => void;
+    /** Callback when host pauses the stream (for consumers) */
+    onStreamPaused?: () => void;
+    /** Callback when host resumes the stream (for consumers) */
+    onStreamResumed?: () => void;
     /** Whether this user is the host/producer */
     isHost: boolean;
     /** Socket namespace (default: 'filestream') */
@@ -46,7 +50,9 @@ interface MediaSoupState {
  */
 export const useMediaSoup = ({ 
     getStream, 
-    onStreamReceived, 
+    onStreamReceived,
+    onStreamPaused,
+    onStreamResumed,
     isHost,
     namespace = 'filestream' 
 }: UseMediaSoupParams) => {
@@ -86,6 +92,18 @@ export const useMediaSoup = ({
     useEffect(() => {
         getStreamRef.current = getStream;
     }, [getStream]);
+    
+    // Refs for pause/resume callbacks
+    const onStreamPausedRef = useRef(onStreamPaused);
+    const onStreamResumedRef = useRef(onStreamResumed);
+    
+    useEffect(() => {
+        onStreamPausedRef.current = onStreamPaused;
+    }, [onStreamPaused]);
+    
+    useEffect(() => {
+        onStreamResumedRef.current = onStreamResumed;
+    }, [onStreamResumed]);
     
     // Monitor socket connection state
     useEffect(() => {
@@ -454,7 +472,7 @@ export const useMediaSoup = ({
         }
     }, [initializeDevice, createProducerTransport, createConsumerTransport, produceMedia, consume]);
     
-    // Pause all producers
+    // Pause all producers and notify consumers
     const pauseProducers = useCallback(() => {
         // Don't pause during seeking
         if (isSeekingRef.current) {
@@ -463,32 +481,44 @@ export const useMediaSoup = ({
         }
         
         const currentSocket = socketRef.current;
+        const roomName = roomNameRef.current;
         if (!currentSocket || !isHost) return;
         
         const producers = mediaSoupStateRef.current.producers.get(currentSocket.id!);
         if (producers) {
-            console.log("Pausing producers");
+            console.log("Pausing producers and notifying consumers");
             producers.forEach(producer => {
                 if (!producer.closed) {
                     producer.pause();
                 }
             });
+            
+            // Notify consumers that stream is paused
+            if (roomName) {
+                currentSocket.emit(SocketEvent.STREAM_PAUSED, { roomId: roomName });
+            }
         }
     }, [isHost]);
 
-    // Resume all producers
+    // Resume all producers and notify consumers
     const resumeProducers = useCallback(() => {
         const currentSocket = socketRef.current;
+        const roomName = roomNameRef.current;
         if (!currentSocket || !isHost) return;
         
         const producers = mediaSoupStateRef.current.producers.get(currentSocket.id!);
         if (producers) {
-            console.log("Resuming producers");
+            console.log("Resuming producers and notifying consumers");
             producers.forEach(producer => {
                 if (!producer.closed && producer.paused) {
                     producer.resume();
                 }
             });
+            
+            // Notify consumers that stream is resumed
+            if (roomName) {
+                currentSocket.emit(SocketEvent.STREAM_RESUMED, { roomId: roomName });
+            }
         }
     }, [isHost]);
 
@@ -615,6 +645,29 @@ export const useMediaSoup = ({
             socket.off(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer);
         };
     }, [socket, consume, isHost]);
+
+    // Listen for stream pause/resume events (for consumers)
+    useEffect(() => {
+        if (!socket || isHost) return;
+        
+        const handleStreamPaused = () => {
+            console.log("Consumer received STREAM_PAUSED event");
+            onStreamPausedRef.current?.();
+        };
+        
+        const handleStreamResumed = () => {
+            console.log("Consumer received STREAM_RESUMED event");
+            onStreamResumedRef.current?.();
+        };
+        
+        socket.on(SocketEvent.STREAM_PAUSED, handleStreamPaused);
+        socket.on(SocketEvent.STREAM_RESUMED, handleStreamResumed);
+        
+        return () => {
+            socket.off(SocketEvent.STREAM_PAUSED, handleStreamPaused);
+            socket.off(SocketEvent.STREAM_RESUMED, handleStreamResumed);
+        };
+    }, [socket, isHost]);
 
     // Cleanup on unmount
     useEffect(() => {
