@@ -86,6 +86,36 @@ export const useMediaSoup = ({
     useEffect(() => {
         getStreamRef.current = getStream;
     }, [getStream]);
+    
+    // Monitor socket connection state
+    useEffect(() => {
+        if (!socket) return;
+        
+        const handleConnect = () => {
+            console.log("useMediaSoup: Socket connected, id:", socket.id);
+        };
+        
+        const handleDisconnect = (reason: string) => {
+            console.log("useMediaSoup: Socket disconnected, reason:", reason);
+        };
+        
+        const handleReconnect = () => {
+            console.log("useMediaSoup: Socket reconnected, may need to rejoin room");
+        };
+        
+        socket.on('connect', handleConnect);
+        socket.on('disconnect', handleDisconnect);
+        socket.on('reconnect', handleReconnect);
+        
+        // Log initial state
+        console.log("useMediaSoup: Socket initialized, connected:", socket.connected, "id:", socket.id);
+        
+        return () => {
+            socket.off('connect', handleConnect);
+            socket.off('disconnect', handleDisconnect);
+            socket.off('reconnect', handleReconnect);
+        };
+    }, [socket]);
 
     // Initialize MediaSoup device
     const initializeDevice = useCallback(async (routerRtpCapabilities: RtpCapabilities) => {
@@ -255,17 +285,27 @@ export const useMediaSoup = ({
         transport: mediasoupClient.types.Transport
     ) => {
         const currentSocket = socketRef.current;
-        if (!currentSocket) return;
+        if (!currentSocket) {
+            console.error("consume: No socket available");
+            return;
+        }
+        
+        console.log("consume: Starting with producers:", producerInfo);
         
         const videoProducer = producerInfo.find(info => info.kind === 'video');
         const audioProducer = producerInfo.find(info => info.kind === 'audio');
 
         if (!videoProducer || !audioProducer) {
-            console.error('Missing video or audio producer');
+            console.error('Missing video or audio producer:', { videoProducer, audioProducer });
             return;
         }
 
         try {
+            console.log("consume: Requesting consumers from server for producers:", {
+                video: videoProducer.producerId,
+                audio: audioProducer.producerId
+            });
+            
             const [videoResponse, audioResponse] = await Promise.all([
                 currentSocket.emitWithAck(SocketEvent.CONSUME, {
                     transportId: transport.id,
@@ -283,21 +323,53 @@ export const useMediaSoup = ({
                 }),
             ]);
 
+            console.log("consume: Server responses:", { videoResponse, audioResponse });
+
+            // Check for errors in responses
+            if (!videoResponse?.consumerData || !audioResponse?.consumerData) {
+                console.error("consume: Invalid server response - missing consumerData", {
+                    videoHasData: !!videoResponse?.consumerData,
+                    audioHasData: !!audioResponse?.consumerData,
+                    videoError: videoResponse?.error,
+                    audioError: audioResponse?.error
+                });
+                return;
+            }
+
+            console.log("consume: Creating local consumers");
             const [videoConsumer, audioConsumer] = await Promise.all([
                 transport.consume(videoResponse.consumerData),
                 transport.consume(audioResponse.consumerData),
             ]);
             
+            console.log("consume: Resuming consumers");
             await videoConsumer.resume();
             await audioConsumer.resume();
+            
+            console.log("consume: Unpausing on server");
             await currentSocket.emitWithAck(SocketEvent.UNPAUSE_CONSUMERS, { 
                 roomId, 
                 consumerIds: [videoConsumer.id, audioConsumer.id] 
             });
             
+            console.log("consume: Creating MediaStream with tracks:", {
+                videoTrack: videoConsumer.track.id,
+                videoTrackState: videoConsumer.track.readyState,
+                audioTrack: audioConsumer.track.id,
+                audioTrackState: audioConsumer.track.readyState
+            });
             const remoteStream = new MediaStream([videoConsumer.track, audioConsumer.track]);
+            
+            // Monitor track state changes
+            videoConsumer.track.onended = () => {
+                console.log("consume: Video track ended unexpectedly!");
+            };
+            audioConsumer.track.onended = () => {
+                console.log("consume: Audio track ended unexpectedly!");
+            };
 
             // Notify via callback
+            console.log("consume: Calling onStreamReceived with stream id:", remoteStream.id);
             onStreamReceived?.(remoteStream);
 
             setMediaSoupState((prev) => {
@@ -308,6 +380,8 @@ export const useMediaSoup = ({
             
             // Also update ref
             mediaSoupStateRef.current.consumers.set(currentSocket.id!, [videoConsumer, audioConsumer]);
+            
+            console.log("consume: Completed successfully");
         } catch (error) {
             console.error('Failed to consume media:', error);
         }
@@ -449,20 +523,16 @@ export const useMediaSoup = ({
     useEffect(() => {
         if (!socket || isHost) return;
         
+        console.log("Setting up INCOMING_PRODUCER listener for consumer, socket connected:", socket.connected);
+        
         const handleIncomingProducer = async (data: any) => {
-            console.log("Received INCOMING_PRODUCER event");
+            console.log("handleIncomingProducer: Received event with data:", JSON.stringify(data, null, 2));
+            console.log("handleIncomingProducer: Socket state - connected:", socketRef.current?.connected);
             
-            // Close existing consumers
             const currentSocket = socketRef.current;
-            if (!currentSocket) return;
-            
-            const existingConsumer = mediaSoupStateRef.current.consumers.get(currentSocket.id!);
-            if (existingConsumer) {
-                console.log("Closing existing consumers");
-                existingConsumer.forEach(c => {
-                    if (!c.closed) c.close();
-                });
-                mediaSoupStateRef.current.consumers.delete(currentSocket.id!);
+            if (!currentSocket) {
+                console.error("handleIncomingProducer: No socket available");
+                return;
             }
 
             // Get current device and transport
@@ -470,16 +540,73 @@ export const useMediaSoup = ({
             const transport = mediaSoupStateRef.current.consumerTransport;
             const roomName = roomNameRef.current;
             
+            console.log("handleIncomingProducer: State check:", {
+                hasDevice: !!device,
+                hasTransport: !!transport,
+                transportClosed: transport?.closed,
+                roomName,
+                hasProducers: Object.keys(data.producers || {}).length
+            });
+            
             if (!device || !transport) {
-                console.error("Device or transport not available");
+                console.error("handleIncomingProducer: Device or transport not available");
+                return;
+            }
+            
+            if (transport.closed) {
+                console.error("handleIncomingProducer: Consumer transport is closed!");
+                return;
+            }
+            
+            if (!roomName) {
+                console.error("handleIncomingProducer: Room name not set");
                 return;
             }
 
-            // Consume from new producers
-            for (const peerId in data.producers) {
-                console.log("Consuming from peer:", peerId);
-                await consume(data.producers[peerId], device, roomName, transport);
+            // Close existing consumers first
+            const existingConsumer = mediaSoupStateRef.current.consumers.get(currentSocket.id!);
+            if (existingConsumer) {
+                console.log("handleIncomingProducer: Closing", existingConsumer.length, "existing consumers");
+                existingConsumer.forEach(c => {
+                    if (!c.closed) {
+                        c.close();
+                    }
+                });
+                mediaSoupStateRef.current.consumers.delete(currentSocket.id!);
             }
+
+            // Delay to ensure server has processed the new producers
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // Consume from new producers with retry
+            for (const peerId in data.producers) {
+                console.log("handleIncomingProducer: Consuming from peer:", peerId, "producers:", data.producers[peerId]);
+                
+                let success = false;
+                let retries = 0;
+                const maxRetries = 3;
+                
+                while (!success && retries < maxRetries) {
+                    try {
+                        await consume(data.producers[peerId], device, roomName, transport);
+                        console.log("handleIncomingProducer: Successfully consumed from peer:", peerId);
+                        success = true;
+                    } catch (error) {
+                        retries++;
+                        console.error(`handleIncomingProducer: Attempt ${retries} failed for peer ${peerId}:`, error);
+                        if (retries < maxRetries) {
+                            console.log("handleIncomingProducer: Retrying in 500ms...");
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                    }
+                }
+                
+                if (!success) {
+                    console.error("handleIncomingProducer: All retries failed for peer:", peerId);
+                }
+            }
+            
+            console.log("handleIncomingProducer: Completed");
         };
         
         socket.on(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer);
@@ -510,23 +637,35 @@ export const useMediaSoup = ({
         const roomName = roomNameRef.current;
         const transport = mediaSoupStateRef.current.producerTransport;
         
-        console.log("replaceProducerTracks called:", { 
+        console.log("replaceProducerTracks: Starting", { 
             isHost, 
-            hasSocket: !!currentSocket, 
+            socketId: currentSocket?.id, 
             roomName, 
-            hasTransport: !!transport 
+            hasTransport: !!transport,
+            transportClosed: transport?.closed
         });
         
         if (!isHost || !currentSocket || !roomName || !transport) {
-            console.error("replaceProducerTracks: missing requirements");
+            console.error("replaceProducerTracks: Missing requirements", {
+                isHost,
+                hasSocket: !!currentSocket,
+                roomName,
+                hasTransport: !!transport
+            });
+            return;
+        }
+        
+        if (transport.closed) {
+            console.error("replaceProducerTracks: Transport is closed!");
             return;
         }
 
         // Close existing producers
         const oldProducers = mediaSoupStateRef.current.producers.get(currentSocket.id!);
         if (oldProducers) {
-            console.log("Closing old producers:", oldProducers.length);
+            console.log("replaceProducerTracks: Closing", oldProducers.length, "old producers");
             oldProducers.forEach(p => {
+                console.log("  - Closing producer:", p.id, "kind:", p.kind, "closed:", p.closed);
                 if (!p.closed) {
                     p.close();
                 }
@@ -537,18 +676,26 @@ export const useMediaSoup = ({
         const videoTrack = newStream.getVideoTracks()[0];
         const audioTrack = newStream.getAudioTracks()[0];
         
-        console.log("New stream tracks:", { 
+        console.log("replaceProducerTracks: New stream tracks", { 
             hasVideo: !!videoTrack, 
-            hasAudio: !!audioTrack 
+            hasAudio: !!audioTrack,
+            videoTrackId: videoTrack?.id,
+            audioTrackId: audioTrack?.id
         });
+        
+        if (!videoTrack && !audioTrack) {
+            console.error("replaceProducerTracks: No tracks in new stream!");
+            return;
+        }
         
         const newProducers: Producer[] = [];
 
         try {
             // Create new audio producer
             if (audioTrack) {
-                console.log("Creating new audio producer");
+                console.log("replaceProducerTracks: Creating audio producer");
                 const audioProducer = await transport.produce({ track: audioTrack });
+                console.log("replaceProducerTracks: Audio producer created:", audioProducer.id);
                 audioProducer.on('trackended', () => console.log('New audio track ended'));
                 audioProducer.on('transportclose', () => console.log('Audio transport closed'));
                 newProducers.push(audioProducer);
@@ -556,8 +703,9 @@ export const useMediaSoup = ({
 
             // Create new video producer
             if (videoTrack) {
-                console.log("Creating new video producer");
+                console.log("replaceProducerTracks: Creating video producer");
                 const videoProducer = await transport.produce({ track: videoTrack });
+                console.log("replaceProducerTracks: Video producer created:", videoProducer.id);
                 videoProducer.on('trackended', () => console.log('New video track ended'));
                 videoProducer.on('transportclose', () => console.log('Video transport closed'));
                 newProducers.push(videoProducer);
@@ -571,9 +719,8 @@ export const useMediaSoup = ({
                 return { ...prev, producers };
             });
 
-            // Notify consumers about new producers
-            console.log("Notifying consumers about new producers");
-            currentSocket.emit(SocketEvent.INCOMING_PRODUCER, {
+            // Build the event data
+            const eventData = {
                 roomId: roomName,
                 producers: {
                     [currentSocket.id!]: newProducers.map(p => ({
@@ -582,11 +729,19 @@ export const useMediaSoup = ({
                         producerId: p.id
                     }))
                 }
-            });
+            };
             
-            console.log("Producer replacement complete");
+            // Wait a bit to ensure producers are fully registered on server
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            console.log("replaceProducerTracks: Emitting INCOMING_PRODUCER with data:", JSON.stringify(eventData, null, 2));
+            
+            // Notify consumers about new producers
+            currentSocket.emit(SocketEvent.INCOMING_PRODUCER, eventData);
+            
+            console.log("replaceProducerTracks: Complete - new producers:", newProducers.map(p => ({ id: p.id, kind: p.kind })));
         } catch (error) {
-            console.error("Error creating new producers:", error);
+            console.error("replaceProducerTracks: Error creating producers:", error);
         }
     }, [isHost]);
     

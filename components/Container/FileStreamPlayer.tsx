@@ -56,7 +56,26 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
 
     // Handle received stream (for consumers)
     const handleStreamReceived = useCallback((stream: MediaStream) => {
-        console.log("Received new stream from host");
+        console.log("handleStreamReceived: Received new stream from host", {
+            id: stream.id,
+            videoTracks: stream.getVideoTracks().length,
+            audioTracks: stream.getAudioTracks().length,
+            active: stream.active
+        });
+        
+        // Verify tracks are active
+        const videoTrack = stream.getVideoTracks()[0];
+        const audioTrack = stream.getAudioTracks()[0];
+        
+        if (videoTrack) {
+            console.log("handleStreamReceived: Video track state:", {
+                id: videoTrack.id,
+                enabled: videoTrack.enabled,
+                muted: videoTrack.muted,
+                readyState: videoTrack.readyState
+            });
+        }
+        
         setRemoteStream(stream);
     }, []);
 
@@ -163,6 +182,17 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
 
     // Determine video source
     const source = roomState.host ? currentFileUrl : remoteStream;
+    
+    // Log when source changes for debugging
+    useEffect(() => {
+        if (!roomState.host && remoteStream) {
+            console.log("FileStreamPlayer: Consumer source updated", {
+                streamId: remoteStream.id,
+                active: remoteStream.active,
+                videoTracks: remoteStream.getVideoTracks().length
+            });
+        }
+    }, [remoteStream, roomState.host]);
 
     // Don't render until we have a source
     if (!source) {
@@ -180,8 +210,16 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         );
     }
 
+    // Generate a key for the Player based on stream/url to force re-render
+    const playerKey = roomState.host 
+        ? `host-${roomState.selectedFileIndex}` 
+        : remoteStream ? `consumer-${remoteStream.id}` : 'consumer-waiting';
+    
+    console.log("FileStreamPlayer: Rendering with key:", playerKey, "source type:", typeof source);
+
     return (
         <Player
+            key={playerKey}
             playerRef={playerRef}
             playing={true} // Always play - needed for captureStream() to work
             onReady={handleVideoReady}
