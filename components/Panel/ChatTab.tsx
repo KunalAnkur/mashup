@@ -356,7 +356,7 @@ const ChatTab = () => {
         {showEmojis && (
           <div
             ref={emojiPickerRef}
-            className="absolute bottom-full left-0 right-0 mb-2 rounded-2xl animate-slide-up z-[100] overflow-hidden"
+            className="absolute bottom-full left-0 right-0 mb-2 rounded-2xl animate-slide-up z-[100] overflow-hidden emoji-picker-container"
             style={{ minWidth: "280px" }}
           >
             <EmojiPicker
@@ -396,7 +396,6 @@ const ChatTab = () => {
                   "--epr-category-label-text-color": "#9ca3af",
                   "--epr-skin-tone-picker-menu-padding": "10px 12px",
                   "--epr-skin-tone-picker-menu-border-radius": "8px",
-                  "--epr-skin-tone-picker-menu-margin": "8px 8px 0 0",
                 } as React.CSSProperties
               }
             />
@@ -432,7 +431,7 @@ const ChatTab = () => {
         </button>
       </div>
 
-      <style jsx>{`
+      <style jsx global>{`
         @keyframes fade-in {
           from {
             opacity: 0;
@@ -470,6 +469,99 @@ const ChatTab = () => {
         }
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
+        }
+
+        /* Skin tone picker custom styling */
+        .epr-skin-tones {
+          margin-right: 8px !important;
+          margin-left: 10px !important;
+          border-radius: 10px !important;
+        }
+
+        .epr-skin-tone-select {
+          margin-left: 8px !important;
+          margin-right: 8px !important;
+        }
+
+        /* Responsive emoji picker styles */
+        /* Small screens (sm: 640px) */
+        @media (max-width: 639px) {
+          .emoji-picker-container {
+            min-width: 260px !important;
+          }
+          .emoji-picker-container .epr-emoji-size {
+            --epr-emoji-size: 20px !important;
+          }
+          .emoji-picker-container .EmojiPickerReact {
+            --epr-emoji-size: 20px !important;
+            --epr-category-navigation-button-size: 24px !important;
+            --epr-search-input-height: 28px !important;
+            --epr-search-input-font-size: 11px !important;
+            --epr-horizontal-padding: 6px !important;
+            --epr-category-padding: 3px !important;
+            --epr-header-padding: 5px 6px 3px 6px !important;
+            --epr-category-label-height: 20px !important;
+            --epr-category-label-padding: 0 6px !important;
+          }
+        }
+
+        /* Medium screens (md: 768px) */
+        @media (min-width: 640px) and (max-width: 767px) {
+          .emoji-picker-container {
+            min-width: 280px !important;
+          }
+          .emoji-picker-container .EmojiPickerReact {
+            --epr-emoji-size: 22px !important;
+            --epr-category-navigation-button-size: 26px !important;
+            --epr-search-input-height: 30px !important;
+            --epr-search-input-font-size: 11px !important;
+            --epr-horizontal-padding: 7px !important;
+            --epr-category-padding: 3px !important;
+            --epr-header-padding: 5px 7px 3px 7px !important;
+            --epr-category-label-height: 22px !important;
+            --epr-category-label-padding: 0 7px !important;
+          }
+        }
+
+        /* Large screens (lg: 1024px) */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .emoji-picker-container {
+            min-width: 300px !important;
+          }
+          .emoji-picker-container .EmojiPickerReact {
+            --epr-emoji-size: 23px !important;
+            --epr-category-navigation-button-size: 27px !important;
+            --epr-search-input-height: 31px !important;
+            --epr-search-input-font-size: 11.5px !important;
+            --epr-horizontal-padding: 7px !important;
+            --epr-category-padding: 3px !important;
+            --epr-header-padding: 5px 7px 3px 7px !important;
+            --epr-category-label-height: 23px !important;
+            --epr-category-label-padding: 0 7px !important;
+          }
+        }
+
+        /* Extra large screens (xl: 1280px) */
+        @media (min-width: 1024px) and (max-width: 1535px) {
+          .emoji-picker-container {
+            min-width: 320px !important;
+          }
+          .emoji-picker-container .EmojiPickerReact {
+            --epr-emoji-size: 23px !important;
+            --epr-category-navigation-button-size: 27px !important;
+            --epr-search-input-height: 31px !important;
+            --epr-search-input-font-size: 11.5px !important;
+            --epr-horizontal-padding: 7px !important;
+            --epr-category-padding: 3px !important;
+            --epr-header-padding: 5px 7px 3px 7px !important;
+            --epr-category-label-height: 23px !important;
+            --epr-category-label-padding: 0 7px !important;
+          }
+        }
+
+        /* 2xl screens and above (1536px+) - keep original settings */
+        @media (min-width: 1536px) {
+          /* Original 2xl styles are already applied in inline styles */
         }
       `}</style>
     </div>
