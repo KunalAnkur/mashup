@@ -43,22 +43,6 @@ interface MediaSoupState {
  * - Screen sharing (via getDisplayMedia())
  * - Camera/mic (via getUserMedia())
  * - Any other MediaStream source
- * 
- * @example
- * // For video file streaming
- * const { joinRoom } = useMediaSoup({
- *   getStream: () => playerRef.current?.getInternalPlayer()?.captureStream() ?? null,
- *   onStreamReceived: (stream) => setRemoteStream(stream),
- *   isHost: roomState.host,
- * });
- * 
- * @example
- * // For screen sharing
- * const { joinRoom } = useMediaSoup({
- *   getStream: () => screenStream,
- *   onStreamReceived: (stream) => setRemoteStream(stream),
- *   isHost: true,
- * });
  */
 export const useMediaSoup = ({ 
     getStream, 
@@ -83,10 +67,25 @@ export const useMediaSoup = ({
         consumers: new Map<string, Consumer[]>()
     });
 
+    // Refs to avoid stale closures
     const mediaSoupStateRef = useRef(mediaSoupState);
+    const roomNameRef = useRef<string>('');
+    const socketRef = useRef(socket);
+    const isSeekingRef = useRef(false);
+    const getStreamRef = useRef(getStream);
+    
+    // Keep refs in sync
     useEffect(() => {
         mediaSoupStateRef.current = mediaSoupState;
     }, [mediaSoupState]);
+    
+    useEffect(() => {
+        socketRef.current = socket;
+    }, [socket]);
+    
+    useEffect(() => {
+        getStreamRef.current = getStream;
+    }, [getStream]);
 
     // Initialize MediaSoup device
     const initializeDevice = useCallback(async (routerRtpCapabilities: RtpCapabilities) => {
@@ -109,10 +108,11 @@ export const useMediaSoup = ({
         callback: () => void,
         errback: (error: Error) => void
     ) => {
-        if (!socket) return;
+        const currentSocket = socketRef.current;
+        if (!currentSocket) return;
 
         try {
-            const response = await socket.emitWithAck(SocketEvent.CONNECT_TRANSPORT, {
+            const response = await currentSocket.emitWithAck(SocketEvent.CONNECT_TRANSPORT, {
                 transportId,
                 dtlsParameters,
                 roomId,
@@ -126,7 +126,7 @@ export const useMediaSoup = ({
         } catch (error) {
             errback(error as Error);
         }
-    }, [socket]);
+    }, []);
 
     const handleTransportProduce = useCallback(async (
         transportId: string,
@@ -136,10 +136,11 @@ export const useMediaSoup = ({
         callback: (params: { id: string }) => void,
         errback: (error: Error) => void
     ) => {
-        if (!socket) return;
+        const currentSocket = socketRef.current;
+        if (!currentSocket) return;
 
         try {
-            const response = await socket.emitWithAck(SocketEvent.PRODUCE, {
+            const response = await currentSocket.emitWithAck(SocketEvent.PRODUCE, {
                 transportId,
                 kind,
                 rtpParameters,
@@ -154,7 +155,7 @@ export const useMediaSoup = ({
         } catch (error) {
             errback(error as Error);
         }
-    }, [socket]);
+    }, []);
 
     // Create producer transport (only for hosts)
     const createProducerTransport = useCallback(async (
@@ -181,7 +182,8 @@ export const useMediaSoup = ({
         parameters: mediasoupClient.types.TransportOptions, 
         roomId: string
     ) => {
-        if (!socket) return null;
+        const currentSocket = socketRef.current;
+        if (!currentSocket) return null;
 
         const transport = device.createRecvTransport(parameters);
 
@@ -189,16 +191,12 @@ export const useMediaSoup = ({
             console.log("Connection state changed:", state);
         });
 
-        transport.on('icegatheringstatechange', state => {
-            console.log("ICE gathering state changed:", state);
-        });
-
         transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
             await handleTransportConnect(transport.id, dtlsParameters, roomId, callback, errback);
         });
 
         return transport;
-    }, [socket, handleTransportConnect]);
+    }, [handleTransportConnect]);
 
     // Produce media tracks to transport
     const produceMedia = useCallback(async (
@@ -206,7 +204,8 @@ export const useMediaSoup = ({
         stream: MediaStream,
         roomId: string
     ) => {
-        if (!socket) return null;
+        const currentSocket = socketRef.current;
+        if (!currentSocket) return null;
 
         const videoTrack = stream.getVideoTracks()[0];
         const audioTrack = stream.getAudioTracks()[0];
@@ -216,7 +215,9 @@ export const useMediaSoup = ({
         // Produce audio first (if available)
         if (audioTrack) {
             const audioProducer = await transport.produce({ track: audioTrack });
-            audioProducer.on('trackended', () => console.log('Audio track ended'));
+            audioProducer.on('trackended', () => {
+                console.log('Audio track ended - this is normal during video change');
+            });
             audioProducer.on('transportclose', () => console.log('Audio transport closed'));
             producers.push(audioProducer);
         }
@@ -224,25 +225,27 @@ export const useMediaSoup = ({
         // Produce video (if available)
         if (videoTrack) {
             const videoProducer = await transport.produce({ track: videoTrack });
-            videoProducer.on('trackended', () => console.log('Video track ended'));
+            videoProducer.on('trackended', () => {
+                console.log('Video track ended - this is normal during video change');
+            });
             videoProducer.on('transportclose', () => console.log('Video transport closed'));
             producers.push(videoProducer);
         }
 
         // Notify other peers of new producers
-        socket.emit(SocketEvent.INCOMING_PRODUCER, {
+        currentSocket.emit(SocketEvent.INCOMING_PRODUCER, {
             roomId,
             producers: {
-                [socket.id!]: producers.map(p => ({
+                [currentSocket.id!]: producers.map(p => ({
                     kind: p.kind,
-                    peerId: socket.id,
+                    peerId: currentSocket.id,
                     producerId: p.id
                 }))
             }
         });
 
         return producers;
-    }, [socket]);
+    }, []);
 
     // Consume media from producer
     const consume = useCallback(async (
@@ -251,7 +254,8 @@ export const useMediaSoup = ({
         roomId: string,
         transport: mediasoupClient.types.Transport
     ) => {
-        if (!socket) return;
+        const currentSocket = socketRef.current;
+        if (!currentSocket) return;
         
         const videoProducer = producerInfo.find(info => info.kind === 'video');
         const audioProducer = producerInfo.find(info => info.kind === 'audio');
@@ -263,18 +267,18 @@ export const useMediaSoup = ({
 
         try {
             const [videoResponse, audioResponse] = await Promise.all([
-                socket.emitWithAck(SocketEvent.CONSUME, {
+                currentSocket.emitWithAck(SocketEvent.CONSUME, {
                     transportId: transport.id,
                     producerId: videoProducer.producerId,
                     roomId,
-                    peerId: socket.id,
+                    peerId: currentSocket.id,
                     rtpCapabilities: device.rtpCapabilities,
                 }),
-                socket.emitWithAck(SocketEvent.CONSUME, {
+                currentSocket.emitWithAck(SocketEvent.CONSUME, {
                     transportId: transport.id,
                     producerId: audioProducer.producerId,
                     roomId,
-                    peerId: socket.id,
+                    peerId: currentSocket.id,
                     rtpCapabilities: device.rtpCapabilities,
                 }),
             ]);
@@ -286,7 +290,7 @@ export const useMediaSoup = ({
             
             await videoConsumer.resume();
             await audioConsumer.resume();
-            await socket.emitWithAck(SocketEvent.UNPAUSE_CONSUMERS, { 
+            await currentSocket.emitWithAck(SocketEvent.UNPAUSE_CONSUMERS, { 
                 roomId, 
                 consumerIds: [videoConsumer.id, audioConsumer.id] 
             });
@@ -298,23 +302,30 @@ export const useMediaSoup = ({
 
             setMediaSoupState((prev) => {
                 const consumers = new Map<string, Consumer[]>(prev.consumers);
-                consumers.set(socket.id as string, [videoConsumer, audioConsumer]);
+                consumers.set(currentSocket.id as string, [videoConsumer, audioConsumer]);
                 return { ...prev, consumers };
             });
+            
+            // Also update ref
+            mediaSoupStateRef.current.consumers.set(currentSocket.id!, [videoConsumer, audioConsumer]);
         } catch (error) {
             console.error('Failed to consume media:', error);
         }
-    }, [socket, onStreamReceived]);
+    }, [onStreamReceived]);
 
     // Join room and setup transports
     const joinRoom = useCallback(async (room: string, isHostFlag: boolean, username: string) => {
-        if (!socket) {
+        const currentSocket = socketRef.current;
+        if (!currentSocket) {
             console.log('Socket not connected');
             return;
         }
         
+        // Store room name for later use
+        roomNameRef.current = room;
+        
         try {
-            const response = await socket.emitWithAck(SocketEvent.JOIN_ROOM, {
+            const response = await currentSocket.emitWithAck(SocketEvent.JOIN_ROOM, {
                 roomId: room,
                 host: isHostFlag
             });
@@ -322,32 +333,38 @@ export const useMediaSoup = ({
             const { sendTransportOptions, recvTransportOptions, rtpCapabilities, existingProducers } = response;
             const device = await initializeDevice(rtpCapabilities);
             setMediaSoupState((prev) => ({ ...prev, device }));
+            mediaSoupStateRef.current.device = device;
             
             if (isHostFlag) {
                 // Host: Create producer transport and produce stream
                 const transport = await createProducerTransport(device, sendTransportOptions, room);
                 setMediaSoupState((prev) => ({ ...prev, producerTransport: transport }));
+                mediaSoupStateRef.current.producerTransport = transport;
                 
-                const stream = getStream();
+                const stream = getStreamRef.current();
                 if (!stream) {
                     throw new Error('Failed to get media stream');
                 }
                 
                 const producers = await produceMedia(transport, stream, room);
                 if (producers) {
-                    setMediaSoupState((prev) => {
+                setMediaSoupState((prev) => {
                         const producersMap = new Map<string, Producer[]>(prev.producers);
-                        producersMap.set(socket.id as string, producers);
+                        producersMap.set(currentSocket.id as string, producers);
                         return { ...prev, producers: producersMap };
                     });
+                    mediaSoupStateRef.current.producers.set(currentSocket.id!, producers);
                 }
             } else {
                 // Consumer: Create consumer transport and consume existing producers
                 const transport = await createConsumerTransport(device, recvTransportOptions, room);
-                setMediaSoupState((prev) => ({ ...prev, consumerTransport: transport }));
-                
+                if (transport) {
+                    setMediaSoupState((prev) => ({ ...prev, consumerTransport: transport }));
+                    mediaSoupStateRef.current.consumerTransport = transport;
+                    
                 for (const peerId in existingProducers) {
-                    await consume(existingProducers[peerId], device, room, transport!);
+                        await consume(existingProducers[peerId], device, room, transport);
+                    }
                 }
             }
 
@@ -361,49 +378,107 @@ export const useMediaSoup = ({
         } catch (error) {
             console.error('Failed to join room:', error);
         }
-    }, [socket, initializeDevice, createProducerTransport, createConsumerTransport, getStream, produceMedia, consume]);
+    }, [initializeDevice, createProducerTransport, createConsumerTransport, produceMedia, consume]);
     
     // Pause all producers
     const pauseProducers = useCallback(() => {
-        if (!socket || !isHost) return;
-        const producers = mediaSoupStateRef.current.producers.get(socket.id!);
-        if (producers) producers.forEach(producer => producer.pause());
-    }, [isHost, socket]);
+        // Don't pause during seeking
+        if (isSeekingRef.current) {
+            console.log("Ignoring pause during seek");
+            return;
+        }
+        
+        const currentSocket = socketRef.current;
+        if (!currentSocket || !isHost) return;
+        
+        const producers = mediaSoupStateRef.current.producers.get(currentSocket.id!);
+        if (producers) {
+            console.log("Pausing producers");
+            producers.forEach(producer => {
+                if (!producer.closed) {
+                    producer.pause();
+                }
+            });
+        }
+    }, [isHost]);
 
     // Resume all producers
     const resumeProducers = useCallback(() => {
-        if (!socket || !isHost) return;
-        const producers = mediaSoupStateRef.current.producers.get(socket.id!);
-        if (producers) producers.forEach(producer => producer.resume());
-    }, [isHost, socket]);
+        const currentSocket = socketRef.current;
+        if (!currentSocket || !isHost) return;
+        
+        const producers = mediaSoupStateRef.current.producers.get(currentSocket.id!);
+        if (producers) {
+            console.log("Resuming producers");
+            producers.forEach(producer => {
+                if (!producer.closed && producer.paused) {
+                    producer.resume();
+                }
+            });
+        }
+    }, [isHost]);
 
-    // Player event handlers (for compatibility)
+    // Seek handlers - track seeking state to avoid pausing producers
+    const onSeekStart = useCallback(() => {
+        console.log("Seek started");
+        isSeekingRef.current = true;
+    }, []);
+    
+    const onSeekEnd = useCallback(() => {
+        console.log("Seek ended");
+        // Delay resetting to avoid race conditions
+        setTimeout(() => {
+            isSeekingRef.current = false;
+        }, 300);
+    }, []);
+
+    // Player event handlers
     const onPlay = useCallback((event: string) => {
-        if (event === 'seekend') return;
+        // Ignore events during seeking
+        if (event === 'seekend' || isSeekingRef.current) return;
         resumeProducers();
     }, [resumeProducers]);
 
     const onPause = useCallback((event: string) => {
-        if (event === "seekend") return;
+        // Ignore events during seeking
+        if (event === "seekend" || isSeekingRef.current) return;
         pauseProducers();
     }, [pauseProducers]);
 
-    // Handle incoming producer notifications
+    // Handle incoming producer notifications (for consumers when host switches video)
     useEffect(() => {
-        if (!socket) return;
+        if (!socket || isHost) return;
         
         const handleIncomingProducer = async (data: any) => {
-            const existingConsumer = mediaSoupStateRef.current.consumers.get(socket.id!);
-            existingConsumer?.forEach(c => c.close());
-            mediaSoupStateRef.current.consumers.delete(socket.id!);
+            console.log("Received INCOMING_PRODUCER event");
+            
+            // Close existing consumers
+            const currentSocket = socketRef.current;
+            if (!currentSocket) return;
+            
+            const existingConsumer = mediaSoupStateRef.current.consumers.get(currentSocket.id!);
+            if (existingConsumer) {
+                console.log("Closing existing consumers");
+                existingConsumer.forEach(c => {
+                    if (!c.closed) c.close();
+                });
+                mediaSoupStateRef.current.consumers.delete(currentSocket.id!);
+            }
 
+            // Get current device and transport
+            const device = mediaSoupStateRef.current.device;
+            const transport = mediaSoupStateRef.current.consumerTransport;
+            const roomName = roomNameRef.current;
+            
+            if (!device || !transport) {
+                console.error("Device or transport not available");
+                return;
+            }
+
+            // Consume from new producers
             for (const peerId in data.producers) {
-                await consume(
-                    data.producers[peerId], 
-                    mediaSoupStateRef.current.device!, 
-                    roomState.name, 
-                    mediaSoupStateRef.current.consumerTransport!
-                );
+                console.log("Consuming from peer:", peerId);
+                await consume(data.producers[peerId], device, roomName, transport);
             }
         };
         
@@ -412,39 +487,109 @@ export const useMediaSoup = ({
         return () => {
             socket.off(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer);
         };
-    }, [socket, roomState.name, consume]);
+    }, [socket, consume, isHost]);
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
-            if (!socket) return;
-            socket.emit(SocketEvent.LEAVE_ROOM);
+            const currentSocket = socketRef.current;
+            if (!currentSocket) return;
+            
+            currentSocket.emit(SocketEvent.LEAVE_ROOM);
 
             const state = mediaSoupStateRef.current;
             state.producerTransport?.close();
             state.consumerTransport?.close();
         };
-    }, [socket]);
+    }, []);
     
     // Replace producer tracks (for switching video sources)
+    // Strategy: Close old producers and create new ones
     const replaceProducerTracks = useCallback(async (newStream: MediaStream) => {
-        if (!isHost || !socket) return;
+        const currentSocket = socketRef.current;
+        const roomName = roomNameRef.current;
+        const transport = mediaSoupStateRef.current.producerTransport;
         
-        const producers = mediaSoupStateRef.current.producers.get(socket.id!);
-        if (!producers) return;
+        console.log("replaceProducerTracks called:", { 
+            isHost, 
+            hasSocket: !!currentSocket, 
+            roomName, 
+            hasTransport: !!transport 
+        });
+        
+        if (!isHost || !currentSocket || !roomName || !transport) {
+            console.error("replaceProducerTracks: missing requirements");
+            return;
+        }
+
+        // Close existing producers
+        const oldProducers = mediaSoupStateRef.current.producers.get(currentSocket.id!);
+        if (oldProducers) {
+            console.log("Closing old producers:", oldProducers.length);
+            oldProducers.forEach(p => {
+                if (!p.closed) {
+                    p.close();
+                }
+            });
+            mediaSoupStateRef.current.producers.delete(currentSocket.id!);
+        }
 
         const videoTrack = newStream.getVideoTracks()[0];
         const audioTrack = newStream.getAudioTracks()[0];
+        
+        console.log("New stream tracks:", { 
+            hasVideo: !!videoTrack, 
+            hasAudio: !!audioTrack 
+        });
+        
+        const newProducers: Producer[] = [];
 
-        for (const producer of producers) {
-            if (producer.kind === 'video' && videoTrack) {
-                await producer.replaceTrack({ track: videoTrack });
-            } else if (producer.kind === 'audio' && audioTrack) {
-                await producer.replaceTrack({ track: audioTrack });
+        try {
+            // Create new audio producer
+            if (audioTrack) {
+                console.log("Creating new audio producer");
+                const audioProducer = await transport.produce({ track: audioTrack });
+                audioProducer.on('trackended', () => console.log('New audio track ended'));
+                audioProducer.on('transportclose', () => console.log('Audio transport closed'));
+                newProducers.push(audioProducer);
             }
-        }
-    }, [isHost, socket]);
 
+            // Create new video producer
+            if (videoTrack) {
+                console.log("Creating new video producer");
+                const videoProducer = await transport.produce({ track: videoTrack });
+                videoProducer.on('trackended', () => console.log('New video track ended'));
+                videoProducer.on('transportclose', () => console.log('Video transport closed'));
+                newProducers.push(videoProducer);
+            }
+
+            // Store new producers
+            mediaSoupStateRef.current.producers.set(currentSocket.id!, newProducers);
+            setMediaSoupState(prev => {
+                const producers = new Map(prev.producers);
+                producers.set(currentSocket.id!, newProducers);
+                return { ...prev, producers };
+            });
+
+            // Notify consumers about new producers
+            console.log("Notifying consumers about new producers");
+            currentSocket.emit(SocketEvent.INCOMING_PRODUCER, {
+                roomId: roomName,
+                producers: {
+                    [currentSocket.id!]: newProducers.map(p => ({
+                        kind: p.kind,
+                        peerId: currentSocket.id,
+                        producerId: p.id
+                    }))
+                }
+            });
+            
+            console.log("Producer replacement complete");
+        } catch (error) {
+            console.error("Error creating new producers:", error);
+        }
+    }, [isHost]);
+    
     return {
         // Room management
         joinRoom,
@@ -454,6 +599,8 @@ export const useMediaSoup = ({
         // Producer controls
         onPause,
         onPlay,
+        onSeekStart,
+        onSeekEnd,
         pauseProducers,
         resumeProducers,
         replaceProducerTracks,
