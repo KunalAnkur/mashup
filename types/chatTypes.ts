@@ -32,8 +32,13 @@ export interface SendMessageResponse {
   error?: string;
 }
 
-// Reaction types
-export type ReactionType = "😍" | "😡" | "😭" | "😂" | "🤯" | "🔥";
+// Reaction types - All 60 available animated emojis
+export type ReactionType = 
+  | "😍" | "😡" | "😭" | "😂" | "🤯" | "🔥"
+  | "😊" | "😢" | "😮" | "🤔" | "😎" | "🥳" | "😴" | "🤗"
+  | "❤️" | "💔" | "😘" | "🥰" | "😜" | "😇" | "🤩" | "😱" | "🥺" | "😳" | "🙄" | "😬" | "🤐" | "🤢" | "🤮" | "🤧" | "😷" | "🤒" | "😈" | "👻" | "💀" | "🤡"
+  | "👍" | "👎" | "👏" | "🙏" | "💪" | "✌️" | "🤞" | "🤟" | "🤘" | "👌" | "🤝" | "✋" | "👋" | "🙌" | "👊"
+  | "🎉" | "💯" | "⚡" | "⭐" | "✨" | "💥" | "💫" | "🎊" | "🎈";
 
 export interface Reaction {
   id: string;

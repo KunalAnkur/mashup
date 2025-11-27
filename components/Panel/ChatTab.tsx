@@ -431,35 +431,38 @@ const ChatTab = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Reaction Buttons - Always Visible with Animations */}
-      <div className="flex items-center justify-between gap-2 py-2 px-3 bg-gradient-to-br from-[#1a1a1d] to-[#1f1f23] rounded-xl mb-2">
-        {/* Pinned Reactions */}
-        <div className="flex items-center gap-2 flex-1">
-          {pinnedReactions.map((emoji) => (
-            <AnimatedReaction
-              key={emoji}
-              emoji={emoji}
-              isAnimating={animatingReaction === emoji}
-              disabled={!isJoined}
-              onClick={() => {
-                console.log("Reaction clicked:", emoji);
-                setAnimatingReaction(emoji);
-                sendReaction(emoji);
+      {/* Reaction Buttons - Clean Modern Design */}
+      <div className="relative flex items-center justify-center gap-3 py-2 mb-2">
+        {/* Pinned Reactions - Centered */}
+        {pinnedReactions.map((emoji) => (
+          <AnimatedReaction
+            key={emoji}
+            emoji={emoji}
+            isAnimating={animatingReaction === emoji}
+            disabled={!isJoined}
+            onClick={() => {
+              console.log("Reaction clicked:", emoji);
+              setAnimatingReaction(emoji);
+              sendReaction(emoji);
 
-                // Reset animation after it completes
-                setTimeout(() => {
-                  setAnimatingReaction(null);
-                }, 600); // Match the animation duration
-              }}
-            />
-          ))}
+              // Reset animation after it completes
+              setTimeout(() => {
+                setAnimatingReaction(null);
+              }, 600); // Match the animation duration
+            }}
+          />
+        ))}
+
+        {/* Divider */}
+        <div className="w-px h-6 bg-white/10" />
+
+        {/* Reaction Picker Button - Positioned for proper alignment */}
+        <div className="relative">
+          <ReactionPicker
+            pinnedReactions={pinnedReactions}
+            onReactionsChange={handleReactionsChange}
+          />
         </div>
-
-        {/* Reaction Picker Button */}
-        <ReactionPicker
-          pinnedReactions={pinnedReactions}
-          onReactionsChange={handleReactionsChange}
-        />
       </div>
 
       {/* Input Area */}
