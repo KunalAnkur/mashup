@@ -107,6 +107,7 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
     const onPlay = useCallback((event: string) => {
         if (event === 'seekend') return;
         setIsPlaying(true);
+        isPlayingRef.current = true; // Update ref immediately for getHostState
         
         if (!isJoined || !socket || !roomId) return;
         
@@ -120,6 +121,7 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
     const onPause = useCallback((event: string) => {
         if (event === "seekend") return;
         setIsPlaying(false);
+        isPlayingRef.current = false; // Update ref immediately for getHostState
         
         if (!isJoined || !socket || !roomId) return;
         
