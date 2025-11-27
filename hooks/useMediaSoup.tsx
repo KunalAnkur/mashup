@@ -1,15 +1,22 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import type ReactPlayer from "react-player";
 import { useSocket } from "@/context/SocketContext";
 import * as mediasoupClient from "mediasoup-client";
 import { Transport, Producer, Consumer, RtpCapabilities } from "mediasoup-client/types";
 import { SocketEvent } from "@/types/socketEvents";
-import { useMediaStreamContext } from "@/context/MediaStreamContext";
-import { useFileContext } from "@/context/FileContext";
 
+/**
+ * MediaSoup hook configuration
+ * Stream-agnostic: accepts any MediaStream source
+ */
 interface UseMediaSoupParams {
-    playerRef: React.RefObject<ReactPlayer | null>;
+    /** Function to get the MediaStream to produce (for hosts) */
+    getStream: () => MediaStream | null;
+    /** Callback when receiving a stream from producer (for consumers) */
+    onStreamReceived?: (stream: MediaStream) => void;
+    /** Whether this user is the host/producer */
     isHost: boolean;
+    /** Socket namespace (default: 'filestream') */
+    namespace?: string;
 }
 
 interface RoomState {
@@ -17,7 +24,6 @@ interface RoomState {
     isHost: boolean;
     username: string;
     joined: boolean;
-    videoReady: boolean;
 }
 
 interface MediaSoupState {
@@ -28,17 +34,47 @@ interface MediaSoupState {
     consumers: Map<string, Consumer[]>;
 }
 
-export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
-    const { socket, isConnected } = useSocket('filestream');
-    const { setStream } = useMediaStreamContext();
-    const { files } = useFileContext();
+/**
+ * useMediaSoup
+ * 
+ * A stream-agnostic MediaSoup hook for WebRTC streaming.
+ * Can be used for:
+ * - Video file streaming (via playerRef.captureStream())
+ * - Screen sharing (via getDisplayMedia())
+ * - Camera/mic (via getUserMedia())
+ * - Any other MediaStream source
+ * 
+ * @example
+ * // For video file streaming
+ * const { joinRoom } = useMediaSoup({
+ *   getStream: () => playerRef.current?.getInternalPlayer()?.captureStream() ?? null,
+ *   onStreamReceived: (stream) => setRemoteStream(stream),
+ *   isHost: roomState.host,
+ * });
+ * 
+ * @example
+ * // For screen sharing
+ * const { joinRoom } = useMediaSoup({
+ *   getStream: () => screenStream,
+ *   onStreamReceived: (stream) => setRemoteStream(stream),
+ *   isHost: true,
+ * });
+ */
+export const useMediaSoup = ({ 
+    getStream, 
+    onStreamReceived, 
+    isHost,
+    namespace = 'filestream' 
+}: UseMediaSoupParams) => {
+    const { socket, isConnected } = useSocket(namespace);
+    
     const [roomState, setRoomState] = useState<RoomState>({
         name: '',
         isHost,
         username: '',
         joined: false,
-        videoReady: false
     });
+    
     const [mediaSoupState, setMediaSoupState] = useState<MediaSoupState>({
         device: null,
         producerTransport: null,
@@ -55,7 +91,6 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
     // Initialize MediaSoup device
     const initializeDevice = useCallback(async (routerRtpCapabilities: RtpCapabilities) => {
         try {
-            // debugger
             const device = await mediasoupClient.Device.factory();
             await device.load({ routerRtpCapabilities });
             setMediaSoupState(prev => ({ ...prev, device }));
@@ -122,7 +157,11 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
     }, [socket]);
 
     // Create producer transport (only for hosts)
-    const createProducerTransport = useCallback(async (device: mediasoupClient.Device, parameters: mediasoupClient.types.TransportOptions, roomId: string) => {
+    const createProducerTransport = useCallback(async (
+        device: mediasoupClient.Device, 
+        parameters: mediasoupClient.types.TransportOptions, 
+        roomId: string
+    ) => {
         const transport = device.createSendTransport(parameters);
 
         transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
@@ -134,10 +173,14 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
         });
 
         return transport;
-    }, [socket, handleTransportConnect, handleTransportProduce]);
+    }, [handleTransportConnect, handleTransportProduce]);
 
     // Create consumer transport (only for non-hosts)
-    const createConsumerTransport = useCallback(async (device: mediasoupClient.Device, parameters: mediasoupClient.types.TransportOptions, roomId: string) => {
+    const createConsumerTransport = useCallback(async (
+        device: mediasoupClient.Device, 
+        parameters: mediasoupClient.types.TransportOptions, 
+        roomId: string
+    ) => {
         if (!socket) return null;
 
         const transport = device.createRecvTransport(parameters);
@@ -157,21 +200,49 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
         return transport;
     }, [socket, handleTransportConnect]);
 
-    // Create video stream from ReactPlayer
-    const createVideoStream = useCallback((): MediaStream | null => {
-        if (!playerRef.current) {
-            console.error('Player ref not available');
-            return null;
+    // Produce media tracks to transport
+    const produceMedia = useCallback(async (
+        transport: Transport,
+        stream: MediaStream,
+        roomId: string
+    ) => {
+        if (!socket) return null;
+
+        const videoTrack = stream.getVideoTracks()[0];
+        const audioTrack = stream.getAudioTracks()[0];
+
+        const producers: Producer[] = [];
+
+        // Produce audio first (if available)
+        if (audioTrack) {
+            const audioProducer = await transport.produce({ track: audioTrack });
+            audioProducer.on('trackended', () => console.log('Audio track ended'));
+            audioProducer.on('transportclose', () => console.log('Audio transport closed'));
+            producers.push(audioProducer);
         }
 
-        const videoElement = playerRef.current.getInternalPlayer() as (HTMLVideoElement & { captureStream?: () => MediaStream });
-        if (!videoElement?.captureStream) {
-            console.error('Video element or captureStream not available');
-            return null;
+        // Produce video (if available)
+        if (videoTrack) {
+            const videoProducer = await transport.produce({ track: videoTrack });
+            videoProducer.on('trackended', () => console.log('Video track ended'));
+            videoProducer.on('transportclose', () => console.log('Video transport closed'));
+            producers.push(videoProducer);
         }
-        const stream = videoElement.captureStream();
-        return stream;
-    }, [playerRef, files]);
+
+        // Notify other peers of new producers
+        socket.emit(SocketEvent.INCOMING_PRODUCER, {
+            roomId,
+            producers: {
+                [socket.id!]: producers.map(p => ({
+                    kind: p.kind,
+                    peerId: socket.id,
+                    producerId: p.id
+                }))
+            }
+        });
+
+        return producers;
+    }, [socket]);
 
     // Consume media from producer
     const consume = useCallback(async (
@@ -180,8 +251,8 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
         roomId: string,
         transport: mediasoupClient.types.Transport
     ) => {
-        console.log('consuming =>', producerInfo, device, roomId, transport);
         if (!socket) return;
+        
         const videoProducer = producerInfo.find(info => info.kind === 'video');
         const audioProducer = producerInfo.find(info => info.kind === 'audio');
 
@@ -191,7 +262,6 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
         }
 
         try {
-
             const [videoResponse, audioResponse] = await Promise.all([
                 socket.emitWithAck(SocketEvent.CONSUME, {
                     transportId: transport.id,
@@ -213,133 +283,69 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
                 transport.consume(videoResponse.consumerData),
                 transport.consume(audioResponse.consumerData),
             ]);
+            
             await videoConsumer.resume();
             await audioConsumer.resume();
-            await socket.emitWithAck(SocketEvent.UNPAUSE_CONSUMERS, { roomId, consumerIds: [videoConsumer.id, audioConsumer.id] });
-            console.log({ vtrack: videoConsumer.track, atrack: audioConsumer.track })
+            await socket.emitWithAck(SocketEvent.UNPAUSE_CONSUMERS, { 
+                roomId, 
+                consumerIds: [videoConsumer.id, audioConsumer.id] 
+            });
             
             const remoteStream = new MediaStream([videoConsumer.track, audioConsumer.track]);
 
-            setStream(remoteStream);
+            // Notify via callback
+            onStreamReceived?.(remoteStream);
 
             setMediaSoupState((prev) => {
                 const consumers = new Map<string, Consumer[]>(prev.consumers);
                 consumers.set(socket.id as string, [videoConsumer, audioConsumer]);
-                return {
-                    ...prev,
-                    consumers
-                }
+                return { ...prev, consumers };
             });
         } catch (error) {
             console.error('Failed to consume media:', error);
         }
-    }, [socket, playerRef]);
+    }, [socket, onStreamReceived]);
 
+    // Join room and setup transports
     const joinRoom = useCallback(async (room: string, isHostFlag: boolean, username: string) => {
         if (!socket) {
             console.log('Socket not connected');
             return;
         }
+        
         try {
             const response = await socket.emitWithAck(SocketEvent.JOIN_ROOM, {
                 roomId: room,
                 host: isHostFlag
             });
-            console.log({ response });
+            
             const { sendTransportOptions, recvTransportOptions, rtpCapabilities, existingProducers } = response;
             const device = await initializeDevice(rtpCapabilities);
-            setMediaSoupState((prev) => ({...prev, device}))
+            setMediaSoupState((prev) => ({ ...prev, device }));
+            
             if (isHostFlag) {
-                // debugger
+                // Host: Create producer transport and produce stream
                 const transport = await createProducerTransport(device, sendTransportOptions, room);
-                const stream = createVideoStream();
-                console.log(stream);
-                setMediaSoupState((prev) => ({ ...prev, producerTransport: transport }))
+                setMediaSoupState((prev) => ({ ...prev, producerTransport: transport }));
+                
+                const stream = getStream();
                 if (!stream) {
-                    throw new Error('Failed to create video stream');
+                    throw new Error('Failed to get media stream');
                 }
-                console.log({ videoTrack: stream.getVideoTracks(), audioTrack:stream.getAudioTracks() })
-                const [videoTrack, audioTrack] = [stream.getVideoTracks()[0], stream.getAudioTracks()[0]];
-                // const [videoProducer, audioProducer] = await Promise.all([
-                //     transport.produce({
-                //         track: videoTrack, 
-                //         // encodings: [
-                //         //     { maxBitrate: 150_000, scaleResolutionDownBy: 4.0 }, // Low (240p)
-                //         //     { maxBitrate: 400_000, scaleResolutionDownBy: 2.0 }, // Medium (480p)
-                //         //     { maxBitrate: 1_000_000 } // High (720p)
-                //         //   ],
-                //         // codecOptions: {
-                //         //     videoGoogleStartBitrate: 1000
-                //         // }
-                //         encodings: [
-                //             // {
-                //             //     scaleResolutionDownBy: 4.0, // 240p
-                //             //     maxBitrate: 150_000,
-                //             // },
-                //             // {
-                //             //     scaleResolutionDownBy: 2.0, // 360p
-                //             //     maxBitrate: 300_000,
-                //             // },
-                //             // {
-                //             //     scaleResolutionDownBy: 1.0, // 480p
-                //             //     maxBitrate: 600_000,
-                //             // },
-
-                //             // {
-                //             //     scaleResolutionDownBy: 4.0, // ~180p
-                //             //     maxBitrate: 150_000,
-                //             // },
-                //             // {
-                //             //     scaleResolutionDownBy: 2.0, // ~360p
-                //             //     maxBitrate: 300_000,
-                //             // },
-                //             // {
-                //             //     scaleResolutionDownBy: 1.5, // ~480p
-                //             //     maxBitrate: 600_000,
-                //             // },
-                //             // {
-                //             //     scaleResolutionDownBy: 1.0, // 720p (original)
-                //             //     maxBitrate: 1_000_000, // 1 Mbps for HD
-                //             //   }
-                //         ],
-                //         codecOptions: {
-                //             videoGoogleStartBitrate: 300,
-                //         },
-                //         codec: device.rtpCapabilities.codecs?.find(c => c.mimeType === "video/VP8" )
-                //     }),
-                //     transport.produce({ track: audioTrack }),
-                // ]);
-                const audioProducer = await transport.produce({ track: audioTrack })
-                const videoProducer = await transport.produce({ track: videoTrack })
-
-                // TODO: NEED TO HANDLE THESE ALL EVENTS
-                videoProducer.on('trackended', () => console.log('Video track ended'));
-                videoProducer.on('transportclose', () => console.log('Video transport closed'));
-                audioProducer.on('trackended', () => console.log('Audio track ended'));
-                audioProducer.on('transportclose', () => console.log('Audio transport closed'));
-
-                socket.emit(SocketEvent.INCOMING_PRODUCER, (
-                    { 
-                        roomId: room, 
-                        producers: { 
-                            [socket.id!]: [
-                                { kind: videoProducer.kind, peerId: socket.id, producerId: videoProducer.id }, 
-                                { kind: audioProducer.kind, peerId: socket.id, producerId: audioProducer.id }
-                            ] 
-                        }
-                    }
-                ));
-                setMediaSoupState((prev) => {
-                    const producers = new Map<string, Producer[]>(prev.producers);
-                    producers.set(socket.id as string, [videoProducer, audioProducer]);
-                    return {
-                        ...prev,
-                        producers
-                    }
-                });
+                
+                const producers = await produceMedia(transport, stream, room);
+                if (producers) {
+                    setMediaSoupState((prev) => {
+                        const producersMap = new Map<string, Producer[]>(prev.producers);
+                        producersMap.set(socket.id as string, producers);
+                        return { ...prev, producers: producersMap };
+                    });
+                }
             } else {
+                // Consumer: Create consumer transport and consume existing producers
                 const transport = await createConsumerTransport(device, recvTransportOptions, room);
-                setMediaSoupState((prev) => ({ ...prev, consumerTransport: transport }))
+                setMediaSoupState((prev) => ({ ...prev, consumerTransport: transport }));
+                
                 for (const peerId in existingProducers) {
                     await consume(existingProducers[peerId], device, room, transport!);
                 }
@@ -355,85 +361,104 @@ export const useMediaSoup = ({ playerRef, isHost }: UseMediaSoupParams) => {
         } catch (error) {
             console.error('Failed to join room:', error);
         }
-    }, [socket, initializeDevice, createProducerTransport, createConsumerTransport, createVideoStream, consume]);
+    }, [socket, initializeDevice, createProducerTransport, createConsumerTransport, getStream, produceMedia, consume]);
     
-    const onPlay = useCallback((event: string) => {
-        if (!socket) return;
-        if (event === 'seekend') return;
-        if (!isHost) return;
-        const producers = mediaSoupStateRef.current.producers.get(socket.id!);
-        if (producers) producers.forEach(producer => producer.resume());
-    }, [isHost, socket]);
-
-
-    const onPause = useCallback((event: string) => {
-        if (!socket) return;
-        if (event === "seekend") return;
-        if (!isHost) return;
+    // Pause all producers
+    const pauseProducers = useCallback(() => {
+        if (!socket || !isHost) return;
         const producers = mediaSoupStateRef.current.producers.get(socket.id!);
         if (producers) producers.forEach(producer => producer.pause());
     }, [isHost, socket]);
 
+    // Resume all producers
+    const resumeProducers = useCallback(() => {
+        if (!socket || !isHost) return;
+        const producers = mediaSoupStateRef.current.producers.get(socket.id!);
+        if (producers) producers.forEach(producer => producer.resume());
+    }, [isHost, socket]);
+
+    // Player event handlers (for compatibility)
+    const onPlay = useCallback((event: string) => {
+        if (event === 'seekend') return;
+        resumeProducers();
+    }, [resumeProducers]);
+
+    const onPause = useCallback((event: string) => {
+        if (event === "seekend") return;
+        pauseProducers();
+    }, [pauseProducers]);
+
+    // Handle incoming producer notifications
     useEffect(() => {
-        if(!socket) return;
+        if (!socket) return;
+        
         const handleIncomingProducer = async (data: any) => {
             const existingConsumer = mediaSoupStateRef.current.consumers.get(socket.id!);
-            existingConsumer?.forEach(existingConsumer => existingConsumer.close());
+            existingConsumer?.forEach(c => c.close());
             mediaSoupStateRef.current.consumers.delete(socket.id!);
-            console.log('iteration is now starting', data.producers)
 
             for (const peerId in data.producers) {
-                console.log('iteration is started', peerId)
-                await consume(data.producers[peerId], mediaSoupStateRef.current.device!, roomState.name, mediaSoupStateRef.current.consumerTransport!);
+                await consume(
+                    data.producers[peerId], 
+                    mediaSoupStateRef.current.device!, 
+                    roomState.name, 
+                    mediaSoupStateRef.current.consumerTransport!
+                );
             }
-            console.log(mediaSoupStateRef.current);
-            console.log("Producer Incoming:", data);
-        }
-        socket.on(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer)
+        };
+        
+        socket.on(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer);
 
         return () => {
-            socket.off(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer)
-        }
-    }, [socket, roomState.name])
+            socket.off(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer);
+        };
+    }, [socket, roomState.name, consume]);
 
-    
-    let isMounted = true;
-
+    // Cleanup on unmount
     useEffect(() => {
         return () => {
-            isMounted = false;
             if (!socket) return;
-            // console.log('disconnect event trigger');
             socket.emit(SocketEvent.LEAVE_ROOM);
 
             const state = mediaSoupStateRef.current;
-
-            if (state.producerTransport) {
-                state.producerTransport.close();
-                if (isMounted) {
-                    setMediaSoupState((prev) => ({ ...prev, producerTransport: null }));
-                }
-            }
-
-            if (state.consumerTransport) {
-                state.consumerTransport.close();
-                if (isMounted) {
-                    setMediaSoupState((prev) => ({ ...prev, consumerTransport: null }));
-                }
-            }
-
-            if (state.device && isMounted) {
-                setMediaSoupState((prev) => ({ ...prev, device: null }));
-            }
+            state.producerTransport?.close();
+            state.consumerTransport?.close();
         };
     }, [socket]);
     
+    // Replace producer tracks (for switching video sources)
+    const replaceProducerTracks = useCallback(async (newStream: MediaStream) => {
+        if (!isHost || !socket) return;
+        
+        const producers = mediaSoupStateRef.current.producers.get(socket.id!);
+        if (!producers) return;
+
+        const videoTrack = newStream.getVideoTracks()[0];
+        const audioTrack = newStream.getAudioTracks()[0];
+
+        for (const producer of producers) {
+            if (producer.kind === 'video' && videoTrack) {
+                await producer.replaceTrack({ track: videoTrack });
+            } else if (producer.kind === 'audio' && audioTrack) {
+                await producer.replaceTrack({ track: audioTrack });
+            }
+        }
+    }, [isHost, socket]);
+
     return {
+        // Room management
         joinRoom,
         isConnected,
+        isJoined: roomState.joined,
+        
+        // Producer controls
         onPause,
-        onPlay
+        onPlay,
+        pauseProducers,
+        resumeProducers,
+        replaceProducerTracks,
+        
+        // State
+        mediaSoupState,
     };
 };
-
-

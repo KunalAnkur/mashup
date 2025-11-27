@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
 import SettingTab from "./SettingTab";
+import PlaylistTab from "./PlaylistTab";
 import { useDispatch, useSelector } from "react-redux";
 import { useInactiveMyRoomMutation } from "@/lib/store/api/roomApi";
 import { exitRoom } from "@/lib/store/slices/roomSlice";
@@ -15,8 +16,6 @@ import Image from "next/image";
 import * as constants from "../../constants";
 import { LuCheck, LuLink, LuLogOut } from "react-icons/lu";
 
-const TABS = Object.values(Tabs);
-
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
@@ -25,11 +24,30 @@ const Panel = () => {
   const roomUrl = "https://movmash.com/room/3wJz21";
   const router = useRouter();
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
-  const host = useSelector((state: RootState) => state.room.host);
+  const roomState = useSelector((state: RootState) => state.room);
+  const host = roomState.host;
   const dispatch = useDispatch();
+
+  // Determine which tabs to show based on source type and host status
+  // - For file (stream): Playlist tab only visible to host (since files are local)
+  // - For URL (sync): Playlist tab visible to all
+  const visibleTabs = useMemo(() => {
+    const isFileMode = roomState.sourceType === "file";
+    
+    return Object.values(Tabs).filter((tab) => {
+      if (tab === Tabs.PLAYLIST) {
+        // For file mode: only show to host (files are local, non-hosts can't see them)
+        // For URL mode: always show (everyone can see the URLs)
+        return isFileMode ? host : true;
+      }
+      return true;
+    });
+  }, [roomState.sourceType, host]);
 
   const renderTabContent = (tab: Tabs) => {
     switch (tab) {
+      case Tabs.PLAYLIST:
+        return <PlaylistTab />;
       case Tabs.PEOPLE:
         return <PeopleTab />;
       case Tabs.SETTINGS:
@@ -165,11 +183,11 @@ const Panel = () => {
 
       {/* Tabs */}
       <div className="flex justify-center gap-1 pt-2 pb-1">
-        {TABS.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2.5 font-medium text-sm transition-all duration-200 relative rounded-t-xl
+            className={`px-4 py-2.5 font-medium text-sm transition-all duration-200 relative rounded-t-xl
                             ${
                               activeTab === tab
                                 ? "text-white"

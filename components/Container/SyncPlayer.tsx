@@ -24,6 +24,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
         onPlay,
         onPause,
         onSeeked,
+        onReady,
         isPlaying,
         joinRoom,
     } = useVideoSync({ playerRef, isHost: roomState.host });
@@ -46,6 +47,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
             onPlay={onPlay}
             onPause={onPause}
             onSeekEnd={onSeeked}
+            onReady={onReady}
             fullscreenTargetRef={fullscreenTargetRef}
             url={videoUrl}
             muted={false}

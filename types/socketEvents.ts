@@ -10,6 +10,12 @@ export enum SocketEvent {
   NOTIFY = "notify",
   CHATMESSAGE = "chatmessage",
 
+  // Video selection events
+  SELECT_VIDEO = "selectVideo",
+  VIDEO_SELECTED = "videoSelected",
+  REQUEST_CURRENT_VIDEO = "requestCurrentVideo",
+  CURRENT_VIDEO_STATE = "currentVideoState",
+
   CONNECT_TRANSPORT = "connectTransport",
   PRODUCE = "produce",
   CONSUME = "consume",
