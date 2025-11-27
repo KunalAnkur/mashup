@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import type { EmojiClickData, Theme } from "emoji-picker-react";
+import AnimatedReaction from "./AnimatedReaction";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -131,6 +132,10 @@ const ChatTab = () => {
     "🤯",
     "🔥",
   ];
+
+  // Track which reaction was just clicked for animation
+  const [animatingReaction, setAnimatingReaction] =
+    useState<ReactionType | null>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -404,21 +409,25 @@ const ChatTab = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Reaction Buttons - Always Visible */}
+      {/* Reaction Buttons - Always Visible with Animations */}
       <div className="flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-br from-[#1a1a1d] to-[#1f1f23] rounded-xl mb-2">
         {availableReactions.map((emoji) => (
-          <button
+          <AnimatedReaction
             key={emoji}
+            emoji={emoji}
+            isAnimating={animatingReaction === emoji}
+            disabled={!isJoined}
             onClick={() => {
               console.log("Reaction clicked:", emoji);
+              setAnimatingReaction(emoji);
               sendReaction(emoji);
+
+              // Reset animation after it completes
+              setTimeout(() => {
+                setAnimatingReaction(null);
+              }, 600); // Match the animation duration
             }}
-            disabled={!isJoined}
-            className="text-2xl hover:scale-125 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]"
-            title={`Send ${emoji} reaction`}
-          >
-            {emoji}
-          </button>
+          />
         ))}
       </div>
 
