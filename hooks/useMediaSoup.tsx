@@ -121,9 +121,15 @@ export const useMediaSoup = ({
             console.log("useMediaSoup: Socket reconnected, may need to rejoin room");
         };
         
+        // Heartbeat handler - respond to server pings to keep connection alive
+        const handlePing = () => {
+            socket.emit('pong');
+        };
+        
         socket.on('connect', handleConnect);
         socket.on('disconnect', handleDisconnect);
         socket.on('reconnect', handleReconnect);
+        socket.on('ping', handlePing);
         
         // Log initial state
         console.log("useMediaSoup: Socket initialized, connected:", socket.connected, "id:", socket.id);
@@ -132,6 +138,7 @@ export const useMediaSoup = ({
             socket.off('connect', handleConnect);
             socket.off('disconnect', handleDisconnect);
             socket.off('reconnect', handleReconnect);
+            socket.off('ping', handlePing);
         };
     }, [socket]);
 
