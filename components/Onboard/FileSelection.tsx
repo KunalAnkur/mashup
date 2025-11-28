@@ -25,7 +25,7 @@ const FileSelection = () => {
   );
   const authState = useSelector((state: RootState) => state.auth);
 
-  const { files, removeFile } = useFileContext();
+  const { files, removeFile, getThumbnail } = useFileContext();
   const selectedFile = files[selectedFileIndex] ?? null;
 
   useEffect(() => {
@@ -119,9 +119,38 @@ const FileSelection = () => {
               }`}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="p-3 rounded-xl bg-white/5 flex-shrink-0">
-                  {getFileIcon(file.type)}
-                </div>
+                {(() => {
+                  const thumbnail = getThumbnail(file);
+                  const isVideo = file.type.startsWith("video/");
+                  
+                  return (
+                    <div className={`
+                      flex-shrink-0 rounded-xl overflow-hidden
+                      ${isVideo ? 'w-16 h-10' : 'p-3 bg-white/5'}
+                    `}>
+                      {isVideo && thumbnail ? (
+                        <img
+                          src={thumbnail}
+                          alt={file.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            // Show icon as fallback
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '';
+                              parent.className = 'p-3 rounded-xl bg-white/5 flex-shrink-0';
+                              parent.appendChild(getFileIcon(file.type) as any);
+                            }
+                          }}
+                        />
+                      ) : (
+                        getFileIcon(file.type)
+                      )}
+                    </div>
+                  );
+                })()}
                 <div className="min-w-0 flex-1">
                   <h4 className="text-white text-sm font-semibold truncate">
                     {file.name}

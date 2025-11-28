@@ -302,7 +302,7 @@ export const useMediaSoup = ({
         return producers;
     }, []);
 
-    // Consume media from producer
+    // Consume media from producer (supports audio-only, video-only, or both)
     const consume = useCallback(async (
         producerInfo: { producerId: string; peerId: string; kind: string }[],
         device: mediasoupClient.types.Device,
@@ -320,93 +320,138 @@ export const useMediaSoup = ({
         const videoProducer = producerInfo.find(info => info.kind === 'video');
         const audioProducer = producerInfo.find(info => info.kind === 'audio');
 
-        if (!videoProducer || !audioProducer) {
-            console.error('Missing video or audio producer:', { videoProducer, audioProducer });
+        // Require at least one producer (audio or video)
+        if (!videoProducer && !audioProducer) {
+            console.error('No producers found (need at least audio or video):', { videoProducer, audioProducer });
             return;
         }
 
         try {
-            console.log("consume: Requesting consumers from server for producers:", {
-                video: videoProducer.producerId,
-                audio: audioProducer.producerId
-            });
-            
-            const [videoResponse, audioResponse] = await Promise.all([
-                currentSocket.emitWithAck(SocketEvent.CONSUME, {
-                    transportId: transport.id,
-                    producerId: videoProducer.producerId,
-                    roomId,
-                    peerId: currentSocket.id,
-                    rtpCapabilities: device.rtpCapabilities,
-                }),
-                currentSocket.emitWithAck(SocketEvent.CONSUME, {
-                    transportId: transport.id,
-                    producerId: audioProducer.producerId,
-                    roomId,
-                    peerId: currentSocket.id,
-                    rtpCapabilities: device.rtpCapabilities,
-                }),
-            ]);
+            // Build consume requests for available producers
+            const consumeRequests: Promise<any>[] = [];
+            const producerMap: { video?: any; audio?: any } = {};
 
-            console.log("consume: Server responses:", { videoResponse, audioResponse });
+            if (videoProducer) {
+                console.log("consume: Requesting video consumer for producer:", videoProducer.producerId);
+                consumeRequests.push(
+                    currentSocket.emitWithAck(SocketEvent.CONSUME, {
+                        transportId: transport.id,
+                        producerId: videoProducer.producerId,
+                        roomId,
+                        peerId: currentSocket.id,
+                        rtpCapabilities: device.rtpCapabilities,
+                    }).then(response => {
+                        producerMap.video = { producer: videoProducer, response };
+                        return response;
+                    })
+                );
+            }
 
-            // Check for errors in responses
-            if (!videoResponse?.consumerData || !audioResponse?.consumerData) {
-                console.error("consume: Invalid server response - missing consumerData", {
-                    videoHasData: !!videoResponse?.consumerData,
-                    audioHasData: !!audioResponse?.consumerData,
-                    videoError: videoResponse?.error,
-                    audioError: audioResponse?.error
+            if (audioProducer) {
+                console.log("consume: Requesting audio consumer for producer:", audioProducer.producerId);
+                consumeRequests.push(
+                    currentSocket.emitWithAck(SocketEvent.CONSUME, {
+                        transportId: transport.id,
+                        producerId: audioProducer.producerId,
+                        roomId,
+                        peerId: currentSocket.id,
+                        rtpCapabilities: device.rtpCapabilities,
+                    }).then(response => {
+                        producerMap.audio = { producer: audioProducer, response };
+                        return response;
+                    })
+                );
+            }
+
+            const responses = await Promise.all(consumeRequests);
+            console.log("consume: Server responses received:", responses.length, "consumers");
+
+            // Validate responses
+            const videoResponse = producerMap.video?.response;
+            const audioResponse = producerMap.audio?.response;
+
+            if (videoProducer && !videoResponse?.consumerData) {
+                console.error("consume: Invalid video response - missing consumerData", {
+                    error: videoResponse?.error
                 });
+            }
+
+            if (audioProducer && !audioResponse?.consumerData) {
+                console.error("consume: Invalid audio response - missing consumerData", {
+                    error: audioResponse?.error
+                });
+            }
+
+            // At least one consumer must be valid
+            if ((videoProducer && !videoResponse?.consumerData) && (audioProducer && !audioResponse?.consumerData)) {
+                console.error("consume: All consumer requests failed");
                 return;
             }
 
-            console.log("consume: Creating local consumers");
-            const [videoConsumer, audioConsumer] = await Promise.all([
-                transport.consume(videoResponse.consumerData),
-                transport.consume(audioResponse.consumerData),
-            ]);
-            
-            console.log("consume: Resuming consumers");
-            await videoConsumer.resume();
-            await audioConsumer.resume();
+            // Create consumers for available tracks
+            const consumers: Consumer[] = [];
+            const tracks: MediaStreamTrack[] = [];
+
+            if (videoResponse?.consumerData) {
+                console.log("consume: Creating video consumer");
+                const videoConsumer = await transport.consume(videoResponse.consumerData);
+                consumers.push(videoConsumer);
+                tracks.push(videoConsumer.track);
+                
+                videoConsumer.track.onended = () => {
+                    console.log("consume: Video track ended unexpectedly!");
+                };
+            }
+
+            if (audioResponse?.consumerData) {
+                console.log("consume: Creating audio consumer");
+                const audioConsumer = await transport.consume(audioResponse.consumerData);
+                consumers.push(audioConsumer);
+                tracks.push(audioConsumer.track);
+                
+                audioConsumer.track.onended = () => {
+                    console.log("consume: Audio track ended unexpectedly!");
+                };
+            }
+
+            if (consumers.length === 0) {
+                console.error("consume: No consumers created");
+                return;
+            }
+
+            console.log("consume: Resuming", consumers.length, "consumers");
+            await Promise.all(consumers.map(c => c.resume()));
             
             console.log("consume: Unpausing on server");
+            const consumerIds = consumers.map(c => c.id);
             await currentSocket.emitWithAck(SocketEvent.UNPAUSE_CONSUMERS, { 
                 roomId, 
-                consumerIds: [videoConsumer.id, audioConsumer.id] 
+                consumerIds 
             });
             
-            console.log("consume: Creating MediaStream with tracks:", {
-                videoTrack: videoConsumer.track.id,
-                videoTrackState: videoConsumer.track.readyState,
-                audioTrack: audioConsumer.track.id,
-                audioTrackState: audioConsumer.track.readyState
+            console.log("consume: Creating MediaStream with", tracks.length, "tracks:", {
+                tracks: tracks.map(t => ({ id: t.id, kind: t.kind, readyState: t.readyState }))
             });
-            const remoteStream = new MediaStream([videoConsumer.track, audioConsumer.track]);
-            
-            // Monitor track state changes
-            videoConsumer.track.onended = () => {
-                console.log("consume: Video track ended unexpectedly!");
-            };
-            audioConsumer.track.onended = () => {
-                console.log("consume: Audio track ended unexpectedly!");
-            };
+            const remoteStream = new MediaStream(tracks);
 
             // Notify via callback
             console.log("consume: Calling onStreamReceived with stream id:", remoteStream.id);
             onStreamReceived?.(remoteStream);
 
             setMediaSoupState((prev) => {
-                const consumers = new Map<string, Consumer[]>(prev.consumers);
-                consumers.set(currentSocket.id as string, [videoConsumer, audioConsumer]);
-                return { ...prev, consumers };
+                const consumersMap = new Map<string, Consumer[]>(prev.consumers);
+                consumersMap.set(currentSocket.id as string, consumers);
+                return { ...prev, consumers: consumersMap };
             });
             
             // Also update ref
-            mediaSoupStateRef.current.consumers.set(currentSocket.id!, [videoConsumer, audioConsumer]);
+            mediaSoupStateRef.current.consumers.set(currentSocket.id!, consumers);
             
-            console.log("consume: Completed successfully");
+            console.log("consume: Completed successfully with", consumers.length, "consumers (", 
+                videoResponse ? "video" : "", 
+                videoResponse && audioResponse ? "+" : "",
+                audioResponse ? "audio" : "",
+                ")");
         } catch (error) {
             console.error('Failed to consume media:', error);
         }

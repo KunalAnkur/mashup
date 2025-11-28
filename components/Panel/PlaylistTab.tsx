@@ -160,12 +160,14 @@ const PlaylistFileCard = ({
     index,
     isPlaying,
     isHost,
+    thumbnail,
     onSelect,
 }: {
     file: File;
     index: number;
     isPlaying: boolean;
     isHost: boolean;
+    thumbnail: string | null;
     onSelect: () => void;
 }) => {
     return (
@@ -181,13 +183,27 @@ const PlaylistFileCard = ({
                 ${!isHost ? 'cursor-default' : 'cursor-pointer'}
             `}
         >
-            {/* Thumbnail placeholder */}
+            {/* Thumbnail */}
             <div className={`
                 relative w-20 h-13 rounded-lg overflow-hidden shrink-0 
                 ${isPlaying ? 'ring-2 ring-pink-500/50' : ''}
-                bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center
+                bg-gradient-to-br from-zinc-700 to-zinc-800
             `}>
-                <LuFilm className="text-gray-500" size={20} />
+                {thumbnail ? (
+                    <img
+                        src={thumbnail}
+                        alt={file.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                        }}
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <LuFilm className="text-gray-500" size={20} />
+                    </div>
+                )}
                 
                 {/* Play indicator overlay */}
                 {isPlaying && (
@@ -236,7 +252,7 @@ const PlaylistTab = () => {
     const dispatch = useDispatch();
     const roomState = useSelector((state: RootState) => state.room);
     const authState = useSelector((state: RootState) => state.auth);
-    const { files } = useFileContext();
+    const { files, getThumbnail } = useFileContext();
     const { selectVideo, isHost } = useVideoSelection();
 
     const isFileMode = roomState.sourceType === "file";
@@ -383,6 +399,8 @@ const PlaylistTab = () => {
                         const file = files[index];
                         if (!file) return null;
                         
+                        const thumbnail = getThumbnail(file);
+                        
                         return (
                             <PlaylistFileCard
                                 key={index}
@@ -390,6 +408,7 @@ const PlaylistTab = () => {
                                 index={index}
                                 isPlaying={isPlaying}
                                 isHost={isHost}
+                                thumbnail={thumbnail}
                                 onSelect={() => handleSelectVideo(index)}
                             />
                         );
