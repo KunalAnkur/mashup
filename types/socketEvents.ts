@@ -16,6 +16,10 @@ export enum SocketEvent {
   REQUEST_CURRENT_VIDEO = "requestCurrentVideo",
   CURRENT_VIDEO_STATE = "currentVideoState",
 
+  // Stream control events
+  STREAM_PAUSED = "streamPaused",
+  STREAM_RESUMED = "streamResumed",
+
   CONNECT_TRANSPORT = "connectTransport",
   PRODUCE = "produce",
   CONSUME = "consume",

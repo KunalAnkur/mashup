@@ -33,6 +33,7 @@ type VideoPlayerProps = {
     onDuration?: (duration: number) => void;
     onFullscreenChange?: (isFullscreen: boolean) => void;
     onReady?: () => void;
+    onEnded?: () => void;
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
     loop?: boolean;
@@ -60,6 +61,7 @@ const VideoPlayer = ({
     onSeekEnd,
     onDuration,
     onReady,
+    onEnded,
     onFullscreenChange,
     controls = true,
     loop = false,
@@ -264,6 +266,7 @@ const VideoPlayer = ({
                     onBufferEnd={onBufferEnd}
                     onClick={togglePlay}
                     onReady={onReady}
+                    onEnded={onEnded}
                     config={{
                         youtube: {
                             playerVars: {
