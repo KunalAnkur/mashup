@@ -16,6 +16,14 @@ export type User = {
   /** Session identifier */
   sessionId?: string;
 };
+/** Metadata for a URL in the playlist */
+export interface UrlMetadata {
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+  author?: string;
+}
+
 export interface RoomState {
   haveRoom: boolean;
   loading: boolean;
@@ -27,6 +35,8 @@ export interface RoomState {
   settings: RoomSetting;
   selectedFileIndex: number;
   refer: boolean;
+  /** Cached metadata for URLs (keyed by URL string) */
+  urlMetadataCache: Record<string, UrlMetadata>;
 }
 
 export type RoomSetting = {

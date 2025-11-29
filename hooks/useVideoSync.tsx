@@ -1,140 +1,235 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import type ReactPlayer from "react-player";
 import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
+import { useDispatch } from "react-redux";
+import { setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
+import { store } from "@/lib/store";
+
+/**
+ * useVideoSync
+ * 
+ * Hook for synchronizing video playback across users in a room.
+ * Handles: video selection, play/pause, seek synchronization
+ */
 
 interface UseVideoSyncParams {
     playerRef: React.RefObject<ReactPlayer | null>;
     isHost: boolean;
 }
 
-type VideoState = {
+type FullVideoState = {
+    selectedIndex: number;
     playing: boolean;
     currentTime: number;
 };
 
 export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
     const { socket, isConnected } = useSocket();
+    const dispatch = useDispatch();
     const [isPlaying, setIsPlaying] = useState(false);
     const [roomId, setRoomId] = useState<string>();
     const [isJoined, setIsJoined] = useState(false);
-    const [videoState, setVideoState] = useState<VideoState>({
-        playing: false,
-        currentTime: 0,
-    });
+    
+    // Refs to avoid stale closures
+    const isPlayingRef = useRef(isPlaying);
+    const pendingSyncRef = useRef<FullVideoState | null>(null);
+    
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+    }, [isPlaying]);
 
-    const updateState = useCallback(() => {
-        if (playerRef.current) {
-            const currentTime = playerRef.current.getCurrentTime?.() || 0;
-            const state = { playing: isPlaying, currentTime };
-            setVideoState(state);
-            return state;
+    // Get current full video state from host
+    const getHostState = useCallback((): FullVideoState => {
+        const state = store.getState();
+        const currentTime = playerRef.current?.getCurrentTime?.() || 0;
+        return {
+            selectedIndex: state.room.selectedFileIndex,
+            playing: isPlayingRef.current,
+            currentTime,
+        };
+    }, [playerRef]);
+
+    // Apply sync state to player
+    const applySyncState = useCallback((syncState: FullVideoState, forceSeek = false) => {
+        if (!playerRef.current || isHost) return;
+        
+        const state = store.getState();
+        const currentIndex = state.room.selectedFileIndex;
+        
+        console.log("Applying sync state:", syncState, "current index:", currentIndex);
+        
+        // Update video index if needed
+        if (syncState.selectedIndex !== currentIndex) {
+            console.log("Changing video index to:", syncState.selectedIndex);
+            pendingSyncRef.current = syncState;
+            dispatch(setSelectedFileIndex(syncState.selectedIndex));
+            // onReady will handle the seek after video loads
+            return;
         }
-        return videoState;
-    }, [isPlaying, playerRef]);
-
-    const syncVideoTo = useCallback((srcState: VideoState) => {
-        if (!playerRef.current) return;
-        console.log('sync to', srcState, videoState);
-        const currentTime = playerRef.current.getCurrentTime();
-        if (videoState.playing === srcState.playing && currentTime === srcState.currentTime) return;
-        const drift = Math.abs(currentTime - srcState.currentTime);
-
-        drift > 1 && playerRef.current.seekTo(srcState.currentTime, "seconds");
-        if (!srcState.playing) setIsPlaying(false);
-        else setIsPlaying(true);
-        const state = updateState();
-        console.log('after sync', srcState, state, srcState.currentTime, drift);
-    }, [playerRef, updateState]);
-
-    const syncVideoWithHost = useCallback(() => {
-        if (!isJoined) return;
-        if (!isHost) {
-            console.log("Syncing with host started");
-            socket?.emit(SocketEvent.SYNCWITHHOST, { roomId });
+        
+        // Same video - apply seek and play state
+        const currentTime = playerRef.current.getCurrentTime?.() || 0;
+        const drift = Math.abs(currentTime - syncState.currentTime);
+        
+        if (drift > 1 || forceSeek) {
+            console.log("Seeking to:", syncState.currentTime, "drift:", drift);
+            playerRef.current.seekTo(syncState.currentTime, "seconds");
         }
-    }, [isHost, socket, roomId, isJoined]);
+        
+        setIsPlaying(syncState.playing);
+        pendingSyncRef.current = null;
+    }, [playerRef, isHost, dispatch]);
 
+    // Called when video is ready - apply pending sync
+    const onReady = useCallback(() => {
+        console.log("Video ready! Pending sync:", pendingSyncRef.current, "roomId:", roomId);
+        
+        if (pendingSyncRef.current && playerRef.current && !isHost) {
+            // Small delay to ensure video is fully playable
+            setTimeout(() => {
+                if (playerRef.current && pendingSyncRef.current) {
+                    console.log("Applying pending sync after ready:", pendingSyncRef.current);
+                    playerRef.current.seekTo(pendingSyncRef.current.currentTime, "seconds");
+                    setIsPlaying(pendingSyncRef.current.playing);
+                    pendingSyncRef.current = null;
+                }
+            }, 800);
+        } else if (!isHost && roomId && !pendingSyncRef.current) {
+            // No pending sync but video is ready - request current state from host
+            // This handles the case where we loaded with wrong video or missed initial sync
+            console.log("Video ready but no pending sync, requesting from host...");
+            socket?.emit(SocketEvent.REQUEST_CURRENT_VIDEO, { roomId });
+        }
+    }, [playerRef, isHost, roomId, socket]);
+
+    // Emit play event (host only broadcasts)
     const onPlay = useCallback((event: string) => {
         if (event === 'seekend') return;
         setIsPlaying(true);
-        if (!isJoined) return;
-        if (!isHost) {
-            console.log("initiated sync video with host");
-            syncVideoWithHost();
-            return;
+        isPlayingRef.current = true; // Update ref immediately for getHostState
+        
+        if (!isJoined || !socket || !roomId) return;
+        
+        if (isHost) {
+            const state = getHostState();
+            socket.emit(SocketEvent.ONPLAY, { roomId, videoState: state });
         }
-        console.log("Host event: ", isHost)
-        updateState();
-        socket?.emit(SocketEvent.ONPLAY, {
-            roomId, videoState: {
-                playing: true,
-                currentTime: playerRef.current?.getCurrentTime()
-            }
-        });
-    }, [isHost, isJoined, roomId, socket, syncVideoWithHost, updateState]);
+    }, [isHost, isJoined, roomId, socket, getHostState]);
 
+    // Emit pause event (host only broadcasts)
     const onPause = useCallback((event: string) => {
         if (event === "seekend") return;
         setIsPlaying(false);
-        if (!isJoined) return;
-        if (!isHost) {
-            console.log("initiated sync video with host on pause");
-            syncVideoWithHost();
-            return;
+        isPlayingRef.current = false; // Update ref immediately for getHostState
+        
+        if (!isJoined || !socket || !roomId) return;
+        
+        if (isHost) {
+            const state = getHostState();
+            socket.emit(SocketEvent.ONPAUSE, { roomId, videoState: state });
         }
-        updateState();
-        socket?.emit(SocketEvent.ONPAUSE, {
-            roomId, videoState: {
-                playing: false,
-                currentTime: playerRef.current?.getCurrentTime()
-            }
-        });
-    }, [isHost, isJoined, roomId, socket, syncVideoWithHost, updateState]);
+    }, [isHost, isJoined, roomId, socket, getHostState]);
 
+    // Emit seek event (host only broadcasts)
     const onSeeked = useCallback(() => {
-        if (!isJoined) return
-        if (!isHost) {
-            console.log("initiated sync video with host on seeked");
-            syncVideoWithHost();
-            return;
+        if (!isJoined || !socket || !roomId) return;
+        
+        if (isHost) {
+            const state = getHostState();
+            socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: state });
         }
-        const state = updateState();
-        socket?.emit(SocketEvent.ONSEEKED, {
-            roomId, videoState: state
-        });
-    }, [isHost, roomId, socket, syncVideoWithHost, updateState]);
+    }, [isHost, isJoined, roomId, socket, getHostState]);
 
-    const joinRoom = (room: string, isHostFlag: boolean, username: string) => {
+    // Select video (host only)
+    const selectVideo = useCallback((index: number) => {
+        if (!isHost || !socket || !roomId) return;
+        
+        dispatch(setSelectedFileIndex(index));
+        socket.emit(SocketEvent.SELECT_VIDEO, { roomId, selectedIndex: index });
+    }, [isHost, socket, roomId, dispatch]);
+
+    // Join room
+    const joinRoom = useCallback((room: string, isHostFlag: boolean, username: string) => {
         setRoomId(room);
         setIsJoined(true);
-        console.log({ roomId: room, host: isHostFlag, name: username }, socket);
+        console.log("Joining room:", { roomId: room, host: isHostFlag, name: username });
         socket?.emit(SocketEvent.JOIN_ROOM, { roomId: room, host: isHostFlag, name: username });
-    };
+        
+        // Non-host: also explicitly request current state after a delay
+        // This ensures we get the state even if the initial SYNCWITHHOST was missed
+        if (!isHostFlag) {
+            setTimeout(() => {
+                console.log("Requesting current video state from host...");
+                socket?.emit(SocketEvent.REQUEST_CURRENT_VIDEO, { roomId: room });
+            }, 1000);
+        }
+    }, [socket]);
 
+    // Socket event handlers
     useEffect(() => {
         if (!socket) return;
 
-        const handleVideoEvent = ({ host, videoState }: { host: boolean, videoState: VideoState }) => {
-            if (!isHost) syncVideoTo(videoState);
+        // Handle play/pause/seek events from host
+        const handleVideoEvent = ({ videoState }: { videoState: FullVideoState }) => {
+            if (!isHost && videoState) {
+                applySyncState(videoState);
+            }
         };
 
+        // Host: respond to sync request (triggered when user joins)
         const handleSyncWithHost = () => {
-            console.log("sync with host requested", isHost);
-            if (!isHost) return;
-            const state = updateState();
-            console.log('host video state request', {
-                roomId: roomId ?? "room",
-                videoState: state,
-            });
+            if (!isHost || !playerRef.current) return;
+            
+            const state = getHostState();
+            console.log("Host responding to sync request:", state);
+            
             socket.emit(SocketEvent.HOSTVIDEOSTATE, {
                 roomId: roomId ?? "room",
                 videoState: state,
             });
         };
 
-        const handleHostVideoState = ({ hostVideoState }: { hostVideoState: VideoState }) => {
-            if (!isHost) syncVideoTo(hostVideoState);
+        // Non-host: receive full state from host
+        const handleHostVideoState = ({ hostVideoState }: { hostVideoState: FullVideoState }) => {
+            console.log("Received host video state:", hostVideoState);
+            if (!isHost && hostVideoState) {
+                applySyncState(hostVideoState, true);
+            }
+        };
+
+        // Handle video selection from host
+        const handleVideoSelected = ({ selectedIndex }: { selectedIndex: number }) => {
+            if (!isHost) {
+                console.log("Host selected video:", selectedIndex);
+                const state = store.getState();
+                if (selectedIndex !== state.room.selectedFileIndex) {
+                    pendingSyncRef.current = { selectedIndex, playing: false, currentTime: 0 };
+                    dispatch(setSelectedFileIndex(selectedIndex));
+                }
+            }
+        };
+
+        // Host: respond to current video request
+        const handleRequestCurrentVideo = ({ requesterId }: { requesterId?: string }) => {
+            if (!isHost || !playerRef.current) return;
+            
+            const state = getHostState();
+            console.log("Host responding to video request:", state);
+            
+            socket.emit(SocketEvent.CURRENT_VIDEO_STATE, {
+                roomId: roomId ?? "room",
+                ...state,
+                requesterId,
+            });
+        };
+
+        // Non-host: receive current video state
+        const handleCurrentVideoState = (data: FullVideoState & { requesterId?: string }) => {
+            if (!isHost) {
+                console.log("Received current video state:", data);
+                applySyncState(data, true);
+            }
         };
 
         socket.on(SocketEvent.ONPAUSE, handleVideoEvent);
@@ -142,11 +237,9 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
         socket.on(SocketEvent.ONSEEKED, handleVideoEvent);
         socket.on(SocketEvent.SYNCWITHHOST, handleSyncWithHost);
         socket.on(SocketEvent.HOSTVIDEOSTATE, handleHostVideoState);
-
-        // if (!isHost){ 
-        //     console.log("initiated sync video with host")
-        //     syncVideoWithHost()
-        // };
+        socket.on(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
+        socket.on(SocketEvent.REQUEST_CURRENT_VIDEO, handleRequestCurrentVideo);
+        socket.on(SocketEvent.CURRENT_VIDEO_STATE, handleCurrentVideoState);
 
         return () => {
             socket.off(SocketEvent.ONPAUSE, handleVideoEvent);
@@ -154,8 +247,21 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
             socket.off(SocketEvent.ONSEEKED, handleVideoEvent);
             socket.off(SocketEvent.SYNCWITHHOST, handleSyncWithHost);
             socket.off(SocketEvent.HOSTVIDEOSTATE, handleHostVideoState);
+            socket.off(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
+            socket.off(SocketEvent.REQUEST_CURRENT_VIDEO, handleRequestCurrentVideo);
+            socket.off(SocketEvent.CURRENT_VIDEO_STATE, handleCurrentVideoState);
         };
-    }, [socket, isHost, playerRef, roomId, updateState]);
+    }, [socket, isHost, playerRef, roomId, getHostState, applySyncState, dispatch]);
 
-    return { socket, onPlay, onPause, onSeeked, isPlaying, joinRoom, isConnected };
+    return { 
+        socket, 
+        onPlay, 
+        onPause, 
+        onSeeked, 
+        onReady,
+        isPlaying, 
+        joinRoom, 
+        isConnected, 
+        selectVideo,
+    };
 };
