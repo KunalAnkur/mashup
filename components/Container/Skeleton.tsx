@@ -1,109 +1,165 @@
-import Skeleton from 'react-loading-skeleton'
-import 'react-loading-skeleton/dist/skeleton.css'
-import { AuthWrapper } from '../Onboard';
+import { AuthWrapper } from "../Onboard";
 
-const baseColor = "#5a5a5a";
-const highlightColor = "#696969";
+const shimmer =
+  "relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:-translate-x-full before:animate-[shimmer_1.8s_infinite]";
 
-const SkeletonRoom = ({ isAuthenticated }: { isAuthenticated: boolean }) => (
-<>
-    <div className="flex h-screen bg-[#030712] select-none">
-        {/* Main video area skeleton */}
-        <div className="flex-1 flex items-center justify-center bg-black h-full">
-            <Skeleton height="70%" width="80%" borderRadius={16} baseColor={baseColor} highlightColor={highlightColor} />
+const glassCard =
+  "bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl shadow-2xl";
+
+const SkeletonBlock = ({ className = "" }: { className?: string }) => (
+  <div className={`bg-white/10 ${shimmer} ${className}`} />
+);
+
+type SkeletonRoomProps = {
+  isAuthenticated: boolean;
+  showAuthOverlay?: boolean;
+};
+
+const SkeletonRoom = ({
+  isAuthenticated,
+  showAuthOverlay = false,
+}: SkeletonRoomProps) => (
+  <>
+    <div className="relative flex h-screen w-full bg-gradient-to-br from-[#05060b] via-[#0f1018] to-[#1a1034] text-white overflow-hidden">
+      <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] [background-size:20px_20px]" />
+      {/* Player area */}
+      <div className="relative flex-1 flex flex-col gap-6 p-10">
+        <div className="flex items-center justify-between">
+          <SkeletonBlock className="h-10 w-48 rounded-full" />
+          <div className="flex items-center gap-3">
+            <SkeletonBlock className="h-10 w-10 rounded-full" />
+            <SkeletonBlock className="h-10 w-28 rounded-full" />
+            <SkeletonBlock className="h-10 w-10 rounded-full" />
+          </div>
         </div>
 
-        {/* Right panel skeleton */}
-        <div className="w-[30%] min-w-[320px] max-w-[420px] h-full flex flex-col p-4 gap-4 bg-[#191919]">
-            {/* Header */}
-            <div className="flex justify-between items-end gap-3 mb-2">
-                <Skeleton circle width={40} height={40} baseColor={baseColor} highlightColor={highlightColor} />
-                <Skeleton height={32} width="60%" borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                <Skeleton circle width={40} height={40} baseColor={baseColor} highlightColor={highlightColor} />
+        <div className={`${glassCard} relative flex-1 min-h-[60vh]`}>
+          <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[inherit]" />
+          <div className="relative flex h-full flex-col gap-6 p-8">
+            <SkeletonBlock className="h-8 w-1/4 rounded-full" />
+            <div className="flex-1 rounded-[18px] bg-black/40 border border-white/10">
+              <div className="h-full w-full rounded-[inherit] bg-gradient-to-br from-purple-500/20 via-[#151423] to-black/60" />
             </div>
-            {/* Tabs */}
-            <div className="flex gap-2 mb-2">
-                {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} width={70} height={32} borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                ))}
+            <div className="flex items-center gap-4">
+              <SkeletonBlock className="h-12 flex-1 rounded-full" />
+              <SkeletonBlock className="h-12 w-12 rounded-full" />
+              <SkeletonBlock className="h-12 w-12 rounded-full" />
             </div>
-            {/* Video grid */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-                {[...Array(6)].map((_, i) => (
-                    <Skeleton key={i} height={96} borderRadius={12} baseColor={baseColor} highlightColor={highlightColor} />
-                ))}
-            </div>
-            {/* Chat messages */}
-            <div className="flex-1 flex flex-col gap-2 bg-[#303030] rounded-xl p-4 overflow-y-auto mb-4">
-                {[...Array(8)].map((_, i) => (
-                    <Skeleton key={i} height={18} width={`${70 + Math.random() * 30}%`} baseColor={baseColor} highlightColor={highlightColor} />
-                ))}
-            </div>
-            {/* Emoji bar */}
-            <div className="flex gap-2 bg-[#303030] p-3 w-full rounded-xl overflow-x-auto mb-2">
-                {[...Array(10)].map((_, i) => (
-                    <Skeleton key={i} circle width={32} height={32} baseColor={baseColor} highlightColor={highlightColor} />
-                ))}
-            </div>
-            {/* Input */}
-            <div className="flex items-center gap-2 bg-[#303030] rounded-lg px-3 py-2">
-                <Skeleton height={32} width="80%" borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                <div className="flex gap-1">
-                    <Skeleton circle width={12} height={12} baseColor={baseColor} highlightColor={highlightColor} />
-                    <Skeleton circle width={12} height={12} baseColor={baseColor} highlightColor={highlightColor} />
-                    <Skeleton circle width={12} height={12} baseColor={baseColor} highlightColor={highlightColor} />
-                </div>
-            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Panel area */}
+      <aside className="relative h-full w-[360px] lg:w-[420px] border-l border-white/10 bg-black/30 backdrop-blur-3xl p-6 flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <SkeletonBlock className="h-12 w-12 rounded-full" />
+            <div className="space-y-2">
+              <SkeletonBlock className="h-4 w-32 rounded-full" />
+              <SkeletonBlock className="h-3 w-24 rounded-full" />
+            </div>
+          </div>
+          <SkeletonBlock className="h-10 w-24 rounded-full" />
+        </div>
+
+        <div className="flex gap-2">
+          {["People", "Chat", "Media", "Settings"].map((label) => (
+            <div
+              key={label}
+              className={`${glassCard} flex-1 py-3 text-center text-xs uppercase tracking-wide`}
+            >
+              <div className="flex flex-col gap-2 items-center">
+                <SkeletonBlock className="h-2 w-10 rounded-full" />
+                <SkeletonBlock className="h-1.5 w-8 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className={`${glassCard} flex-1 p-4 space-y-4`}>
+          {[...Array(6)].map((_, idx) => (
+            <div key={idx} className="flex items-start gap-3">
+              <SkeletonBlock className="h-10 w-10 rounded-full" />
+              <div className="space-y-2 flex-1">
+                <SkeletonBlock className="h-3 w-1/3 rounded-full" />
+                <SkeletonBlock className="h-3 w-3/4 rounded-full" />
+                <SkeletonBlock className="h-3 w-1/2 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className={`${glassCard} p-4 flex items-center gap-3`}>
+          <SkeletonBlock className="h-12 flex-1 rounded-full" />
+          <SkeletonBlock className="h-12 w-12 rounded-full" />
+        </div>
+      </aside>
     </div>
-        {!isAuthenticated &&
-            <div className="absolute left-1/2 bottom-1/2 -translate-x-1/2 translate-y-1/2 w-full max-w-2xl p-5 py-10 bg-[#191919] rounded-lg flex items-center justify-center">
-                <AuthWrapper isModel={true} />
-            </div>
-    }
-</>
+    {!isAuthenticated && showAuthOverlay && (
+      <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur">
+        <div className={`${glassCard} w-full max-w-xl p-8`}>
+          <AuthWrapper isModel={true} />
+        </div>
+      </div>
+    )}
+  </>
 );
 
 const SkeletonOnboard = () => (
-    <div className="flex h-screen w-screen">
-        {/* Left background image skeleton */}
-        <div className="w-1/2 h-full">
-            <Skeleton height="100%" width="100%" baseColor={baseColor} highlightColor={highlightColor} />
-        </div>
-        {/* Right panel skeleton */}
-        <div className="w-1/2 h-full flex flex-col items-center justify-center bg-[#19191b]">
-            <div className="flex flex-col items-center gap-8 w-full max-w-md">
-                {/* Create Party Title */}
-                <Skeleton width={180} height={32} borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                {/* Subtitle */}
-                <Skeleton width={260} height={18} borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                {/* Device/URL buttons */}
-                <div className="flex gap-6">
-                    <Skeleton width={120} height={100} borderRadius={12} baseColor={baseColor} highlightColor={highlightColor} />
-                    <Skeleton width={120} height={100} borderRadius={12} baseColor={baseColor} highlightColor={highlightColor} />
-                </div>
-                {/* Divider */}
-                <Skeleton width={30} height={10} borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                {/* Join Party Title */}
-                <Skeleton width={120} height={24} borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                {/* Join Party Subtitle */}
-                <Skeleton width={220} height={16} borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                {/* Room ID input and Join button */}
-                {/* <div className="flex gap-4 w-full">
-                    <Skeleton width="70%" height={40} borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                    <Skeleton width={70} height={40} borderRadius={8} baseColor={baseColor} highlightColor={highlightColor} />
-                </div> */}
+  <div className="relative flex h-screen w-full bg-gradient-to-br from-[#060613] via-[#0d0f1c] to-[#1b0930] text-white overflow-hidden">
+    <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle,_rgba(255,255,255,0.2)_1px,_transparent_1px)] [background-size:24px_24px]" />
+    <div className="relative flex w-full flex-col items-center justify-center gap-12 px-6">
+      <div className="text-center space-y-4">
+        <SkeletonBlock className="mx-auto h-6 w-48 rounded-full" />
+        <SkeletonBlock className="mx-auto h-4 w-80 rounded-full" />
+      </div>
+      <div className="grid w-full max-w-4xl gap-6 md:grid-cols-2">
+        {[...Array(4)].map((_, idx) => (
+          <div
+            key={idx}
+            className={`${glassCard} p-6 flex flex-col gap-4 border-white/5`}
+          >
+            <SkeletonBlock className="h-6 w-32 rounded-full" />
+            <SkeletonBlock className="h-4 w-48 rounded-full" />
+            <SkeletonBlock className="h-4 w-40 rounded-full" />
+            <div className="flex gap-3">
+              <SkeletonBlock className="h-10 flex-1 rounded-full" />
+              <SkeletonBlock className="h-10 flex-1 rounded-full" />
             </div>
-        </div>
+          </div>
+        ))}
+      </div>
+      <div className={`${glassCard} flex items-center gap-4 px-6 py-4`}>
+        <SkeletonBlock className="h-12 flex-1 rounded-full" />
+        <SkeletonBlock className="h-12 w-28 rounded-full" />
+      </div>
     </div>
+  </div>
 );
 
-const SkeletonWrapper = ({ type = 'room', auth }: { type: 'room' | 'onboard', auth: boolean }) => {
-    if (type === 'room') {
-        return <SkeletonRoom isAuthenticated={auth} />;
-    } else if (type === 'onboard') {
-        return <SkeletonOnboard />;
-    }
-    return null;
-}
+type SkeletonWrapperProps = {
+  type: "room" | "onboard";
+  auth: boolean;
+  showAuthOverlay?: boolean;
+};
+
+const SkeletonWrapper = ({
+  type = "room",
+  auth,
+  showAuthOverlay,
+}: SkeletonWrapperProps) => {
+  if (type === "room") {
+    return (
+      <SkeletonRoom
+        isAuthenticated={auth}
+        showAuthOverlay={showAuthOverlay}
+      />
+    );
+  }
+  if (type === "onboard") {
+    return <SkeletonOnboard />;
+  }
+  return null;
+};
+
 export default SkeletonWrapper;

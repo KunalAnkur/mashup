@@ -1,11 +1,29 @@
+/**
+ * User type definition
+ * Represents a user in the application
+ */
 export type User = {
-    name: string,
-    email?: string,
-    profile?: string,
-    username?: string,
-    sessionId?: string,
-    id: string,
+  /** Unique user identifier */
+  id: string;
+  /** User's display name */
+  name: string;
+  /** User's email address */
+  email?: string;
+  /** User's profile picture URL */
+  profile?: string;
+  /** User's username */
+  username?: string;
+  /** Session identifier */
+  sessionId?: string;
+};
+/** Metadata for a URL in the playlist */
+export interface UrlMetadata {
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+  author?: string;
 }
+
 export interface RoomState {
   haveRoom: boolean;
   loading: boolean;
@@ -17,17 +35,28 @@ export interface RoomState {
   settings: RoomSetting;
   selectedFileIndex: number;
   refer: boolean;
+  /** Cached metadata for URLs (keyed by URL string) */
+  urlMetadataCache: Record<string, UrlMetadata>;
 }
 
 export type RoomSetting = {
   panelCollapsed: boolean
 }
 
+/**
+ * Authentication state interface
+ * Manages the authentication state of the application
+ */
 export interface AuthState {
+  /** Current authenticated user, null if not authenticated */
   user: User | null;
+  /** JWT authentication token */
   token: string | null;
+  /** Whether the user is currently authenticated */
   isAuthenticated: boolean;
+  /** Loading state for async authentication operations */
   loading: boolean;
+  /** Error message if authentication fails */
   error: string | null;
 }
 

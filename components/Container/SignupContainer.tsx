@@ -3,13 +3,13 @@ import { useState } from "react";
 import { Button, Anchor } from "../UI";
 import * as constants from "@/constants/common";
 import {
-  useProviderSignupMutation,
+  useAuthProviderMutation,
   useSignupMutation,
 } from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import GoogleButton from "../GoogleAuth/GoogleButton";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 
 type Prop = {
@@ -17,20 +17,27 @@ type Prop = {
 };
 const SignupContainer = ({ setContainer }: Prop) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams?.get("redirect");
+
+  const buildAuthRoute = (path: string) =>
+    redirectParam ? `${path}?redirect=${encodeURIComponent(redirectParam)}` : path;
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [username, setUsername] = useState<string>("");
-  const [googleSignup, googleSignupState] = useProviderSignupMutation();
+  const [authProvider] = useAuthProviderMutation();
   const [showPassword, setShowPassword] = useState(false);
 
   const [signupUser, signupState] = useSignupMutation();
   const dispatch = useDispatch();
   const handleOnSignUp = async () => {
+    // Use username as name for regular signup
     const data = await signupUser({
       email,
       password,
       confirmPassword: password,
       username,
+      name: username, // Include name field (using username as name)
     }).unwrap();
     dispatch(setUser(data));
     console.log(data, signupState);
@@ -45,14 +52,13 @@ const SignupContainer = ({ setContainer }: Prop) => {
     if (setContainer) {
       setContainer("login");
     } else {
-      router.push("/login");
+      router.push(buildAuthRoute("/login"));
     }
   };
 
-  const handleGoogleSignupSuccess = async (userInfo: any) => {
+  const handleGoogleAuthSuccess = async (userInfo: any) => {
     try {
-      console.log({ userInfo });
-      const response = await googleSignup({
+      const response = await authProvider({
         email: userInfo.email,
         name: userInfo.name,
         picture: userInfo.picture,
@@ -60,10 +66,10 @@ const SignupContainer = ({ setContainer }: Prop) => {
         provider_name: "google",
       }).unwrap();
 
-      // First set the user with backend response
+      // Set the user with backend response
       dispatch(setUser(response));
 
-      // Then update with Google OAuth specific data (profile picture, name)
+      // Update with Google OAuth specific data (profile picture, name)
       dispatch(
         setGoogleUser({
           profilePicture: userInfo.picture,
@@ -72,7 +78,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
         })
       );
     } catch (error) {
-      console.error("Google login failed", error);
+      console.error("Google authentication failed", error);
     }
   };
 
@@ -145,11 +151,11 @@ const SignupContainer = ({ setContainer }: Prop) => {
 
           {/* Google Button */}
           <GoogleButton
-            name="Signup with Google"
-            onSuccess={handleGoogleSignupSuccess}
+            name="Continue with Google"
+            onSuccess={handleGoogleAuthSuccess}
             onError={() => {
-              console.log("Login Failed");
-              // Handle login failure, e.g., show a notification
+              console.log("Google authentication failed");
+              // Handle authentication failure, e.g., show a notification
             }}
           />
 
@@ -167,7 +173,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
               ) : (
                 <Anchor
                   name="LOGIN"
-                  url={constants.pageType.login}
+                  url={buildAuthRoute(constants.pageType.login)}
                   className="ml-1 text-pink-500 hover:text-pink-400 font-semibold transition-colors"
                 />
               )}

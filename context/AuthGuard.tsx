@@ -1,6 +1,6 @@
 "use client";
 import { useSelector, useDispatch } from "react-redux";
-import { useRouter, usePathname, useParams } from "next/navigation";
+import { useRouter, usePathname, useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { RootState } from "@/lib/store";
 import { logout } from "@/lib/store/slices/authSlice";
@@ -23,6 +23,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { roomId: roomRoutId } = useParams();
+    const searchParams = useSearchParams();
 
     const refreshAuthState = async () => {
         try {
@@ -36,29 +37,29 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         }
     }
 
-    const refreshRoomDetails = async () => {
-        try {
-            const roomResponse = await getMyRoom().unwrap();
-            if (roomResponse.success) {
-                const data = roomResponse.data;
-                if (Object.keys(data).length) {
-                    const result = { ...roomResponse, authId }
-                    // dispatch(setRoom(result));
-                    return result;
-                }
-                else {
-                    dispatch(exitRoom());
-                    return null;
-                }
-            } else {
-                dispatch(exitRoom());
-                return null;
-            }
-        } catch (error) {
-            dispatch(exitRoom());
-            return null;
-        }
-    }
+    // const refreshRoomDetails = async () => {
+    //     try {
+    //         const roomResponse = await getMyRoom().unwrap();
+    //         if (roomResponse.success) {
+    //             const data = roomResponse.data;
+    //             if (Object.keys(data).length) {
+    //                 const result = { ...roomResponse, authId }
+    //                 // dispatch(setRoom(result));
+    //                 return result;
+    //             }
+    //             else {
+    //                 dispatch(exitRoom());
+    //                 return null;
+    //             }
+    //         } else {
+    //             dispatch(exitRoom());
+    //             return null;
+    //         }
+    //     } catch (error) {
+    //         dispatch(exitRoom());
+    //         return null;
+    //     }
+    // }
 
     const createRoomWithRefer = async () => {
         try {
@@ -107,9 +108,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             // Auth routes
             const authRoutes = ["/login", "/signup"];
             const isAuthRoute = authRoutes.includes(pathname);
+            const redirectParam = searchParams?.get("redirect");
+            const safeRedirect =
+                redirectParam && redirectParam.startsWith("/") ? redirectParam : null;
 
             // If authenticated user is on auth pages, check for refer data and redirect accordingly
             if (isAuthRoute && authState.isAuthenticated) {
+                if (safeRedirect) {
+                    router.replace(safeRedirect);
+                    return;
+                }
                 // If user has refer data, create room and redirect
                 if (roomState.refer && roomState.sourceType) {
                     const result = await createRoomWithRefer();
@@ -159,6 +167,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         pathname,
         authState.isAuthenticated,
         authState.loading,
+        searchParams,
         roomState.haveRoom,
         roomState.roomId,
         roomState.refer,
@@ -171,7 +180,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const [isRoomLoading, setIsRoomLoading] = useState<boolean>(false);
     
     useEffect(() => {
-        let timeoutId: NodeJS.Timeout | null = null;
+        // let timeoutId: NodeJS.Timeout | null = null;
         
         const routeLogic = async () => {
             if (pathname?.startsWith("/room/") && roomRoutId) {
@@ -187,6 +196,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                             // Wait for Redux state to update and DOM to render
                             await new Promise(resolve => setTimeout(resolve, 250));
                         } catch (error) {
+                            // TODO: Notify User: Handle this error gracefully
+                            console.error("Error fetching room details:", error);
                             router.replace("/");
                             setIsRoomLoading(false);
                             setSkeleton(false);
@@ -196,15 +207,19 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                     
                     // Use a timeout to ensure smooth transition after room is loaded
                     // Check again if room is loaded before hiding skeleton
-                    timeoutId = setTimeout(() => {
-                        if (roomState.haveRoom && roomState.roomId === roomRoutId) {
-                            setIsRoomLoading(false);
-                            setSkeleton(false);
-                        }
-                    }, 150);
+                    if (roomState.haveRoom && roomState.roomId === roomRoutId) {
+                        setIsRoomLoading(false);
+                        setSkeleton(false);
+                    }
+                    // timeoutId = setTimeout(() => {
+                        
+                    // }, 150);
                 } else {
-                    // Redirect to login if not authenticated
-                    router.replace("/login");
+                    // Redirect to login if not authenticated, preserving intended destination
+                    const queryString =
+                        typeof window !== "undefined" ? window.location.search : "";
+                    const redirectPath = `${pathname || "/"}` + queryString;
+                    router.replace(`/login?redirect=${encodeURIComponent(redirectPath)}`);
                     setIsRoomLoading(false);
                     setSkeleton(false);
                 }
@@ -221,9 +236,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         
         // Cleanup timeout on unmount or dependency change
         return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
+            // if (timeoutId) {
+            //     clearTimeout(timeoutId);
+            // }
         };
     }, [
         pathname,
@@ -254,7 +269,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         <>
             {shouldShowSkeleton ? (
                 <div className="animate-fade-in">
-                    <Skeleton auth={authState.isAuthenticated} type="room" />
+                    <Skeleton
+                        auth={authState.isAuthenticated}
+                        type="room"
+                        showAuthOverlay={false}
+                    />
                 </div>
             ) : (
                 <div className="animate-fade-in">

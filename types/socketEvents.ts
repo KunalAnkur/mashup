@@ -21,6 +21,17 @@ export enum SocketEvent {
   SEND_REACTION = "sendReaction",
   RECEIVE_REACTION = "receiveReaction",
   // MediaSoup events
+
+  // Video selection events
+  SELECT_VIDEO = "selectVideo",
+  VIDEO_SELECTED = "videoSelected",
+  REQUEST_CURRENT_VIDEO = "requestCurrentVideo",
+  CURRENT_VIDEO_STATE = "currentVideoState",
+
+  // Stream control events
+  STREAM_PAUSED = "streamPaused",
+  STREAM_RESUMED = "streamResumed",
+
   CONNECT_TRANSPORT = "connectTransport",
   PRODUCE = "produce",
   CONSUME = "consume",
