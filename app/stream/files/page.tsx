@@ -5,15 +5,13 @@ import { useRouter } from "next/navigation";
 import {
   DragOverlay,
   UploadSection,
-  PlatformGrid,
   ContentDivider,
   useDragAndDrop,
 } from "@/components/Modals/DeviceModalComponents";
-import { ProfileHeader, Logo } from "@/components";
+import { FileSelection, ProfileHeader, Logo } from "@/components";
 import { FaArrowLeft } from "react-icons/fa";
-import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 
-const StreamPage = () => {
+const StreamFilesPage = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setFiles } = useFileContext();
@@ -22,7 +20,6 @@ const StreamPage = () => {
     const files = e.target.files;
     if (files && files.length > 0 && fileInputRef.current) {
       setFiles(Array.from(files));
-      router.push("/stream/files");
       fileInputRef.current.value = "";
     }
   };
@@ -36,14 +33,8 @@ const StreamPage = () => {
     fileInputRef.current?.click();
   };
 
-  const handlePlatformClick = (platformName: string) => {
-    // Convert platform name to lowercase for URL (e.g., "Netflix" -> "netflix", "Disney+" -> "disney-plus")
-    const platformSlug = platformName.toLowerCase().replace(/\s+/g, "-").replace(/\+/g, "-plus");
-    router.push(`/stream/${platformSlug}`);
-  };
-
   const handleBack = () => {
-    router.push("/");
+    router.push("/stream");
   };
 
   return (
@@ -66,7 +57,7 @@ const StreamPage = () => {
             <FaArrowLeft className="text-lg" />
           </button>
         </div>
-        <h2 className="text-xl font-bold text-white absolute left-1/2 -translate-x-1/2">Upload from Device</h2>
+        <h2 className="text-xl font-bold text-white absolute left-1/2 -translate-x-1/2">Select Your Files</h2>
         <div className="flex items-center">
           <ProfileHeader />
         </div>
@@ -84,9 +75,9 @@ const StreamPage = () => {
 
           <ContentDivider />
 
-          {/* Right Side - Platform Grid */}
+          {/* Right Side - File Selection */}
           <div className="w-full lg:w-2/3 flex flex-col">
-            <PlatformGrid onPlatformClick={handlePlatformClick} />
+            <FileSelection />
           </div>
         </div>
       </div>
@@ -94,4 +85,5 @@ const StreamPage = () => {
   );
 };
 
-export default StreamPage;
+export default StreamFilesPage;
+

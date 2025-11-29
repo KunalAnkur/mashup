@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useFileContext } from "@/context/FileContext";
+import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Player } from "@/components/VideoPlayer";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
 import type ReactPlayer from "react-player";
@@ -17,6 +18,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
     const authState = useSelector((state: RootState) => state.auth);
     const { files } = useFileContext();
+    const { stream: screenStream } = useMediaStreamContext();
     const playerRef = useRef<ReactPlayer>(null);
     const [videoReady, setVideoReady] = useState(false);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -25,6 +27,9 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const selectedIndexRef = useRef(roomState.selectedFileIndex);
     const isChangingVideoRef = useRef(false);
     const videoEndedRef = useRef(false); // Track if video has ended
+    
+    // Check if we're using screen sharing (screen stream exists and sourceType is url)
+    const isScreenSharing = screenStream !== null && roomState.sourceType === "url";
     
     // Pause overlay state (for consumers)
     const [isPaused, setIsPaused] = useState(false);
@@ -40,18 +45,81 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     }, [roomState.selectedFileIndex]);
 
     // Get stream from player (for host to produce)
+    // For screen sharing: returns the screen stream directly
+    // For file streaming: captures stream from video element
     const getStream = useCallback((): MediaStream | null => {
+        // If screen sharing, return the screen stream directly
+        if (isScreenSharing && screenStream) {
+            const videoTracks = screenStream.getVideoTracks();
+            const audioTracks = screenStream.getAudioTracks();
+            const hasVideo = videoTracks.length > 0;
+            
+            // Check if any tracks have ended
+            const endedVideoTracks = videoTracks.filter(t => t.readyState === 'ended');
+            const endedAudioTracks = audioTracks.filter(t => t.readyState === 'ended');
+            
+            if (endedVideoTracks.length > 0 || endedAudioTracks.length > 0) {
+                console.warn("FileStreamPlayer - getStream (screen): Some tracks have ended:", {
+                    endedVideo: endedVideoTracks.length,
+                    endedAudio: endedAudioTracks.length,
+                    totalVideo: videoTracks.length,
+                    totalAudio: audioTracks.length
+                });
+                // Don't return stream if all tracks are ended
+                if (videoTracks.length === endedVideoTracks.length && audioTracks.length === endedAudioTracks.length) {
+                    console.error("FileStreamPlayer - getStream (screen): All tracks have ended, cannot produce");
+                    return null;
+                }
+            }
+            
+            // Ensure all active tracks are enabled
+            videoTracks.forEach(track => {
+                if (track.readyState === 'live' && !track.enabled) {
+                    track.enabled = true;
+                }
+            });
+            audioTracks.forEach(track => {
+                if (track.readyState === 'live' && !track.enabled) {
+                    track.enabled = true;
+                }
+            });
+            
+            console.log("FileStreamPlayer - getStream (screen): screen stream with tracks:", {
+                streamId: screenStream.id,
+                video: videoTracks.length,
+                audio: audioTracks.length,
+                hasVideo,
+                videoTracksLive: videoTracks.filter(t => t.readyState === 'live').length,
+                audioTracksLive: audioTracks.filter(t => t.readyState === 'live').length
+            });
+            
+            // Update hasVideoTrack state
+            if (delayTimerRef.current) {
+                clearTimeout(delayTimerRef.current);
+            }
+            if (hasVideo) {
+                setHasVideoTrack(true);
+            } else {
+                delayTimerRef.current = setTimeout(() => {
+                    setHasVideoTrack(false);
+                }, 100);
+            }
+            
+            return screenStream;
+        }
+        
+        // File streaming: capture stream from video element
         if (!playerRef.current) {
-            console.log("getStream: no playerRef");
+            console.log("FileStreamPlayer - getStream (file): no playerRef");
             return null;
         }
         const videoElement = playerRef.current.getInternalPlayer() as (HTMLVideoElement & { captureStream?: () => MediaStream });
         if (!videoElement) {
-            console.log("getStream: no videoElement");
+            console.log("FileStreamPlayer - getStream (file): no videoElement");
             return null;
         }
         if (!videoElement.captureStream) {
-            console.log("getStream: captureStream not supported");
+            console.log("FileStreamPlayer - getStream (file): captureStream not supported");
             return null;
         }
         
@@ -62,7 +130,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         const videoTracks = stream.getVideoTracks();
         const hasVideo = videoTracks.length > 0;
         
-        console.log("getStream: captured stream with tracks:", {
+        console.log("FileStreamPlayer - getStream (file): captured stream with tracks:", {
             video: videoTracks.length,
             audio: stream.getAudioTracks().length,
             hasVideo
@@ -82,7 +150,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         }
         
         return stream;
-    }, []);
+    }, [isScreenSharing, screenStream]);
 
     // Capture current video frame as image
     const captureFrame = useCallback(() => {
@@ -210,9 +278,9 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         }
     }, [mediaSoupOnPlay, roomState.host, getStream, replaceProducerTracks]);
 
-    // Create object URL for current file (host only)
+    // Create object URL for current file (host only, and only for file streaming)
     useEffect(() => {
-        if (!roomState.host) return;
+        if (!roomState.host || isScreenSharing) return; // Skip for screen sharing
         
         const file = files[roomState.selectedFileIndex];
         if (!file) return;
@@ -240,7 +308,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 clearTimeout(delayTimerRef.current);
             }
         };
-    }, [files, roomState.selectedFileIndex, roomState.host]);
+    }, [files, roomState.selectedFileIndex, roomState.host, isScreenSharing]);
 
     // Handle video ended event (for host)
     const handleVideoEnded = useCallback(() => {
@@ -325,21 +393,55 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     // Join room when ready
     useEffect(() => {
         if (authState.isAuthenticated && roomState.roomId && isConnected) {
-            // Host: join when first video is ready
-            // Consumer: join immediately (no video to load)
-            if ((videoReady && roomState.host && !hasJoinedRef.current) || 
-                (!roomState.host && !hasJoinedRef.current)) {
-                console.log('Joining room:', { videoReady, host: roomState.host });
+            if (roomState.host && !hasJoinedRef.current) {
+                // For screen sharing: join when stream is available
+                if (isScreenSharing) {
+                    if (screenStream) {
+                        const videoTracks = screenStream.getVideoTracks();
+                        const audioTracks = screenStream.getAudioTracks();
+                        const hasActiveTracks = 
+                            videoTracks.some(t => t.readyState === 'live') || 
+                            audioTracks.some(t => t.readyState === 'live');
+                        
+                        if (hasActiveTracks) {
+                            console.log('FileStreamPlayer - Joining room (screen share):', { 
+                                streamId: screenStream.id,
+                                videoTracks: videoTracks.length,
+                                audioTracks: audioTracks.length
+                            });
+                            joinRoom(roomState.roomId, roomState.host, authState.user?.username!);
+                            hasJoinedRef.current = true;
+                            isChangingVideoRef.current = false;
+                        } else {
+                            console.log('FileStreamPlayer - Waiting for active screen stream tracks...');
+                        }
+                    } else {
+                        console.log('FileStreamPlayer - Waiting for screen stream...');
+                    }
+                } else {
+                    // For file streaming: join when first video is ready
+                    if (videoReady) {
+                        console.log('FileStreamPlayer - Joining room (file):', { videoReady });
+                        joinRoom(roomState.roomId, roomState.host, authState.user?.username!);
+                        hasJoinedRef.current = true;
+                        isChangingVideoRef.current = false;
+                    }
+                }
+            } else if (!roomState.host && !hasJoinedRef.current) {
+                // Consumer: join immediately
+                console.log('FileStreamPlayer - Joining room (consumer)');
                 joinRoom(roomState.roomId, roomState.host, authState.user?.username!);
                 hasJoinedRef.current = true;
-                // After first join, mark as no longer "changing" video
-                isChangingVideoRef.current = false;
             }
         }
-    }, [authState.isAuthenticated, roomState.roomId, roomState.host, videoReady, isConnected, joinRoom, authState.user?.username]);
+    }, [authState.isAuthenticated, roomState.roomId, roomState.host, videoReady, isConnected, joinRoom, authState.user?.username, isScreenSharing, screenStream]);
 
     // Determine video source
-    const source = roomState.host ? currentFileUrl : remoteStream;
+    // For screen sharing: use screen stream (host) or remote stream (consumer)
+    // For file streaming: use file URL (host) or remote stream (consumer)
+    const source = roomState.host 
+        ? (isScreenSharing ? screenStream : currentFileUrl)
+        : remoteStream;
     
     // Log when source changes for debugging
     useEffect(() => {
@@ -358,10 +460,14 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
             <div className="flex items-center justify-center h-full bg-black">
                 <div className="text-white/60 text-center">
                     <div className="animate-pulse mb-2">
-                        {roomState.host ? "🎬 Loading video..." : "📡 Waiting for stream..."}
+                        {roomState.host 
+                            ? (isScreenSharing ? "📺 Waiting for screen share..." : "🎬 Loading video...")
+                            : "📡 Waiting for stream..."}
                     </div>
                     <div className="text-sm text-white/40">
-                        {roomState.host ? "Preparing to stream" : "Host is setting up"}
+                        {roomState.host 
+                            ? (isScreenSharing ? "Please start screen sharing" : "Preparing to stream")
+                            : "Host is setting up"}
                     </div>
                 </div>
             </div>
@@ -374,7 +480,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         : remoteStream ? `consumer-${remoteStream.id}` : 'consumer-waiting';
 
     // For consumers: when host pauses, set playing to false to show natural player pause UI
-    const isPlaying = roomState.host ? false : !isPaused;
+    const isPlaying = roomState.host ? isScreenSharing : !isPaused;
 
     return (
         <div className="relative w-full h-full">

@@ -11,7 +11,8 @@ type PlayerWrapperProps = {
 const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     const roomState = useSelector((state: RootState) => state.room);
 
-    if (roomState.sourceType === "file") {
+    // FileStreamPlayer now handles both file streaming and screen sharing
+    if (roomState.sourceType === "file" || roomState.sourceType === "url") {
         return <FileStreamPlayer fullscreenTargetRef={fullscreenTargetRef} />;
     }
 

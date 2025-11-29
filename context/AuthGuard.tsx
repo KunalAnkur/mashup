@@ -150,8 +150,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                 // Otherwise, stay on home page (source selection)
             }
 
-            // Handle /stream and /sync routes - create room if authenticated and has refer data
-            if ((pathname === "/stream" || pathname === "/sync") && authState.isAuthenticated) {
+            // Handle /stream, /stream/files, /stream/[source], and /sync routes - create room if authenticated and has refer data
+            const isStreamRoute = pathname === "/stream" || 
+                                  pathname === "/stream/files" || 
+                                  (pathname?.startsWith("/stream/") && pathname !== "/stream/files");
+            if ((isStreamRoute || pathname === "/sync") && authState.isAuthenticated) {
                 if (roomState.refer && roomState.sourceType) {
                     const result = await createRoomWithRefer();
                     if (result && result.data?.room_id) {
@@ -251,8 +254,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     
     // Don't show skeleton on public pages
-    const publicRoutes = ["/", "/login", "/signup", "/stream", "/sync"];
-    const isPublicRoute = pathname && publicRoutes.includes(pathname);
+    const publicRoutes = ["/", "/login", "/signup", "/stream", "/stream/files", "/sync"];
+    const isStreamSourceRoute = pathname?.startsWith("/stream/") && pathname !== "/stream/files";
+    const isPublicRoute = pathname && (publicRoutes.includes(pathname) || isStreamSourceRoute);
     const isRoomRoute = pathname?.startsWith("/room/");
     
     // Show skeleton if:

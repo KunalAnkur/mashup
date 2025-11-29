@@ -6,9 +6,12 @@ import { RootState } from "@/lib/store";
 import { setUrlMetadata } from "@/lib/store/slices/roomSlice";
 import { useFileContext } from "@/context/FileContext";
 import { useVideoSelection } from "@/context/VideoSelectionContext";
+import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { LuPlay, LuFilm, LuLock, LuCrown } from "react-icons/lu";
+import { FaBroadcastTower } from "react-icons/fa";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
 import { detectPlatform, getPlatformById, getUrlDisplayName } from "@/types/ModalTypes/urlUtils";
+import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 
 // Playlist URL Card - Modified version for playing state with loading support
 const PlaylistUrlCard = ({
@@ -154,6 +157,86 @@ const PlaylistUrlCard = ({
     );
 };
 
+// Screen Share Card - Shows platform that's being streamed
+const PlaylistScreenShareCard = ({
+    platformName,
+    platformLogo,
+    platformBgStyle,
+    isPlaying,
+}: {
+    platformName: string;
+    platformLogo: React.ReactNode;
+    platformBgStyle: React.CSSProperties;
+    isPlaying: boolean;
+}) => {
+    return (
+        <div
+            className={`
+                w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0
+                ${isPlaying
+                    ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
+                    : 'bg-white/5 border border-transparent'
+                }
+            `}
+        >
+            {/* Platform Logo */}
+            <div
+                className={`
+                    relative w-20 h-13 rounded-lg overflow-hidden shrink-0 flex items-center justify-center
+                    ${isPlaying ? 'ring-2 ring-pink-500/50' : ''}
+                `}
+                style={platformBgStyle}
+            >
+                <div className="text-white text-2xl">
+                    {platformLogo}
+                </div>
+                
+                {/* Streaming indicator overlay */}
+                {isPlaying && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-1">
+                            <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
+                                <FaBroadcastTower className="text-white" size={10} />
+                            </div>
+                            <div className="w-1 h-1 rounded-full bg-pink-500 animate-pulse"></div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Platform info */}
+            <div className="flex flex-col gap-0.5 min-w-0 flex-1 justify-center overflow-hidden text-left">
+                <div className="flex items-center gap-2">
+                    <p className={`text-xs font-semibold line-clamp-1 leading-tight ${
+                        isPlaying ? 'text-pink-400' : 'text-gray-200'
+                    }`}>
+                        {platformName}
+                    </p>
+                    {isPlaying && (
+                        <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                            Streaming
+                        </span>
+                    )}
+                </div>
+                <p className="text-gray-500 text-[10px] truncate">
+                    Screen sharing active
+                </p>
+            </div>
+
+            {/* Streaming icon */}
+            <div className={`
+                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+                ${isPlaying
+                    ? 'bg-pink-500/20 text-pink-400'
+                    : 'bg-white/5 text-gray-500'
+                }
+            `}>
+                <FaBroadcastTower size={12} />
+            </div>
+        </div>
+    );
+};
+
 // File Card for local files
 const PlaylistFileCard = ({
     file,
@@ -254,11 +337,24 @@ const PlaylistTab = () => {
     const authState = useSelector((state: RootState) => state.auth);
     const { files, getThumbnail } = useFileContext();
     const { selectVideo, isHost } = useVideoSelection();
+    const { stream: screenStream } = useMediaStreamContext();
 
     const isFileMode = roomState.sourceType === "file";
+    const isScreenSharing = screenStream !== null && roomState.sourceType === "url";
     const urls = roomState.urls;
     const selectedIndex = roomState.selectedFileIndex;
     const urlMetadataCache = roomState.urlMetadataCache;
+
+    // Find the platform being streamed
+    const getStreamingPlatform = () => {
+        if (!isScreenSharing || urls.length === 0) return null;
+        
+        // The first URL should be the platform URL
+        const platformUrl = urls[0];
+        return STREAMING_PLATFORMS.find(p => p.url === platformUrl);
+    };
+
+    const streamingPlatform = getStreamingPlatform();
 
     // Track which URLs are currently being fetched
     const [loadingUrls, setLoadingUrls] = useState<Set<string>>(new Set());
@@ -347,13 +443,17 @@ const PlaylistTab = () => {
         if (isFileMode) {
             return files.map((_, index) => index);
         }
+        // For screen sharing, we show the platform card instead of URL cards
+        if (isScreenSharing) {
+            return []; // Return empty, we'll show screen share card separately
+        }
         return urls.map((_, index) => index);
     };
 
     const playlistItems = getPlaylistItems();
 
-    // Empty state
-    if (playlistItems.length === 0) {
+    // Empty state (only show if not screen sharing)
+    if (playlistItems.length === 0 && !isScreenSharing) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
                 <div className="p-4 rounded-2xl bg-white/5 mb-4">
@@ -379,7 +479,10 @@ const PlaylistTab = () => {
                         Playlist
                     </h3>
                     <span className="text-gray-500 text-xs">
-                        ({playlistItems.length} {playlistItems.length === 1 ? 'video' : 'videos'})
+                        {isScreenSharing 
+                            ? "(Screen sharing)"
+                            : `(${playlistItems.length} ${playlistItems.length === 1 ? 'video' : 'videos'})`
+                        }
                     </span>
                 </div>
                 {!isHost && (
@@ -392,6 +495,17 @@ const PlaylistTab = () => {
 
             {/* Video List */}
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                {/* Screen Share Card - Show at top if screen sharing is active */}
+                {isScreenSharing && streamingPlatform && (
+                    <PlaylistScreenShareCard
+                        platformName={streamingPlatform.name}
+                        platformLogo={streamingPlatform.logo}
+                        platformBgStyle={streamingPlatform.bgStyle}
+                        isPlaying={true}
+                    />
+                )}
+
+                {/* Regular playlist items */}
                 {playlistItems.map((index) => {
                     const isPlaying = selectedIndex === index;
 
