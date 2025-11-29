@@ -4,6 +4,7 @@ import ReactPlayer from "react-player";
 import screenfull from "screenfull";
 import { PlayPauseOverlay } from "@/components/VideoPlayer/PlayPauseOverlay";
 import { ControlBar } from "@/components/VideoPlayer/ControlBar";
+import AudioVisualizer from "@/components/VideoPlayer/AudioVisualizer";
 import { SourceProps } from "react-player/base";
 import { FileConfig } from "react-player/file";
 export enum ControlComponents {
@@ -43,6 +44,7 @@ type VideoPlayerProps = {
     FileConfig?: FileConfig;
     disableControls?: ControlComponents[];
     hideControls?: ControlComponents[];
+    hasVideoTrack?: boolean; // External prop to indicate if video track exists (for AudioVisualizer)
 };
 
 const VideoPlayer = ({
@@ -72,7 +74,8 @@ const VideoPlayer = ({
     height,
     disableControls = [],
     hideControls = [],
-    children
+    children,
+    hasVideoTrack: externalHasVideoTrack
 }: VideoPlayerProps) => {
     // State management
     const [playing, setPlaying] = useState(externalPlaying);
@@ -282,6 +285,14 @@ const VideoPlayer = ({
                 {/* NOTE: UI Overlay component */}
                 {children}
                 
+                {/* Audio Visualizer - only show when there's no video track (audio-only content) */}
+                {externalHasVideoTrack === false && (
+                    <AudioVisualizer 
+                        playing={playing} 
+                        muted={muted} 
+                        playerRef={playerRef}
+                    />
+                )}
 
                 {!hideControls.includes(ControlComponents.OVERLAY) && <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} />}
 

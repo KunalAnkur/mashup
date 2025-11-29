@@ -31,6 +31,8 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const [pauseFrameUrl, setPauseFrameUrl] = useState<string | null>(null);
     const [isFrameFading, setIsFrameFading] = useState(false);
     const videoElementRef = useRef<HTMLVideoElement | null>(null);
+    const [hasVideoTrack, setHasVideoTrack] = useState<boolean | undefined>(true); // Default to true (hide visualizer)
+    const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Keep selectedIndexRef in sync
     useEffect(() => {
@@ -57,10 +59,28 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         videoElementRef.current = videoElement;
         
         const stream = videoElement.captureStream();
+        const videoTracks = stream.getVideoTracks();
+        const hasVideo = videoTracks.length > 0;
+        
         console.log("getStream: captured stream with tracks:", {
-            video: stream.getVideoTracks().length,
-            audio: stream.getAudioTracks().length
+            video: videoTracks.length,
+            audio: stream.getAudioTracks().length,
+            hasVideo
         });
+        
+        // Update hasVideoTrack state for host with delay to prevent flash
+        if (delayTimerRef.current) {
+            clearTimeout(delayTimerRef.current);
+        }
+        if (hasVideo) {
+            setHasVideoTrack(true); // Immediately hide visualizer if video detected
+        } else {
+            // Delay 100ms before showing visualizer (audio-only)
+            delayTimerRef.current = setTimeout(() => {
+                setHasVideoTrack(false);
+            }, 100);
+        }
+        
         return stream;
     }, []);
 
@@ -90,12 +110,29 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
 
     // Handle received stream (for consumers)
     const handleStreamReceived = useCallback((stream: MediaStream) => {
+        const videoTracks = stream.getVideoTracks();
+        const hasVideo = videoTracks.length > 0;
+        
         console.log("handleStreamReceived: Received new stream from host", {
             id: stream.id,
-            videoTracks: stream.getVideoTracks().length,
+            videoTracks: videoTracks.length,
             audioTracks: stream.getAudioTracks().length,
-            active: stream.active
+            active: stream.active,
+            hasVideo
         });
+        
+        // Update hasVideoTrack state for consumer with delay to prevent flash
+        if (delayTimerRef.current) {
+            clearTimeout(delayTimerRef.current);
+        }
+        if (hasVideo) {
+            setHasVideoTrack(true); // Immediately hide visualizer if video detected
+        } else {
+            // Delay 100ms before showing visualizer (audio-only)
+            delayTimerRef.current = setTimeout(() => {
+                setHasVideoTrack(false);
+            }, 100);
+        }
         
         // Clear pause state when receiving new stream
         setIsPaused(false);
@@ -185,6 +222,12 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         // Mark that we're changing video
         isChangingVideoRef.current = true;
         
+        // Reset hasVideoTrack to hide visualizer immediately on URL change
+        if (delayTimerRef.current) {
+            clearTimeout(delayTimerRef.current);
+        }
+        setHasVideoTrack(true); // Hide visualizer immediately
+        
         // Create new URL for the selected file
         const url = URL.createObjectURL(file);
         setCurrentFileUrl(url);
@@ -193,6 +236,9 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         return () => {
             console.log("Revoking URL for:", file.name);
             URL.revokeObjectURL(url);
+            if (delayTimerRef.current) {
+                clearTimeout(delayTimerRef.current);
+            }
         };
     }, [files, roomState.selectedFileIndex, roomState.host]);
 
@@ -207,6 +253,33 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const handleVideoReady = useCallback(() => {
         console.log("Video ready for index:", selectedIndexRef.current);
         setVideoReady(true);
+        
+        // Check video dimensions for host (to detect audio-only files)
+        if (roomState.host && playerRef.current) {
+            const videoElement = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
+            if (videoElement) {
+                const hasVideo = videoElement.videoWidth > 0 && videoElement.videoHeight > 0;
+                
+                // Update with delay to prevent flash
+                if (delayTimerRef.current) {
+                    clearTimeout(delayTimerRef.current);
+                }
+                if (hasVideo) {
+                    setHasVideoTrack(true); // Immediately hide visualizer if video detected
+                } else {
+                    // Delay 100ms before showing visualizer (audio-only)
+                    delayTimerRef.current = setTimeout(() => {
+                        setHasVideoTrack(false);
+                    }, 100);
+                }
+                
+                console.log("Video ready - dimensions:", {
+                    width: videoElement.videoWidth,
+                    height: videoElement.videoHeight,
+                    hasVideo
+                });
+            }
+        }
         
         // If we're changing video (not first load) and already joined, replace producers
         if (roomState.host && hasJoinedRef.current && isChangingVideoRef.current) {
@@ -301,7 +374,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         : remoteStream ? `consumer-${remoteStream.id}` : 'consumer-waiting';
 
     // For consumers: when host pauses, set playing to false to show natural player pause UI
-    const isPlaying = roomState.host ? true : !isPaused;
+    const isPlaying = roomState.host ? false : !isPaused;
 
     return (
         <div className="relative w-full h-full">
@@ -315,9 +388,10 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 onSeekEnd={onSeekEnd}
                 fullscreenTargetRef={fullscreenTargetRef}
                 url={source}
-                muted={roomState.host} // Mute host to avoid echo
+                muted={false} // Mute host to avoid echo
                 onPlay={onPlay}
                 onPause={onPause}
+                hasVideoTrack={hasVideoTrack}
                 disableControls={helper.getPlayerControlsConfig(source, roomState.host).disableControls}
                 hideControls={helper.getPlayerControlsConfig(source, roomState.host).hideControls}
             >
