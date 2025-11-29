@@ -136,7 +136,7 @@ const ReactionPicker = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-[130px] right-6 bg-[#1f1f23] rounded-2xl shadow-2xl border border-white/10 overflow-hidden z-[200] reaction-picker-container"
+            className="fixed bottom-[110px] right-6 bg-[#1f1f23] rounded-2xl shadow-2xl border border-white/10 overflow-hidden z-[200] reaction-picker-container"
             style={{ minWidth: "280px" }}
           >
             {/* Header */}

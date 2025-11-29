@@ -432,7 +432,7 @@ const ChatTab = () => {
       </div>
 
       {/* Reaction Buttons - Clean Modern Design */}
-      <div className="relative flex items-center justify-center gap-3 py-2 mb-2">
+      <div className="relative flex items-center justify-center gap-3  ">
         {/* Pinned Reactions - Centered */}
         {pinnedReactions.map((emoji) => (
           <AnimatedReaction
