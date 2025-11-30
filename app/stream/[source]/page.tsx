@@ -112,6 +112,7 @@ const PlatformStreamPage = () => {
       // Handle track ended (user stopped sharing)
       const handleTrackEnded = () => {
         setStream(null);
+        setMediaStream(null);
         setIsStreamReady(false);
         setIsTabSelected(false);
         setShowWarning(false);
@@ -172,7 +173,7 @@ const PlatformStreamPage = () => {
       const mediaStream = await navigator.mediaDevices.getDisplayMedia(constraints);
 
       setStream(mediaStream);
-      // Store in context for use in room
+      // Store in MediaStreamContext for use in room (MediaStream cannot be in Redux)
       setMediaStream(mediaStream);
     } catch (err: any) {
       if (err.name !== 'NotAllowedError' && err.name !== 'AbortError') {
@@ -193,10 +194,10 @@ const PlatformStreamPage = () => {
     setIsCreatingRoom(true);
 
     try {
-      // Create room with screen share source type
-      // Using "url" as source type since screen sharing is similar to URL streaming
+      // Create room with screen sharing stream type
       const response = await createRoom({
-        sourceType: "url",
+        type: "stream",
+        source: "stream",
         urls: [platform?.url || ""], // Store platform URL for reference
       }).unwrap();
 
@@ -205,7 +206,8 @@ const PlatformStreamPage = () => {
         dispatch(
           setRefers({
             refer: true,
-            sourceType: "url",
+            type: "stream",
+            source: "stream",
             urls: [platform?.url || ""],
           })
         );

@@ -28,8 +28,15 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const isChangingVideoRef = useRef(false);
     const videoEndedRef = useRef(false); // Track if video has ended
     
-    // Check if we're using screen sharing (screen stream exists and sourceType is url)
-    const isScreenSharing = screenStream !== null && roomState.sourceType === "url";
+    // Determine streaming mode from room state
+    // Screen sharing: type is "stream" AND source is "stream" AND screenStream exists
+    const isScreenSharing = roomState.type === "stream" && 
+                           roomState.source === "stream" && 
+                           screenStream !== null;
+    
+    // File streaming: type is "stream" AND source is "file"
+    const isFileStreaming = roomState.type === "stream" && 
+                           roomState.source === "file";
     
     // Pause overlay state (for consumers)
     const [isPaused, setIsPaused] = useState(false);
@@ -45,10 +52,10 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     }, [roomState.selectedFileIndex]);
 
     // Get stream from player (for host to produce)
-    // For screen sharing: returns the screen stream directly
+    // For screen sharing: returns the screen stream from MediaStreamContext
     // For file streaming: captures stream from video element
     const getStream = useCallback((): MediaStream | null => {
-        // If screen sharing, return the screen stream directly
+        // If screen sharing, return the screen stream from context
         if (isScreenSharing && screenStream) {
             const videoTracks = screenStream.getVideoTracks();
             const audioTracks = screenStream.getAudioTracks();
@@ -280,7 +287,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
 
     // Create object URL for current file (host only, and only for file streaming)
     useEffect(() => {
-        if (!roomState.host || isScreenSharing) return; // Skip for screen sharing
+        if (!roomState.host || !isFileStreaming) return; // Only for file streaming, skip for screen sharing
         
         const file = files[roomState.selectedFileIndex];
         if (!file) return;
@@ -308,7 +315,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 clearTimeout(delayTimerRef.current);
             }
         };
-    }, [files, roomState.selectedFileIndex, roomState.host, isScreenSharing]);
+    }, [files, roomState.selectedFileIndex, roomState.host, isFileStreaming]);
 
     // Handle video ended event (for host)
     const handleVideoEnded = useCallback(() => {
@@ -480,7 +487,10 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         : remoteStream ? `consumer-${remoteStream.id}` : 'consumer-waiting';
 
     // For consumers: when host pauses, set playing to false to show natural player pause UI
-    const isPlaying = roomState.host ? isScreenSharing : !isPaused;
+    // For host: screen sharing always plays, file streaming uses player state
+    const isPlaying = roomState.host 
+        ? (isScreenSharing ? true : false) // Screen sharing always plays
+        : !isPaused; // Consumer pauses when host pauses
 
     return (
         <div className="relative w-full h-full">

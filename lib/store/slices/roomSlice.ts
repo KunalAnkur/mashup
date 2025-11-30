@@ -4,7 +4,8 @@ import { RoomCreateResponse } from "@/types/responseTypes";
 
 const initialState: RoomState = {
   haveRoom: false,
-  sourceType: 'url',
+  type: 'sync',
+  source: 'url',
   roomId: null,
   urls: [],
   files: [],
@@ -29,7 +30,9 @@ const authSlice = createSlice({
       state.roomId = data.room_id;
       state.urls = data.urls || [];
       state.host = action.payload.authId === action.payload.data.user_id;
-      state.sourceType = data.source_type as "file" | "url";
+      // Backend now uses type and source directly
+      state.type = data.type as "stream" | "sync";
+      state.source = data.source as "file" | "url" | "stream";
       state.refer = false;
     },
     setFile: (state, action: PayloadAction<string[]>) => {
@@ -39,7 +42,8 @@ const authSlice = createSlice({
       state.haveRoom = false;
       state.loading = false;
       state.roomId = null;
-      state.sourceType = 'url';
+      state.type = 'sync';
+      state.source = 'url';
       // state.event = action.payload;
     },
     setSelectedFileIndex: (state, action: PayloadAction<number>) => {
@@ -62,12 +66,14 @@ const authSlice = createSlice({
       state,
       action: PayloadAction<{
         refer: boolean;
-        sourceType: "file" | "url";
+        type: "stream" | "sync";
+        source: "file" | "url" | "stream";
         urls?: string[];
       }>
     ) => {
       state.refer = action.payload.refer;
-      state.sourceType = action.payload.sourceType;
+      state.type = action.payload.type;
+      state.source = action.payload.source;
       state.urls = action.payload.urls || [];
     },
     

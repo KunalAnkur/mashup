@@ -13,7 +13,9 @@ const Page = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Use different socket namespace based on source type
-  const socketNamespace = roomState.sourceType === "file" ? "filestream" : undefined;
+  // Streaming (both file and screen) uses "filestream" namespace
+  // Sync uses default namespace
+  const socketNamespace = roomState.type === "stream" ? "filestream" : undefined;
 
   return (
     <ChatProvider>

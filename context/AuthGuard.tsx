@@ -63,7 +63,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const createRoomWithRefer = async () => {
         try {
-            const response = await createRoomApi({ urls: roomState.urls, sourceType: roomState.sourceType! }).unwrap();
+            const response = await createRoomApi({ 
+                urls: roomState.urls, 
+                type: roomState.type!,
+                source: roomState.source!
+            }).unwrap();
             if (response.success) {
                 const roomWithAuth = { ...response, authId: authState.user!.id };
                 dispatch(setRoom(roomWithAuth));
@@ -119,7 +123,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                     return;
                 }
                 // If user has refer data, create room and redirect
-                if (roomState.refer && roomState.sourceType) {
+                if (roomState.refer && roomState.type) {
                     const result = await createRoomWithRefer();
                     if (result && result.data?.room_id) {
                         router.replace(`/room/${result.data.room_id}`);
@@ -136,7 +140,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                 if (authState.isAuthenticated) {
                     // Only redirect to existing room if user has refer data (coming from stream/sync)
                     // Don't auto-redirect if user intentionally navigated to home
-                    if (roomState.refer && roomState.sourceType) {
+                    if (roomState.refer && roomState.type) {
                         // If user has refer data (from /stream or /sync), create room
                         const result = await createRoomWithRefer();
                         if (result && result.data?.room_id) {
@@ -155,7 +159,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                                   pathname === "/stream/files" || 
                                   (pathname?.startsWith("/stream/") && pathname !== "/stream/files");
             if ((isStreamRoute || pathname === "/sync") && authState.isAuthenticated) {
-                if (roomState.refer && roomState.sourceType) {
+                if (roomState.refer && roomState.type) {
                     const result = await createRoomWithRefer();
                     if (result && result.data?.room_id) {
                         router.replace(`/room/${result.data.room_id}`);
@@ -174,7 +178,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         roomState.haveRoom,
         roomState.roomId,
         roomState.refer,
-        roomState.sourceType,
+        roomState.type,
+        roomState.source,
         roomState.urls,
     ]);
 

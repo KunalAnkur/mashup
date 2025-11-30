@@ -6,7 +6,6 @@ import { RootState } from "@/lib/store";
 import { setUrlMetadata } from "@/lib/store/slices/roomSlice";
 import { useFileContext } from "@/context/FileContext";
 import { useVideoSelection } from "@/context/VideoSelectionContext";
-import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { LuPlay, LuFilm, LuLock, LuCrown } from "react-icons/lu";
 import { FaBroadcastTower } from "react-icons/fa";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
@@ -337,10 +336,10 @@ const PlaylistTab = () => {
     const authState = useSelector((state: RootState) => state.auth);
     const { files, getThumbnail } = useFileContext();
     const { selectVideo, isHost } = useVideoSelection();
-    const { stream: screenStream } = useMediaStreamContext();
 
-    const isFileMode = roomState.sourceType === "file";
-    const isScreenSharing = screenStream !== null && roomState.sourceType === "url";
+    // Determine streaming mode from room state only
+    const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
+    const isScreenSharing = roomState.type === "stream" && roomState.source === "stream";
     const urls = roomState.urls;
     const selectedIndex = roomState.selectedFileIndex;
     const urlMetadataCache = roomState.urlMetadataCache;
@@ -361,7 +360,7 @@ const PlaylistTab = () => {
 
     // Fetch metadata for URLs that aren't cached yet
     useEffect(() => {
-        if (isFileMode || urls.length === 0) return;
+        if (isFileStreaming || urls.length === 0) return;
 
         // Find URLs that need metadata fetching
         const urlsToFetch = urls.filter(
@@ -420,7 +419,7 @@ const PlaylistTab = () => {
         };
 
         fetchMetadata();
-    }, [urls, isFileMode, authState.token, urlMetadataCache, loadingUrls, dispatch]);
+    }, [urls, isFileStreaming, authState.token, urlMetadataCache, loadingUrls, dispatch]);
 
     // Build URL data with cached metadata
     const getUrlData = (url: string): AddedUrl => ({
@@ -440,13 +439,14 @@ const PlaylistTab = () => {
 
     // Get playlist items
     const getPlaylistItems = () => {
-        if (isFileMode) {
+        if (isFileStreaming) {
             return files.map((_, index) => index);
         }
         // For screen sharing, we show the platform card instead of URL cards
         if (isScreenSharing) {
             return []; // Return empty, we'll show screen share card separately
         }
+        // For sync mode, show URLs
         return urls.map((_, index) => index);
     };
 
@@ -461,7 +461,7 @@ const PlaylistTab = () => {
                 </div>
                 <h3 className="text-white font-semibold mb-2">No videos</h3>
                 <p className="text-gray-500 text-sm">
-                    {isFileMode
+                    {isFileStreaming
                         ? "No video files have been added to this party yet."
                         : "No video URLs have been added to this party yet."
                     }
@@ -509,7 +509,7 @@ const PlaylistTab = () => {
                 {playlistItems.map((index) => {
                     const isPlaying = selectedIndex === index;
 
-                    if (isFileMode) {
+                    if (isFileStreaming) {
                         const file = files[index];
                         if (!file) return null;
                         
