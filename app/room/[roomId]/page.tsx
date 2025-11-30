@@ -23,11 +23,13 @@ const Page = () => {
         <div ref={containerRef} className="flex h-screen bg-[#030712] relative">
           <div
             className={`
-                        bg-black flex-1 transition-all duration-300 h-full w-full
+                        bg-black flex-1 transition-all duration-300 h-full w-full relative
                         ${roomState.settings.panelCollapsed ? "w-full" : ""}
                     `}
           >
             <PlayerWrapper fullscreenTargetRef={containerRef} />
+            {/* Flying Emoji Animations - Inside fullscreen container to work in fullscreen mode */}
+            <ReactionsContainer />
           </div>
           <div
             className={`
@@ -39,9 +41,6 @@ const Page = () => {
             <Panel />
           </div>
         </div>
-
-        {/* Flying Emoji Animations - Rendered at page level to fly over video */}
-        <ReactionsContainer />
       </VideoSelectionProvider>
     </ChatProvider>
   );

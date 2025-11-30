@@ -4,15 +4,14 @@ import { useChatContext } from "@/context/ChatContext";
 import FlyingEmoji from "./FlyingEmoji";
 
 /**
- * ReactionsContainer - Renders flying emoji animations at the page level
- * This component should be placed at the room page level to ensure
- * emojis fly over the video player
+ * ReactionsContainer - Renders flying emoji animations
+ * Positioned to work in both normal and fullscreen modes
  */
 const ReactionsContainer = () => {
   const { reactions } = useChatContext();
 
   return (
-    <>
+    <div className="absolute inset-0 pointer-events-none z-[9999] overflow-hidden">
       {reactions.map((reaction) => (
         <FlyingEmoji
           key={reaction.id}
@@ -20,7 +19,7 @@ const ReactionsContainer = () => {
           id={reaction.id}
         />
       ))}
-    </>
+    </div>
   );
 };
 

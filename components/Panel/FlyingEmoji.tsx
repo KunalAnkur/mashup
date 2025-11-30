@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ReactionType } from "@/types/chatTypes";
 
 interface FlyingEmojiProps {
@@ -16,6 +16,8 @@ const FlyingEmoji = ({ emoji, id, onComplete }: FlyingEmojiProps) => {
   
   // Random horizontal movement during animation (-30px to +30px)
   const [horizontalDrift] = useState(() => Math.random() * 60 - 30);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Call onComplete after animation finishes
@@ -156,8 +158,44 @@ const FlyingEmoji = ({ emoji, id, onComplete }: FlyingEmojiProps) => {
   const emojiUrl = getAnimatedEmojiUrl(emoji);
   const hasAnimatedVersion = emojiUrl !== null;
 
+  // Get container height - works in both normal and fullscreen mode
+  const [containerHeight, setContainerHeight] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerHeight;
+    }
+    return 1000; // fallback
+  });
+
+  useEffect(() => {
+    const updateHeight = () => {
+      // In fullscreen, use the fullscreen element's dimensions
+      const fullscreenElement = document.fullscreenElement;
+      if (fullscreenElement) {
+        setContainerHeight(fullscreenElement.clientHeight);
+      } else {
+        setContainerHeight(window.innerHeight);
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    document.addEventListener("fullscreenchange", updateHeight);
+    document.addEventListener("webkitfullscreenchange", updateHeight);
+    document.addEventListener("mozfullscreenchange", updateHeight);
+    document.addEventListener("MSFullscreenChange", updateHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateHeight);
+      document.removeEventListener("fullscreenchange", updateHeight);
+      document.removeEventListener("webkitfullscreenchange", updateHeight);
+      document.removeEventListener("mozfullscreenchange", updateHeight);
+      document.removeEventListener("MSFullscreenChange", updateHeight);
+    };
+  }, []);
+
   return (
     <motion.div
+      ref={containerRef}
       key={id}
       initial={{
         y: 0,
@@ -167,7 +205,7 @@ const FlyingEmoji = ({ emoji, id, onComplete }: FlyingEmojiProps) => {
         rotate: 0,
       }}
       animate={{
-        y: -window.innerHeight * 1.2, // Fly beyond the top of the screen
+        y: -containerHeight * 1.2, // Fly beyond the top of the container
         x: emojiAnimation.x || horizontalDrift, // Emoji-specific or default drift
         opacity: [0, 1, 1, 0.8, 0],
         scale: emojiAnimation.scale,
