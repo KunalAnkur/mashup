@@ -75,7 +75,8 @@ const FileSelection = () => {
     dispatch(
       setRefers({
         refer: true,
-        sourceType: "file",
+        type: "stream",
+        source: "file",
         urls: urlList,
       })
     );

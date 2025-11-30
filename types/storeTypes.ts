@@ -27,7 +27,8 @@ export interface UrlMetadata {
 export interface RoomState {
   haveRoom: boolean;
   loading: boolean;
-  sourceType: "file" | "url";
+  type: "stream" | "sync";
+  source: "file" | "url" | "stream"; // "file" for file upload, "stream" for screen sharing, "url" for sync
   roomId: string | null;
   urls: string[];
   files: string[];

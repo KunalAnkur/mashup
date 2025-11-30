@@ -11,10 +11,13 @@ type PlayerWrapperProps = {
 const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     const roomState = useSelector((state: RootState) => state.room);
 
-    if (roomState.sourceType === "file") {
+    // FileStreamPlayer handles streaming (both file and screen sharing)
+    // UrlSyncPlayer handles sync (URL-based playback sync)
+    if (roomState.type === "stream") {
         return <FileStreamPlayer fullscreenTargetRef={fullscreenTargetRef} />;
     }
 
+    // type === "sync" uses UrlSyncPlayer
     return <UrlSyncPlayer fullscreenTargetRef={fullscreenTargetRef} />;
 };
 

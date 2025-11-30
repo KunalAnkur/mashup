@@ -39,7 +39,8 @@ const UrlSelection = () => {
     dispatch(
       setRefers({
         refer: true,
-        sourceType: "url",
+        type: "sync",
+        source: "url",
         urls: [sourceUrlInput],
       })
     );

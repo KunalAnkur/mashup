@@ -29,20 +29,21 @@ const Panel = () => {
   const dispatch = useDispatch();
 
   // Determine which tabs to show based on source type and host status
-  // - For file (stream): Playlist tab only visible to host (since files are local)
-  // - For URL (sync): Playlist tab visible to all
+  // - For stream with file source: Playlist tab only visible to host (since files are local)
+  // - For stream with stream source (screen): Playlist tab visible to all (shows platform being streamed)
+  // - For sync: Playlist tab visible to all (everyone can see the URLs)
   const visibleTabs = useMemo(() => {
-    const isFileMode = roomState.sourceType === "file";
+    const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
     
     return Object.values(Tabs).filter((tab) => {
       if (tab === Tabs.PLAYLIST) {
-        // For file mode: only show to host (files are local, non-hosts can't see them)
-        // For URL mode: always show (everyone can see the URLs)
-        return isFileMode ? host : true;
+        // For file streaming: only show to host (files are local, non-hosts can't see them)
+        // For screen streaming or sync: always show (everyone can see)
+        return isFileStreaming ? host : true;
       }
       return true;
     });
-  }, [roomState.sourceType, host]);
+  }, [roomState.type, roomState.source, host]);
 
   const renderTabContent = (tab: Tabs) => {
     switch (tab) {

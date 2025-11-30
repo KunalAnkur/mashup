@@ -52,6 +52,17 @@ export function needsVideoCheck(url: string): boolean {
 
 export function getPlayerControlsConfig(url: string | string[] | SourceProps[] | MediaStream, host: boolean) {
     if (host) {
+        if (typeof MediaStream !== "undefined" && url instanceof MediaStream) {
+          // url is MediaStream
+          return {
+            disableControls: [ControlComponents.PLAY],
+            hideControls: [
+              ControlComponents.PLAY,
+              ControlComponents.PROGRESS,
+              ControlComponents.DURATION,
+            ],
+          };
+        }
         return {
           disableControls: [],
           hideControls: [],

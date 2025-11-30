@@ -23,7 +23,8 @@ export interface RoomCreateResponse {
   data: {
     id: string;
     user_id: string;
-    source_type: string;
+    type: "stream" | "sync";
+    source: "file" | "url" | "stream";
     room_id: string;
     url: string;
     urls: string[];
