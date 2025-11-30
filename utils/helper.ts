@@ -49,6 +49,78 @@ export function needsVideoCheck(url: string): boolean {
     
     return needsCheckPatterns.some(pattern => pattern.test(url));
 }
+// TODO: Need to work here to get good and proper stream for browser compatibility.
+/**
+ * Captures a MediaStream from a video element using canvas fallback (for Firefox compatibility)
+ * @param videoElement - The HTML video element to capture from
+ * @returns MediaStream with video and audio tracks, or null if capture fails
+ */
+export function captureStreamFromVideo(videoElement: HTMLVideoElement): MediaStream | null {
+    try {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth || 1920;
+        canvas.height = videoElement.videoHeight || 1080;
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+            console.error("captureStreamFromVideo: Could not get 2d context from canvas");
+            return null;
+        }
+        
+        // Capture video frame to canvas
+        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        
+        // Get video stream from canvas (supported in Firefox)
+        const canvasStream = canvas.captureStream(30); // 30 FPS
+        
+        // Set up continuous frame capture using requestAnimationFrame
+        let animationFrameId: number;
+        const captureFrame = () => {
+            if (videoElement.readyState >= 2 && !videoElement.paused) { // HAVE_CURRENT_DATA or higher
+                ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            }
+            animationFrameId = requestAnimationFrame(captureFrame);
+        };
+        captureFrame();
+        
+        // Try to capture audio from video element using AudioContext (Firefox)
+        // Note: createMediaElementSource disconnects the video from its default audio output,
+        // so we need to reconnect it to the destination to maintain audio playback
+        try {
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const source = audioContext.createMediaElementSource(videoElement);
+            const destination = audioContext.createMediaStreamDestination();
+            
+            // Connect source to destination (for streaming) AND to audioContext.destination (for playback)
+            source.connect(destination);
+            source.connect(audioContext.destination); // Reconnect for playback
+            
+            // Combine canvas video stream with audio stream
+            const audioTracks = destination.stream.getAudioTracks();
+            audioTracks.forEach(track => {
+                canvasStream.addTrack(track);
+            });
+            
+            console.log("captureStreamFromVideo: Using canvas.captureStream() + AudioContext for Firefox (with audio)");
+        } catch (audioError) {
+            console.warn("captureStreamFromVideo: Could not capture audio, video only:", audioError);
+            console.log("captureStreamFromVideo: Using canvas.captureStream() fallback for Firefox (video only)");
+        }
+        
+        // Store cleanup function and canvas reference for cleanup
+        (canvasStream as any)._cleanup = () => {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        };
+        (canvasStream as any)._canvas = canvas; // Keep canvas reference to prevent GC
+        
+        return canvasStream;
+    } catch (error) {
+        console.error("captureStreamFromVideo: Canvas fallback failed:", error);
+        return null;
+    }
+}
 
 export function getPlayerControlsConfig(url: string | string[] | SourceProps[] | MediaStream, host: boolean) {
     if (host) {
