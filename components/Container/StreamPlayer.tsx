@@ -132,35 +132,10 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         // Store reference to video element for frame capture
         videoElementRef.current = videoElement;
         
-        // Try captureStream (Chrome/Edge/Safari)
-        let stream: MediaStream | null = null;
-        if (videoElement.captureStream) {
-            try {
-                stream = videoElement.captureStream();
-                console.log("StreamPlayer - getStream (file): Using captureStream()");
-            } catch (error) {
-                console.warn("StreamPlayer - getStream (file): captureStream() failed:", error);
-            }
-        }
-        
-        // Fallback for Firefox: use mozCaptureStream (older Firefox) or canvas-based approach
+        // Use helper function which tries native methods first (captureStream, mozCaptureStream), then canvas fallback
+        const stream = helper.captureStreamFromVideo(videoElement);
         if (!stream) {
-            if (videoElement.mozCaptureStream) {
-                try {
-                    stream = videoElement.mozCaptureStream();
-                    console.log("StreamPlayer - getStream (file): Using mozCaptureStream()");
-                } catch (error) {
-                    console.warn("StreamPlayer - getStream (file): mozCaptureStream() failed:", error);
-                }
-            }
-        }
-        
-        // Final fallback: Use canvas to capture video frames (works in Firefox)
-        if (!stream) {
-            stream = helper.captureStreamFromVideo(videoElement);
-            if (stream) {
-                console.log("StreamPlayer - getStream (file): Using canvas fallback for Firefox");
-            }
+            console.error("StreamPlayer - getStream (file): All capture methods failed");
         }
         
         if (!stream) {

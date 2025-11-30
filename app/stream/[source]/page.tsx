@@ -9,6 +9,7 @@ import { RootState } from "@/lib/store";
 import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
 import { setRefers } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
+import { helper } from "@/utils";
 
 const PlatformStreamPage = () => {
   const router = useRouter();
@@ -205,97 +206,15 @@ const PlatformStreamPage = () => {
         setMediaStream(null);
       }
 
-      // Request screen share
-      // Note: Some browsers may still return video tracks even with video: false
-      // We'll handle this by stopping video tracks after getting the stream
-      const constraints: any = {
-        video: currentAudioOnly ? false : {
-          width: { ideal: 854, max: 854 },
-          height: { ideal: 480, max: 480 },
-          frameRate: { ideal: 30, max: 30 },
-        },
-        audio: {
-          // Maximum audio quality settings for audio-only mode
-          // Disable processing for raw, unprocessed audio (best quality)
-          echoCancellation: false, // Disable echo cancellation to preserve full audio quality
-          noiseSuppression: false, // Disable noise suppression to preserve full audio quality
-          autoGainControl: false, // Disable auto gain control to preserve full audio quality
-          // Note: getDisplayMedia doesn't support sampleRate/channelCount in constraints
-          // These will be applied via applyConstraints after getting the stream
-          // Chrome-specific constraints (may not work in all browsers)
-          googEchoCancellation: false,
-          googNoiseSuppression: false,
-          googAutoGainControl: false,
-          googHighpassFilter: false,
-          googTypingNoiseDetection: false,
-          googAudioMirroring: false,
-        }
-      };
+      // Use the cross-browser helper function to capture tab stream
+      const mediaStream = await helper.captureTabStream({
+        audioOnly: currentAudioOnly,
+        preferredDisplaySurface: 'tab'
+      });
 
-      // Try to add displaySurface constraint if supported (only for video)
-      if (!currentAudioOnly && 'getDisplayMedia' in navigator.mediaDevices) {
-        // Some browsers support displaySurface in constraints
-        try {
-          constraints.video.displaySurface = 'tab';
-        } catch (e) {
-          // Ignore if not supported
-        }
-      }
-
-      const mediaStream = await navigator.mediaDevices.getDisplayMedia(constraints);
-
-      // If audio-only mode, stop and remove all video tracks and optimize audio
-      if (currentAudioOnly) {
-        console.log("Audio only mode - stopping video tracks and optimizing audio quality");
-        const videoTracks = mediaStream.getVideoTracks();
-        videoTracks.forEach(track => {
-          track.stop(); // Stop the track
-          mediaStream.removeTrack(track); // Remove from stream
-        });
-        
-        // Optimize audio tracks for maximum quality
-        const audioTracks = mediaStream.getAudioTracks();
-        audioTracks.forEach(track => {
-          // Try to apply high-quality audio settings
-          const settings = track.getSettings();
-          console.log("Audio track settings before optimization:", settings);
-          
-          // Apply constraints for maximum quality (unprocessed, raw audio)
-          // Note: Some constraints may not be supported by getDisplayMedia tracks
-          // We'll try to apply what we can, and gracefully handle failures
-          const constraintsToApply: any = {
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: false,
-          };
-          
-          // Try to apply sampleRate and channelCount if supported
-          // These may not be supported by all browsers/tracks from getDisplayMedia
-          // We'll attempt them but won't fail if they're not supported
-          track.applyConstraints(constraintsToApply).then(() => {
-            console.log("Audio quality optimized - basic settings applied successfully");
-            
-            // Try to apply sampleRate and channelCount separately (may not be supported)
-            const advancedConstraints: any = {};
-            try {
-              advancedConstraints.sampleRate = 48000;
-              advancedConstraints.channelCount = 2;
-              return track.applyConstraints(advancedConstraints);
-            } catch (e) {
-              // These may not be supported, that's okay
-              console.log("Advanced audio constraints (sampleRate/channelCount) not supported");
-              return Promise.resolve();
-            }
-          }).then(() => {
-            const newSettings = track.getSettings();
-            console.log("Audio track settings after optimization:", newSettings);
-          }).catch(err => {
-            console.warn("Could not apply all audio quality settings:", err);
-            // Some browsers may not support all settings, that's okay
-          });
-        });
-        
-        console.log("Audio only mode - video tracks removed, audio tracks optimized:", audioTracks.length);
+      if (!mediaStream) {
+        // User cancelled or capture failed - silently handle
+        return;
       }
 
       setStream(mediaStream);
