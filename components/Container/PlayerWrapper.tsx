@@ -1,8 +1,8 @@
 "use client";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import UrlSyncPlayer from "./SyncPlayer";
-import FileStreamPlayer from "./FileStreamPlayer";
+import SyncPlayer from "./SyncPlayer";
+import StreamPlayer from "./StreamPlayer";
 
 type PlayerWrapperProps = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -11,14 +11,14 @@ type PlayerWrapperProps = {
 const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     const roomState = useSelector((state: RootState) => state.room);
 
-    // FileStreamPlayer handles streaming (both file and screen sharing)
-    // UrlSyncPlayer handles sync (URL-based playback sync)
+    // StreamPlayer handles streaming (both file and screen sharing)
+    // SyncPlayer handles sync (URL-based playback sync)
     if (roomState.type === "stream") {
-        return <FileStreamPlayer fullscreenTargetRef={fullscreenTargetRef} />;
+        return <StreamPlayer fullscreenTargetRef={fullscreenTargetRef} />;
     }
 
-    // type === "sync" uses UrlSyncPlayer
-    return <UrlSyncPlayer fullscreenTargetRef={fullscreenTargetRef} />;
+    // type === "sync" uses SyncPlayer
+    return <SyncPlayer fullscreenTargetRef={fullscreenTargetRef} />;
 };
 
 export default PlayerWrapper;

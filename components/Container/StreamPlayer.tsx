@@ -14,7 +14,7 @@ type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
 };
 
-const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
+const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
     const authState = useSelector((state: RootState) => state.auth);
     const { files } = useFileContext();
@@ -66,7 +66,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
             const endedAudioTracks = audioTracks.filter(t => t.readyState === 'ended');
             
             if (endedVideoTracks.length > 0 || endedAudioTracks.length > 0) {
-                console.warn("FileStreamPlayer - getStream (screen): Some tracks have ended:", {
+                console.warn("StreamPlayer - getStream (screen): Some tracks have ended:", {
                     endedVideo: endedVideoTracks.length,
                     endedAudio: endedAudioTracks.length,
                     totalVideo: videoTracks.length,
@@ -74,7 +74,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 });
                 // Don't return stream if all tracks are ended
                 if (videoTracks.length === endedVideoTracks.length && audioTracks.length === endedAudioTracks.length) {
-                    console.error("FileStreamPlayer - getStream (screen): All tracks have ended, cannot produce");
+                    console.error("StreamPlayer - getStream (screen): All tracks have ended, cannot produce");
                     return null;
                 }
             }
@@ -91,7 +91,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 }
             });
             
-            console.log("FileStreamPlayer - getStream (screen): screen stream with tracks:", {
+            console.log("StreamPlayer - getStream (screen): screen stream with tracks:", {
                 streamId: screenStream.id,
                 video: videoTracks.length,
                 audio: audioTracks.length,
@@ -117,16 +117,16 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         
         // File streaming: capture stream from video element
         if (!playerRef.current) {
-            console.log("FileStreamPlayer - getStream (file): no playerRef");
+            console.log("StreamPlayer - getStream (file): no playerRef");
             return null;
         }
         const videoElement = playerRef.current.getInternalPlayer() as (HTMLVideoElement & { captureStream?: () => MediaStream });
         if (!videoElement) {
-            console.log("FileStreamPlayer - getStream (file): no videoElement");
+            console.log("StreamPlayer - getStream (file): no videoElement");
             return null;
         }
         if (!videoElement.captureStream) {
-            console.log("FileStreamPlayer - getStream (file): captureStream not supported");
+            console.log("StreamPlayer - getStream (file): captureStream not supported");
             return null;
         }
         
@@ -137,7 +137,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
         const videoTracks = stream.getVideoTracks();
         const hasVideo = videoTracks.length > 0;
         
-        console.log("FileStreamPlayer - getStream (file): captured stream with tracks:", {
+        console.log("StreamPlayer - getStream (file): captured stream with tracks:", {
             video: videoTracks.length,
             audio: stream.getAudioTracks().length,
             hasVideo
@@ -411,7 +411,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                             audioTracks.some(t => t.readyState === 'live');
                         
                         if (hasActiveTracks) {
-                            console.log('FileStreamPlayer - Joining room (screen share):', { 
+                            console.log('StreamPlayer - Joining room (screen share):', { 
                                 streamId: screenStream.id,
                                 videoTracks: videoTracks.length,
                                 audioTracks: audioTracks.length
@@ -420,15 +420,15 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                             hasJoinedRef.current = true;
                             isChangingVideoRef.current = false;
                         } else {
-                            console.log('FileStreamPlayer - Waiting for active screen stream tracks...');
+                            console.log('StreamPlayer - Waiting for active screen stream tracks...');
                         }
                     } else {
-                        console.log('FileStreamPlayer - Waiting for screen stream...');
+                        console.log('StreamPlayer - Waiting for screen stream...');
                     }
                 } else {
                     // For file streaming: join when first video is ready
                     if (videoReady) {
-                        console.log('FileStreamPlayer - Joining room (file):', { videoReady });
+                        console.log('StreamPlayer - Joining room (file):', { videoReady });
                         joinRoom(roomState.roomId, roomState.host, authState.user?.username!);
                         hasJoinedRef.current = true;
                         isChangingVideoRef.current = false;
@@ -436,7 +436,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 }
             } else if (!roomState.host && !hasJoinedRef.current) {
                 // Consumer: join immediately
-                console.log('FileStreamPlayer - Joining room (consumer)');
+                console.log('StreamPlayer - Joining room (consumer)');
                 joinRoom(roomState.roomId, roomState.host, authState.user?.username!);
                 hasJoinedRef.current = true;
             }
@@ -453,7 +453,7 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     // Log when source changes for debugging
     useEffect(() => {
         if (!roomState.host && remoteStream) {
-            console.log("FileStreamPlayer: Consumer source updated", {
+            console.log("StreamPlayer: Consumer source updated", {
                 streamId: remoteStream.id,
                 active: remoteStream.active,
                 videoTracks: remoteStream.getVideoTracks().length
@@ -532,4 +532,4 @@ const FileStreamPlayer = ({ fullscreenTargetRef }: Props) => {
     );
 };
 
-export default FileStreamPlayer;
+export default StreamPlayer;
