@@ -56,6 +56,8 @@ const PlatformStreamPage = () => {
   // Handle video element to show preview
   useEffect(() => {
     if (videoRef.current && stream) {
+      // Always set the stream to the video element
+      // AudioVisualizer will tap into it for audio-only mode
       videoRef.current.srcObject = stream;
     }
     return () => {
@@ -71,6 +73,51 @@ const PlatformStreamPage = () => {
       const videoTracks = stream.getVideoTracks();
       const audioTracks = stream.getAudioTracks();
       
+      // For audio-only mode, only check audio tracks (video tracks should be removed)
+      if (audioOnly) {
+        const hasAudio = audioTracks.length > 0;
+        const hasVideo = videoTracks.length > 0;
+        
+        // If video tracks still exist, remove them
+        if (hasVideo) {
+          console.log("Audio only mode - removing remaining video tracks");
+          videoTracks.forEach(track => {
+            track.stop();
+            stream.removeTrack(track);
+          });
+        }
+        
+        if (hasAudio) {
+          setIsTabSelected(true);
+          setShowWarning(false);
+          setIsStreamReady(true);
+        } else {
+          setIsTabSelected(false);
+          setShowWarning(true);
+          setIsStreamReady(false);
+        }
+        
+        // Only listen to audio track ended events in audio-only mode
+        const handleTrackEnded = () => {
+          setStream(null);
+          setMediaStream(null);
+          setIsStreamReady(false);
+          setIsTabSelected(false);
+          setShowWarning(false);
+        };
+
+        audioTracks.forEach(track => {
+          track.addEventListener('ended', handleTrackEnded);
+        });
+
+        return () => {
+          audioTracks.forEach(track => {
+            track.removeEventListener('ended', handleTrackEnded);
+          });
+        };
+      }
+      
+      // For video mode, check both video and audio
       // Check if it's a tab
       // displaySurface may not be available in all browsers, so we check audio as primary indicator
       const hasAudio = audioTracks.length > 0;
@@ -138,7 +185,7 @@ const PlatformStreamPage = () => {
       setIsTabSelected(false);
       setShowWarning(false);
     }
-  }, [stream]);
+  }, [stream, audioOnly, setMediaStream]);
 
   const handleOpenPlatform = () => {
     if (platform) {
@@ -146,22 +193,47 @@ const PlatformStreamPage = () => {
     }
   };
 
-  const handleShareScreen = useCallback(async () => {
+  const handleShareScreen = useCallback(async (overrideAudioOnly?: boolean) => {
     try {
+      // Use overrideAudioOnly if provided, otherwise use current audioOnly state
+      const currentAudioOnly = overrideAudioOnly !== undefined ? overrideAudioOnly : audioOnly;
+      
+      // Stop existing stream if any
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        setStream(null);
+        setMediaStream(null);
+      }
+
       // Request screen share
-      // Note: displaySurface constraint may not be supported in all browsers
-      // The user will need to manually select "Share tab" in the browser dialog
+      // Note: Some browsers may still return video tracks even with video: false
+      // We'll handle this by stopping video tracks after getting the stream
       const constraints: any = {
-        video: {
+        video: currentAudioOnly ? false : {
           width: { ideal: 854, max: 854 },
           height: { ideal: 480, max: 480 },
           frameRate: { ideal: 30, max: 30 },
         },
-        audio: !audioOnly, // Include audio unless audio-only mode
+        audio: {
+          // Maximum audio quality settings for audio-only mode
+          // Disable processing for raw, unprocessed audio (best quality)
+          echoCancellation: false, // Disable echo cancellation to preserve full audio quality
+          noiseSuppression: false, // Disable noise suppression to preserve full audio quality
+          autoGainControl: false, // Disable auto gain control to preserve full audio quality
+          // Note: getDisplayMedia doesn't support sampleRate/channelCount in constraints
+          // These will be applied via applyConstraints after getting the stream
+          // Chrome-specific constraints (may not work in all browsers)
+          googEchoCancellation: false,
+          googNoiseSuppression: false,
+          googAutoGainControl: false,
+          googHighpassFilter: false,
+          googTypingNoiseDetection: false,
+          googAudioMirroring: false,
+        }
       };
 
-      // Try to add displaySurface constraint if supported
-      if ('getDisplayMedia' in navigator.mediaDevices) {
+      // Try to add displaySurface constraint if supported (only for video)
+      if (!currentAudioOnly && 'getDisplayMedia' in navigator.mediaDevices) {
         // Some browsers support displaySurface in constraints
         try {
           constraints.video.displaySurface = 'tab';
@@ -172,15 +244,79 @@ const PlatformStreamPage = () => {
 
       const mediaStream = await navigator.mediaDevices.getDisplayMedia(constraints);
 
+      // If audio-only mode, stop and remove all video tracks and optimize audio
+      if (currentAudioOnly) {
+        console.log("Audio only mode - stopping video tracks and optimizing audio quality");
+        const videoTracks = mediaStream.getVideoTracks();
+        videoTracks.forEach(track => {
+          track.stop(); // Stop the track
+          mediaStream.removeTrack(track); // Remove from stream
+        });
+        
+        // Optimize audio tracks for maximum quality
+        const audioTracks = mediaStream.getAudioTracks();
+        audioTracks.forEach(track => {
+          // Try to apply high-quality audio settings
+          const settings = track.getSettings();
+          console.log("Audio track settings before optimization:", settings);
+          
+          // Apply constraints for maximum quality (unprocessed, raw audio)
+          // Note: Some constraints may not be supported by getDisplayMedia tracks
+          // We'll try to apply what we can, and gracefully handle failures
+          const constraintsToApply: any = {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+          };
+          
+          // Try to apply sampleRate and channelCount if supported
+          // These may not be supported by all browsers/tracks from getDisplayMedia
+          // We'll attempt them but won't fail if they're not supported
+          track.applyConstraints(constraintsToApply).then(() => {
+            console.log("Audio quality optimized - basic settings applied successfully");
+            
+            // Try to apply sampleRate and channelCount separately (may not be supported)
+            const advancedConstraints: any = {};
+            try {
+              advancedConstraints.sampleRate = 48000;
+              advancedConstraints.channelCount = 2;
+              return track.applyConstraints(advancedConstraints);
+            } catch (e) {
+              // These may not be supported, that's okay
+              console.log("Advanced audio constraints (sampleRate/channelCount) not supported");
+              return Promise.resolve();
+            }
+          }).then(() => {
+            const newSettings = track.getSettings();
+            console.log("Audio track settings after optimization:", newSettings);
+          }).catch(err => {
+            console.warn("Could not apply all audio quality settings:", err);
+            // Some browsers may not support all settings, that's okay
+          });
+        });
+        
+        console.log("Audio only mode - video tracks removed, audio tracks optimized:", audioTracks.length);
+      }
+
       setStream(mediaStream);
       // Store in MediaStreamContext for use in room (MediaStream cannot be in Redux)
       setMediaStream(mediaStream);
     } catch (err: any) {
-      if (err.name !== 'NotAllowedError' && err.name !== 'AbortError') {
-        alert("Screen sharing was cancelled or failed. Please try again.");
+      // Only show alert for unexpected errors, not user cancellations
+      if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
+        // User cancelled or permission denied - silently handle
+        console.log("Screen sharing cancelled or permission denied");
+        return;
+      }
+      
+      // For other errors, log but don't show alert (less intrusive)
+      console.error("Screen sharing error:", err);
+      // Only show alert for truly unexpected errors
+      if (err.name !== 'NotFoundError' && err.name !== 'NotReadableError') {
+        alert("Screen sharing failed. Please try again.");
       }
     }
-  }, [audioOnly, setMediaStream]);
+  }, [audioOnly, setMediaStream, stream]);
 
   const handleStartStreaming = async () => {
     if (!isStreamReady || !stream) return;
@@ -263,24 +399,81 @@ const PlatformStreamPage = () => {
       icon: <FaShare className="text-2xl" />,
       action: (
         <div className="mt-4 space-y-3">
-          {/* Audio-only toggle */}
-          <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={audioOnly}
-                onChange={(e) => setAudioOnly(e.target.checked)}
-                className="w-4 h-4 rounded accent-fuchsia-500"
-              />
-              <span className="text-sm text-gray-300 flex items-center gap-2">
-                {audioOnly ? <FaVolumeMute /> : <FaVolumeUp />}
-                Audio only
-              </span>
-            </label>
-          </div>
+          {/* Audio-only toggle - only show when stream is active */}
+          {stream && (
+            <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={audioOnly}
+                  onChange={(e) => {
+                  const newAudioOnly = e.target.checked;
+                  
+                  // Update the audioOnly state first
+                  setAudioOnly(newAudioOnly);
+                  
+                  // If stream exists, modify it based on the new setting
+                  if (stream) {
+                    if (newAudioOnly) {
+                      // Enabling audio-only: remove video tracks from existing stream
+                      const videoTracks = stream.getVideoTracks();
+                      const audioTracks = stream.getAudioTracks();
+                      
+                      if (videoTracks.length > 0) {
+                        // Create a new stream with only audio tracks to trigger re-render
+                        const audioOnlyStream = new MediaStream(audioTracks);
+                        
+                        // Stop and remove video tracks from original stream
+                        videoTracks.forEach(track => {
+                          track.stop();
+                          stream.removeTrack(track);
+                        });
+                        
+                        console.log("Audio-only enabled: video tracks removed, audio-only stream created");
+                        
+                        // Update both stream states with the new audio-only stream
+                        setStream(audioOnlyStream);
+                        setMediaStream(audioOnlyStream);
+                        // Validation will run automatically via useEffect
+                      } else {
+                        // Already audio-only, just update context
+                        setMediaStream(stream);
+                      }
+                    } else {
+                      // Disabling audio-only: can't add video tracks back, need to re-capture
+                      // Re-capture the stream with video enabled
+                      const currentStream = stream;
+                      currentStream.getTracks().forEach(track => track.stop());
+                      setStream(null);
+                      setMediaStream(null);
+                      setIsStreamReady(false);
+                      setIsTabSelected(false);
+                      setShowWarning(false);
+                      
+                      // Wait a bit then re-capture with video
+                      setTimeout(async () => {
+                        try {
+                          await handleShareScreen(false); // false = not audio-only, so video will be requested
+                        } catch (error) {
+                          console.error("Error re-capturing stream with video:", error);
+                          // If user cancels, that's okay - they can manually click share again
+                        }
+                      }, 300);
+                    }
+                  }
+                }}
+                  className="w-4 h-4 rounded accent-fuchsia-500"
+                />
+                <span className="text-sm text-gray-300 flex items-center gap-2">
+                  {audioOnly ? <FaVolumeMute /> : <FaVolumeUp />}
+                  Audio only
+                </span>
+              </label>
+            </div>
+          )}
           
           <button
-            onClick={handleShareScreen}
+            onClick={() => handleShareScreen()}
             disabled={!!stream}
             className={`w-full px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg text-white ${
               stream
@@ -364,19 +557,46 @@ const PlatformStreamPage = () => {
           {/* Stream Preview */}
           {stream && (
             <div className="mb-8 rounded-2xl overflow-hidden bg-black border border-white/10">
-              <div className="relative aspect-video">
+              <div className={`relative ${audioOnly ? 'aspect-square' : 'aspect-video'}`}>
+                {/* Video element - always present (hidden in audio-only mode) to play audio */}
                 <video
                   ref={videoRef}
                   autoPlay
-                  muted
+                  muted={true}
                   playsInline
-                  className="w-full h-full object-contain"
+                  className={audioOnly ? "hidden" : "w-full h-full object-contain"}
                 />
+                {audioOnly && (
+                  // Audio-only visualizer overlay
+                  <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-fuchsia-900/20 to-pink-900/20">
+                    <div className="mb-4">
+                      <FaVolumeUp className="text-6xl text-fuchsia-400/60" />
+                    </div>
+                    <div className="text-fuchsia-300 font-semibold text-lg mb-2">Audio Only Mode</div>
+                    <div className="text-gray-400 text-sm">Streaming audio from {platform.name}</div>
+                    {/* Audio waveform visualization */}
+                    <div className="flex items-end gap-1.5 mt-6 h-16">
+                      {Array.from({ length: 20 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-2 bg-fuchsia-500 rounded-full animate-pulse"
+                          style={{
+                            height: `${Math.random() * 60 + 20}%`,
+                            animationDelay: `${i * 0.1}s`,
+                            animationDuration: `${0.5 + Math.random() * 0.5}s`
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {isStreamReady && (
                   <div className="absolute top-4 right-4 px-3 py-1.5 bg-green-500/20 border border-green-500/50 rounded-lg backdrop-blur-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-green-400 text-xs font-semibold">Stream Ready</span>
+                      <span className="text-green-400 text-xs font-semibold">
+                        {audioOnly ? 'Audio Stream Ready' : 'Stream Ready'}
+                      </span>
                     </div>
                   </div>
                 )}
