@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import * as constants from "@/constants/assets";
-
 interface AudioVisualizerProps {
     playing: boolean;
     muted: boolean;
@@ -524,12 +523,23 @@ const AudioVisualizer = ({ playing, muted, playerRef }: AudioVisualizerProps) =>
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0">
-                <Image
+                {/* <Image
                     src={backgroundImageUrl}
                     alt="Background"
                     fill
                     className="object-cover"
                     priority
+                    style={{
+                        filter: 'brightness(0.75) contrast(1.05) saturate(0.9)'
+                    }}
+                /> */}
+                <video
+                    src="https://raw.githubusercontent.com/KunalAnkur/assets/refs/heads/main/270983_medium.mp4"
+                    autoPlay
+                    loop
+                    playsInline
+                    muted
+                    className="object-cover w-full h-full"
                     style={{
                         filter: 'brightness(0.75) contrast(1.05) saturate(0.9)'
                     }}
