@@ -306,20 +306,105 @@ const ChatTab = () => {
             // Remove "Unknown User" prefix if it exists
             displayName = displayName.replace(/^Unknown User\s+/i, "");
 
+            // Check if it's a join/leave message or a host control message
+            const isJoinLeaveMessage =
+              msg.message.includes("joined") || msg.message.includes("left");
+            const isHostControlMessage =
+              msg.message.includes("started") ||
+              msg.message.includes("paused") ||
+              msg.message.includes("seeked");
+
+            // For host control messages, replace host's username with "YOU" if it's the current user
+            let displayMessage = msg.message;
+            if (isHostControlMessage && user) {
+              // Get the first word from the message (which should be the username)
+              const messageWords = displayMessage.split(" ");
+              const firstWord = messageWords[0] || "";
+
+              // Get all possible variations of current user's identifiers (normalized to lowercase)
+              const currentUserName = (user.name || user.username || "")
+                .trim()
+                .toLowerCase();
+              const currentUserEmail = (user.email || "").trim().toLowerCase();
+              const emailUsername = currentUserEmail
+                ? currentUserEmail.split("@")[0].toLowerCase()
+                : "";
+              const messageUserName = (msg.userName || "").trim().toLowerCase();
+              const messageUserEmail = (msg.userEmail || "")
+                .trim()
+                .toLowerCase();
+              const messageEmailUsername = messageUserEmail
+                ? messageUserEmail.split("@")[0].toLowerCase()
+                : "";
+
+              // Normalize first word for comparison
+              const firstWordLower = firstWord.toLowerCase();
+
+              // Check if the first word matches ANY of the current user's identifiers
+              // This catches: name, username, email, email username, or message userName/email
+              const matchesName =
+                currentUserName &&
+                (firstWordLower === currentUserName ||
+                  messageUserName === currentUserName ||
+                  messageEmailUsername === currentUserName);
+
+              const matchesEmail =
+                emailUsername &&
+                (firstWordLower === emailUsername ||
+                  messageUserName === emailUsername ||
+                  messageEmailUsername === emailUsername);
+
+              const matchesFullEmail =
+                currentUserEmail &&
+                messageUserEmail &&
+                currentUserEmail === messageUserEmail;
+
+              // Also use the isCurrentUser check as a fallback
+              const isFromCurrentUser =
+                matchesName ||
+                matchesEmail ||
+                matchesFullEmail ||
+                isCurrentUser;
+
+              // If it's from current user, replace first word with "YOU"
+              if (isFromCurrentUser) {
+                messageWords[0] = "YOU";
+                displayMessage = messageWords.join(" ");
+              }
+            }
+
             return (
               <div key={msg.id || i} className="flex justify-center py-2">
                 <div className="bg-white/5 rounded-full px-4 py-1.5">
                   <span className="text-gray-400 text-xs">
-                    <span
-                      className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
-                    >
-                      {displayName}
-                    </span>{" "}
-                    {msg.message.includes("joined")
-                      ? "joined the chat"
-                      : msg.message.includes("left")
-                      ? "left the chat"
-                      : ""}
+                    {isJoinLeaveMessage ? (
+                      // Join/Leave messages: show username + action
+                      <>
+                        <span
+                          className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
+                        >
+                          {displayName}
+                        </span>{" "}
+                        {msg.message.includes("joined")
+                          ? "joined the chat"
+                          : msg.message.includes("left")
+                          ? "left the chat"
+                          : ""}
+                      </>
+                    ) : isHostControlMessage ? (
+                      // Host control messages: show full message (with "YOU" if current user)
+                      <span className="text-gray-400">{displayMessage}</span>
+                    ) : (
+                      // Fallback: show username + message
+                      <>
+                        <span
+                          className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
+                        >
+                          {displayName}
+                        </span>{" "}
+                        {msg.message}
+                      </>
+                    )}
                   </span>
                 </div>
               </div>

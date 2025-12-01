@@ -10,8 +10,9 @@ import { FiChevronsLeft } from "react-icons/fi";
 import { FiChevronsRight } from "react-icons/fi";
 import { FaPaperPlane } from "react-icons/fa";
 import { RootState } from "@/lib/store";
-import { ChatMessage } from "@/types/chatTypes";
+import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import OverlayMessageBubble from "./OverlayMessageBubble";
+import AnimatedReaction from "../Panel/AnimatedReaction";
 
 const PlayerOverlay = () => {
   const dispatch = useDispatch();
@@ -21,7 +22,7 @@ const PlayerOverlay = () => {
   const user = useSelector((state: RootState) => state.auth.user);
 
   // Get chat context
-  const { messages, isJoined, sendMessage } = useChatContext();
+  const { messages, isJoined, sendMessage, sendReaction } = useChatContext();
 
   // Track displayed messages to avoid showing old messages
   const [displayedMessageIds, setDisplayedMessageIds] = useState<Set<string>>(
@@ -34,6 +35,7 @@ const PlayerOverlay = () => {
   const [overlayMessages, setOverlayMessages] = useState<ChatMessage[]>([]);
   const [isAnyMessageHovered, setIsAnyMessageHovered] = useState(false);
   const [isInputHovered, setIsInputHovered] = useState(false);
+  const [isReactionsHovered, setIsReactionsHovered] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const mountedRef = useRef(false);
@@ -41,6 +43,29 @@ const PlayerOverlay = () => {
   const hideInputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // Track timeouts for auto-dismissing messages after 60 seconds
   const messageTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Default reactions
+  const DEFAULT_REACTIONS: ReactionType[] = [
+    "😍",
+    "😡",
+    "😭",
+    "😂",
+    "🤯",
+    "🔥",
+  ];
+
+  // Load pinned reactions from localStorage or use defaults
+  const [pinnedReactions] = useState<ReactionType[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("pinnedReactions");
+      return saved ? JSON.parse(saved) : DEFAULT_REACTIONS;
+    }
+    return DEFAULT_REACTIONS;
+  });
+
+  // Track which reaction was just clicked for animation
+  const [animatingReaction, setAnimatingReaction] =
+    useState<ReactionType | null>(null);
 
   // Initialize: mark all existing messages as "seen" when component mounts
   useEffect(() => {
@@ -138,16 +163,16 @@ const PlayerOverlay = () => {
     }
 
     if (hovered) {
-      // Show input immediately when hovering message
+      // Show input and reactions immediately when hovering message
       setIsAnyMessageHovered(true);
       if (inputRef.current) {
         setTimeout(() => inputRef.current?.focus(), 100);
       }
     } else {
-      // Delay hiding input to give user time to move cursor to input
+      // Delay hiding input/reactions to give user time to move cursor
       hideInputTimeoutRef.current = setTimeout(() => {
-        // Only hide if input is not being hovered
-        if (!isInputHovered) {
+        // Only hide if input and reactions are not being hovered
+        if (!isInputHovered && !isReactionsHovered) {
           setIsAnyMessageHovered(false);
         }
         hideInputTimeoutRef.current = null;
@@ -264,10 +289,61 @@ const PlayerOverlay = () => {
         </div>
       )}
 
+      {/* Reactions - Shows above input when any message is hovered - Only show when panel is closed */}
+      {panelCollapsed && (
+        <AnimatePresence>
+          {(isAnyMessageHovered || isInputHovered || isReactionsHovered) &&
+            overlayMessages.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                onMouseEnter={() => {
+                  setIsReactionsHovered(true);
+                  // Clear hide timeout when hovering reactions
+                  if (hideInputTimeoutRef.current) {
+                    clearTimeout(hideInputTimeoutRef.current);
+                    hideInputTimeoutRef.current = null;
+                  }
+                }}
+                onMouseLeave={() => {
+                  setIsReactionsHovered(false);
+                  // If no message is hovered, hide reactions after delay
+                  if (!isAnyMessageHovered && !isInputHovered) {
+                    hideInputTimeoutRef.current = setTimeout(() => {
+                      setIsAnyMessageHovered(false);
+                      hideInputTimeoutRef.current = null;
+                    }, 300);
+                  }
+                }}
+                className="z-30 absolute bottom-28 right-4 flex items-center justify-center gap-2 pointer-events-auto backdrop-blur-md bg-black/60 border border-white/20 rounded-full px-3 py-2"
+              >
+                {pinnedReactions.map((emoji) => (
+                  <AnimatedReaction
+                    key={emoji}
+                    emoji={emoji}
+                    isAnimating={animatingReaction === emoji}
+                    disabled={!isJoined}
+                    onClick={() => {
+                      setAnimatingReaction(emoji);
+                      sendReaction(emoji);
+                      // Reset animation after it completes
+                      setTimeout(() => {
+                        setAnimatingReaction(null);
+                      }, 600);
+                    }}
+                  />
+                ))}
+              </motion.div>
+            )}
+        </AnimatePresence>
+      )}
+
       {/* Single Reply Input at Bottom - Shows when any message is hovered OR input is hovered - Only show when panel is closed */}
       {panelCollapsed && (
         <AnimatePresence>
-          {(isAnyMessageHovered || isInputHovered) &&
+          {(isAnyMessageHovered || isInputHovered || isReactionsHovered) &&
             overlayMessages.length > 0 && (
               <motion.form
                 initial={{ opacity: 0, y: 10 }}
@@ -286,7 +362,7 @@ const PlayerOverlay = () => {
                 onMouseLeave={() => {
                   setIsInputHovered(false);
                   // If no message is hovered, hide input after delay
-                  if (!isAnyMessageHovered) {
+                  if (!isAnyMessageHovered && !isReactionsHovered) {
                     hideInputTimeoutRef.current = setTimeout(() => {
                       setIsAnyMessageHovered(false);
                       hideInputTimeoutRef.current = null;
