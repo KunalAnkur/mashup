@@ -26,27 +26,40 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
   const [isJoined, setIsJoined] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Refs to track typing timeout
+  // Refs to track typing timeout and join attempts
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingEmitRef = useRef<number>(0);
+  const joinAttemptedRef = useRef<boolean>(false);
+  const currentRoomRef = useRef<string | null>(null);
 
   /**
    * Join a chat room
-   * This is called automatically when roomId is available
+   * ✅ CRITICAL: This should be called AFTER the global socket has joined the room
    */
   const joinChatRoom = useCallback(
     async (roomIdToJoin: string) => {
       if (!socket || !user || !roomIdToJoin) {
+        console.log("Cannot join chat: missing socket, user, or roomId");
+        return;
+      }
+
+      // Prevent duplicate joins for the same room
+      if (currentRoomRef.current === roomIdToJoin && isJoined) {
+        console.log("Already joined this room, skipping");
         return;
       }
 
       try {
         setIsLoading(true);
+        console.log("Attempting to join chat room:", roomIdToJoin);
 
-        // Emit join event with acknowledgment, including user info
+        // ✅ Add a delay to ensure global socket has joined first
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        // Emit join event with acknowledgment
         const response = await socket.emitWithAck(SocketEvent.JOIN_CHAT_ROOM, {
           roomId: roomIdToJoin,
-          userName: user?.username || "User",
+          userName: user?.name || user?.username || "User",
           userEmail: user?.email,
           userProfile: user?.profile,
           isHost: isHost,
@@ -58,17 +71,23 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
             setMessages(response.chatHistory);
           }
           setIsJoined(true);
+          currentRoomRef.current = roomIdToJoin;
+          joinAttemptedRef.current = true;
           console.log("Successfully joined chat room:", roomIdToJoin);
         } else {
           console.error("Failed to join chat room:", response?.error);
+          setIsJoined(false);
+          currentRoomRef.current = null;
         }
       } catch (error) {
         console.error("Error joining chat room:", error);
+        setIsJoined(false);
+        currentRoomRef.current = null;
       } finally {
         setIsLoading(false);
       }
     },
-    [socket, user, isHost]
+    [socket, user, isHost, isJoined]
   );
 
   /**
@@ -81,13 +100,12 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
       }
 
       try {
-        // Emit send message event with acknowledgment, including user info
         const response = await socket.emitWithAck(
           SocketEvent.SEND_CHAT_MESSAGE,
           {
             roomId,
             message: message.trim(),
-            userName: user?.username || "User",
+            userName: user?.name || user?.username || "User",
             userEmail: user?.email,
             userProfile: user?.profile,
             isHost: isHost,
@@ -95,7 +113,6 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
         );
 
         if (response?.success) {
-          // Message will be added via RECEIVE_CHAT_MESSAGE event
           return {
             success: true,
             messageId: response.messageId,
@@ -117,13 +134,11 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
 
   /**
    * Handle user typing indicator
-   * Emits typing event and sets timeout to stop typing
    */
   const handleTyping = useCallback(() => {
     if (!socket || !roomId || !user) return;
 
     const now = Date.now();
-    // Throttle typing events (only emit every 3 seconds)
     if (now - lastTypingEmitRef.current < 3000) {
       return;
     }
@@ -131,20 +146,18 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
     lastTypingEmitRef.current = now;
     socket.emit(SocketEvent.USER_TYPING, {
       roomId,
-      userName: user?.username || "User",
+      userName: user?.name || user?.username || "User",
     });
 
-    // Clear existing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Set timeout to stop typing after 3 seconds of inactivity
     typingTimeoutRef.current = setTimeout(() => {
       if (socket && roomId) {
         socket.emit(SocketEvent.USER_STOPPED_TYPING, {
           roomId,
-          userName: user?.username || "User",
+          userName: user?.name || user?.username || "User",
         });
       }
     }, 3000);
@@ -163,7 +176,7 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
 
     socket.emit(SocketEvent.USER_STOPPED_TYPING, {
       roomId,
-      userName: user?.username || "User",
+      userName: user?.name || user?.username || "User",
     });
   }, [socket, roomId, user]);
 
@@ -196,7 +209,7 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
       socket.emit(SocketEvent.SEND_REACTION, {
         roomId,
         emoji,
-        userName: user?.username || "User",
+        userName: user?.name || user?.username || "User",
         userProfile: user?.profile,
       });
     },
@@ -207,24 +220,47 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
    * Leave chat room
    */
   const leaveChatRoom = useCallback(() => {
-    if (!socket || !roomId) return;
+    if (!socket) return;
 
+    console.log("Leaving chat room:", currentRoomRef.current);
     socket.emit(SocketEvent.LEAVE_CHAT_ROOM);
     setIsJoined(false);
     setMessages([]);
     setTypingUsers([]);
     setReactions([]);
-  }, [socket, roomId]);
+    joinAttemptedRef.current = false;
+    currentRoomRef.current = null;
+  }, [socket]);
 
-  // Auto-join chat room when roomId is available
+  // ✅ Auto-join chat room when conditions are met
   useEffect(() => {
-    if (roomId && socket && user && isConnected && !isJoined) {
+    // Only join if:
+    // 1. We have a roomId
+    // 2. Socket is connected
+    // 3. User exists
+    // 4. Not already joined to this room
+    // 5. Haven't attempted to join yet (prevents duplicate joins)
+    if (
+      roomId &&
+      socket &&
+      user &&
+      isConnected &&
+      !isJoined &&
+      !joinAttemptedRef.current &&
+      currentRoomRef.current !== roomId
+    ) {
+      console.log("Conditions met, joining chat room:", roomId);
       joinChatRoom(roomId);
     }
 
     // Cleanup on unmount or room change
     return () => {
-      if (roomId && socket && isJoined) {
+      if (
+        isJoined &&
+        currentRoomRef.current &&
+        currentRoomRef.current !== roomId
+      ) {
+        console.log("Room changed or unmounting, leaving chat");
         leaveChatRoom();
       }
     };
@@ -238,22 +274,27 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
     leaveChatRoom,
   ]);
 
+  // ✅ Reset join attempt when socket reconnects
+  useEffect(() => {
+    if (isConnected && roomId && !isJoined) {
+      console.log("Socket reconnected, resetting join attempt");
+      joinAttemptedRef.current = false;
+    }
+  }, [isConnected, roomId, isJoined]);
+
+  // ✅ Socket event listeners
   useEffect(() => {
     if (!socket) return;
 
     const handleReceiveMessage = (messageData: ChatMessage) => {
-      // Debug: Log received message to see its structure
       console.log("Received chat message:", messageData);
 
-      // Ensure message has required fields
       if (!messageData || !messageData.message) {
         console.warn("Invalid message received:", messageData);
         return;
       }
 
-      // Add message to state
       setMessages((prev) => {
-        // Check if message already exists (prevent duplicates)
         const exists = prev.some((msg) => msg.id === messageData.id);
         if (exists) return prev;
         return [...prev, messageData];
@@ -261,7 +302,6 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
     };
 
     const handleUserTyping = (data: TypingUser) => {
-      // Don't show typing indicator for current user
       if (!user || data.userId === socket.id) return;
 
       setTypingUsers((prev) => {
@@ -277,32 +317,25 @@ export const useChat = ({ roomId, isHost }: UseChatParams) => {
 
     const handleReceiveReaction = (data: { reaction: Reaction }) => {
       console.log("Received reaction:", data.reaction);
-      
-      // Add reaction to state (it will be displayed with animation)
+
       setReactions((prev) => [...prev, data.reaction]);
 
-      // Remove reaction after animation completes (e.g., 3 seconds)
       setTimeout(() => {
-        setReactions((prev) =>
-          prev.filter((r) => r.id !== data.reaction.id)
-        );
+        setReactions((prev) => prev.filter((r) => r.id !== data.reaction.id));
       }, 3000);
     };
 
-    // Register all socket event listeners
     socket.on(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
     socket.on(SocketEvent.USER_TYPING, handleUserTyping);
     socket.on(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
     socket.on(SocketEvent.RECEIVE_REACTION, handleReceiveReaction);
 
-    // Cleanup all socket event listeners and typing timeout
     return () => {
       socket.off(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
       socket.off(SocketEvent.USER_TYPING, handleUserTyping);
       socket.off(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
       socket.off(SocketEvent.RECEIVE_REACTION, handleReceiveReaction);
 
-      // Cleanup typing timeout on unmount
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }

@@ -15,11 +15,13 @@ import { AvatarDropdown } from "../UI";
 import Image from "next/image";
 import * as constants from "../../constants";
 import { LuCheck, LuLink, LuLogOut } from "react-icons/lu";
+import { useSocket } from "@/context/SocketContext";
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
-
+  const { socket: globalSocket } = useSocket("/"); // Main namespace
+  const { socket: chatSocket } = useSocket("chat");
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const roomUrl = "https://movmash.com/room/3wJz21";
   const router = useRouter();
@@ -33,8 +35,9 @@ const Panel = () => {
   // - For stream with stream source (screen): Playlist tab visible to all (shows platform being streamed)
   // - For sync: Playlist tab visible to all (everyone can see the URLs)
   const visibleTabs = useMemo(() => {
-    const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
-    
+    const isFileStreaming =
+      roomState.type === "stream" && roomState.source === "file";
+
     return Object.values(Tabs).filter((tab) => {
       if (tab === Tabs.PLAYLIST) {
         // For file streaming: only show to host (files are local, non-hosts can't see them)
@@ -65,14 +68,40 @@ const Panel = () => {
   };
 
   const handleLeaveParty = async () => {
-    const response = await inactiveMyRoomApi();
-    if (host) {
-      console.log(response);
-    } else {
+    try {
+      // 1. Call the API to inactivate the room
+      const response = await inactiveMyRoomApi();
+      if (host) {
+        console.log("Room inactivated:", response);
+      }
+
+      // 2. ✅ CRITICAL: Manually disconnect sockets BEFORE navigating away
+      // This ensures DISCONNECT events fire and "left" notifications are sent
+      if (globalSocket?.connected) {
+        console.log("Disconnecting global socket");
+        globalSocket.disconnect();
+      }
+
+      if (chatSocket?.connected) {
+        console.log("Disconnecting chat socket");
+        chatSocket.disconnect();
+      }
+
+      // 3. Clear Redux state
+      dispatch(exitRoom());
+
+      // 4. Navigate to home page (after a small delay to allow disconnect events to fire)
+      setTimeout(() => {
+        router.push("/");
+        setShowLeaveConfirm(false);
+      }, 100);
+    } catch (error) {
+      console.error("Error leaving party:", error);
+      // Still navigate even if there's an error
+      dispatch(exitRoom());
+      router.push("/");
+      setShowLeaveConfirm(false);
     }
-    dispatch(exitRoom());
-    router.push("/");
-    setShowLeaveConfirm(false);
   };
 
   const handleLeaveClick = () => {

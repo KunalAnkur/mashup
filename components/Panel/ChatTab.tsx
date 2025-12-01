@@ -239,9 +239,13 @@ const ChatTab = () => {
 
   // Check if message is from current user
   const isCurrentUserMessage = (message: ChatMessage) => {
-    // We'll compare by socket ID or user name
-    // For now, we'll use the user's name from Redux
-    return user && message.userName === user.name;
+    if (!user) return false;
+
+    // Compare against both user.name and user.username
+    const currentUserName = user.name || user.username || "";
+    const messageName = message.userName || "";
+
+    return currentUserName === messageName;
   };
 
   return (
@@ -270,7 +274,6 @@ const ChatTab = () => {
         )}
 
         {messages.map((msg, i) => {
-          // Safety check: ensure message has required fields
           if (!msg || !msg.message) {
             return null;
           }
@@ -282,15 +285,24 @@ const ChatTab = () => {
 
           // System messages (user joined/left)
           if (isSystemMessage) {
-            // Extract just the name from the message (remove " joined the chat" or " left the chat" part)
-            // If userName is available and not "Unknown User", use it; otherwise extract from message
+            // Extract username from email (part before @) for system messages
+            // This shows username instead of full name (name and surname)
             let displayName = userName;
-            if (!displayName || displayName === "Unknown User") {
+
+            // Try to extract username from email first
+            if (msg.userEmail) {
+              const emailUsername = msg.userEmail.split("@")[0];
+              if (emailUsername) {
+                displayName = emailUsername;
+              }
+            } else if (!displayName || displayName === "Unknown User") {
+              // Fallback: extract from message text
               displayName = msg.message
                 .replace(" joined the chat", "")
                 .replace(" left the chat", "")
                 .trim();
             }
+
             // Remove "Unknown User" prefix if it exists
             displayName = displayName.replace(/^Unknown User\s+/i, "");
 
@@ -316,9 +328,6 @@ const ChatTab = () => {
 
           // Regular user messages
           const onlyEmojis = isOnlyEmojis(msg.message);
-          /*  const emojiCount = onlyEmojis ? countEmojis(msg.message) : 0;
-           */
-
           const emojiSize = "text-3xl";
 
           return (
@@ -371,7 +380,6 @@ const ChatTab = () => {
                   >
                     {userName}
                   </span>
-
                   <span className="text-gray-500 text-xs">
                     {formatTime(msg.timestamp)}
                   </span>
@@ -402,7 +410,6 @@ const ChatTab = () => {
             </div>
           );
         })}
-
         {/* Typing Indicator */}
         {typingUsers.length > 0 && (
           <div className="flex items-center gap-2 px-3 py-2">
