@@ -173,7 +173,7 @@ const PlayerOverlay = () => {
     } else {
       // Delay hiding input/reactions to give user time to move cursor
       hideInputTimeoutRef.current = setTimeout(() => {
-        // Only hide if input and reactions are not being hovered
+        // Hide when message is no longer hovered (unless hovering input/reactions)
         if (!isInputHovered && !isReactionsHovered) {
           setIsAnyMessageHovered(false);
         }
@@ -252,33 +252,13 @@ const PlayerOverlay = () => {
         </div>
       </div>
 
-      {/* Bottom Controls */}
-      <div className="z-20 flex justify-end absolute bottom-0 left-0 w-full h-20 p-4">
-        <div className="flex gap-4">
-          <span
-            className="flex items-center backdrop-blur-sm gap-2 px-5 py-2.5 bg-gray-100/20 hover:bg-gray-100/40 rounded-full transition-all font-medium text-white text-sm cursor-pointer"
-            onClick={handleToggleChat}
-          >
-            <BsFillChatSquareFill className="w-4 h-4" />
-          </span>
-          <span
-            className="flex items-center backdrop-blur-sm gap-2 px-5 py-2.5 bg-gray-100/20 hover:bg-gray-100/40 rounded-full transition-all font-medium text-white text-sm cursor-pointer"
-            onClick={handleTogglePanelExpand}
-          >
-            {panelCollapsed ? (
-              <FiChevronsLeft size={20} />
-            ) : (
-              <FiChevronsRight size={20} />
-            )}
-          </span>
-        </div>
-      </div>
+      
 
       {/* Overlay Message Bubbles - Bottom Right - Only show when panel is closed */}
       {panelCollapsed && (
-        <div className="z-30 absolute bottom-36 right-4 pointer-events-none">
+        <div className="z-30 absolute bottom-44 right-4 pointer-events-none">
           <div className="pointer-events-auto overflow-visible">
-            <div className="flex flex-col gap-0">
+            <div className="flex flex-col">
               <AnimatePresence mode="popLayout">
                 {overlayMessages.slice(-4).map((message) => (
                   <OverlayMessageBubble
@@ -297,8 +277,7 @@ const PlayerOverlay = () => {
       {/* Reactions - Shows above input when any message is hovered - Only show when panel is closed */}
       {panelCollapsed && (
         <AnimatePresence>
-          {(isAnyMessageHovered || isInputHovered || isReactionsHovered) &&
-            overlayMessages.length > 0 && (
+          {isAnyMessageHovered && overlayMessages.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -306,6 +285,8 @@ const PlayerOverlay = () => {
                 transition={{ duration: 0.2 }}
                 onMouseEnter={() => {
                   setIsReactionsHovered(true);
+                  // Keep input/reactions visible when hovering them
+                  setIsAnyMessageHovered(true);
                   // Clear hide timeout when hovering reactions
                   if (hideInputTimeoutRef.current) {
                     clearTimeout(hideInputTimeoutRef.current);
@@ -314,15 +295,13 @@ const PlayerOverlay = () => {
                 }}
                 onMouseLeave={() => {
                   setIsReactionsHovered(false);
-                  // If no message is hovered, hide reactions after delay
-                  if (!isAnyMessageHovered && !isInputHovered) {
-                    hideInputTimeoutRef.current = setTimeout(() => {
-                      setIsAnyMessageHovered(false);
-                      hideInputTimeoutRef.current = null;
-                    }, 300);
-                  }
+                  // Hide reactions after delay if no message is hovered
+                  hideInputTimeoutRef.current = setTimeout(() => {
+                    setIsAnyMessageHovered(false);
+                    hideInputTimeoutRef.current = null;
+                  }, 300);
                 }}
-                className="z-30 absolute bottom-16 right-4 flex items-center justify-center gap-2.5 pointer-events-auto backdrop-blur-xl bg-gradient-to-br from-black/80 via-black/70 to-black/60 border border-white/20 rounded-2xl px-4 py-2.5 shadow-2xl"
+                className="z-30 absolute bottom-32 right-4 flex items-center justify-center gap-2 pointer-events-auto backdrop-blur-xl bg-gradient-to-br from-black/80 via-black/70 to-black/60 border border-white/20 rounded-2xl px-3 py-1 "
               >
                 {pinnedReactions.map((emoji) => (
                   <AnimatedReaction
@@ -345,11 +324,10 @@ const PlayerOverlay = () => {
         </AnimatePresence>
       )}
 
-      {/* Single Reply Input at Bottom - Shows when any message is hovered OR input is hovered - Only show when panel is closed */}
+      {/* Single Reply Input at Bottom - Shows when any message is hovered - Only show when panel is closed */}
       {panelCollapsed && (
         <AnimatePresence>
-          {(isAnyMessageHovered || isInputHovered || isReactionsHovered) &&
-            overlayMessages.length > 0 && (
+          {isAnyMessageHovered && overlayMessages.length > 0 && (
               <motion.form
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -358,6 +336,8 @@ const PlayerOverlay = () => {
                 onSubmit={handleSendReply}
                 onMouseEnter={() => {
                   setIsInputHovered(true);
+                  // Keep input/reactions visible when hovering them
+                  setIsAnyMessageHovered(true);
                   // Clear hide timeout when hovering input
                   if (hideInputTimeoutRef.current) {
                     clearTimeout(hideInputTimeoutRef.current);
@@ -366,15 +346,13 @@ const PlayerOverlay = () => {
                 }}
                 onMouseLeave={() => {
                   setIsInputHovered(false);
-                  // If no message is hovered, hide input after delay
-                  if (!isAnyMessageHovered && !isReactionsHovered) {
-                    hideInputTimeoutRef.current = setTimeout(() => {
-                      setIsAnyMessageHovered(false);
-                      hideInputTimeoutRef.current = null;
-                    }, 300);
-                  }
+                  // Hide input after delay if no message is hovered
+                  hideInputTimeoutRef.current = setTimeout(() => {
+                    setIsAnyMessageHovered(false);
+                    hideInputTimeoutRef.current = null;
+                  }, 300);
                 }}
-                className="z-30 absolute bottom-8 right-4 flex items-center gap-2.5 pointer-events-auto w-[320px]"
+                className="z-30 absolute bottom-16 right-4 flex items-center gap-2.5 pointer-events-auto w-[320px]"
               >
                 <input
                   ref={inputRef}
