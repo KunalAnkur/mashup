@@ -25,7 +25,7 @@ const FileSelection = () => {
   );
   const authState = useSelector((state: RootState) => state.auth);
 
-  const { files, removeFile, getThumbnail } = useFileContext();
+  const { files, removeFile, getThumbnail, thumbnails } = useFileContext();
   const selectedFile = files[selectedFileIndex] ?? null;
 
   useEffect(() => {
@@ -33,6 +33,13 @@ const FileSelection = () => {
       dispatch(setSelectedFileIndex(0));
     }
   }, [files, selectedFileIndex, dispatch]);
+
+  // Debug: Log when thumbnails change
+  useEffect(() => {
+    if (Object.keys(thumbnails).length > 0) {
+      console.log('FileSelection: Thumbnails updated', Object.keys(thumbnails));
+    }
+  }, [thumbnails]);
 
   const handleBack = () => {
     router.push("/stream");
@@ -48,6 +55,17 @@ const FileSelection = () => {
     if (fileType.startsWith("image/"))
       return <FaFileImage className="text-green-500 text-lg sm:text-xl" />;
     return <FaFileAlt className="text-gray-400 text-lg sm:text-xl" />;
+  };
+
+  // Helper to check if a file is a video (by MIME type or extension)
+  const isVideoFile = (file: File): boolean => {
+    // Check MIME type
+    if (file.type.startsWith("video/")) {
+      return true;
+    }
+    // Check file extension as fallback
+    const videoExtensions = /\.(mp4|mkv|webm|avi|mov|mpeg|mpg|3gp|wmv|flv|m3u8|ogv|m4v)$/i;
+    return videoExtensions.test(file.name);
   };
 
   const handleFileSelect = (index: number) => {
@@ -122,30 +140,38 @@ const FileSelection = () => {
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {(() => {
                   const thumbnail = getThumbnail(file);
-                  const isVideo = file.type.startsWith("video/");
+                  const isVideo = isVideoFile(file);
                   
                   return (
                     <div className={`
-                      flex-shrink-0 rounded-xl overflow-hidden
-                      ${isVideo ? 'w-16 h-10' : 'p-3 bg-white/5'}
+                      flex-shrink-0 rounded-xl overflow-hidden bg-white/5
+                      ${isVideo ? 'w-16 h-10' : 'p-3'}
+                      flex items-center justify-center
                     `}>
-                      {isVideo && thumbnail ? (
-                        <img
-                          src={thumbnail}
-                          alt={file.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = "none";
-                            // Show icon as fallback
-                            const parent = target.parentElement;
-                            if (parent) {
-                              parent.innerHTML = '';
-                              parent.className = 'p-3 rounded-xl bg-white/5 flex-shrink-0';
-                              parent.appendChild(getFileIcon(file.type) as any);
-                            }
-                          }}
-                        />
+                      {isVideo ? (
+                        thumbnail ? (
+                          <img
+                            src={thumbnail}
+                            alt={file.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                              // Show icon as fallback
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = '';
+                                parent.className = 'p-3 rounded-xl bg-white/5 flex-shrink-0 flex items-center justify-center';
+                                parent.appendChild(getFileIcon(file.type) as any);
+                              }
+                            }}
+                          />
+                        ) : (
+                          // Show loading state or icon while thumbnail is being generated
+                          <div className="w-full h-full flex items-center justify-center bg-white/5">
+                            <FaFileVideo className="text-pink-600 text-sm" />
+                          </div>
+                        )
                       ) : (
                         getFileIcon(file.type)
                       )}
