@@ -13,6 +13,10 @@ interface OverlayMessageBubbleProps {
 const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBubbleProps) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Check if this is the current user's message
+  const isOwnMessage = message.userName === (window as any).__currentUser?.username || 
+                       message.userEmail === (window as any).__currentUser?.email;
+
   // Auto-dismiss after 60 seconds from when the message was SENT (not when it appears)
   useEffect(() => {
     const now = Date.now();
@@ -66,25 +70,43 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
     return null;
   }
 
+  // Extract username from email for display
+  const getDisplayUsername = () => {
+    let displayUsername = message.userName || "Unknown User";
+    if (message.userEmail) {
+      const emailUsername = message.userEmail.split("@")[0];
+      if (emailUsername) {
+        displayUsername = emailUsername;
+      }
+    }
+    return displayUsername;
+  };
+
+  const displayUsername = getDisplayUsername();
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      initial={{ opacity: 0, y: 10, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-      className="relative mb-3 max-w-xs"
+      exit={{ opacity: 0, y: -5, scale: 0.95 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="relative mb-2.5 max-w-[280px] w-full"
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
     >
-      {/* Message Bubble */}
-      <div className="backdrop-blur-md bg-black/60 rounded-2xl p-3 shadow-lg border border-white/10">
-        {/* User Info */}
-        <div className="flex items-center gap-2 mb-2">
+      {/* Message Bubble - Modern Design */}
+      <div className={`relative backdrop-blur-xl rounded-2xl p-3 shadow-xl border transition-all duration-200 ${
+        isOwnMessage 
+          ? 'bg-gradient-to-br from-pink-500/30 via-rose-500/25 to-fuchsia-500/30 border-pink-400/30' 
+          : 'bg-gradient-to-br from-black/80 via-black/70 to-black/60 border-white/20'
+      }`}>
+        {/* User Info - Compact Design */}
+        <div className="flex items-center gap-2 mb-2.5">
           {message.userProfile ? (
             <img
               src={message.userProfile}
-              alt={message.userName}
-              className="w-6 h-6 rounded-full object-cover"
+              alt={displayUsername}
+              className="w-7 h-7 rounded-full object-cover ring-2 ring-white/20"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
                 e.currentTarget.nextElementSibling?.classList.remove("hidden");
@@ -92,20 +114,20 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
             />
           ) : null}
           <div
-            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold text-white ${
+            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg ring-2 ring-white/20 ${
               message.userProfile ? "hidden" : ""
             }`}
             style={{ backgroundColor: getUserColor(message.userName) }}
           >
-            {getInitials(message.userName)}
+            {getInitials(displayUsername)}
           </div>
-          <span className="text-white text-xs font-medium truncate">
-            {message.userName}
+          <span className="text-white/95 text-xs font-semibold truncate max-w-[180px]" title={displayUsername}>
+            {displayUsername}
           </span>
         </div>
 
         {/* Message Text */}
-        <p className="text-white/90 text-sm whitespace-pre-wrap break-words">
+        <p className="text-white/95 text-sm leading-relaxed whitespace-pre-wrap break-words">
           {message.message}
         </p>
       </div>
@@ -114,4 +136,3 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
 };
 
 export default OverlayMessageBubble;
-

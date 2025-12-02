@@ -74,7 +74,12 @@ const PlayerOverlay = () => {
       setDisplayedMessageIds(existingIds);
       mountedRef.current = true;
     }
-  }, [messages]);
+    
+    // Store current user info globally for OverlayMessageBubble to access
+    if (typeof window !== 'undefined') {
+      (window as any).__currentUser = user;
+    }
+  }, [messages, user]);
 
   // Track new messages and add them to overlay (only if panel is closed)
   useEffect(() => {
@@ -84,9 +89,8 @@ const PlayerOverlay = () => {
       (msg) =>
         msg.type !== "system" && // Don't show system messages
         !displayedMessageIds.has(msg.id) && // Only new messages
-        !ignoredMessageIds.has(msg.id) && // Don't show messages that arrived when panel was open
-        msg.userName !== user?.username && // Don't show own messages (compare by username)
-        msg.userEmail !== user?.email // Also check email as fallback
+        !ignoredMessageIds.has(msg.id) // Don't show messages that arrived when panel was open
+        // REMOVED: Don't filter out own messages anymore - we want to see our replies!
     );
 
     if (newMessages.length > 0) {
@@ -107,8 +111,8 @@ const PlayerOverlay = () => {
         // Panel is closed - add messages to overlay
         setOverlayMessages((prev) => {
           const combined = [...prev, ...newMessages];
-          // Keep only last 5 messages to avoid clutter
-          return combined.slice(-5);
+          // Keep only last 4 messages to avoid clutter and ensure all are visible
+          return combined.slice(-4);
         });
 
         // Mark them as displayed
@@ -140,8 +144,6 @@ const PlayerOverlay = () => {
     displayedMessageIds,
     ignoredMessageIds,
     isJoined,
-    user?.username,
-    user?.email,
     panelCollapsed,
   ]);
 
@@ -203,7 +205,8 @@ const PlayerOverlay = () => {
     try {
       await sendMessage(replyText.trim());
       setReplyText("");
-      setIsAnyMessageHovered(false);
+      // Keep input visible after sending so user can see their message appear
+      // It will auto-hide after the hover timeout
     } catch (error) {
       console.error("Failed to send message:", error);
     } finally {
@@ -273,18 +276,20 @@ const PlayerOverlay = () => {
 
       {/* Overlay Message Bubbles - Bottom Right - Only show when panel is closed */}
       {panelCollapsed && (
-        <div className="z-30 absolute bottom-24 right-4 pointer-events-none">
-          <div className="pointer-events-auto max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-            <AnimatePresence mode="popLayout">
-              {overlayMessages.map((message) => (
-                <OverlayMessageBubble
-                  key={message.id}
-                  message={message}
-                  onDismiss={() => handleDismissMessage(message.id)}
-                  onHover={handleMessageHover}
-                />
-              ))}
-            </AnimatePresence>
+        <div className="z-30 absolute bottom-36 right-4 pointer-events-none">
+          <div className="pointer-events-auto overflow-visible">
+            <div className="flex flex-col gap-0">
+              <AnimatePresence mode="popLayout">
+                {overlayMessages.slice(-4).map((message) => (
+                  <OverlayMessageBubble
+                    key={message.id}
+                    message={message}
+                    onDismiss={() => handleDismissMessage(message.id)}
+                    onHover={handleMessageHover}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       )}
@@ -295,9 +300,9 @@ const PlayerOverlay = () => {
           {(isAnyMessageHovered || isInputHovered || isReactionsHovered) &&
             overlayMessages.length > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
                 onMouseEnter={() => {
                   setIsReactionsHovered(true);
@@ -317,7 +322,7 @@ const PlayerOverlay = () => {
                     }, 300);
                   }
                 }}
-                className="z-30 absolute bottom-28 right-4 flex items-center justify-center gap-2 pointer-events-auto backdrop-blur-md bg-black/60 border border-white/20 rounded-full px-3 py-2"
+                className="z-30 absolute bottom-16 right-4 flex items-center justify-center gap-2.5 pointer-events-auto backdrop-blur-xl bg-gradient-to-br from-black/80 via-black/70 to-black/60 border border-white/20 rounded-2xl px-4 py-2.5 shadow-2xl"
               >
                 {pinnedReactions.map((emoji) => (
                   <AnimatedReaction
@@ -346,9 +351,9 @@ const PlayerOverlay = () => {
           {(isAnyMessageHovered || isInputHovered || isReactionsHovered) &&
             overlayMessages.length > 0 && (
               <motion.form
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
                 onSubmit={handleSendReply}
                 onMouseEnter={() => {
@@ -369,7 +374,7 @@ const PlayerOverlay = () => {
                     }, 300);
                   }
                 }}
-                className="z-30 absolute bottom-20 right-4 flex items-center gap-2 pointer-events-auto w-80"
+                className="z-30 absolute bottom-8 right-4 flex items-center gap-2.5 pointer-events-auto w-[320px]"
               >
                 <input
                   ref={inputRef}
@@ -378,13 +383,13 @@ const PlayerOverlay = () => {
                   onChange={(e) => setReplyText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type a reply..."
-                  className="flex-1 backdrop-blur-md bg-black/60 border border-white/20 rounded-full px-4 py-2.5 text-white text-sm placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50"
+                  className="flex-1 backdrop-blur-xl bg-black/80 border border-white/20 rounded-2xl px-4 py-3 text-white text-sm placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 shadow-xl transition-all"
                   disabled={isSending}
                 />
                 <button
                   type="submit"
                   disabled={!replyText.trim() || isSending}
-                  className="backdrop-blur-md bg-pink-500/80 hover:bg-pink-500 rounded-full p-2.5 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="backdrop-blur-xl bg-gradient-to-br from-pink-500/90 to-rose-500/90 hover:from-pink-500 hover:to-rose-500 rounded-2xl p-3 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl border border-pink-400/30 flex-shrink-0"
                 >
                   <FaPaperPlane size={14} />
                 </button>

@@ -32,6 +32,7 @@ const getUserColor = (username: string | undefined | null) => {
     return defaultColor;
   }
 
+  // Expanded color palette with more distinct colors for better user differentiation
   const colors = [
     {
       gradient: "from-rose-400 via-pink-400 to-fuchsia-400",
@@ -65,12 +66,44 @@ const getUserColor = (username: string | undefined | null) => {
       gradient: "from-pink-400 via-rose-400 to-red-400",
       bg: "from-pink-500 via-rose-500 to-red-500",
     },
+    {
+      gradient: "from-lime-400 via-green-400 to-emerald-400",
+      bg: "from-lime-500 via-green-500 to-emerald-500",
+    },
+    {
+      gradient: "from-amber-400 via-orange-400 to-red-400",
+      bg: "from-amber-500 via-orange-500 to-red-500",
+    },
+    {
+      gradient: "from-indigo-400 via-purple-400 to-pink-400",
+      bg: "from-indigo-500 via-purple-500 to-pink-500",
+    },
+    {
+      gradient: "from-teal-400 via-cyan-400 to-blue-400",
+      bg: "from-teal-500 via-cyan-500 to-blue-500",
+    },
+    {
+      gradient: "from-yellow-400 via-amber-400 to-orange-400",
+      bg: "from-yellow-500 via-amber-500 to-orange-500",
+    },
+    {
+      gradient: "from-red-400 via-pink-400 to-rose-400",
+      bg: "from-red-500 via-pink-500 to-rose-500",
+    },
+    {
+      gradient: "from-green-400 via-emerald-400 to-teal-400",
+      bg: "from-green-500 via-emerald-500 to-teal-500",
+    },
   ];
 
-  // Simple hash function to get consistent color for same username
+  // Robust hash function to get consistent color for same username
+  // Normalize username to lowercase for consistency across all screens
+  const normalizedUsername = username.toLowerCase().trim();
   let hash = 0;
-  for (let i = 0; i < username.length; i++) {
-    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < normalizedUsername.length; i++) {
+    const char = normalizedUsername.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
   }
   return colors[Math.abs(hash) % colors.length];
 };
@@ -250,24 +283,42 @@ const ChatTab = () => {
 
   return (
     <div className="flex flex-col h-full w-full gap-3 overflow-visible">
-      {/* Connection Status (for debugging) */}
+      {/* Connection Status - Modern Design */}
       {!isConnected && (
-        <div className="px-3 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-          <p className="text-yellow-400 text-xs">Connecting to chat...</p>
+        <div className="relative px-4 py-2.5 bg-gradient-to-r from-yellow-500/10 via-yellow-500/5 to-transparent border border-yellow-500/20 rounded-xl backdrop-blur-sm overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-transparent"></div>
+          <div className="relative flex items-center gap-2">
+            <div className="relative">
+              <div className="absolute inset-0 bg-yellow-400/20 rounded-full animate-ping"></div>
+              <div className="relative w-2 h-2 bg-yellow-400 rounded-full"></div>
+            </div>
+            <p className="text-yellow-300 text-xs font-medium">Connecting to chat...</p>
+          </div>
         </div>
       )}
 
       {isLoading && (
-        <div className="px-3 py-2 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-          <p className="text-blue-400 text-xs">Joining chat room...</p>
+        <div className="relative px-4 py-2.5 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent border border-blue-500/20 rounded-xl backdrop-blur-sm overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent"></div>
+          <div className="relative flex items-center gap-2">
+            <div className="relative">
+              <div className="absolute inset-0 bg-blue-400/20 rounded-full animate-pulse"></div>
+              <div className="relative w-2 h-2 bg-blue-400 rounded-full"></div>
+            </div>
+            <p className="text-blue-300 text-xs font-medium">Joining chat room...</p>
+          </div>
         </div>
       )}
 
       {/* Chat Messages Area */}
-      <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {messages.length === 0 && isJoined && !isLoading && (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500 text-sm">
+          <div className="flex flex-col items-center justify-center h-full gap-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-full blur-2xl"></div>
+              <div className="relative text-6xl opacity-50">💬</div>
+            </div>
+            <p className="text-gray-400 text-sm font-medium">
               No messages yet. Start the conversation!
             </p>
           </div>
@@ -280,11 +331,10 @@ const ChatTab = () => {
 
           const userName = msg.userName || "Unknown User";
           const isCurrentUser = isCurrentUserMessage(msg);
-          const userColor = getUserColor(userName);
           const isSystemMessage = msg.type === "system";
 
-          // System messages (user joined/left)
-          if (isSystemMessage) {
+            // System messages (user joined/left) - Modern Design
+            if (isSystemMessage) {
             // Extract username from email (part before @) for system messages
             // This shows username instead of full name (name and surname)
             let displayName = userName;
@@ -305,6 +355,9 @@ const ChatTab = () => {
 
             // Remove "Unknown User" prefix if it exists
             displayName = displayName.replace(/^Unknown User\s+/i, "");
+
+            // Generate color based on the displayed username (extracted from email)
+            const userColor = getUserColor(displayName);
 
             // Check if it's a join/leave message or a host control message
             const isJoinLeaveMessage =
@@ -374,148 +427,207 @@ const ChatTab = () => {
             }
 
             return (
-              <div key={msg.id || i} className="flex justify-center py-2">
-                <div className="bg-white/5 rounded-full px-4 py-1.5">
-                  <span className="text-gray-400 text-xs">
-                    {isJoinLeaveMessage ? (
-                      // Join/Leave messages: show username + action
-                      <>
-                        <span
-                          className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
-                        >
-                          {displayName}
-                        </span>{" "}
-                        {msg.message.includes("joined")
-                          ? "joined the chat"
-                          : msg.message.includes("left")
-                          ? "left the chat"
-                          : ""}
-                      </>
-                    ) : isHostControlMessage ? (
-                      // Host control messages: show full message (with "YOU" if current user)
-                      <span className="text-gray-400">{displayMessage}</span>
-                    ) : (
-                      // Fallback: show username + message
-                      <>
-                        <span
-                          className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
-                        >
-                          {displayName}
-                        </span>{" "}
-                        {msg.message}
-                      </>
-                    )}
-                  </span>
+              <div key={msg.id || i} className="flex justify-center py-1.5">
+                <div className="relative group">
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  {/* Notification badge */}
+                  <div className="relative bg-gradient-to-br from-white/[0.08] to-white/[0.03] backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 shadow-lg">
+                    <span className="text-gray-300 text-xs font-medium">
+                      {isJoinLeaveMessage ? (
+                        // Join/Leave messages: show username + action with icon
+                        <>
+                          <span className="inline-flex items-center gap-1.5">
+                            <span className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}>
+                              {displayName}
+                            </span>
+                            <span className="text-gray-400">
+                              {msg.message.includes("joined") ? (
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                                  joined
+                                </span>
+                              ) : msg.message.includes("left") ? (
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
+                                  left
+                                </span>
+                              ) : (
+                                ""
+                              )}
+                            </span>
+                          </span>
+                        </>
+                      ) : isHostControlMessage ? (
+                        // Host control messages: show full message (with "YOU" if current user)
+                        <span className="text-gray-300">{displayMessage}</span>
+                      ) : (
+                        // Fallback: show username + message
+                        <>
+                          <span
+                            className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
+                          >
+                            {displayName}
+                          </span>{" "}
+                          <span className="text-gray-400">{msg.message}</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
             );
           }
 
-          // Regular user messages
+          // Regular user messages - Modern Design
           const onlyEmojis = isOnlyEmojis(msg.message);
-          const emojiSize = "text-3xl";
+          const emojiSize = "text-4xl";
+
+          // Extract username from email (part before @) for display
+          // This ensures consistent username display and color generation
+          let displayUserName = userName;
+          if (msg.userEmail) {
+            const emailUsername = msg.userEmail.split("@")[0];
+            if (emailUsername) {
+              displayUserName = emailUsername;
+            }
+          }
+
+          // Generate color based on the displayed username (extracted from email)
+          // This ensures same username always gets same color across all screens
+          const userColor = getUserColor(displayUserName);
 
           return (
             <div
               key={msg.id || i}
-              className="flex items-start gap-2 group animate-fade-in"
-              style={{ animationDelay: `${i * 0.05}s` }}
+              className="flex items-start gap-3 group animate-fade-in"
+              style={{ animationDelay: `${i * 0.03}s` }}
             >
-              {/* Avatar - Show for all users */}
-              <div className="relative flex-shrink-0 mt-0.5">
-                {msg.userProfile ? (
-                  <>
-                    <img
-                      src={msg.userProfile}
-                      alt={userName}
-                      className="w-8 h-8 rounded-full object-cover shadow-lg border-2 border-white/10"
-                      onError={(e) => {
-                        // Hide image and show fallback if image fails to load
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = "none";
-                        const fallback =
-                          target.nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = "flex";
-                      }}
-                    />
+              {/* Avatar - Modern Design */}
+              <div className="relative flex-shrink-0">
+                <div className="relative">
+                  {/* Glow effect on hover */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300`}></div>
+                  
+                  {msg.userProfile ? (
+                    <>
+                      <img
+                        src={msg.userProfile}
+                        alt={displayUserName}
+                        className="relative w-10 h-10 rounded-full object-cover shadow-xl border-2 border-white/20 ring-2 ring-white/5"
+                        onError={(e) => {
+                          // Hide image and show fallback if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                          const fallback =
+                            target.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = "flex";
+                        }}
+                      />
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 hidden`}
+                      >
+                        {displayUserName.charAt(0).toUpperCase()}
+                      </div>
+                    </>
+                  ) : (
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg bg-gradient-to-br ${userColor.bg} hidden`}
+                      className={`relative w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 ring-2 ring-white/5`}
                     >
-                      {userName.charAt(0).toUpperCase()}
+                      {displayUserName.charAt(0).toUpperCase()}
                     </div>
-                  </>
-                ) : (
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg bg-gradient-to-br ${userColor.bg}`}
-                  >
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                {!isCurrentUser && (
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[#18181b] rounded-full"></div>
-                )}
+                  )}
+                  
+                  {/* Online status indicator */}
+                  {!isCurrentUser && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#18181b] rounded-full shadow-lg">
+                      <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Message Content */}
-              <div className="flex-1 min-w-0 flex flex-col gap-1">
-                {/* Show username and timestamp for ALL messages */}
-                <div className="flex items-baseline gap-2 flex-wrap">
+              <div className="flex-1 min-w-0 flex flex-col gap-1.5 items-start">
+                {/* Show username */}
+                <div className="flex items-baseline gap-2 min-w-0 w-full">
                   <span
-                    className={`font-semibold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
+                    className={`font-semibold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient} tracking-tight truncate max-w-[180px]`}
+                    title={displayUserName}
                   >
-                    {userName}
-                  </span>
-                  <span className="text-gray-500 text-xs">
-                    {formatTime(msg.timestamp)}
+                    {displayUserName}
                   </span>
                 </div>
 
-                {/* Emoji-only messages: No bubble, larger size */}
+                {/* Emoji-only messages: No bubble, larger size with glow */}
                 {onlyEmojis ? (
-                  <div className="py-1">
-                    <p className={`${emojiSize} leading-tight`}>
-                      {msg.message}
-                    </p>
+                  <div className="relative group/emoji p-0.5">
+                    <div className="relative inline-block">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
+                      <p className={`relative ${emojiSize} leading-tight filter`}>
+                        {msg.message}
+                      </p>
+                    </div>
+                    {/* Timestamp for emoji messages - bottom right */}
+                    <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[10px] font-medium opacity-0 group-hover/emoji:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                      {formatTime(msg.timestamp)}
+                    </span>
                   </div>
                 ) : (
-                  /* Regular messages: With bubble */
-                  <div
-                    className={`rounded-xl px-3 py-2 transition-all duration-200 rounded-tl-none ${
-                      isCurrentUser
-                        ? `bg-gradient-to-br from-rose-600/20 via-pink-600/20 to-fuchsia-600/20`
-                        : "bg-gradient-to-br from-white/5 to-white/[0.02]"
-                    }`}
-                  >
-                    <p className="text-white/90 text-sm leading-relaxed break-words whitespace-pre-wrap">
-                      {msg.message}
-                    </p>
+                  /* Regular messages: Modern bubble with glassmorphism */
+                  <div className="relative group/message w-full">
+                    {/* Glow effect */}
+                    <div className={`absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
+                    
+                    {/* Message bubble */}
+                    <div
+                      className={`relative rounded-2xl px-4 py-2.5 transition-all duration-200 shadow-xl backdrop-blur-sm rounded-tl-sm ${
+                        isCurrentUser
+                          ? `bg-gradient-to-br from-rose-600/30 via-pink-600/25 to-fuchsia-600/30 border border-pink-500/20`
+                          : "bg-gradient-to-br from-white/[0.08] via-white/[0.05] to-white/[0.02] border border-white/10"
+                      }`}
+                    >
+                      <p className="text-white/95 text-sm leading-relaxed break-words whitespace-pre-wrap font-medium pr-12">
+                        {msg.message}
+                      </p>
+                      {/* Timestamp - bottom right of bubble */}
+                      <span className="absolute bottom-1.5 right-2.5 text-gray-400/70 text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                        {formatTime(msg.timestamp)}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
           );
         })}
-        {/* Typing Indicator */}
+        {/* Typing Indicator - Different Design from Message Bubbles */}
         {typingUsers.length > 0 && (
-          <div className="flex items-center gap-2 px-3 py-2">
-            <div className="flex gap-1">
+          <div className="flex items-center gap-2.5 px-3 py-2">
+            <div className="relative flex items-center gap-1">
               <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"
                 style={{ animationDelay: "0s" }}
               ></div>
               <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"
                 style={{ animationDelay: "0.2s" }}
               ></div>
               <div
-                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"
                 style={{ animationDelay: "0.4s" }}
               ></div>
             </div>
-            <span className="text-gray-400 text-xs">
-              {typingUsers.map((u) => u.userName).join(", ")}
-              {typingUsers.length === 1 ? " is" : " are"} typing...
-            </span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+              <span className="text-cyan-300 text-xs font-medium">
+                <span className="font-semibold">
+                  {typingUsers.map((u) => u.userName).join(", ")}
+                </span>
+                <span className="text-cyan-400/70 ml-1.5">
+                  {typingUsers.length === 1 ? "is" : "are"} typing...
+                </span>
+              </span>
+            </div>
           </div>
         )}
 
@@ -523,8 +635,8 @@ const ChatTab = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Reaction Buttons - Clean Modern Design */}
-      <div className="relative flex items-center justify-center gap-3  ">
+      {/* Reaction Buttons - Modern Design */}
+      <div className="relative flex items-center justify-center gap-3 py-2">
         {/* Pinned Reactions - Centered */}
         {pinnedReactions.map((emoji) => (
           <AnimatedReaction
@@ -546,7 +658,7 @@ const ChatTab = () => {
         ))}
 
         {/* Divider */}
-        <div className="w-px h-6 bg-white/10" />
+        <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
 
         {/* Reaction Picker Button - Positioned for proper alignment */}
         <div className="relative">
@@ -557,8 +669,8 @@ const ChatTab = () => {
         </div>
       </div>
 
-      {/* Input Area */}
-      <div className="relative flex items-center gap-1 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl px-3 py-1 shadow-lg overflow-visible">
+      {/* Input Area - Modern Design */}
+      <div className="relative flex items-center gap-2 bg-gradient-to-br from-white/[0.08] via-white/[0.05] to-white/[0.02] backdrop-blur-md border border-white/10 rounded-2xl px-4 py-2.5 shadow-2xl overflow-visible">
         {/* Emoji Picker */}
         {showEmojis && (
           <div
@@ -616,35 +728,41 @@ const ChatTab = () => {
           onKeyDown={handleKeyDown}
           disabled={!isJoined || isLoading}
           rows={1}
-          className="flex-1 bg-transparent outline-none text-white/90 text-sm placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] "
+          className="flex-1 bg-transparent outline-none text-white/95 text-sm placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
           style={{
-            minHeight: "20px",
+            minHeight: "24px",
             maxHeight: "240px", // ~10 lines (24px per line)
           }}
           onInput={(e) => {
             // Auto-resize textarea based on content
             const target = e.target as HTMLTextAreaElement;
-            target.style.height = "20px";
+            target.style.height = "24px";
             target.style.height = Math.min(target.scrollHeight, 240) + "px";
           }}
         />
         <button
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || !isJoined || isLoading}
-          className="p-2 rounded-lg text-gray-400 hover:text-pink-400 hover:bg-white/5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="relative p-2.5 rounded-xl text-gray-400 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
         >
-          <FaArrowCircleUp size={20} />
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <FaArrowCircleUp size={20} className="relative" />
         </button>
         <button
           data-emoji-button
           onClick={() => setShowEmojis(!showEmojis)}
-          className={`p-2 rounded-lg transition-all duration-200 ${
+          className={`relative p-2.5 rounded-xl transition-all duration-200 group ${
             showEmojis
-              ? "text-pink-400 bg-pink-500/10"
-              : "text-gray-400 hover:text-pink-400 hover:bg-white/5"
+              ? "text-pink-400"
+              : "text-gray-400 hover:text-pink-400"
           }`}
         >
-          <FaSmile size={20} />
+          <div className={`absolute inset-0 rounded-xl transition-all duration-200 ${
+            showEmojis
+              ? "bg-gradient-to-br from-pink-500/20 to-purple-500/20"
+              : "bg-white/5 opacity-0 group-hover:opacity-100"
+          }`}></div>
+          <FaSmile size={20} className="relative" />
         </button>
       </div>
 
@@ -652,32 +770,32 @@ const ChatTab = () => {
         @keyframes fade-in {
           from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(8px) scale(0.98);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
         }
 
         @keyframes slide-up {
           from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(12px) scale(0.96);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
         }
 
         .animate-fade-in {
-          animation: fade-in 0.3s ease-out forwards;
+          animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           opacity: 0;
         }
 
         .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
+          animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .scrollbar-hide {
