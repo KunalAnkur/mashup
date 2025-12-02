@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useFileContext } from "@/context/FileContext";
 import { useRouter } from "next/navigation";
 import {
@@ -16,14 +16,45 @@ import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 const StreamPage = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { setFiles } = useFileContext();
+  const { setFiles, isPersistenceSupported, requestFilePicker, showPermissionPrompt } = useFileContext();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleOnVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOnVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0 && fileInputRef.current) {
+      // For traditional file input, files won't persist (no handles)
       setFiles(Array.from(files));
       router.push("/stream/files");
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileSelection = async () => {
+    if (isPersistenceSupported) {
+      // Use File System Access API for persistence
+      try {
+        setIsLoading(true);
+        const selectedFiles = await requestFilePicker();
+        
+        if (selectedFiles.length > 0) {
+          setFiles(selectedFiles);
+          router.push("/stream/files");
+        }
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          // User cancelled, do nothing
+          return;
+        }
+        console.error('Error selecting files:', error);
+        // Fallback to traditional file input
+        showPermissionPrompt();
+        fileInputRef.current?.click();
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Fallback to traditional file input
+      fileInputRef.current?.click();
     }
   };
 
@@ -33,7 +64,7 @@ const StreamPage = () => {
   );
 
   const handleUploadClick = () => {
-    fileInputRef.current?.click();
+    handleFileSelection();
   };
 
   const handlePlatformClick = (platformName: string) => {
