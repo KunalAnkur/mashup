@@ -474,6 +474,10 @@ const ChatTab = () => {
                       )}
                     </span>
                   </div>
+                  {/* Timestamp for system notifications - shows on hover */}
+                  <span className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-gray-500/60 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                    {formatTime(msg.timestamp)}
+                  </span>
                 </div>
               </div>
             );
