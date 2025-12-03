@@ -210,30 +210,30 @@ const Panel = () => {
           </div>
         </div>
       </div>
-
-      {/* Tabs */}
-      <div className="flex justify-center gap-1 pt-2 pb-1">
-        {visibleTabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 font-medium text-sm transition-all duration-200 relative rounded-t-xl
-                            ${
-                              activeTab === tab
-                                ? "text-white"
-                                : "text-gray-500 hover:text-gray-300"
-                            }`}
-          >
-            {tab}
-            {activeTab === tab && (
-              <>
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 rounded-full"></div>
-                <div className="absolute inset-0 bg-white/5 rounded-t-xl"></div>
-              </>
-            )}
-          </button>
-        ))}
-      </div>
+      
+{/* Tabs */}
+<div className="flex items-center w-full justify-between pt-2 pb-1">
+  {visibleTabs.map((tab) => (
+    <button
+      key={tab}
+      onClick={() => setActiveTab(tab)}
+      className={`px-3 py-2 font-medium text-xs sm:text-sm transition-all duration-200 relative rounded-t-xl
+                  ${
+                    activeTab === tab
+                      ? "text-white"
+                      : "text-gray-500 hover:text-gray-300"
+                  }`}
+    >
+      {tab}
+       {activeTab === tab && (
+        <>
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 rounded-full"></div>
+          <div className="absolute inset-0 bg-white/5 rounded-t-xl"></div>
+        </>
+      )} 
+    </button>
+  ))}
+</div>
 
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden pt-4">
