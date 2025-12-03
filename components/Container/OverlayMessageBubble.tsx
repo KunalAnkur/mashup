@@ -135,6 +135,10 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
           <span className="text-white/90 text-xs font-semibold truncate flex-1" title={displayUsername}>
             {displayUsername}
           </span>
+          {/* Timestamp */}
+          <span className="text-white/50 text-[10px] font-medium whitespace-nowrap">
+            {formatTime(message.timestamp || Date.now())}
+          </span>
         </div>
 
         {/* Message Text */}
