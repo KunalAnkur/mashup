@@ -84,13 +84,24 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
 
   const displayUsername = getDisplayUsername();
 
+  // Format timestamp to readable time (consistent with ChatTab)
+  const formatTime = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, "0");
+    return `${displayHours}:${displayMinutes} ${ampm}`;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -5, scale: 0.95 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="relative mb-2.5 max-w-[280px] w-full"
+      className="relative mb-2.5 w-[280px]"
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
     >
@@ -101,12 +112,12 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
           : 'bg-gradient-to-br from-black/80 via-black/70 to-black/60 border-white/20'
       }`}>
         {/* User Info - Compact Design */}
-        <div className="flex items-center gap-2 mb-2.5">
+        <div className="flex items-center gap-2.5 mb-3">
           {message.userProfile ? (
             <img
               src={message.userProfile}
               alt={displayUsername}
-              className="w-7 h-7 rounded-full object-cover ring-2 ring-white/20"
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-white/10"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
                 e.currentTarget.nextElementSibling?.classList.remove("hidden");
@@ -114,20 +125,20 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
             />
           ) : null}
           <div
-            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg ring-2 ring-white/20 ${
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md ring-2 ring-white/10 ${
               message.userProfile ? "hidden" : ""
             }`}
             style={{ backgroundColor: getUserColor(message.userName) }}
           >
             {getInitials(displayUsername)}
           </div>
-          <span className="text-white/95 text-xs font-semibold truncate max-w-[180px]" title={displayUsername}>
+          <span className="text-white/90 text-xs font-semibold truncate flex-1" title={displayUsername}>
             {displayUsername}
           </span>
         </div>
 
         {/* Message Text */}
-        <p className="text-white/95 text-sm leading-relaxed whitespace-pre-wrap break-words">
+        <p className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap break-words">
           {message.message}
         </p>
       </div>

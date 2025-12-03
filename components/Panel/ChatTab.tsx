@@ -587,7 +587,7 @@ const ChatTab = () => {
                           : "bg-gradient-to-br from-white/[0.08] via-white/[0.05] to-white/[0.02] border border-white/10"
                       }`}
                     >
-                      <p className="text-white/95 text-sm leading-relaxed break-words whitespace-pre-wrap font-medium pr-12">
+                      <p className="text-white/95 text-sm leading-relaxed break-words whitespace-pre-wrap font-medium ">
                         {msg.message}
                       </p>
                       {/* Timestamp - bottom right of bubble */}
