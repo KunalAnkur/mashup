@@ -15,20 +15,21 @@ import { AvatarDropdown } from "../UI";
 import Image from "next/image";
 import * as constants from "../../constants";
 import { LuCheck, LuLink, LuLogOut } from "react-icons/lu";
-import { useSocket } from "@/context/SocketContext";
+import { useRoomContext } from "@/context/RoomContext";
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
-  const { socket: globalSocket } = useSocket("/"); // Main namespace
-  const { socket: chatSocket } = useSocket("chat");
+  const { leaveRoom, roomId } = useRoomContext(); // Use centralized room management
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-  const roomUrl = "https://movmash.com/room/3wJz21";
   const router = useRouter();
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const roomState = useSelector((state: RootState) => state.room);
   const host = roomState.host;
   const dispatch = useDispatch();
+
+  // Generate room URL dynamically
+  const roomUrl = roomId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/room/${roomId}` : '';
 
   // Determine which tabs to show based on source type and host status
   // - For stream with file source: Playlist tab only visible to host (since files are local)
@@ -62,35 +63,25 @@ const Panel = () => {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(roomUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    if (roomUrl) {
+      navigator.clipboard.writeText(roomUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
   };
 
   const handleLeaveParty = async () => {
     try {
-      // 1. Call the API to inactivate the room
-      const response = await inactiveMyRoomApi();
+      // 1. Call the API to inactivate the room (if host)
       if (host) {
+        const response = await inactiveMyRoomApi();
         console.log("Room inactivated:", response);
       }
 
-      // 2. ✅ CRITICAL: Manually disconnect sockets BEFORE navigating away
-      // This ensures DISCONNECT events fire and "left" notifications are sent
-      if (globalSocket?.connected) {
-        console.log("Disconnecting global socket");
-        globalSocket.disconnect();
-      }
+      // 2. Leave the room via RoomContext (handles socket disconnect and cleanup)
+      leaveRoom();
 
-      if (chatSocket?.connected) {
-        console.log("Disconnecting chat socket");
-        chatSocket.disconnect();
-      }
-
-      // 3. Clear Redux state
-      dispatch(exitRoom());
-
-      // 4. Navigate to home page (after a small delay to allow disconnect events to fire)
+      // 3. Navigate to home page
       setTimeout(() => {
         router.push("/");
         setShowLeaveConfirm(false);

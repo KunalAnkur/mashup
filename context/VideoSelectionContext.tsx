@@ -21,23 +21,24 @@ const VideoSelectionContext = createContext<VideoSelectionContextType>({
 
 interface VideoSelectionProviderProps {
     children: ReactNode;
-    namespace?: string; // Socket namespace to use
 }
 
 /**
  * VideoSelectionProvider
  * 
  * Provides video selection functionality that works with both:
- * - Sync mode (URL-based video sync via default socket namespace)
- * - Stream mode (file-based MediaSoup streaming via filestream namespace)
+ * - Sync mode (URL-based video sync)
+ * - Stream mode (file-based MediaSoup streaming)
  * 
  * Handles:
  * - Host video selection and broadcasting
  * - Non-host video selection sync from host
+ * 
+ * Uses unified socket (single namespace)
  */
-export const VideoSelectionProvider = ({ children, namespace }: VideoSelectionProviderProps) => {
+export const VideoSelectionProvider = ({ children }: VideoSelectionProviderProps) => {
     const dispatch = useDispatch();
-    const { socket } = useSocket(namespace);
+    const { socket } = useSocket(); // Unified socket
     const roomState = useSelector((state: RootState) => state.room);
     
     const isHost = roomState.host;
