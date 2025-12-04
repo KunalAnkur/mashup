@@ -1,3 +1,5 @@
+
+// ---------------- StreamPlayer.tsx ----------------
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -18,6 +20,7 @@ type Props = {
 
 const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
+    const authState = useSelector((state: RootState) => state.auth);
     const { files } = useFileContext();
     const { stream: screenStream } = useMediaStreamContext();
     const playerRef = useRef<ReactPlayer>(null);
@@ -30,7 +33,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
 
     const hasInitializedRef = useRef(false);
     const lastVideoIndexRef = useRef(-1);
-
+    const videoEndedRef = useRef(false); 
     const { isJoined, roomType, joinResponse, isHost } = useRoomContext();
 
     const isScreenSharing = roomState.type === "stream" && roomState.source === "stream" && screenStream !== null;
@@ -91,6 +94,8 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         replaceProducerTracks,
         onSeekStart,
         onSeekEnd,
+        onPlay: streamOnPlay,
+        onPause,
     } = useStream({
         roomId: roomState.roomId,
         getStream,
@@ -99,6 +104,9 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         onStreamResumed: handleStreamResumed,
         isHost,
         enabled: isJoined && roomType === "stream",
+        username: authState.user?.username || authState.user?.name || "User",
+        email: authState.user?.email,
+        profile: authState.user?.profile,
     });
 
     // Initialize when joined
@@ -142,13 +150,42 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         }
     }, [isHost, isInitialized, roomState.selectedFileIndex, getStream, replaceProducerTracks]);
 
-    const onPlay = useCallback(() => {
-        if (isHost && isInitialized) resumeProducers();
-    }, [isHost, isInitialized, resumeProducers]);
+    const handleVideoEnded = useCallback(() => {
+        if (!roomState.host) return;
+        console.log("Video ended - marking for track refresh on next play");
+        videoEndedRef.current = true;
+    }, [roomState.host]);
 
-    const onPause = useCallback(() => {
-        if (isHost && isInitialized) pauseProducers();
-    }, [isHost, isInitialized, pauseProducers]);
+    const onPlay = useCallback((event: string) => {
+        streamOnPlay(event);
+
+        if (isHost && isInitialized && videoEndedRef.current) {
+            console.log("Video playing after end - refreshing producer tracks");
+            videoEndedRef.current = false;
+
+            setTimeout(async () => {
+                const newStream = getStream();
+                if (newStream) {
+                    try {
+                        await replaceProducerTracks(newStream);
+                        console.log("Producer tracks refreshed after video restart");
+                    } catch (error) {
+                        console.error("Error refreshing producer tracks:", error);
+                    }
+                }
+            }, 500);
+        }
+    }, [streamOnPlay, isInitialized, isHost, getStream, replaceProducerTracks]);
+
+    // const onPlay = useCallback((event: string) => {
+    //     streamOnPlay(event);
+    //     if (isHost && isInitialized) resumeProducers();
+    // }, [isHost, isInitialized, resumeProducers]);
+
+    // const onPause = useCallback((event: string) => {
+    //     streamOnPause(event);
+    //     if (isHost && isInitialized) pauseProducers();
+    // }, [isHost, isInitialized, pauseProducers]);
 
     const source = isHost ? (isScreenSharing ? screenStream : currentFileUrl) : remoteStream;
 
@@ -174,11 +211,12 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 playerRef={playerRef}
                 playing={isHost ? isScreenSharing : !isPaused}
                 onReady={handleVideoReady}
+                onEnded={handleVideoEnded}
                 onSeekStart={onSeekStart}
                 onSeekEnd={onSeekEnd}
                 fullscreenTargetRef={fullscreenTargetRef}
                 url={source}
-                muted={false}
+                muted={isHost ? isScreenSharing : false}
                 onPlay={onPlay}
                 onPause={onPause}
                 hasVideoTrack={hasVideoTrack}

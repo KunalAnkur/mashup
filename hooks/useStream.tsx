@@ -12,6 +12,9 @@ interface UseStreamParams {
     onStreamResumed?: () => void;
     isHost: boolean;
     enabled?: boolean;
+    username: string;
+    email?: string;
+    profile?: string;
 }
 
 export const useStream = ({
@@ -22,6 +25,9 @@ export const useStream = ({
     onStreamResumed,
     isHost,
     enabled = true,
+    username,
+    email,
+    profile,
 }: UseStreamParams) => {
     const { socket } = useSocket();
     const [isInitialized, setIsInitialized] = useState(false);
@@ -199,6 +205,7 @@ export const useStream = ({
                     for (const peerId of Object.keys(existing)) {
                         const producers = existing[peerId];
                         if (producers?.length) {
+                            // * producers.slice(-2) is to consume the last 2 producers
                             await consumeProducers(producers.slice(-2), device, transport, roomId);
                         }
                     }
@@ -297,7 +304,9 @@ export const useStream = ({
                     const response = await socket.emitWithAck(SocketEvent.JOIN_ROOM, {
                         roomId,
                         host: false,
-                        username: "consumer",
+                        username: username,
+                        email: email,
+                        profile: profile,
                         roomType: "stream",
                     });
 
@@ -376,6 +385,8 @@ export const useStream = ({
         resumeProducers,
         replaceProducerTracks,
         resetState,
+        onPause: (event?: string) => { if (event === 'seekend' || isSeekingRef.current) return; pauseProducers(); },
+        onPlay: (event?: string) => { if (event === 'seekend' || isSeekingRef.current) return; resumeProducers(); },
         onSeekStart: () => { isSeekingRef.current = true; },
         onSeekEnd: () => { setTimeout(() => { isSeekingRef.current = false; }, 300); },
     };
