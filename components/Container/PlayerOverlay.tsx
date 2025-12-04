@@ -6,7 +6,7 @@ import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useChatContext } from "@/context/ChatContext";
 import { BsFillChatSquareFill } from "react-icons/bs";
-import { FiChevronsLeft } from "react-icons/fi";
+import { FiChevronsLeft, FiX } from "react-icons/fi";
 import { FiChevronsRight } from "react-icons/fi";
 import { FaPaperPlane } from "react-icons/fa";
 import { RootState } from "@/lib/store";
@@ -178,6 +178,18 @@ const PlayerOverlay = () => {
     }
   };
 
+  const handleClearAllMessages = () => {
+    // Clear all timeouts
+    messageTimeoutsRef.current.forEach((timeoutId) => {
+      clearTimeout(timeoutId);
+    });
+    messageTimeoutsRef.current.clear();
+    
+    // Clear all overlay messages
+    setOverlayMessages([]);
+    setIsAnyMessageHovered(false);
+  };
+
   const handleMessageHover = (hovered: boolean) => {
     // Clear any existing timeout
     if (hideInputTimeoutRef.current) {
@@ -279,6 +291,19 @@ const PlayerOverlay = () => {
           {/* Message Bubbles */}
           <div className="pointer-events-auto overflow-visible">
             <div className="flex flex-col">
+              {/* Clear All Button - Only show when there are messages */}
+              {overlayMessages.filter((msg) => !ignoredMessageIds.has(msg.id)).length > 0 && (
+                <div className="flex justify-end mb-2">
+                  <button
+                    onClick={handleClearAllMessages}
+                    className="flex items-center gap-1.5 px-3 py-1.5 backdrop-blur-md bg-black/20 hover:bg-black/30 border border-white/10 hover:border-white/20 rounded-lg text-white/70 hover:text-white text-xs font-medium transition-all duration-200"
+                    title="Clear all messages"
+                  >
+                    <FiX size={14} />
+                    <span>Clear All</span>
+                  </button>
+                </div>
+              )}
               <AnimatePresence mode="popLayout">
                 {overlayMessages
                   .filter((msg) => !ignoredMessageIds.has(msg.id))
