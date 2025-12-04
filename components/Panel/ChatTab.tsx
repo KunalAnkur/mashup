@@ -421,23 +421,23 @@ const ChatTab = () => {
 
               // If it's from current user, replace first word with "YOU"
               if (isFromCurrentUser) {
-                messageWords[0] = "YOU";
+                messageWords[0] = "You";
                 displayMessage = messageWords.join(" ");
               }
             }
 
             return (
-              <div key={msg.id || i} className="flex justify-center py-1.5">
+              <div key={msg.id || i} className="flex justify-center py-1">
                 <div className="relative group">
                   {/* Glow effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   {/* Notification badge */}
-                  <div className="relative bg-gradient-to-br from-white/[0.08] to-white/[0.03] backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 shadow-lg">
+                  <div className="relative bg-gradient-to-br from-white/[0.08] to-white/[0.03] backdrop-blur-md  rounded-full px-4 py-1.5 ">
                     <span className="text-gray-300 text-xs font-medium">
                       {isJoinLeaveMessage ? (
                         // Join/Leave messages: show username + action with icon
                         <>
-                          <span className="inline-flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1">
                             <span className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}>
                               {displayName}
                             </span>
@@ -585,19 +585,19 @@ const ChatTab = () => {
                     
                     {/* Message bubble */}
                     <div
-                      className={`relative rounded-2xl px-4 py-2.5 transition-all duration-200 shadow-xl backdrop-blur-sm rounded-tl-sm ${
+                      className={`relative rounded-2xl px-3 py-2.5 transition-all duration-200 shadow-xl backdrop-blur-sm rounded-tl-sm ${
                         isCurrentUser
-                          ? `bg-gradient-to-br from-rose-600/30 via-pink-600/25 to-fuchsia-600/30 border border-pink-500/20`
-                          : "bg-gradient-to-br from-white/[0.08] via-white/[0.05] to-white/[0.02] border border-white/10"
+                          ? `bg-gradient-to-br from-rose-600/30 via-pink-600/25 to-fuchsia-600/30 `
+                          : "bg-gradient-to-br from-white/[0.08] via-white/[0.05] to-white/[0.02] "
                       }`}
                     >
                       <p className="text-white/95 text-sm leading-relaxed break-words whitespace-pre-wrap font-medium ">
                         {msg.message}
+                        
                       </p>
-                      {/* Timestamp - bottom right of bubble */}
-                      <span className="absolute bottom-1.5 right-2.5 text-gray-400/70 text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                      <div className="w-full  text-right text-gray-400/70 text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
                         {formatTime(msg.timestamp)}
-                      </span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -640,7 +640,7 @@ const ChatTab = () => {
       </div>
 
       {/* Reaction Buttons - Modern Design */}
-      <div className="relative flex items-center justify-center gap-3 py-2">
+      <div className="relative flex items-center justify-center gap-3 ">
         {/* Pinned Reactions - Centered */}
         {pinnedReactions.map((emoji) => (
           <AnimatedReaction
@@ -673,8 +673,8 @@ const ChatTab = () => {
         </div>
       </div>
 
-      {/* Input Area - Modern Design */}
-      <div className="relative flex items-center gap-2 bg-gradient-to-br from-white/[0.08] via-white/[0.05] to-white/[0.02] backdrop-blur-md border border-white/10 rounded-2xl px-4 py-2.5 shadow-2xl overflow-visible">
+      {/* Input Area - Modern Design */} 
+      <div className="relative flex items-center gap-1 bg-gradient-to-br from-white/[0.08] via-white/[0.05] to-white/[0.02] backdrop-blur-md  rounded-2xl px-3 py-1.5 shadow-2xl overflow-visible">
         {/* Emoji Picker */}
         {showEmojis && (
           <div
@@ -747,7 +747,7 @@ const ChatTab = () => {
         <button
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || !isJoined || isLoading}
-          className="relative p-2.5 rounded-xl text-gray-400 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+          className="relative p-2 rounded-xl text-gray-400 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
           <FaArrowCircleUp size={20} className="relative" />
@@ -755,7 +755,7 @@ const ChatTab = () => {
         <button
           data-emoji-button
           onClick={() => setShowEmojis(!showEmojis)}
-          className={`relative p-2.5 rounded-xl transition-all duration-200 group ${
+          className={`relative p-2 rounded-xl transition-all duration-200 group ${
             showEmojis
               ? "text-pink-400"
               : "text-gray-400 hover:text-pink-400"
