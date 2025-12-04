@@ -194,6 +194,7 @@ const VideoPlayer = ({
     };
 
     const handleSeekStart = () => {
+        console.log("handleSeekStart");
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         wasPlayingBeforeSeek.current = playing;
         if (playing) {
@@ -204,6 +205,7 @@ const VideoPlayer = ({
     };
 
     const handleSeekTo = (percent: number) => {
+        console.log("handleSeekTo");
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         if (!playerRef.current) return;
         const seekToTime = duration * (percent / 100);
@@ -213,6 +215,7 @@ const VideoPlayer = ({
     };
 
     const handleSeekEnd = () => {
+        console.log("handleSeekEnd");
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
         onSeekEnd?.();
@@ -275,8 +278,10 @@ const VideoPlayer = ({
                             playerVars: {
                                 controls: 0,
                                 disablekb: 0,
-                                modestbranding: 0,
-                                showinfo: 0,
+                                cc_load_policy: 0,
+                                modestbranding: 1,
+                                showinfo: 1,
+                                rel: 0
                             },
                         },
                     }}
