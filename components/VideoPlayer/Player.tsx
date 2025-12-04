@@ -275,8 +275,10 @@ const VideoPlayer = ({
                             playerVars: {
                                 controls: 0,
                                 disablekb: 0,
-                                modestbranding: 0,
-                                showinfo: 0,
+                                cc_load_policy: 0,
+                                modestbranding: 1,
+                                showinfo: 1,
+                                rel: 0
                             },
                         },
                     }}

@@ -1,6 +1,9 @@
 export enum SocketEvent {
+  // Core socket lifecycle
   DISCONNECT = "disconnect",
   CONNECTION = "connection",
+  SOCKET_ERROR = "socket_error",
+  // Room & sync
   JOIN_ROOM = "joinroom",
   ONPLAY = "onplay",
   ONPAUSE = "onpause",
@@ -8,19 +11,6 @@ export enum SocketEvent {
   SYNCWITHHOST = "syncwithhost",
   HOSTVIDEOSTATE = "hostvideostate",
   NOTIFY = "notify",
-  CHATMESSAGE = "chatmessage",
-  // Chat-specific events
-  JOIN_CHAT_ROOM = "joinChatRoom",
-  SEND_CHAT_MESSAGE = "sendChatMessage",
-  RECEIVE_CHAT_MESSAGE = "receiveChatMessage",
-  USER_TYPING = "userTyping",
-  USER_STOPPED_TYPING = "userStoppedTyping",
-  LEAVE_CHAT_ROOM = "leaveChatRoom",
-  GET_CHAT_HISTORY = "getChatHistory",
-  // Reaction events
-  SEND_REACTION = "sendReaction",
-  RECEIVE_REACTION = "receiveReaction",
-  // MediaSoup events
 
   // Video selection events
   SELECT_VIDEO = "selectVideo",
@@ -32,10 +22,25 @@ export enum SocketEvent {
   STREAM_PAUSED = "streamPaused",
   STREAM_RESUMED = "streamResumed",
 
+  // Chat-specific events
+  JOIN_CHAT_ROOM = "joinChatRoom",
+  SEND_CHAT_MESSAGE = "sendChatMessage",
+  RECEIVE_CHAT_MESSAGE = "receiveChatMessage",
+  USER_TYPING = "userTyping",
+  USER_STOPPED_TYPING = "userStoppedTyping",
+  LEAVE_CHAT_ROOM = "leaveChatRoom",
+  GET_CHAT_HISTORY = "getChatHistory",
+
+  // Reaction events
+  SEND_REACTION = "sendReaction",
+  RECEIVE_REACTION = "receiveReaction",
+
+  // Mediasoup / streaming
   CONNECT_TRANSPORT = "connectTransport",
   PRODUCE = "produce",
   CONSUME = "consume",
   LEAVE_ROOM = "leaveRoom",
   UNPAUSE_CONSUMERS = "unpauseConsumers",
   INCOMING_PRODUCER = "incomingProducer",
+  HOST_LEFT = "hostLeft",
 }
