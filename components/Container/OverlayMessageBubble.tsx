@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { ChatMessage } from "@/types/chatTypes";
+import { formatChatTime } from "@/utils/timeFormatter";
 
 interface OverlayMessageBubbleProps {
   message: ChatMessage;
@@ -84,17 +85,6 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
 
   const displayUsername = getDisplayUsername();
 
-  // Format timestamp to readable time (consistent with ChatTab)
-  const formatTime = (timestamp: number): string => {
-    const date = new Date(timestamp);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const displayHours = hours % 12 || 12;
-    const displayMinutes = minutes.toString().padStart(2, "0");
-    return `${displayHours}:${displayMinutes} ${ampm}`;
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -123,7 +113,7 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
   {/* Timestamp */}
   <div className="flex justify-end">
     <span className="text-white/80 text-[10px] font-medium">
-      {formatTime(message.timestamp || Date.now())}
+      {formatChatTime(message.timestamp || Date.now())}
     </span>
   </div>
 </div>

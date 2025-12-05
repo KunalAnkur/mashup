@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./ProgressAnimation.css";
+import { formatVideoTime } from "@/utils/timeFormatter";
 
 interface ProgressBarProps {
     progress: number; // 0–100
@@ -24,18 +25,6 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     const [isDragging, setIsDragging] = useState(false);
     const [hoverPosition, setHoverPosition] = useState<number | null>(null);
     const [hoverTime, setHoverTime] = useState(0);
-
-    const formatTime = (seconds: number): string => {
-        const date = new Date(seconds * 1000);
-        const hh = date.getUTCHours();
-        const mm = date.getUTCMinutes();
-        const ss = date.getUTCSeconds().toString().padStart(2, "0");
-
-        if (hh) {
-            return `${hh}:${mm.toString().padStart(2, "0")}:${ss}`;
-        }
-        return `${mm}:${ss}`;
-    };
 
     const updateProgressFromEvent = (e: MouseEvent | React.MouseEvent) => {
         if (!progressBarRef.current) return;
@@ -114,7 +103,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                         transform: 'translateX(-50%)'
                     }}
                 >
-                    {formatTime(hoverTime)}
+                    {formatVideoTime(hoverTime)}
                 </div>
             )}
 
