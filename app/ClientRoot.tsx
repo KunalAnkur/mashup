@@ -10,6 +10,8 @@ import AuthGuard from "@/context/AuthGuard";
 import { FileProvider } from "@/context/FileContext";
 import { MediaStreamProvider } from "@/context/MediaStreamContext";
 import GoogleAuthProvider from "@/components/GoogleAuth/GoogleOAuthProvider";
+import { Toaster } from 'react-hot-toast';
+
 export default function ClientRoot({ children }: { children: ReactNode }) {
     return (
         <Provider store={store}>
@@ -25,6 +27,17 @@ export default function ClientRoot({ children }: { children: ReactNode }) {
                         </FileProvider>
                     </AuthGuard>
                 </GoogleAuthProvider>
+                <Toaster 
+                    position="top-right"
+                    toastOptions={{
+                        className: '',
+                        style: {
+                            background: '#1f1f23',
+                            color: '#fff',
+                            borderRadius: '12px',
+                        },
+                    }}
+                />
             </PersistGate>
         </Provider>
     );

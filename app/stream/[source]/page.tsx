@@ -10,6 +10,7 @@ import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
 import { setRefers } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { helper } from "@/utils";
+import { showError } from "@/utils/toast";
 
 const PlatformStreamPage = () => {
   const router = useRouter();
@@ -230,9 +231,9 @@ const PlatformStreamPage = () => {
       
       // For other errors, log but don't show alert (less intrusive)
       console.error("Screen sharing error:", err);
-      // Only show alert for truly unexpected errors
+      // Only show toast for truly unexpected errors
       if (err.name !== 'NotFoundError' && err.name !== 'NotReadableError') {
-        alert("Screen sharing failed. Please try again.");
+        showError("Screen sharing failed. Please try again.");
       }
     }
   }, [audioOnly, setMediaStream, stream]);
@@ -274,12 +275,12 @@ const PlatformStreamPage = () => {
         // Redirect to room
         router.push(`/room/${response.data.room_id}`);
       } else {
-        alert("Failed to create room. Please try again.");
+        showError("Failed to create room. Please try again.");
         setIsCreatingRoom(false);
       }
     } catch (error) {
       console.error("Error creating room:", error);
-      alert("Failed to create room. Please try again.");
+      showError("Failed to create room. Please try again.");
       setIsCreatingRoom(false);
     }
   };
@@ -447,7 +448,24 @@ const PlatformStreamPage = () => {
         <h2 className="text-xl font-bold text-white absolute left-1/2 -translate-x-1/2">
           Stream from {platform.name}
         </h2>
-        <div className="flex items-center">
+        <div className="flex items-center gap-4">
+          {/* TEMPORARY TOAST BUTTONS 2 & 3 : Test Toast Buttons - Remove after testing */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => showError("Screen sharing failed. Please try again.")}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors"
+              title="Test Toast 1: Screen Sharing Error"
+            >
+              🧪 Toast 1
+            </button>
+            <button
+              onClick={() => showError("Failed to create room. Please try again.")}
+              className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs rounded-lg transition-colors"
+              title="Test Toast 2: Room Creation Error"
+            >
+              🧪 Toast 2
+            </button>
+          </div>
           <ProfileHeader />
         </div>
       </div>

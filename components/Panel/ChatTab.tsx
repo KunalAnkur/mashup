@@ -10,6 +10,7 @@ import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import type { EmojiClickData, Theme } from "emoji-picker-react";
 import AnimatedReaction from "./AnimatedReaction";
 import ReactionPicker from "./ReactionPicker";
+import { showError } from "@/utils/toast";
 import { formatChatTime } from "@/utils/timeFormatter";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
@@ -230,6 +231,8 @@ const ChatTab = () => {
       }
     } else {
       console.error("Failed to send message:", result.error);
+      // Show toast notification for failed message
+      showError(result.error || "Failed to send message. Please try again.");
     }
   };
 
@@ -661,6 +664,31 @@ const ChatTab = () => {
             onReactionsChange={handleReactionsChange}
           />
         </div>
+      </div>
+
+      {/* TEMPORARY: Test Toast Buttons - Remove after testing */}
+      <div className="mb-2 flex flex-col gap-2">
+        <button
+          onClick={() => showError("Failed to send message. Please try again.")}
+          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded-lg transition-colors w-full"
+          title="Test Toast 5: Chat Message Error"
+        >
+          🧪 Test Toast 5 - Chat Error
+        </button>
+        <button
+          onClick={() => showError("Connection lost. Trying to reconnect...")}
+          className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs rounded-lg transition-colors w-full"
+          title="Test Toast 6: Socket Disconnect"
+        >
+          🧪 Test Toast 6 - Socket Disconnect
+        </button>
+        <button
+          onClick={() => showError("Failed to connect. Please check your internet connection.")}
+          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors w-full"
+          title="Test Toast 7: Socket Connection Error"
+        >
+          🧪 Test Toast 7 - Connection Error
+        </button>
       </div>
 
       {/* Input Area - Modern Design */} 

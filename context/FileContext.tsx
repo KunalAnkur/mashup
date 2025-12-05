@@ -8,6 +8,7 @@ import {
     showFilePicker,
     clearFileHandles,
 } from "@/utils/filePersistence";
+import { showInfo } from "@/utils/toast";
 
 type FileContextType = {
     files: File[];
@@ -217,13 +218,10 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
         permissionPromptShownRef.current = true;
         
-        const message = 
-            `📁 File Access Permission\n\n` +
-            `To keep your files after refreshing the page, please allow file access when prompted.\n\n` +
-            `This allows us to remember your selected videos so you don't have to re-select them every time.\n\n` +
-            `If you don't allow access, files will still work but won't persist after refresh.`;
+        const message = `📁 Allow file access to keep your videos after refresh`;
 
-        alert(message);
+        // Show toast notification instead of alert
+        showInfo(message, 5000);
         
         // Reset after 5 seconds to allow showing again if needed
         setTimeout(() => {
