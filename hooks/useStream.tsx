@@ -375,6 +375,60 @@ export const useStream = ({
         };
     }, [socket, isHost, enabled]);
 
+    // Handle track ended events (when user stops sharing screen)
+    useEffect(() => {
+        if (!isHost || !enabled) return;
+
+        const handleTrackEnded = () => {
+            console.log("[useStream] Screen sharing stopped by user - track ended, cleaning up producers");
+            
+            // Close producers when tracks end
+            audioProducerRef.current?.close();
+            videoProducerRef.current?.close();
+            
+            audioProducerRef.current = null;
+            videoProducerRef.current = null;
+            
+            // Reset initialization state
+            setIsInitialized(false);
+            
+            // Notify that stream is no longer available
+            // The MediaStreamContext will also handle setting stream to null
+        };
+
+        const tracks: MediaStreamTrack[] = [];
+
+        // Listen to producer tracks (these are the actual tracks being sent)
+        const audioTrack = audioProducerRef.current?.track;
+        const videoTrack = videoProducerRef.current?.track;
+        if (audioTrack) tracks.push(audioTrack);
+        if (videoTrack) tracks.push(videoTrack);
+
+        // Also listen to stream tracks as a fallback (in case producers aren't created yet)
+        const stream = getStreamRef.current();
+        if (stream) {
+            const streamAudioTracks = stream.getAudioTracks();
+            const streamVideoTracks = stream.getVideoTracks();
+            streamAudioTracks.forEach(track => {
+                if (!tracks.includes(track)) tracks.push(track);
+            });
+            streamVideoTracks.forEach(track => {
+                if (!tracks.includes(track)) tracks.push(track);
+            });
+        }
+
+        tracks.forEach(track => {
+            track.addEventListener('ended', handleTrackEnded);
+        });
+
+        // Cleanup: remove listeners when tracks change or component unmounts
+        return () => {
+            tracks.forEach(track => {
+                track.removeEventListener('ended', handleTrackEnded);
+            });
+        };
+    }, [isHost, enabled, isInitialized]); // Re-run when initialization state changes (producers created/destroyed)
+
     // Cleanup on unmount
     useEffect(() => () => resetState(), [resetState]);
 

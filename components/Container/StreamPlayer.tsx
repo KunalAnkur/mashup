@@ -11,6 +11,7 @@ import type ReactPlayer from "react-player";
 import { useStream } from "@/hooks";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
+import getPlayerMessage from "@/utils/playerState";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -32,7 +33,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const hasInitializedRef = useRef(false);
     const lastVideoIndexRef = useRef(-1);
     const videoEndedRef = useRef(false); 
-    const { isJoined, roomType, joinResponse, isHost } = useRoomContext();
+    const { isJoined, roomType, joinResponse, isHost, hostLeft } = useRoomContext();
 
     const isScreenSharing = roomState.type === "stream" && roomState.source === "stream" && screenStream !== null;
     const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
@@ -83,18 +84,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         setIsPaused(false);
         setTimeout(() => setPauseFrameUrl(null), 500);
     }, []);
-
-    const {
-        isInitialized,
-        initializeFromJoinResponse,
-        pauseProducers,
-        resumeProducers,
-        replaceProducerTracks,
-        onSeekStart,
-        onSeekEnd,
-        onPlay: streamOnPlay,
-        onPause,
-    } = useStream({
+    const { isInitialized, initializeFromJoinResponse, replaceProducerTracks, onSeekStart, onSeekEnd, onPlay: streamOnPlay, onPause } = useStream({
         roomId: roomState.roomId,
         getStream,
         onStreamReceived: handleStreamReceived,
@@ -107,6 +97,12 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         profile: authState.user?.profile,
     });
 
+    // useEffect(() => {
+    //     if (!roomType) return;
+    //     const playerMessage = getPlayerMessage(isHost, roomType, hostLeft, remoteStream);
+    //     console.log("playerMessage", playerMessage);    
+    // }, [isHost, roomType, hostLeft, remoteStream]);
+    
     // Initialize when joined
     useEffect(() => {
         if (!joinResponse || roomType !== "stream" || !isJoined || hasInitializedRef.current) return;
@@ -186,13 +182,13 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     // }, [isHost, isInitialized, pauseProducers]);
 
     const source = isHost ? (isScreenSharing ? screenStream : currentFileUrl) : remoteStream;
-
-    if (!source) {
+    console.log("source", source, remoteStream, getPlayerMessage(isHost, roomType || "sync", hostLeft, remoteStream));
+    if (!source || hostLeft) {
         return (
             <div className="flex items-center justify-center h-full bg-black">
                 <div className="text-white/60 text-center">
                     <div className="animate-pulse mb-2">
-                        {isHost ? "🎬 Loading video..." : "📡 Waiting for stream..."}
+                        {isHost ? "🎬 Loading video..." : getPlayerMessage(isHost, roomType || "sync", hostLeft, remoteStream) }
                     </div>
                     <div className="text-sm text-white/40">
                         {isHost ? "Preparing to stream" : `Connecting... ${isInitialized ? '(Ready)' : ''}`}
