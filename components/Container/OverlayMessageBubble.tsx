@@ -84,53 +84,52 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
 
   const displayUsername = getDisplayUsername();
 
+  // Format timestamp to readable time (consistent with ChatTab)
+  const formatTime = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, "0");
+    return `${displayHours}:${displayMinutes} ${ampm}`;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -5, scale: 0.95 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="relative mb-2.5 max-w-[280px] w-full"
+      className="relative mb-2.5 w-[280px]"
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
     >
-      {/* Message Bubble - Modern Design */}
-      <div className={`relative backdrop-blur-xl rounded-2xl p-3 shadow-xl border transition-all duration-200 ${
-        isOwnMessage 
-          ? 'bg-gradient-to-br from-pink-500/30 via-rose-500/25 to-fuchsia-500/30 border-pink-400/30' 
-          : 'bg-gradient-to-br from-black/80 via-black/70 to-black/60 border-white/20'
-      }`}>
-        {/* User Info - Compact Design */}
-        <div className="flex items-center gap-2 mb-2.5">
-          {message.userProfile ? (
-            <img
-              src={message.userProfile}
-              alt={displayUsername}
-              className="w-7 h-7 rounded-full object-cover ring-2 ring-white/20"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                e.currentTarget.nextElementSibling?.classList.remove("hidden");
-              }}
-            />
-          ) : null}
-          <div
-            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg ring-2 ring-white/20 ${
-              message.userProfile ? "hidden" : ""
-            }`}
-            style={{ backgroundColor: getUserColor(message.userName) }}
-          >
-            {getInitials(displayUsername)}
-          </div>
-          <span className="text-white/95 text-xs font-semibold truncate max-w-[180px]" title={displayUsername}>
-            {displayUsername}
-          </span>
-        </div>
+     {/* Message Bubble - Glassmorphism Design */}
+<div className="relative backdrop-blur-md bg-black/05 rounded-2xl p-3  transition-all duration-200">
+  {/* Username and Message */}
+  <div>
+    <span 
+      className="text-sm  inline"
+      style={{ color: getUserColor(message.userName) }}
+      title={displayUsername}
+    >
+      {displayUsername}:{' '}
+    </span>
+    <span className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap break-words">
+      {message.message}
+    </span>
+  </div>
+  {/* Timestamp */}
+  <div className="flex justify-end">
+    <span className="text-white/80 text-[10px] font-medium">
+      {formatTime(message.timestamp || Date.now())}
+    </span>
+  </div>
+</div>
 
-        {/* Message Text */}
-        <p className="text-white/95 text-sm leading-relaxed whitespace-pre-wrap break-words">
-          {message.message}
-        </p>
-      </div>
+
+
     </motion.div>
   );
 };
