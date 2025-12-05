@@ -8,7 +8,17 @@ import { RootState } from "@/lib/store";
 import { exitRoom } from "@/lib/store/slices/roomSlice";
 
 export type RoomType = "stream" | "sync";
-
+export interface UserInfo {
+    socketId: string;
+    roomId: string;
+    username: string;
+    email?: string;
+    profile?: string;
+    name?: string;
+    host: boolean;
+    roomType: RoomType;
+    joinedAt: number;
+}
 interface JoinResponse {
     success: boolean;
     roomId: string;
@@ -17,6 +27,7 @@ interface JoinResponse {
     rtpCapabilities?: any;
     sendTransportOptions?: any;
     recvTransportOptions?: any;
+    users?: UserInfo[];
     existingProducers?: Record<string, any[]>;
     error?: string;
 }
@@ -145,12 +156,20 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             }
         };
 
+        const handleHostJoined = (data: { roomId: string }) => {
+            if (!data.roomId || data.roomId === roomId) {
+                setHostLeft(false);
+                setRoomClosed(true);
+            }
+        };
+
         socket.on(SocketEvent.HOST_LEFT, handleHostLeft);
         socket.on(SocketEvent.LEAVE_ROOM, handleRoomClosed);
-
+        socket.on(SocketEvent.HOST_JOINED, handleHostJoined);
         return () => {
             socket.off(SocketEvent.HOST_LEFT, handleHostLeft);
             socket.off(SocketEvent.LEAVE_ROOM, handleRoomClosed);
+            socket.off(SocketEvent.HOST_JOINED, handleHostJoined);
         };
     }, [socket, roomId]);
 

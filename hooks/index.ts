@@ -11,4 +11,4 @@
 export { useStream } from "./useStream";
 export { useSync } from "./useSync";
 export { useChat } from "./useChat";
-export { useRoom } from "./useRoom"; // For standalone use, prefer RoomContext
+// export { useRoom } from "./useRoom"; // For standalone use, prefer RoomContext

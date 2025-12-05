@@ -43,4 +43,5 @@ export enum SocketEvent {
   UNPAUSE_CONSUMERS = "unpauseConsumers",
   INCOMING_PRODUCER = "incomingProducer",
   HOST_LEFT = "hostLeft",
+  HOST_JOINED = "hostJoined",
 }
