@@ -157,8 +157,10 @@ const SettingTab = () => {
                 <LuMail size={12} />
                 Email Address
               </label>
-              <div className="px-3 py-2 bg-white/5 rounded-lg">
-                <p className="text-white text-sm">{email || "Not set"}</p>
+              <div className="px-3 py-2 bg-white/5 rounded-lg min-w-0">
+                <p className="text-white text-sm truncate" title={email || "Not set"}>
+                  {email || "Not set"}
+                </p>
                 <p className="text-gray-500 text-xs mt-1">Email cannot be changed</p>
               </div>
             </div>
