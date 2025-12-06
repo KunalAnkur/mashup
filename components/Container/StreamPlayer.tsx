@@ -12,6 +12,7 @@ import { useStream } from "@/hooks";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
 import getPlayerMessage from "@/utils/playerState";
+import { showError } from "@/utils/toast";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -165,6 +166,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                         console.log("Producer tracks refreshed after video restart");
                     } catch (error) {
                         console.error("Error refreshing producer tracks:", error);
+                        showError("Stream update failed", "Unable to update video stream. The video may continue playing.");
                     }
                 }
             }, 500);

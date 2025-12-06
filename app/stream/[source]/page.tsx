@@ -10,6 +10,7 @@ import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
 import { setRefers } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { helper } from "@/utils";
+import { showError } from "@/utils/toast";
 
 const PlatformStreamPage = () => {
   const router = useRouter();
@@ -230,9 +231,9 @@ const PlatformStreamPage = () => {
       
       // For other errors, log but don't show alert (less intrusive)
       console.error("Screen sharing error:", err);
-      // Only show alert for truly unexpected errors
+      // Only show toast for truly unexpected errors
       if (err.name !== 'NotFoundError' && err.name !== 'NotReadableError') {
-        alert("Screen sharing failed. Please try again.");
+        showError("Screen sharing failed", "Please check your browser permissions and try again.");
       }
     }
   }, [audioOnly, setMediaStream, stream]);
@@ -274,12 +275,12 @@ const PlatformStreamPage = () => {
         // Redirect to room
         router.push(`/room/${response.data.room_id}`);
       } else {
-        alert("Failed to create room. Please try again.");
+        showError("Failed to create room", "Please check your connection and try again.");
         setIsCreatingRoom(false);
       }
     } catch (error) {
       console.error("Error creating room:", error);
-      alert("Failed to create room. Please try again.");
+      showError("Failed to create room", "Please check your connection and try again.");
       setIsCreatingRoom(false);
     }
   };

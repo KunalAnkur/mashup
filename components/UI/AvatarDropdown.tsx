@@ -8,6 +8,7 @@ import { logout } from "@/lib/store/slices/authSlice";
 import { useLogoutMutation } from "@/lib/store/api/authApi";
 import { FcGoogle } from "react-icons/fc";
 import { IoLogOutOutline } from "react-icons/io5";
+import { showError } from "@/utils/toast";
 
 interface AvatarDropdownProps {
   size?: number;
@@ -103,6 +104,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
       }
     } catch (error) {
       console.error("Logout failed:", error);
+      showError("Logout failed", "There was an error logging out. You have been logged out locally.");
     } finally {
       // Always clear local state and redirect, even if API call fails
       dispatch(logout());

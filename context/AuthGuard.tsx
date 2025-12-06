@@ -8,6 +8,7 @@ import { exitRoom, setRoom } from "@/lib/store/slices/roomSlice";
 import { useVerifyTokenMutation } from "@/lib/store/api/authApi";
 import { useCreateRoomMutation, useGetMyRoomMutation, useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { Skeleton } from "@/components";
+import { showError } from "@/utils/toast";
 
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -204,8 +205,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                             // Wait for Redux state to update and DOM to render
                             await new Promise(resolve => setTimeout(resolve, 250));
                         } catch (error) {
-                            // TODO: Notify User: Handle this error gracefully
+                            // Notify user about the error
                             console.error("Error fetching room details:", error);
+                            showError("Failed to load room", "The room may not exist or you may not have access. Please check the room ID and try again.");
                             router.replace("/");
                             setIsRoomLoading(false);
                             setSkeleton(false);

@@ -10,6 +10,8 @@ import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import type { EmojiClickData, Theme } from "emoji-picker-react";
 import AnimatedReaction from "./AnimatedReaction";
 import ReactionPicker from "./ReactionPicker";
+import { showError } from "@/utils/toast";
+import { formatChatTime } from "@/utils/timeFormatter";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -106,17 +108,6 @@ const getUserColor = (username: string | undefined | null) => {
     hash = hash & hash; // Convert to 32-bit integer
   }
   return colors[Math.abs(hash) % colors.length];
-};
-
-// Format timestamp to readable time
-const formatTime = (timestamp: number): string => {
-  const date = new Date(timestamp);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  const displayHours = hours % 12 || 12;
-  const displayMinutes = minutes.toString().padStart(2, "0");
-  return `${displayHours}:${displayMinutes} ${ampm}`;
 };
 
 // Check if message contains only emojis (no text)
@@ -240,6 +231,8 @@ const ChatTab = () => {
       }
     } else {
       console.error("Failed to send message:", result.error);
+      // Show toast notification for failed message
+      showError("Failed to send message", result.error || "Please check your connection and try again.");
     }
   };
 
@@ -476,7 +469,7 @@ const ChatTab = () => {
                   </div>
                   {/* Timestamp for system notifications - shows on hover */}
                   <span className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-gray-500/60 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                    {formatTime(msg.timestamp)}
+                    {formatChatTime(msg.timestamp)}
                   </span>
                 </div>
               </div>
@@ -574,7 +567,7 @@ const ChatTab = () => {
                     </div>
                     {/* Timestamp for emoji messages - bottom right */}
                     <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[10px] font-medium opacity-0 group-hover/emoji:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                      {formatTime(msg.timestamp)}
+                      {formatChatTime(msg.timestamp)}
                     </span>
                   </div>
                 ) : (
@@ -596,7 +589,7 @@ const ChatTab = () => {
                         
                       </p>
                       <div className="w-full  text-right text-gray-400/70 text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                        {formatTime(msg.timestamp)}
+                        {formatChatTime(msg.timestamp)}
                       </div>
                     </div>
                   </div>

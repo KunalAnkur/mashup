@@ -10,6 +10,7 @@ import {
 import { exitRoom } from "@/lib/store/slices/roomSlice";
 import { FaPlay, FaPause, FaCrown } from "react-icons/fa";
 import { LuCheck, LuLink, LuLogOut, LuPencil } from "react-icons/lu";
+import { showError, showSuccess } from "@/utils/toast";
 
 const SettingTab = () => {
   const host = useSelector((state: RootState) => state.room.host);
@@ -61,8 +62,10 @@ const SettingTab = () => {
         body: { name: roomName },
       }).unwrap();
       setIsEditingName(false);
+      showSuccess("Room name updated successfully");
     } catch (error) {
       console.error("Failed to rename room:", error);
+      showError("Failed to rename room", "Please try again. Make sure you have a stable internet connection.");
     } finally {
       setIsSavingName(false);
     }
