@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import GoogleButton from "../GoogleAuth/GoogleButton";
 import { useRouter, useSearchParams } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import { showError } from "@/utils/toast";
 
 type Prop = {
   setContainer?: (container: "login" | "signup") => void;
@@ -31,16 +32,25 @@ const SignupContainer = ({ setContainer }: Prop) => {
   const [signupUser, signupState] = useSignupMutation();
   const dispatch = useDispatch();
   const handleOnSignUp = async () => {
-    // Use username as name for regular signup
-    const data = await signupUser({
-      email,
-      password,
-      confirmPassword: password,
-      username,
-      name: username, // Include name field (using username as name)
-    }).unwrap();
-    dispatch(setUser(data));
-    console.log(data, signupState);
+    try {
+      // Use username as name for regular signup
+      const data = await signupUser({
+        email,
+        password,
+        confirmPassword: password,
+        username,
+        name: username, // Include name field (using username as name)
+      }).unwrap();
+      dispatch(setUser(data));
+      console.log(data, signupState);
+    } catch (error: any) {
+      console.error("Signup failed:", error);
+      const errorMessage = error?.data?.message || error?.message || "Failed to create account";
+      const errorDescription = error?.data?.message || error?.message 
+        ? "Please check your information and try again."
+        : "Please check your email, username, and password, then try again.";
+      showError(errorMessage, errorDescription);
+    }
   };
 
   const handleTogglePassword = () => {
@@ -79,6 +89,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
       );
     } catch (error) {
       console.error("Google authentication failed", error);
+      showError("Google authentication failed", "Please try again or use email and password to sign up.");
     }
   };
 

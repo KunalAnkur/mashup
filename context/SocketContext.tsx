@@ -43,7 +43,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             // Show error toast for unexpected disconnections (not user-initiated)
             if (reason !== 'io client disconnect' && !errorShownRef.current) {
                 errorShownRef.current = true;
-                showError("Connection lost. Trying to reconnect...");
+                showError("Connection lost", "Trying to reconnect automatically. Please wait...");
             }
         };
 
@@ -51,7 +51,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             console.error('[SOCKET] Connection error:', error);
             if (!errorShownRef.current) {
                 errorShownRef.current = true;
-                showError("Failed to connect. Please check your internet connection.");
+                showError("Failed to connect", "Please check your internet connection and try again.");
             }
         };
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
+import { showError } from "@/utils/toast";
 
 const SourceTab = () => {
     const { setStream } = useMediaStreamContext();
@@ -19,7 +20,7 @@ const SourceTab = () => {
             });
             setStream(mediaStream);
         } catch (err) {
-            alert("Screen sharing was cancelled or failed.");
+            showError("Screen sharing failed", "Please check your browser permissions and try again.");
         }
     };
     return (

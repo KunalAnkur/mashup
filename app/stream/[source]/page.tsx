@@ -233,7 +233,7 @@ const PlatformStreamPage = () => {
       console.error("Screen sharing error:", err);
       // Only show toast for truly unexpected errors
       if (err.name !== 'NotFoundError' && err.name !== 'NotReadableError') {
-        showError("Screen sharing failed. Please try again.");
+        showError("Screen sharing failed", "Please check your browser permissions and try again.");
       }
     }
   }, [audioOnly, setMediaStream, stream]);
@@ -275,12 +275,12 @@ const PlatformStreamPage = () => {
         // Redirect to room
         router.push(`/room/${response.data.room_id}`);
       } else {
-        showError("Failed to create room. Please try again.");
+        showError("Failed to create room", "Please check your connection and try again.");
         setIsCreatingRoom(false);
       }
     } catch (error) {
       console.error("Error creating room:", error);
-      showError("Failed to create room. Please try again.");
+      showError("Failed to create room", "Please check your connection and try again.");
       setIsCreatingRoom(false);
     }
   };
@@ -450,22 +450,22 @@ const PlatformStreamPage = () => {
         </h2>
         <div className="flex items-center gap-4">
           {/* TEMPORARY TOAST BUTTONS 2 & 3 : Test Toast Buttons - Remove after testing */}
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <button
-              onClick={() => showError("Screen sharing failed. Please try again.")}
+              onClick={() => showError("Screen sharing failed", "Please check your browser permissions and try again.")}
               className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors"
               title="Test Toast 1: Screen Sharing Error"
             >
               🧪 Toast 1
             </button>
             <button
-              onClick={() => showError("Failed to create room. Please try again.")}
+              onClick={() => showError("Failed to create room", "Please check your connection and try again.")}
               className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs rounded-lg transition-colors"
               title="Test Toast 2: Room Creation Error"
             >
               🧪 Toast 2
             </button>
-          </div>
+          </div> */}
           <ProfileHeader />
         </div>
       </div>

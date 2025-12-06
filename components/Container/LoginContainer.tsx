@@ -11,6 +11,7 @@ import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import { showError } from "@/utils/toast";
 
 type Prop = {
   setContainer?: (container: "login" | "signup") => void | null;
@@ -35,9 +36,18 @@ const LoginContainer = ({ setContainer }: Prop) => {
   };
 
   const handleLogin = async () => {
-    const response = await loginUser({ email, password }).unwrap();
-    console.log(response.data, loginState);
-    dispatch(setUser(response));
+    try {
+      const response = await loginUser({ email, password }).unwrap();
+      console.log(response.data, loginState);
+      dispatch(setUser(response));
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      const errorMessage = error?.data?.message || error?.message || "Invalid credentials";
+      const errorDescription = error?.data?.message || error?.message 
+        ? "Please check your email or password and try again."
+        : "Please check your email or password.";
+      showError(errorMessage, errorDescription);
+    }
   };
 
   const handleGoogleAuthSuccess = async (userInfo: any) => {
@@ -63,6 +73,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
       );
     } catch (error) {
       console.error("Google authentication failed", error);
+      showError("Google authentication failed", "Please try again or use email and password to login.");
     }
   };
 
