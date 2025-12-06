@@ -6,6 +6,7 @@ import { UrlCard } from "./UrlCard";
 import { EmptyUrlState } from "./EmptyUrlState";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
 import { Platform } from "@/types/ModalTypes/urlPlatformTypes";
+import { ImSpinner2 } from "react-icons/im";
 
 interface UrlInputSectionProps {
   sourceUrlInput: string;
@@ -21,6 +22,8 @@ interface UrlInputSectionProps {
   onEnterRoom: () => void;
   getPlatformById: (id: string) => Platform | undefined;
   getUrlDisplayName: (url: string) => string;
+  isAdding?: boolean;
+  isEntering?: boolean;
 }
 
 export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
@@ -37,6 +40,8 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
   onEnterRoom,
   getPlatformById,
   getUrlDisplayName,
+  isAdding = false,
+  isEntering = false,
 }) => (
   <div className="w-full lg:w-1/2 flex flex-col">
     <SectionTitle
@@ -55,6 +60,7 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
           onAddClick={onAddUrl}
           isAddDisabled={isAddDisabled}
           tooltipMessage={tooltipMessage}
+          isAdding={isAdding}
         />
 
         {/* Added URLs List or Empty State */}
@@ -87,9 +93,10 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
           />
           <Button
             onClick={onEnterRoom}
-            className="flex-1 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:bg-none disabled:shadow-none"
-            name="Enter"
-            disabled={addedUrls.length === 0}
+            icon={isEntering ? <ImSpinner2 className="animate-spin" /> : undefined}
+            className="flex-1 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:bg-none disabled:shadow-none disabled:opacity-50"
+            name={isEntering ? "Entering..." : "Enter"}
+            disabled={addedUrls.length === 0 || isEntering}
           />
         </div>
       </div>

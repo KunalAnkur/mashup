@@ -4,6 +4,8 @@ import { FaBroadcastTower, FaSync } from "react-icons/fa";
 import { Button } from "../UI";
 import { useState } from "react";
 import Image from "next/image";
+import { ImSpinner2 } from "react-icons/im";
+
 import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 
@@ -190,6 +192,8 @@ const SourceSelection = () => {
                   <div className="group">
                     <Button
                       name={isJoining ? "Joining..." : "Join"}
+                      icon={isJoining ? <ImSpinner2 className="animate-spin" /> : undefined}
+
                       onClick={handleJoinRoom}
                       className="text-sm sm:text-base md:text-lg font-bold px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 rounded-xl transition-all duration-200 shadow-lg whitespace-nowrap
                                       enabled:bg-gradient-to-r enabled:from-rose-600 enabled:via-pink-600 enabled:to-fuchsia-600 enabled:text-white enabled:shadow-pink-500/25

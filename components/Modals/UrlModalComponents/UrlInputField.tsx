@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "../../UI";
+import { ImSpinner2 } from "react-icons/im";
 
 interface UrlInputFieldProps {
   value: string;
@@ -8,6 +9,7 @@ interface UrlInputFieldProps {
   onAddClick: () => void;
   isAddDisabled: boolean;
   tooltipMessage: string;
+  isAdding?: boolean;
 }
 
 export const UrlInputField: React.FC<UrlInputFieldProps> = ({
@@ -17,6 +19,7 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
   onAddClick,
   isAddDisabled,
   tooltipMessage,
+  isAdding = false,
 }) => (
   <div className="flex gap-3">
     <input
@@ -26,13 +29,15 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
       onChange={onChange}
       onKeyDown={onKeyDown}
       className="flex-1 min-w-0 rounded-xl bg-white/5 text-white text-sm px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500"
+      disabled={isAdding}
     />
     <div className="relative group shrink-0">
       <Button
         onClick={onAddClick}
-        className="bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-5 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:bg-none disabled:shadow-none"
-        name="Add"
-        disabled={isAddDisabled}
+        icon={isAdding ? <ImSpinner2 className="animate-spin" /> : undefined}
+        className="bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-5 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:bg-none disabled:shadow-none disabled:opacity-50"
+        name={isAdding ? "Adding..." : "Add"}
+        disabled={isAddDisabled || isAdding}
       />
       {isAddDisabled && tooltipMessage && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#2a2a2e] text-gray-200 text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10 shadow-xl">

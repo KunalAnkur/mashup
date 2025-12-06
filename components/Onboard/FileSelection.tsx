@@ -11,7 +11,8 @@ import {
   FaCheck,
 } from "react-icons/fa";
 import { Button } from "../UI";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ImSpinner2 } from "react-icons/im";
 import { useFileContext } from "@/context/FileContext";
 import { setRefers, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
@@ -27,6 +28,7 @@ const FileSelection = () => {
 
   const { files, removeFile, getThumbnail, thumbnails } = useFileContext();
   const selectedFile = files[selectedFileIndex] ?? null;
+  const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
     if (files.length > 0 && selectedFileIndex === -1) {
@@ -89,20 +91,28 @@ const FileSelection = () => {
   };
 
   const handleOnStartWatching = async () => {
-    const urlList = files.map((file) => URL.createObjectURL(file));
-    dispatch(
-      setRefers({
-        refer: true,
-        type: "stream",
-        source: "file",
-        urls: urlList,
-      })
-    );
+    if (isStarting) return;
     
-    if (!authState.isAuthenticated) {
-      router.push("/login");
+    setIsStarting(true);
+    try {
+      const urlList = files.map((file) => URL.createObjectURL(file));
+      dispatch(
+        setRefers({
+          refer: true,
+          type: "stream",
+          source: "file",
+          urls: urlList,
+        })
+      );
+      
+      if (!authState.isAuthenticated) {
+        router.push("/login");
+      }
+      // If authenticated, AuthGuard will handle room creation and navigation
+    } finally {
+      // Keep loading state for a bit to show feedback, then reset if navigation doesn't happen
+      setTimeout(() => setIsStarting(false), 1000);
     }
-    // If authenticated, AuthGuard will handle room creation and navigation
   };
   return (
     <div className="flex flex-col h-full bg-[#18181b]">
@@ -270,14 +280,15 @@ const FileSelection = () => {
         </div>
 
         <Button
-          disabled={!selectedFile}
+          disabled={!selectedFile || isStarting}
           onClick={handleOnStartWatching}
+          icon={isStarting ? <ImSpinner2 className="animate-spin" /> : undefined}
           className={`w-full rounded-xl font-bold text-sm px-4 py-3.5 transition-all duration-200 shadow-lg ${
-            selectedFile
+            selectedFile && !isStarting
               ? "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-700 hover:via-pink-700 hover:to-fuchsia-700 text-white"
               : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 text-white opacity-50 cursor-not-allowed"
           }`}
-          name="Start Watching"
+          name={isStarting ? "Starting..." : "Start Watching"}
         />
       </div>
     </div>
