@@ -7,8 +7,10 @@ import React, {
     useEffect,
     useState,
     ReactNode,
+    useRef,
 } from "react";
 import { Socket } from "socket.io-client";
+import { showError } from "@/utils/toast";
 
 interface SocketContextType {
     socketService: SocketService;
@@ -21,6 +23,7 @@ const SocketContext = createContext<SocketContextType | undefined>(undefined);
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
     const [socketService] = useState(() => new SocketService({}));
     const [isConnected, setIsConnected] = useState(false);
+    const errorShownRef = useRef(false); // Prevent showing multiple error toasts
 
     useEffect(() => {
         // Initialize the unified socket connection (single namespace)
@@ -30,11 +33,26 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         const onConnect = () => {
             console.log('[SOCKET] Connection started...');
             setIsConnected(true);
+            errorShownRef.current = false; // Reset error flag on successful connection
         };
         
-        const onDisconnect = () => {
-            console.log('[SOCKET] Connection disconnected');
+        const onDisconnect = (reason: string) => {
+            console.log('[SOCKET] Connection disconnected', reason);
             setIsConnected(false);
+            
+            // Show error toast for unexpected disconnections (not user-initiated)
+            if (reason !== 'io client disconnect' && !errorShownRef.current) {
+                errorShownRef.current = true;
+                showError("Connection lost", "Trying to reconnect automatically. Please wait...");
+            }
+        };
+
+        const onConnectError = (error: Error) => {
+            console.error('[SOCKET] Connection error:', error);
+            if (!errorShownRef.current) {
+                errorShownRef.current = true;
+                showError("Failed to connect", "Please check your internet connection and try again.");
+            }
         };
 
         // Heartbeat handler - respond to server pings
@@ -44,6 +62,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
         mainSocket.on("connect", onConnect);
         mainSocket.on("disconnect", onDisconnect);
+        mainSocket.on("connect_error", onConnectError);
         mainSocket.on("ping", handlePing);
 
         // Set initial connection status
@@ -53,6 +72,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         return () => {
             mainSocket.off("connect", onConnect);
             mainSocket.off("disconnect", onDisconnect);
+            mainSocket.off("connect_error", onConnectError);
             mainSocket.off("ping", handlePing);
             socketService.disconnect();
         };

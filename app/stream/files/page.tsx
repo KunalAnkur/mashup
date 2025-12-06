@@ -10,6 +10,7 @@ import {
 } from "@/components/Modals/DeviceModalComponents";
 import { FileSelection, ProfileHeader, Logo } from "@/components";
 import { FaArrowLeft } from "react-icons/fa";
+import { showError } from "@/utils/toast";
 
 const StreamFilesPage = () => {
   const router = useRouter();
@@ -42,6 +43,7 @@ const StreamFilesPage = () => {
           return;
         }
         console.error('Error selecting files:', error);
+        showError("Failed to select files", "Please check your browser permissions and try again.");
         // Fallback to traditional file input
         showPermissionPrompt();
         fileInputRef.current?.click();

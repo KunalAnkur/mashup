@@ -6,6 +6,7 @@ import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { exitRoom, updateRoomInfo } from "@/lib/store/slices/roomSlice";
+import { showError } from "@/utils/toast";
 
 export type RoomType = "stream" | "sync";
 export interface UserInfo {
@@ -124,10 +125,15 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setIsJoined(false);
                 setJoinResponse(null);
                 joinAttemptedRef.current = false;
+                const errorMessage = response?.error || "Failed to join room";
+                showError("Failed to join room", errorMessage);
             }
-        } catch {
+        } catch (error: any) {
+            console.error("Error joining room:", error);
             setIsJoined(false);
             joinAttemptedRef.current = false;
+            const errorMessage = error?.message || "Unable to connect to room. Please check your connection and try again.";
+            showError("Failed to join room", errorMessage);
         } finally {
             setIsLoading(false);
         }
