@@ -95,6 +95,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         setTimeout(() => setPauseFrameUrl(null), 500);
     }, []);
     const handleStreamStopped = useCallback(() => {
+        console.log("[StreamPlayer] Stream stopped", remoteStream);
         setRemoteStream(null);
     }, [captureFrame]);
     const { isInitialized, initializeFromJoinResponse, replaceProducerTracks, onSeekStart, onSeekEnd, onPlay: streamOnPlay, onPause } = useStream({
@@ -135,6 +136,27 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         setCurrentFileUrl(url);
         return () => URL.revokeObjectURL(url);
     }, [files, roomState.selectedFileIndex, isHost, isFileStreaming]);
+
+    // Handle screen stream changes (when user shares a different screen)
+    useEffect(() => {
+        if (!isHost || !isScreenSharing || !screenStream || !isInitialized) return;
+
+        // Small delay to ensure the stream is ready
+        const timeoutId = setTimeout(async () => {
+            const stream = getStream();
+            if (stream) {
+                console.log("[StreamPlayer] Screen stream changed, updating producer tracks");
+                try {
+                    await replaceProducerTracks(stream);
+                    console.log("[StreamPlayer] Producer tracks updated successfully");
+                } catch (error) {
+                    console.error("[StreamPlayer] Error updating producer tracks:", error);
+                }
+            }
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [screenStream, isHost, isScreenSharing, isInitialized, getStream, replaceProducerTracks]);
 
     // Handle video ready
     const handleVideoReady = useCallback(() => {

@@ -36,14 +36,13 @@ const Panel = () => {
   // - For stream with stream source (screen): Playlist tab visible to all (shows platform being streamed)
   // - For sync: Playlist tab visible to all (everyone can see the URLs)
   const visibleTabs = useMemo(() => {
-    const isFileStreaming =
-      roomState.type === "stream" && roomState.source === "file";
+    const isStreaming = roomState.type === "stream";
 
     return Object.values(Tabs).filter((tab) => {
       if (tab === Tabs.PLAYLIST) {
         // For file streaming: only show to host (files are local, non-hosts can't see them)
         // For screen streaming or sync: always show (everyone can see)
-        return isFileStreaming ? host : true;
+        return isStreaming ? host : true;
       }
       return true;
     });

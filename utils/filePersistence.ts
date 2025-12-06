@@ -564,6 +564,107 @@ export async function getPermissionDeniedFiles(): Promise<string[]> {
 // Note: Thumbnail storage functions removed - thumbnails are now stored as blob URLs in FileContext state
 // This reduces IndexedDB usage and simplifies the code
 
+// Get all file handles from IndexedDB (returns handles, not files)
+export async function getAllFileHandles(): Promise<FileSystemFileHandle[]> {
+    if (!isFileSystemAccessSupported()) {
+        return [];
+    }
+
+    try {
+        let db = await getDB();
+        if (!db) {
+            return [];
+        }
+
+        // Check if database is still open
+        try {
+            const _ = db.objectStoreNames;
+        } catch (error) {
+            console.warn('Database connection closed, reopening...');
+            dbInstance = null;
+            db = await getDB();
+            if (!db) {
+                return [];
+            }
+        }
+
+        const saved = await db.getAll('files');
+        const handles: FileSystemFileHandle[] = [];
+        
+        for (const item of saved) {
+            try {
+                // Check permission
+                let permission = await item.handle.queryPermission({ mode: 'read' });
+                if (permission !== 'granted') {
+                    permission = await item.handle.requestPermission({ mode: 'read' });
+                }
+                
+                if (permission === 'granted') {
+                    handles.push(item.handle);
+                }
+            } catch (error) {
+                console.error(`Error getting handle for ${item.name}:`, error);
+            }
+        }
+
+        return handles;
+    } catch (error) {
+        console.error('Error getting file handles:', error);
+        return [];
+    }
+}
+
+// Append file handles to existing ones (for adding more files)
+export async function appendFileHandles(newHandles: FileSystemFileHandle[]): Promise<boolean> {
+    if (!isFileSystemAccessSupported() || newHandles.length === 0) {
+        return false;
+    }
+
+    try {
+        let db = await getDB();
+        if (!db) {
+            return false;
+        }
+
+        // Check if database is still open
+        try {
+            const _ = db.objectStoreNames;
+        } catch (error) {
+            console.warn('Database connection closed, reopening...');
+            dbInstance = null;
+            db = await getDB();
+            if (!db) {
+                return false;
+            }
+        }
+
+        // Save each new handle
+        for (const handle of newHandles) {
+            try {
+                const file = await handle.getFile();
+                const id = `${file.name}-${file.lastModified}-${crypto.randomUUID()}`;
+                
+                await db.put('files', {
+                    id,
+                    handle,
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    lastModified: file.lastModified,
+                });
+                console.log(`appendFileHandles: ✓ Saved file handle: ${file.name}`);
+            } catch (error) {
+                console.error('Error saving file handle:', error);
+            }
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error appending file handles:', error);
+        return false;
+    }
+}
+
 // Convert File objects to handles (if possible) and save them
 // This is used when files are selected via traditional input
 export async function saveFilesFromInput(files: File[]): Promise<boolean> {
