@@ -3,6 +3,8 @@ import { useSocket } from "@/context/SocketContext";
 import * as mediasoupClient from "mediasoup-client";
 import { Transport, Producer, Consumer } from "mediasoup-client/types";
 import { SocketEvent } from "@/types/socketEvents";
+import { RootState, store } from "@/lib/store";
+import { useSelector } from "react-redux";
 
 interface UseStreamParams {
     roomId: string | null;
@@ -10,6 +12,7 @@ interface UseStreamParams {
     onStreamReceived?: (stream: MediaStream) => void;
     onStreamPaused?: () => void;
     onStreamResumed?: () => void;
+    onStreamStopped?: () => void;
     isHost: boolean;
     enabled?: boolean;
     username: string;
@@ -23,6 +26,7 @@ export const useStream = ({
     onStreamReceived,
     onStreamPaused,
     onStreamResumed,
+    onStreamStopped,
     isHost,
     enabled = true,
     username,
@@ -31,7 +35,7 @@ export const useStream = ({
 }: UseStreamParams) => {
     const { socket } = useSocket();
     const [isInitialized, setIsInitialized] = useState(false);
-
+    const roomState = useSelector((state: RootState) => state.room);
     // MediaSoup state refs
     const deviceRef = useRef<mediasoupClient.Device | null>(null);
     const producerTransportRef = useRef<Transport | null>(null);
@@ -47,12 +51,13 @@ export const useStream = ({
     const onStreamReceivedRef = useRef(onStreamReceived);
     const onStreamPausedRef = useRef(onStreamPaused);
     const onStreamResumedRef = useRef(onStreamResumed);
+    const onStreamStoppedRef = useRef(onStreamStopped);
 
     useEffect(() => { getStreamRef.current = getStream; }, [getStream]);
     useEffect(() => { onStreamReceivedRef.current = onStreamReceived; }, [onStreamReceived]);
     useEffect(() => { onStreamPausedRef.current = onStreamPaused; }, [onStreamPaused]);
     useEffect(() => { onStreamResumedRef.current = onStreamResumed; }, [onStreamResumed]);
-
+    useEffect(() => { onStreamStoppedRef.current = onStreamStopped; }, [onStreamStopped]);
     // Reset all MediaSoup state
     const resetState = useCallback(() => {
         audioProducerRef.current?.close();
@@ -159,6 +164,17 @@ export const useStream = ({
     const initializeFromJoinResponse = useCallback(async (joinResponse: any) => {
         if (!socket || !roomId || !joinResponse || !enabled) return;
         if (initializingRef.current || (isInitialized && deviceRef.current)) return;
+
+        // Validate joinResponse has required MediaSoup data
+        if (!joinResponse.rtpCapabilities) {
+            console.warn("[STREAM] Init error: joinResponse missing rtpCapabilities", joinResponse);
+            return;
+        }
+
+        if (typeof joinResponse.rtpCapabilities !== 'object' || Array.isArray(joinResponse.rtpCapabilities)) {
+            console.warn("[STREAM] Init error: rtpCapabilities is not a valid object", joinResponse.rtpCapabilities);
+            return;
+        }
 
         initializingRef.current = true;
 
@@ -296,8 +312,18 @@ export const useStream = ({
             const transport = consumerTransportRef.current;
             const needsReinit = !device || !transport || transport.closed;
 
+            console.log("[useStream] INCOMING_PRODUCER received", {
+                roomId: data.roomId,
+                hasDevice: !!device,
+                hasTransport: !!transport,
+                transportClosed: transport?.closed,
+                needsReinit,
+                producers: Object.keys(data.producers || {}),
+            });
+
             if (needsReinit) {
-                // Host rejoined - reinitialize
+                // Host rejoined or we need to reinitialize - reinitialize
+                console.log("[useStream] Reinitializing MediaSoup for incoming producers");
                 resetState();
 
                 try {
@@ -307,24 +333,49 @@ export const useStream = ({
                         username: username,
                         email: email,
                         profile: profile,
-                        roomType: "stream",
+                        room: {
+                            type: "stream",
+                            source: roomState.source || "stream",
+                            urls: roomState.urls || [],
+                            files: roomState.files || [],
+                            selectedFileIndex: roomState.selectedFileIndex || 0,
+                        },
                     });
+                    console.log("[useStream] Rejoin response:", response);
+                    if (!response?.success) {
+                        console.error("[useStream] Rejoin failed:", response);
+                        return;
+                    }
 
-                    if (response?.success && response.recvTransportOptions) {
-                        const newDevice = new mediasoupClient.Device();
-                        await newDevice.load({ routerRtpCapabilities: response.rtpCapabilities });
-                        deviceRef.current = newDevice;
+                    if (!response.rtpCapabilities) {
+                        console.warn("[useStream] Rejoin response missing rtpCapabilities", response);
+                        return;
+                    }
 
-                        const newTransport = newDevice.createRecvTransport(response.recvTransportOptions);
-                        createConnectHandler(newTransport, roomId);
-                        consumerTransportRef.current = newTransport;
-                        setIsInitialized(true);
+                    if (typeof response.rtpCapabilities !== 'object' || Array.isArray(response.rtpCapabilities)) {
+                        console.warn("[useStream] Rejoin response rtpCapabilities is invalid", response.rtpCapabilities);
+                        return;
+                    }
 
-                        await new Promise(r => setTimeout(r, 300));
-                        for (const peerId of Object.keys(data.producers)) {
-                            if (data.producers[peerId]?.length) {
-                                await consumeProducers(data.producers[peerId], newDevice, newTransport, roomId);
-                            }
+                    if (!response.recvTransportOptions) {
+                        console.warn("[useStream] Rejoin response missing recvTransportOptions", response);
+                        return;
+                    }
+
+                    const newDevice = new mediasoupClient.Device();
+                    await newDevice.load({ routerRtpCapabilities: response.rtpCapabilities });
+                    deviceRef.current = newDevice;
+
+                    const newTransport = newDevice.createRecvTransport(response.recvTransportOptions);
+                    createConnectHandler(newTransport, roomId);
+                    consumerTransportRef.current = newTransport;
+                    setIsInitialized(true);
+
+                    await new Promise(r => setTimeout(r, 300));
+                    for (const peerId of Object.keys(data.producers)) {
+                        if (data.producers[peerId]?.length) {
+                            console.log(`[useStream] Consuming ${data.producers[peerId].length} producers from ${peerId}`);
+                            await consumeProducers(data.producers[peerId], newDevice, newTransport, roomId);
                         }
                     }
                 } catch (error) {
@@ -333,21 +384,51 @@ export const useStream = ({
                 return;
             }
 
-            // Normal case - just consume new producers
-            consumersRef.current.forEach(c => c.close());
+            // Normal case - device and transport exist, just consume new producers
+            // console.log("[useStream] Consuming new producers with existing device/transport");
+            
+            // Close existing consumers first
+            consumersRef.current.forEach(c => {
+                try {
+                    c.close();
+                } catch (e) {
+                    console.warn("[useStream] Error closing consumer:", e);
+                }
+            });
             consumersRef.current = [];
 
+            // Small delay to ensure transport is ready
             await new Promise(r => setTimeout(r, 200));
-            for (const peerId of Object.keys(data.producers)) {
-                if (data.producers[peerId]?.length) {
-                    await consumeProducers(data.producers[peerId], device, transport, data.roomId);
+            
+            // Try to consume producers - if it fails, we'll reinitialize
+            try {
+                for (const peerId of Object.keys(data.producers)) {
+                    if (data.producers[peerId]?.length) {
+                        console.log(`[useStream] Consuming ${data.producers[peerId].length} producers from ${peerId}`);
+                        await consumeProducers(data.producers[peerId], device!, transport!, data.roomId);
+                    }
                 }
+            } catch (error) {
+                console.error("[useStream] Error consuming producers, reinitializing:", error);
+                // If consumption fails, reinitialize by resetting state and triggering rejoin
+                resetState();
+                // The INCOMING_PRODUCER event will fire again or we can manually trigger rejoin
+                // For now, just log the error - the user might need to refresh or rejoin
             }
         };
 
         socket.on(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer);
         return () => { socket.off(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer); };
     }, [socket, isHost, roomId, enabled, consumeProducers, resetState, createConnectHandler]);
+
+    // Handle stream stopped (consumer only)
+    useEffect(() => {
+        if (!socket || isHost || !enabled) return;
+
+        const handleStreamStopped = () => onStreamStoppedRef.current?.();
+        socket.on(SocketEvent.STREAM_STOPPED, handleStreamStopped);
+        return () => { socket.off(SocketEvent.STREAM_STOPPED, handleStreamStopped); };
+    }, [socket, isHost, enabled, onStreamStopped]);
 
     // Handle host left (consumer only)
     useEffect(() => {
@@ -391,7 +472,7 @@ export const useStream = ({
             
             // Reset initialization state
             setIsInitialized(false);
-            
+            socket?.emit(SocketEvent.STREAM_STOPPED, { roomId });
             // Notify that stream is no longer available
             // The MediaStreamContext will also handle setting stream to null
         };
@@ -428,6 +509,14 @@ export const useStream = ({
             });
         };
     }, [isHost, enabled, isInitialized]); // Re-run when initialization state changes (producers created/destroyed)
+
+    // Reset state when enabled changes (e.g., room type changes from stream to sync)
+    useEffect(() => {
+        if (!enabled) {
+            console.log("[useStream] Disabled - resetting MediaSoup state");
+            resetState();
+        }
+    }, [enabled, resetState]);
 
     // Cleanup on unmount
     useEffect(() => () => resetState(), [resetState]);

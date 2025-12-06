@@ -11,7 +11,7 @@ export enum SocketEvent {
   SYNCWITHHOST = "syncwithhost",
   HOSTVIDEOSTATE = "hostvideostate",
   NOTIFY = "notify",
-
+  ROOM_INFO_UPDATED = "roomInfoUpdated",
   // Video selection events
   SELECT_VIDEO = "selectVideo",
   VIDEO_SELECTED = "videoSelected",
@@ -21,6 +21,7 @@ export enum SocketEvent {
   // Stream control events
   STREAM_PAUSED = "streamPaused",
   STREAM_RESUMED = "streamResumed",
+  STREAM_STOPPED = "streamStopped",
 
   // Chat-specific events
   JOIN_CHAT_ROOM = "joinChatRoom",

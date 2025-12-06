@@ -224,7 +224,6 @@ export const useSync = ({ playerRef, isHost, roomId, enabled = true }: UseSyncPa
         socket.on(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
         socket.on(SocketEvent.REQUEST_CURRENT_VIDEO, handleRequestCurrentVideo);
         socket.on(SocketEvent.CURRENT_VIDEO_STATE, handleCurrentVideoState);
-
         return () => {
             socket.off(SocketEvent.ONPAUSE, handlePlayPause);
             socket.off(SocketEvent.ONPLAY, handlePlayPause);
@@ -234,7 +233,6 @@ export const useSync = ({ playerRef, isHost, roomId, enabled = true }: UseSyncPa
             socket.off(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
             socket.off(SocketEvent.REQUEST_CURRENT_VIDEO, handleRequestCurrentVideo);
             socket.off(SocketEvent.CURRENT_VIDEO_STATE, handleCurrentVideoState);
-
             if (seekTimeoutRef.current) clearTimeout(seekTimeoutRef.current);
         };
     }, [socket, isHost, playerRef, roomId, getHostState, applySyncState, dispatch, enabled]);
