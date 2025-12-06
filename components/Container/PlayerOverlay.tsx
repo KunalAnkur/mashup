@@ -13,6 +13,7 @@ import { RootState } from "@/lib/store";
 import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import OverlayMessageBubble from "./OverlayMessageBubble";
 import AnimatedReaction from "../Panel/AnimatedReaction";
+import { showError } from "@/utils/toast";
 
 const PlayerOverlay = () => {
   const dispatch = useDispatch();
@@ -242,6 +243,7 @@ const PlayerOverlay = () => {
       // It will auto-hide after the hover timeout
     } catch (error) {
       console.error("Failed to send message:", error);
+      showError("Failed to send message", "Please check your connection and try again.");
     } finally {
       setIsSending(false);
     }

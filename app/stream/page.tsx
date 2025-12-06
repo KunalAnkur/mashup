@@ -98,15 +98,7 @@ const StreamPage = () => {
           </button>
         </div>
         <h2 className="text-xl font-bold text-white absolute left-1/2 -translate-x-1/2">Upload from Device</h2>
-        <div className="flex items-center gap-4">
-          {/* TEMPORARY TOAST BUTTON 1: Test Toast Button - Remove after testing */}
-          <button
-            onClick={() => showPermissionPrompt()}
-            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded-lg transition-colors"
-            title="Test Toast Notification"
-          >
-            🧪 Test Toast
-          </button>
+        <div className="flex items-center">
           <ProfileHeader />
         </div>
       </div>

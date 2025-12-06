@@ -44,7 +44,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
       dispatch(setUser(data));
       console.log(data, signupState);
     } catch (error: any) {
-      console.error("Signup failed:", error);
+      // console.error("Signup failed:", error);
       const errorMessage = error?.data?.message || error?.message || "Failed to create account";
       const errorDescription = error?.data?.message || error?.message 
         ? "Please check your information and try again."

@@ -448,24 +448,7 @@ const PlatformStreamPage = () => {
         <h2 className="text-xl font-bold text-white absolute left-1/2 -translate-x-1/2">
           Stream from {platform.name}
         </h2>
-        <div className="flex items-center gap-4">
-          {/* TEMPORARY TOAST BUTTONS 2 & 3 : Test Toast Buttons - Remove after testing */}
-          {/* <div className="flex items-center gap-2">
-            <button
-              onClick={() => showError("Screen sharing failed", "Please check your browser permissions and try again.")}
-              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors"
-              title="Test Toast 1: Screen Sharing Error"
-            >
-              🧪 Toast 1
-            </button>
-            <button
-              onClick={() => showError("Failed to create room", "Please check your connection and try again.")}
-              className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs rounded-lg transition-colors"
-              title="Test Toast 2: Room Creation Error"
-            >
-              🧪 Toast 2
-            </button>
-          </div> */}
+        <div className="flex items-center">
           <ProfileHeader />
         </div>
       </div>

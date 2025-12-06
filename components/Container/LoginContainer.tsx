@@ -41,7 +41,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
       console.log(response.data, loginState);
       dispatch(setUser(response));
     } catch (error: any) {
-      console.error("Login failed:", error);
+      // console.error("Login failed:", error);
       const errorMessage = error?.data?.message || error?.message || "Invalid credentials";
       const errorDescription = error?.data?.message || error?.message 
         ? "Please check your email or password and try again."

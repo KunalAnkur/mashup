@@ -666,38 +666,6 @@ const ChatTab = () => {
         </div>
       </div>
 
-      {/* TEMPORARY: Test Toast Buttons - Remove after testing */}
-      {/* <div className="mb-2 flex flex-col gap-2">
-        <button
-          onClick={() => showError("Failed to send message", "Please check your connection and try again.")}
-          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded-lg transition-colors w-full"
-          title="Test Toast 5: Chat Message Error"
-        >
-          🧪 Test Toast 5 - Chat Error
-        </button>
-        <button
-          onClick={() => showError("Connection lost", "Trying to reconnect automatically. Please wait...")}
-          className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs rounded-lg transition-colors w-full"
-          title="Test Toast 6: Socket Disconnect"
-        >
-          🧪 Test Toast 6 - Socket Disconnect
-        </button>
-        <button
-          onClick={() => showError("Failed to connect", "Please check your internet connection and try again.")}
-          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition-colors w-full"
-          title="Test Toast 7: Socket Connection Error"
-        >
-          🧪 Test Toast 7 - Connection Error
-        </button>
-        <button
-          onClick={() => showError("Failed to load room", "The room may not exist or you may not have access. Please check the room ID and try again.")}
-          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded-lg transition-colors w-full"
-          title="Test Toast 8: Room Load Error"
-        >
-          🧪 Test Toast 8 - Room Load Error
-        </button>
-      </div> */}
-
       {/* Input Area - Modern Design */} 
       <div className="relative flex items-center gap-1 bg-gradient-to-br from-white/[0.08] via-white/[0.05] to-white/[0.02] backdrop-blur-md  rounded-2xl px-3 py-1.5 shadow-2xl overflow-visible">
         {/* Emoji Picker */}

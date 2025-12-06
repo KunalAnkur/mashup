@@ -16,6 +16,7 @@ import Image from "next/image";
 import * as constants from "../../constants";
 import { LuCheck, LuLink, LuLogOut } from "react-icons/lu";
 import { useRoomContext } from "@/context/RoomContext";
+import { showError } from "@/utils/toast";
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
@@ -88,6 +89,7 @@ const Panel = () => {
       }, 100);
     } catch (error) {
       console.error("Error leaving party:", error);
+      showError("Failed to leave room", "There was an error leaving the room. You have been removed locally.");
       // Still navigate even if there's an error
       dispatch(exitRoom());
       router.push("/");

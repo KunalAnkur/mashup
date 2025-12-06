@@ -3,6 +3,7 @@ import { useSocket } from "@/context/SocketContext";
 import * as mediasoupClient from "mediasoup-client";
 import { Transport, Producer, Consumer } from "mediasoup-client/types";
 import { SocketEvent } from "@/types/socketEvents";
+import { showError } from "@/utils/toast";
 
 interface UseStreamParams {
     roomId: string | null;
@@ -143,6 +144,7 @@ export const useStream = ({
                 tracks.push(consumer.track);
             } catch (error) {
                 console.error("[STREAM] Consume error:", error);
+                showError("Stream connection failed", "Unable to receive video stream. Please try refreshing the page.");
             }
         }
 
@@ -215,6 +217,7 @@ export const useStream = ({
             setIsInitialized(true);
         } catch (error) {
             console.error("[STREAM] Init error:", error);
+            showError("Stream initialization failed", "Unable to start video streaming. Please check your connection and try again.");
         } finally {
             initializingRef.current = false;
         }
@@ -236,6 +239,7 @@ export const useStream = ({
             }
         } catch (error) {
             console.error("[STREAM] Replace tracks error:", error);
+            showError("Video update failed", "Unable to update video stream. The video may continue playing.");
         }
     }, [isHost, roomId]);
 
@@ -276,6 +280,7 @@ export const useStream = ({
                     }
                 } catch (error) {
                     console.error("[STREAM] Replace ended tracks error:", error);
+                    showError("Video restart failed", "Unable to restart video stream. Please try pausing and playing again.");
                 }
             }
         }
@@ -329,6 +334,7 @@ export const useStream = ({
                     }
                 } catch (error) {
                     console.error("[STREAM] Reinit error:", error);
+                    showError("Stream reconnection failed", "Unable to reconnect to video stream. Please refresh the page.");
                 }
                 return;
             }
