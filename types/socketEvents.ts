@@ -45,4 +45,5 @@ export enum SocketEvent {
   INCOMING_PRODUCER = "incomingProducer",
   HOST_LEFT = "hostLeft",
   HOST_JOINED = "hostJoined",
+  USERS_UPDATED = "usersUpdated",
 }
