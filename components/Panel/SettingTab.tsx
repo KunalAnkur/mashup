@@ -7,9 +7,11 @@ import {
   useInactiveMyRoomMutation,
   useUpdateRoomMutation,
 } from "@/lib/store/api/roomApi";
+import { useUpdateProfileMutation } from "@/lib/store/api/userApi";
 import { exitRoom } from "@/lib/store/slices/roomSlice";
+import { updateProfile as updateProfileAction } from "@/lib/store/slices/authSlice";
 import { FaPlay, FaPause, FaCrown } from "react-icons/fa";
-import { LuCheck, LuLink, LuLogOut, LuPencil } from "react-icons/lu";
+import { LuCheck, LuLink, LuLogOut, LuPencil, LuUser, LuMail } from "react-icons/lu";
 import { showError, showSuccess } from "@/utils/toast";
 
 const SettingTab = () => {
@@ -18,6 +20,7 @@ const SettingTab = () => {
   const dispatch = useDispatch();
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const [updateRoom] = useUpdateRoomMutation();
+  const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -25,6 +28,13 @@ const SettingTab = () => {
   const [roomName, setRoomName] = useState("My Party Room");
   const [isEditingName, setIsEditingName] = useState(false);
   const [isSavingName, setIsSavingName] = useState(false);
+  
+  // Profile update states
+  const authState = useSelector((state: RootState) => state.auth);
+  const [name, setName] = useState<string>(authState.user?.name || "");
+  const [username, setUsername] = useState<string>(authState.user?.username || "");
+  const [email, setEmail] = useState<string>(authState.user?.email || "");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // Construct room URL
   const roomUrl = roomId
@@ -86,102 +96,143 @@ const SettingTab = () => {
 
   return (
     <div className="flex flex-col h-full w-full gap-4">
-      {/* Host Controls Section */}
-      {host && (
-        <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a]  rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
-              <FaCrown className="text-yellow-400" size={16} />
-            </div>
-            <h3 className="text-white font-semibold text-sm font-parkinsans">
-              Host Controls
-            </h3>
-          </div>
-
-          {/* Play/Pause Button */}
-          <button
-            onClick={handlePlayPause}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 hover:from-rose-600/30 hover:via-pink-600/30 hover:to-fuchsia-600/30  rounded-xl transition-all duration-200 group"
-          >
-            {isPlaying ? (
-              <>
-                <FaPause
-                  className="text-rose-400 group-hover:text-rose-300"
-                  size={14}
-                />
-                <span className="text-white text-sm font-medium">
-                  Pause Video
-                </span>
-              </>
-            ) : (
-              <>
-                <FaPlay
-                  className="text-rose-400 group-hover:text-rose-300"
-                  size={14}
-                />
-                <span className="text-white text-sm font-medium">
-                  Play Video
-                </span>
-              </>
-            )}
-          </button>
-        </div>
-      )}
+    
 
       {/* Room Settings */}
       <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-        {/* Rename Room */}
-        <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a]  rounded-xl p-4 space-y-3">
+        {/* Profile Update Section */}
+        <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl p-4 space-y-4">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
-              <LuPencil className="text-rose-400" size={16} />
+              <LuUser className="text-rose-400" size={16} />
             </div>
             <h3 className="text-white font-semibold text-sm font-parkinsans">
-              Room Name
+              Profile Settings
             </h3>
           </div>
 
-          {isEditingName && host ? (
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                className="flex-1 px-3 py-2 bg-white/5  rounded-lg text-white text-sm placeholder:text-gray-500 focus:outline-none focus:border-rose-500/50 transition-colors"
-                placeholder="Enter room name"
-                disabled={isSavingName}
-              />
-              <button
-                onClick={handleRenameRoom}
-                disabled={isSavingName || !roomName.trim()}
-                className="px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSavingName ? "Saving..." : "Save"}
-              </button>
+          {/* Profile Fields */}
+          <div className="space-y-3">
+            {/* Name Field */}
+            <div className="space-y-1.5">
+              <label className="text-xs text-gray-400 font-medium">Name</label>
+              {isEditingProfile ? (
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3 py-2 bg-white/5 rounded-lg text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-colors"
+                  placeholder="Enter your name"
+                  disabled={isUpdatingProfile}
+                />
+              ) : (
+                <div className="px-3 py-2 bg-white/5 rounded-lg">
+                  <p className="text-white text-sm">{name || "Not set"}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Username Field */}
+            <div className="space-y-1.5">
+              <label className="text-xs text-gray-400 font-medium">Username</label>
+              {isEditingProfile ? (
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-3 py-2 bg-white/5 rounded-lg text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-colors"
+                  placeholder="Enter your username"
+                  disabled={isUpdatingProfile}
+                />
+              ) : (
+                <div className="px-3 py-2 bg-white/5 rounded-lg">
+                  <p className="text-white text-sm">{username || "Not set"}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Email Field - Read Only */}
+            <div className="space-y-1.5">
+              <label className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                <LuMail size={12} />
+                Email Address
+              </label>
+              <div className="px-3 py-2 bg-white/5 rounded-lg">
+                <p className="text-white text-sm">{email || "Not set"}</p>
+                <p className="text-gray-500 text-xs mt-1">Email cannot be changed</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          {isEditingProfile ? (
+            <div className="flex gap-2 pt-2">
               <button
                 onClick={() => {
-                  setIsEditingName(false);
-                  setRoomName("My Party Room");
+                  setIsEditingProfile(false);
+                  // Reset to original values
+                  setName(authState.user?.name || "");
+                  setUsername(authState.user?.username || "");
+                  setEmail(authState.user?.email || "");
                 }}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium rounded-lg transition-all duration-200"
+                className="flex-1 px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium rounded-lg transition-all duration-200"
+                disabled={isUpdatingProfile}
               >
                 Cancel
               </button>
+              <button
+                onClick={async () => {
+                  if (!authState.user?.id) {
+                    showError("Error", "User not found. Please log in again.");
+                    return;
+                  }
+
+                  if (!name.trim() || !username.trim()) {
+                    showError("Validation error", "Please fill in name and username.");
+                    return;
+                  }
+
+                  try {
+                    const result = await updateProfile({
+                      id: authState.user.id,
+                      name: name.trim(),
+                      username: username.trim(),
+                    }).unwrap();
+
+                    // Update Redux state with new user data
+                    if (result.data) {
+                      dispatch(updateProfileAction({
+                        name: result.data.name,
+                        username: result.data.username,
+                      }));
+                    }
+
+                    showSuccess("Profile updated successfully");
+                    setIsEditingProfile(false);
+                  } catch (error: any) {
+                    console.error("Failed to update profile:", error);
+                    const errorMessage = error?.data?.message || error?.message || "Failed to update profile";
+                    showError("Update failed", errorMessage);
+                  }
+                }}
+                disabled={isUpdatingProfile || !name.trim() || !username.trim()}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUpdatingProfile ? "Saving..." : "Save Changes"}
+              </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between">
-              <p className="text-white text-sm">{roomName}</p>
-              {host && (
-                <button
-                  onClick={() => setIsEditingName(true)}
-                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10  text-gray-400 hover:text-rose-400 transition-all duration-200"
-                >
-                  <LuPencil size={16} />
-                </button>
-              )}
-            </div>
+            <button
+              onClick={() => setIsEditingProfile(true)}
+              className="w-full px-4 py-2 bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 hover:from-rose-600/30 hover:via-pink-600/30 hover:to-fuchsia-600/30 text-rose-400 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <LuPencil size={14} />
+              Edit Profile
+            </button>
           )}
         </div>
+
+       
 
         {/* Copy Room Link */}
         <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a]  rounded-xl p-4 space-y-3">
@@ -251,40 +302,6 @@ const SettingTab = () => {
         </div>
       </div>
 
-      {/* Leave Confirmation Modal */}
-      {showLeaveConfirm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl animate-scale-in">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-xl bg-red-500/20">
-                <LuLogOut className="text-red-400" size={20} />
-              </div>
-              <h3 className="text-white text-lg font-bold font-parkinsans">
-                Leave Party?
-              </h3>
-            </div>
-            <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-              {host
-                ? "Are you sure you want to leave this party? This will end the party for everyone. You'll need the room ID to rejoin."
-                : "Are you sure you want to leave this party? You'll need the room ID to rejoin."}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowLeaveConfirm(false)}
-                className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-xl transition-all duration-200"
-              >
-                Stay
-              </button>
-              <button
-                onClick={handleLeaveParty}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
-              >
-                Leave
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style jsx>{`
         @keyframes fade-in {
