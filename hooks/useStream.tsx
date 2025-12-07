@@ -93,15 +93,26 @@ export const useStream = ({
         });
     }, [socket]);
 
+    const createSilentAudioTrack = useCallback((): MediaStreamTrack => {
+        const ctx = new AudioContext();
+        const oscillator = ctx.createOscillator();
+        const dst = ctx.createMediaStreamDestination();
+        oscillator.connect(dst);
+        oscillator.start();
+        const track = dst.stream.getAudioTracks()[0];
+        track.enabled = false; // Mute it
+        return track;
+    }, []);
     // Create producers (host only)
     const createProducers = useCallback(async (transport: Transport, stream: MediaStream, currentRoomId: string) => {
         if (!socket || audioProducerRef.current || videoProducerRef.current) return;
 
         const audioTrack = stream.getAudioTracks()[0];
         const videoTrack = stream.getVideoTracks()[0];
-
         if (audioTrack?.readyState === 'live') {
             audioProducerRef.current = await transport.produce({ track: audioTrack });
+        } else {
+            audioProducerRef.current = await transport.produce({ track: createSilentAudioTrack() });
         }
         if (videoTrack?.readyState === 'live') {
             videoProducerRef.current = await transport.produce({ track: videoTrack });
@@ -131,7 +142,6 @@ export const useStream = ({
         if (!socket) return;
 
         const tracks: MediaStreamTrack[] = [];
-
         for (const info of producerList) {
             try {
                 const response = await socket.emitWithAck(SocketEvent.CONSUME, {
@@ -309,9 +319,9 @@ export const useStream = ({
     // Handle incoming producers (consumer only - includes host rejoin)
     useEffect(() => {
         if (!socket || isHost || !enabled || !roomId) return;
-
         const handleIncomingProducer = async (data: { roomId: string; producers: Record<string, any[]> }) => {
             if (data.roomId !== roomId) return;
+            debugger
 
             const device = deviceRef.current;
             const transport = consumerTransportRef.current;
