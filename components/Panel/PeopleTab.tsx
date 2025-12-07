@@ -95,7 +95,7 @@ const PeopleTab = () => {
           </div>
         ) : (
           sortedParticipants.map((participant, index) => {
-            const displayName = participant.name || participant.username || "User";
+            const displayName = participant.username || participant.name || "User";
             const userColor = getUserColor(displayName);
             const isCurrentUser =
               participant.username === currentUser?.username ||
