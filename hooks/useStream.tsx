@@ -35,10 +35,13 @@ export const useStream = ({
     profile,
 }: UseStreamParams) => {
     const { socket } = useSocket();
-    const [isInitialized, setIsInitialized] = useState(false);
-    const [trackUpdateCounter, setTrackUpdateCounter] = useState(0); // Trigger effect when tracks are replaced
     const roomState = useSelector((state: RootState) => state.room);
-    // MediaSoup state refs
+    
+    // State
+    const [isInitialized, setIsInitialized] = useState(false);
+    const [trackUpdateCounter, setTrackUpdateCounter] = useState(0);
+    
+    // MediaSoup refs
     const deviceRef = useRef<mediasoupClient.Device | null>(null);
     const producerTransportRef = useRef<Transport | null>(null);
     const consumerTransportRef = useRef<Transport | null>(null);
@@ -47,20 +50,28 @@ export const useStream = ({
     const consumersRef = useRef<Consumer[]>([]);
     const initializingRef = useRef(false);
     const isSeekingRef = useRef(false);
-
+    
     // Callback refs to avoid stale closures
     const getStreamRef = useRef(getStream);
     const onStreamReceivedRef = useRef(onStreamReceived);
     const onStreamPausedRef = useRef(onStreamPaused);
     const onStreamResumedRef = useRef(onStreamResumed);
     const onStreamStoppedRef = useRef(onStreamStopped);
-
+    
+    // Update callback refs
     useEffect(() => { getStreamRef.current = getStream; }, [getStream]);
     useEffect(() => { onStreamReceivedRef.current = onStreamReceived; }, [onStreamReceived]);
     useEffect(() => { onStreamPausedRef.current = onStreamPaused; }, [onStreamPaused]);
     useEffect(() => { onStreamResumedRef.current = onStreamResumed; }, [onStreamResumed]);
     useEffect(() => { onStreamStoppedRef.current = onStreamStopped; }, [onStreamStopped]);
-    // Reset all MediaSoup state
+
+    // ============================================================================
+    // Helper Functions
+    // ============================================================================
+
+    /**
+     * Resets all MediaSoup state and closes all connections
+     */
     const resetState = useCallback(() => {
         audioProducerRef.current?.close();
         videoProducerRef.current?.close();
@@ -78,7 +89,25 @@ export const useStream = ({
         setIsInitialized(false);
     }, []);
 
-    // Create transport connect handler
+    /**
+     * Notifies listeners that tracks have been updated
+     */
+    const notifyTrackUpdate = useCallback(() => {
+        setTrackUpdateCounter(prev => prev + 1);
+    }, []);
+
+    /**
+     * Checks if producer tracks are ended
+     */
+    const areTracksEnded = useCallback(() => {
+        const audioTrack = audioProducerRef.current?.track;
+        const videoTrack = videoProducerRef.current?.track;
+        return (audioTrack?.readyState === 'ended') || (videoTrack?.readyState === 'ended');
+    }, []);
+
+    /**
+     * Creates transport connect handler
+     */
     const createConnectHandler = useCallback((transport: Transport, currentRoomId: string) => {
         transport.on("connect", async ({ dtlsParameters }, callback, errback) => {
             try {
@@ -94,12 +123,19 @@ export const useStream = ({
         });
     }, [socket]);
 
-    // Create producers (host only)
+    // ============================================================================
+    // Producer Functions (Host Only)
+    // ============================================================================
+
+    /**
+     * Creates audio and video producers from a stream
+     */
     const createProducers = useCallback(async (transport: Transport, stream: MediaStream, currentRoomId: string) => {
         if (!socket || audioProducerRef.current || videoProducerRef.current) return;
 
         const audioTrack = stream.getAudioTracks()[0];
         const videoTrack = stream.getVideoTracks()[0];
+
         if (audioTrack?.readyState === 'live') {
             audioProducerRef.current = await transport.produce({ track: audioTrack });
         }
@@ -108,7 +144,7 @@ export const useStream = ({
             videoProducerRef.current = await transport.produce({ track: videoTrack });
         }
 
-        // Notify consumers
+        // Notify consumers about new producers
         const producers = [
             audioProducerRef.current && { kind: 'audio', peerId: socket.id, producerId: audioProducerRef.current.id },
             videoProducerRef.current && { kind: 'video', peerId: socket.id, producerId: videoProducerRef.current.id },
@@ -119,12 +155,103 @@ export const useStream = ({
                 roomId: currentRoomId,
                 producers: { [socket.id!]: producers }
             });
-            // Trigger effect to set up listeners on new producer tracks
-            setTrackUpdateCounter(prev => prev + 1);
+            notifyTrackUpdate();
         }
-    }, [socket]);
+    }, [socket, notifyTrackUpdate]);
 
-    // Consume producers (consumer only)
+    /**
+     * Replaces tracks on existing producers
+     */
+    const replaceProducerTracks = useCallback(async (newStream: MediaStream) => {
+        if (!isHost || !roomId) return;
+
+        const audioTrack = newStream.getAudioTracks()[0];
+        const videoTrack = newStream.getVideoTracks()[0];
+        let tracksReplaced = false;
+
+        try {
+            if (audioProducerRef.current && !audioProducerRef.current.closed && audioTrack) {
+                await audioProducerRef.current.replaceTrack({ track: audioTrack });
+                tracksReplaced = true;
+            }
+            if (videoProducerRef.current && !videoProducerRef.current.closed && videoTrack) {
+                await videoProducerRef.current.replaceTrack({ track: videoTrack });
+                tracksReplaced = true;
+            }
+            
+            if (tracksReplaced) {
+                notifyTrackUpdate();
+            }
+        } catch (error) {
+            console.error("[STREAM] Replace tracks error:", error);
+            showError("Video update failed", "Unable to update video stream. The video may continue playing.");
+        }
+    }, [isHost, roomId, notifyTrackUpdate]);
+
+    /**
+     * Replaces tracks when they are ended (video finished)
+     */
+    const replaceEndedTracks = useCallback(async () => {
+        const newStream = getStreamRef.current();
+        if (!newStream) return;
+
+        const audioTrack = newStream.getAudioTracks()[0];
+        const videoTrack = newStream.getVideoTracks()[0];
+        let tracksReplaced = false;
+
+        try {
+            if (audioProducerRef.current && !audioProducerRef.current.closed && audioTrack?.readyState === 'live') {
+                await audioProducerRef.current.replaceTrack({ track: audioTrack });
+                tracksReplaced = true;
+            }
+            if (videoProducerRef.current && !videoProducerRef.current.closed && videoTrack?.readyState === 'live') {
+                await videoProducerRef.current.replaceTrack({ track: videoTrack });
+                tracksReplaced = true;
+            }
+            
+            if (tracksReplaced) {
+                notifyTrackUpdate();
+            }
+        } catch (error) {
+            console.error("[STREAM] Replace ended tracks error:", error);
+            showError("Video restart failed", "Unable to restart video stream. Please try pausing and playing again.");
+        }
+    }, [notifyTrackUpdate]);
+
+    /**
+     * Pauses audio and video producers
+     */
+    const pauseProducers = useCallback(() => {
+        if (isSeekingRef.current || !isHost || !roomId) return;
+        audioProducerRef.current?.pause();
+        videoProducerRef.current?.pause();
+        socket?.emit(SocketEvent.STREAM_PAUSED, { roomId });
+    }, [isHost, roomId, socket]);
+
+    /**
+     * Resumes audio and video producers
+     */
+    const resumeProducers = useCallback(async () => {
+        if (!isHost || !roomId) return;
+
+        // If tracks are ended, replace them first
+        if (areTracksEnded()) {
+            await new Promise(r => setTimeout(r, 100));
+            await replaceEndedTracks();
+        }
+
+        if (audioProducerRef.current?.paused) audioProducerRef.current.resume();
+        if (videoProducerRef.current?.paused) videoProducerRef.current.resume();
+        socket?.emit(SocketEvent.STREAM_RESUMED, { roomId });
+    }, [isHost, roomId, socket, areTracksEnded, replaceEndedTracks]);
+
+    // ============================================================================
+    // Consumer Functions (Non-Host Only)
+    // ============================================================================
+
+    /**
+     * Consumes producers from the host
+     */
     const consumeProducers = useCallback(async (
         producerList: { producerId: string; kind: string }[],
         device: mediasoupClient.Device,
@@ -134,6 +261,7 @@ export const useStream = ({
         if (!socket) return;
 
         const tracks: MediaStreamTrack[] = [];
+        
         for (const info of producerList) {
             try {
                 const response = await socket.emitWithAck(SocketEvent.CONSUME, {
@@ -164,19 +292,71 @@ export const useStream = ({
         }
     }, [socket]);
 
-    // Initialize from join response
+    /**
+     * Reinitializes consumer when host rejoins
+     */
+    const reinitializeConsumer = useCallback(async (roomId: string) => {
+        if (!socket) return;
+
+        try {
+            const response = await socket.emitWithAck(SocketEvent.JOIN_ROOM, {
+                roomId,
+                host: false,
+                username,
+                email,
+                profile,
+                room: {
+                    type: "stream",
+                    source: roomState.source || "stream",
+                    urls: roomState.urls || [],
+                    files: roomState.files || [],
+                    selectedFileIndex: roomState.selectedFileIndex || 0,
+                },
+            });
+
+            if (!response?.success || !response.rtpCapabilities || !response.recvTransportOptions) {
+                console.error("[useStream] Rejoin failed:", response);
+                return null;
+            }
+
+            if (typeof response.rtpCapabilities !== 'object' || Array.isArray(response.rtpCapabilities)) {
+                console.warn("[useStream] Invalid rtpCapabilities");
+                return null;
+            }
+
+            const newDevice = new mediasoupClient.Device();
+            await newDevice.load({ routerRtpCapabilities: response.rtpCapabilities });
+            deviceRef.current = newDevice;
+
+            const newTransport = newDevice.createRecvTransport(response.recvTransportOptions);
+            createConnectHandler(newTransport, roomId);
+            consumerTransportRef.current = newTransport;
+            setIsInitialized(true);
+
+            return { device: newDevice, transport: newTransport };
+        } catch (error) {
+            console.error("[STREAM] Reinit error:", error);
+            showError("Stream reconnection failed", "Unable to reconnect to video stream. Please refresh the page.");
+            return null;
+        }
+    }, [socket, username, email, profile, roomState, createConnectHandler]);
+
+    // ============================================================================
+    // Initialization
+    // ============================================================================
+
+    /**
+     * Initializes MediaSoup from join response
+     */
     const initializeFromJoinResponse = useCallback(async (joinResponse: any) => {
         if (!socket || !roomId || !joinResponse || !enabled) return;
         if (initializingRef.current || (isInitialized && deviceRef.current)) return;
 
-        // Validate joinResponse has required MediaSoup data
-        if (!joinResponse.rtpCapabilities) {
-            console.warn("[STREAM] Init error: joinResponse missing rtpCapabilities", joinResponse);
-            return;
-        }
-
-        if (typeof joinResponse.rtpCapabilities !== 'object' || Array.isArray(joinResponse.rtpCapabilities)) {
-            console.warn("[STREAM] Init error: rtpCapabilities is not a valid object", joinResponse.rtpCapabilities);
+        // Validate joinResponse
+        if (!joinResponse.rtpCapabilities || 
+            typeof joinResponse.rtpCapabilities !== 'object' || 
+            Array.isArray(joinResponse.rtpCapabilities)) {
+            console.warn("[STREAM] Invalid joinResponse.rtpCapabilities");
             return;
         }
 
@@ -209,6 +389,7 @@ export const useStream = ({
 
                 producerTransportRef.current = transport;
 
+                // Create producers after a short delay
                 await new Promise(r => setTimeout(r, 800));
                 const stream = getStreamRef.current();
                 if (stream) await createProducers(transport, stream, roomId);
@@ -225,7 +406,6 @@ export const useStream = ({
                     for (const peerId of Object.keys(existing)) {
                         const producers = existing[peerId];
                         if (producers?.length) {
-                            // * producers.slice(-2) is to consume the last 2 producers
                             await consumeProducers(producers.slice(-2), device, transport, roomId);
                         }
                     }
@@ -241,92 +421,14 @@ export const useStream = ({
         }
     }, [socket, roomId, isHost, enabled, isInitialized, createConnectHandler, createProducers, consumeProducers]);
 
-    // Replace tracks on existing producers
-    const replaceProducerTracks = useCallback(async (newStream: MediaStream) => {
-        if (!isHost || !roomId) return;
+    // ============================================================================
+    // Event Handlers (useEffects)
+    // ============================================================================
 
-        const audioTrack = newStream.getAudioTracks()[0];
-        const videoTrack = newStream.getVideoTracks()[0];
-
-        try {
-            let tracksReplaced = false;
-            if (audioProducerRef.current && !audioProducerRef.current.closed && audioTrack) {
-                await audioProducerRef.current.replaceTrack({ track: audioTrack });
-                tracksReplaced = true;
-            }
-            if (videoProducerRef.current && !videoProducerRef.current.closed && videoTrack) {
-                await videoProducerRef.current.replaceTrack({ track: videoTrack });
-                tracksReplaced = true;
-            }
-            
-            // Update counter to trigger effect to re-setup listeners on new tracks
-            if (tracksReplaced) {
-                setTrackUpdateCounter(prev => prev + 1);
-            }
-        } catch (error) {
-            console.error("[STREAM] Replace tracks error:", error);
-            showError("Video update failed", "Unable to update video stream. The video may continue playing.");
-        }
-    }, [isHost, roomId]);
-
-    // Check if producer tracks are ended (video finished)
-    const areTracksEnded = useCallback(() => {
-        const audioTrack = audioProducerRef.current?.track;
-        const videoTrack = videoProducerRef.current?.track;
-        return (audioTrack?.readyState === 'ended') || (videoTrack?.readyState === 'ended');
-    }, []);
-
-    // Pause/Resume producers
-    const pauseProducers = useCallback(() => {
-        if (isSeekingRef.current || !isHost || !roomId) return;
-        audioProducerRef.current?.pause();
-        videoProducerRef.current?.pause();
-        socket?.emit(SocketEvent.STREAM_PAUSED, { roomId });
-    }, [isHost, roomId, socket]);
-
-    const resumeProducers = useCallback(async () => {
-        if (!isHost || !roomId) return;
-
-        // If tracks are ended (video finished), get fresh tracks first
-        if (areTracksEnded()) {
-            // Small delay to ensure video player has the new frame ready
-            await new Promise(r => setTimeout(r, 100));
-
-            const newStream = getStreamRef.current();
-            if (newStream) {
-                const audioTrack = newStream.getAudioTracks()[0];
-                const videoTrack = newStream.getVideoTracks()[0];
-
-                try {
-                    let tracksReplaced = false;
-                    if (audioProducerRef.current && !audioProducerRef.current.closed && audioTrack?.readyState === 'live') {
-                        await audioProducerRef.current.replaceTrack({ track: audioTrack });
-                        tracksReplaced = true;
-                    }
-                    if (videoProducerRef.current && !videoProducerRef.current.closed && videoTrack?.readyState === 'live') {
-                        await videoProducerRef.current.replaceTrack({ track: videoTrack });
-                        tracksReplaced = true;
-                    }
-                    
-                    // Update counter to trigger effect to re-setup listeners on new tracks
-                    if (tracksReplaced) {
-                        setTrackUpdateCounter(prev => prev + 1);
-                    }
-                } catch (error) {
-                    console.error("[STREAM] Replace ended tracks error:", error);
-                    showError("Video restart failed", "Unable to restart video stream. Please try pausing and playing again.");
-                }
-            }
-        }
-
-        if (audioProducerRef.current?.paused) audioProducerRef.current.resume();
-        if (videoProducerRef.current?.paused) videoProducerRef.current.resume();
-        socket?.emit(SocketEvent.STREAM_RESUMED, { roomId });
-    }, [isHost, roomId, socket, areTracksEnded]);
-
-    // Handle incoming producers (consumer only - includes host rejoin)
+    // Handle incoming producers (consumer only)
     useEffect(() => {
         if (!socket || isHost || !enabled || !roomId) return;
+
         const handleIncomingProducer = async (data: { roomId: string; producers: Record<string, any[]> }) => {
             if (data.roomId !== roomId) return;
 
@@ -334,83 +436,23 @@ export const useStream = ({
             const transport = consumerTransportRef.current;
             const needsReinit = !device || !transport || transport.closed;
 
-            console.log("[useStream] INCOMING_PRODUCER received", {
-                roomId: data.roomId,
-                hasDevice: !!device,
-                hasTransport: !!transport,
-                transportClosed: transport?.closed,
-                needsReinit,
-                producers: Object.keys(data.producers || {}),
-            });
-
             if (needsReinit) {
-                // Host rejoined or we need to reinitialize - reinitialize
-                console.log("[useStream] Reinitializing MediaSoup for incoming producers");
+                console.log("[useStream] Reinitializing for incoming producers");
                 resetState();
+                
+                const result = await reinitializeConsumer(roomId);
+                if (!result) return;
 
-                try {
-                    const response = await socket.emitWithAck(SocketEvent.JOIN_ROOM, {
-                        roomId,
-                        host: false,
-                        username: username,
-                        email: email,
-                        profile: profile,
-                        room: {
-                            type: "stream",
-                            source: roomState.source || "stream",
-                            urls: roomState.urls || [],
-                            files: roomState.files || [],
-                            selectedFileIndex: roomState.selectedFileIndex || 0,
-                        },
-                    });
-                    console.log("[useStream] Rejoin response:", response);
-                    if (!response?.success) {
-                        console.error("[useStream] Rejoin failed:", response);
-                        return;
+                await new Promise(r => setTimeout(r, 300));
+                for (const peerId of Object.keys(data.producers)) {
+                    if (data.producers[peerId]?.length) {
+                        await consumeProducers(data.producers[peerId], result.device, result.transport, roomId);
                     }
-
-                    if (!response.rtpCapabilities) {
-                        console.warn("[useStream] Rejoin response missing rtpCapabilities", response);
-                        return;
-                    }
-
-                    if (typeof response.rtpCapabilities !== 'object' || Array.isArray(response.rtpCapabilities)) {
-                        console.warn("[useStream] Rejoin response rtpCapabilities is invalid", response.rtpCapabilities);
-                        return;
-                    }
-
-                    if (!response.recvTransportOptions) {
-                        console.warn("[useStream] Rejoin response missing recvTransportOptions", response);
-                        return;
-                    }
-
-                    const newDevice = new mediasoupClient.Device();
-                    await newDevice.load({ routerRtpCapabilities: response.rtpCapabilities });
-                    deviceRef.current = newDevice;
-
-                    const newTransport = newDevice.createRecvTransport(response.recvTransportOptions);
-                    createConnectHandler(newTransport, roomId);
-                    consumerTransportRef.current = newTransport;
-                    setIsInitialized(true);
-
-                    await new Promise(r => setTimeout(r, 300));
-                    for (const peerId of Object.keys(data.producers)) {
-                        if (data.producers[peerId]?.length) {
-                            console.log(`[useStream] Consuming ${data.producers[peerId].length} producers from ${peerId}`);
-                            await consumeProducers(data.producers[peerId], newDevice, newTransport, roomId);
-                        }
-                    }
-                } catch (error) {
-                    console.error("[STREAM] Reinit error:", error);
-                    showError("Stream reconnection failed", "Unable to reconnect to video stream. Please refresh the page.");
                 }
                 return;
             }
 
-            // Normal case - device and transport exist, just consume new producers
-            // console.log("[useStream] Consuming new producers with existing device/transport");
-            
-            // Close existing consumers first
+            // Normal case - consume new producers
             consumersRef.current.forEach(c => {
                 try {
                     c.close();
@@ -420,45 +462,36 @@ export const useStream = ({
             });
             consumersRef.current = [];
 
-            // Small delay to ensure transport is ready
             await new Promise(r => setTimeout(r, 200));
             
-            // Try to consume producers - if it fails, we'll reinitialize
             try {
                 for (const peerId of Object.keys(data.producers)) {
                     if (data.producers[peerId]?.length) {
-                        console.log(`[useStream] Consuming ${data.producers[peerId].length} producers from ${peerId}`);
-                        await consumeProducers(data.producers[peerId], device!, transport!, data.roomId);
+                        await consumeProducers(data.producers[peerId], device!, transport!, roomId);
                     }
                 }
             } catch (error) {
-                console.error("[useStream] Error consuming producers, reinitializing:", error);
-                // If consumption fails, reinitialize by resetting state and triggering rejoin
+                console.error("[useStream] Error consuming producers:", error);
                 resetState();
-                // The INCOMING_PRODUCER event will fire again or we can manually trigger rejoin
-                // For now, just log the error - the user might need to refresh or rejoin
             }
         };
 
         socket.on(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer);
         return () => { socket.off(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer); };
-    }, [socket, isHost, roomId, enabled, consumeProducers, resetState, createConnectHandler]);
+    }, [socket, isHost, roomId, enabled, consumeProducers, resetState, reinitializeConsumer]);
 
     // Handle stream stopped (consumer only)
     useEffect(() => {
         if (!socket || isHost || !enabled) return;
-
         const handleStreamStopped = () => onStreamStoppedRef.current?.();
         socket.on(SocketEvent.STREAM_STOPPED, handleStreamStopped);
         return () => { socket.off(SocketEvent.STREAM_STOPPED, handleStreamStopped); };
-    }, [socket, isHost, enabled, onStreamStopped]);
+    }, [socket, isHost, enabled]);
 
     // Handle host left (consumer only)
     useEffect(() => {
         if (!socket || isHost || !enabled) return;
-
         const handleHostLeft = () => resetState();
-
         socket.on(SocketEvent.HOST_LEFT, handleHostLeft);
         return () => { socket.off(SocketEvent.HOST_LEFT, handleHostLeft); };
     }, [socket, isHost, enabled, resetState]);
@@ -466,77 +499,51 @@ export const useStream = ({
     // Handle pause/resume (consumer only)
     useEffect(() => {
         if (!socket || isHost || !enabled) return;
-
         const onPaused = () => onStreamPausedRef.current?.();
         const onResumed = () => onStreamResumedRef.current?.();
-
         socket.on(SocketEvent.STREAM_PAUSED, onPaused);
         socket.on(SocketEvent.STREAM_RESUMED, onResumed);
-
         return () => {
             socket.off(SocketEvent.STREAM_PAUSED, onPaused);
             socket.off(SocketEvent.STREAM_RESUMED, onResumed);
         };
     }, [socket, isHost, enabled]);
 
-    // Handle track ended events (when user stops sharing screen)
-    // Only listen to producer tracks, not stream tracks, because:
-    // 1. For file streaming, stream tracks change when captureStream() is called again
-    // 2. Producer tracks are the actual tracks being sent to consumers
-    // 3. This prevents listening to stale/inactive tracks
+    // Handle track ended events (host only)
     useEffect(() => {
         if (!isHost || !enabled || !isInitialized) return;
 
         const handleTrackEnded = () => {
             console.log("[useStream] Track ended - cleaning up producers");
-            
-            // Close producers when tracks end
             audioProducerRef.current?.close();
             videoProducerRef.current?.close();
-            
             audioProducerRef.current = null;
             videoProducerRef.current = null;
-            
-            // Reset initialization state
             setIsInitialized(false);
             socket?.emit(SocketEvent.STREAM_STOPPED, { roomId });
         };
 
         const tracks: MediaStreamTrack[] = [];
-
-        // Only listen to producer tracks (the actual tracks being sent)
-        // Don't listen to stream tracks because they change when captureStream() is called again
         const audioTrack = audioProducerRef.current?.track;
         const videoTrack = videoProducerRef.current?.track;
         
-        if (audioTrack) {
-            tracks.push(audioTrack);
-            console.log("[useStream] Listening to audio producer track ended event");
-        }
-        if (videoTrack) {
-            tracks.push(videoTrack);
-            console.log("[useStream] Listening to video producer track ended event");
-        }
+        if (audioTrack) tracks.push(audioTrack);
+        if (videoTrack) tracks.push(videoTrack);
 
-        // If no producer tracks yet, don't set up listeners
-        // They will be set up when producers are created
-        if (tracks.length === 0) {
-            return;
-        }
+        if (tracks.length === 0) return;
 
         tracks.forEach(track => {
             track.addEventListener('ended', handleTrackEnded);
         });
 
-        // Cleanup: remove listeners when tracks change or component unmounts
         return () => {
             tracks.forEach(track => {
                 track.removeEventListener('ended', handleTrackEnded);
             });
         };
-    }, [isHost, enabled, isInitialized, socket, roomId, trackUpdateCounter]); // Re-run when tracks are created or replaced
+    }, [isHost, enabled, isInitialized, socket, roomId, trackUpdateCounter]);
 
-    // Reset state when enabled changes (e.g., room type changes from stream to sync)
+    // Reset state when enabled changes
     useEffect(() => {
         if (!enabled) {
             console.log("[useStream] Disabled - resetting MediaSoup state");
@@ -547,6 +554,10 @@ export const useStream = ({
     // Cleanup on unmount
     useEffect(() => () => resetState(), [resetState]);
 
+    // ============================================================================
+    // Public API
+    // ============================================================================
+
     return {
         isInitialized,
         initializeFromJoinResponse,
@@ -554,9 +565,21 @@ export const useStream = ({
         resumeProducers,
         replaceProducerTracks,
         resetState,
-        onPause: (event?: string) => { if (event === 'seekend' || isSeekingRef.current) return; pauseProducers(); },
-        onPlay: (event?: string) => { if (event === 'seekend' || isSeekingRef.current) return; resumeProducers(); },
-        onSeekStart: () => { isSeekingRef.current = true; },
-        onSeekEnd: () => { setTimeout(() => { isSeekingRef.current = false; }, 300); },
+        onPause: (event?: string) => {
+            if (event === 'seekend' || isSeekingRef.current) return;
+            pauseProducers();
+        },
+        onPlay: (event?: string) => {
+            if (event === 'seekend' || isSeekingRef.current) return;
+            resumeProducers();
+        },
+        onSeekStart: () => {
+            isSeekingRef.current = true;
+        },
+        onSeekEnd: () => {
+            setTimeout(() => {
+                isSeekingRef.current = false;
+            }, 300);
+        },
     };
 };
