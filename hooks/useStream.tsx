@@ -106,6 +106,36 @@ export const useStream = ({
     }, []);
 
     /**
+     * Creates a truly silent audio track as fallback
+     * Uses a silent buffer with gain 0 to ensure no sound is produced
+     */
+    const createSilentAudioTrack = useCallback((): MediaStreamTrack => {
+        const ctx = new AudioContext();
+        const dst = ctx.createMediaStreamDestination();
+        
+        // Create a gain node set to 0 for complete silence
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = 0; // Zero gain = no sound output
+        gainNode.connect(dst);
+        
+        // Create a silent buffer (filled with zeros by default)
+        // Use a small buffer to minimize memory usage
+        const buffer = ctx.createBuffer(1, 128, ctx.sampleRate);
+        
+        // Create a buffer source with the silent buffer
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true; // Loop the silent buffer to keep the track "live"
+        source.connect(gainNode);
+        source.start();
+        
+        const track = dst.stream.getAudioTracks()[0];
+        track.enabled = true; // Track is enabled but produces silence (gain is 0)
+        
+        return track;
+    }, []);
+
+    /**
      * Creates transport connect handler
      */
     const createConnectHandler = useCallback((transport: Transport, currentRoomId: string) => {
@@ -136,10 +166,17 @@ export const useStream = ({
         const audioTrack = stream.getAudioTracks()[0];
         const videoTrack = stream.getVideoTracks()[0];
 
+        // Create audio producer - use actual track if live, otherwise use silent track
         if (audioTrack?.readyState === 'live') {
             audioProducerRef.current = await transport.produce({ track: audioTrack });
+            console.log("[STREAM] Created audio producer with live track");
+        } else {
+            // No audio track or track not live - use silent track as fallback
+            audioProducerRef.current = await transport.produce({ track: createSilentAudioTrack() });
+            console.log("[STREAM] Created audio producer with silent track (no audio track or track not live)");
         }
 
+        // Create video producer
         if (videoTrack?.readyState === 'live') {
             videoProducerRef.current = await transport.produce({ track: videoTrack });
         }
@@ -157,7 +194,7 @@ export const useStream = ({
             });
             notifyTrackUpdate();
         }
-    }, [socket, notifyTrackUpdate]);
+    }, [socket, notifyTrackUpdate, createSilentAudioTrack]);
 
     /**
      * Replaces tracks on existing producers
