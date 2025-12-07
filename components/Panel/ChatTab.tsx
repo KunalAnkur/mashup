@@ -267,11 +267,16 @@ const ChatTab = () => {
   const isCurrentUserMessage = (message: ChatMessage) => {
     if (!user) return false;
 
-    // Compare against both user.name and user.username
-    const currentUserName = user.name || user.username || "";
-    const messageName = message.userName || "";
+    // Compare by email (most reliable)
+    if (user.email && message.userEmail) {
+      return user.email.toLowerCase() === message.userEmail.toLowerCase();
+    }
 
-    return currentUserName === messageName;
+    // Compare by username/name
+    const currentUserName = (user.name || user.username || "").toLowerCase();
+    const messageName = (message.userName || "").toLowerCase();
+
+    return currentUserName === messageName && currentUserName !== "";
   };
 
   return (
@@ -328,18 +333,27 @@ const ChatTab = () => {
 
             // System messages (user joined/left) - Modern Design
             if (isSystemMessage) {
-            // Extract username from email (part before @) for system messages
-            // This shows username instead of full name (name and surname)
-            let displayName = userName;
+            // Always use msg.userName first (which gets updated by useChat when USERNAME_UPDATED is received)
+            let displayName = userName; // msg.userName (already updated by useChat)
 
-            // Try to extract username from email first
-            if (msg.userEmail) {
+            // For current user's system messages, use current username from Redux
+            if (isCurrentUser && user) {
+              const currentUsername = user.username || user.name || "";
+              if (currentUsername) {
+                displayName = currentUsername;
+              }
+            }
+            
+            // Only fall back to email extraction if userName is missing or "Unknown User"
+            if ((!displayName || displayName === "Unknown User") && msg.userEmail) {
               const emailUsername = msg.userEmail.split("@")[0];
               if (emailUsername) {
                 displayName = emailUsername;
               }
-            } else if (!displayName || displayName === "Unknown User") {
-              // Fallback: extract from message text
+            }
+            
+            // Final fallback: extract from message text
+            if (!displayName || displayName === "Unknown User") {
               displayName = msg.message
                 .replace(" joined the chat", "")
                 .replace(" left the chat", "")
@@ -358,6 +372,7 @@ const ChatTab = () => {
             const isHostControlMessage =
               msg.message.includes("started") ||
               msg.message.includes("paused") ||
+              msg.message.includes("resumed") ||
               msg.message.includes("seeked");
 
             // For host control messages, replace host's username with "YOU" if it's the current user
@@ -480,10 +495,20 @@ const ChatTab = () => {
           const onlyEmojis = isOnlyEmojis(msg.message);
           const emojiSize = "text-4xl";
 
-          // Extract username from email (part before @) for display
-          // This ensures consistent username display and color generation
-          let displayUserName = userName;
-          if (msg.userEmail) {
+          // Always use msg.userName first (which gets updated by useChat when USERNAME_UPDATED is received)
+          // For current user's messages, also check Redux for the latest username
+          let displayUserName = userName; // msg.userName (already updated by useChat)
+          
+          if (isCurrentUser) {
+            // Use current username from Redux for current user's messages (most up-to-date)
+            const currentUsername = user?.username || user?.name || "";
+            if (currentUsername) {
+              displayUserName = currentUsername;
+            }
+          }
+          
+          // Only fall back to email extraction if userName is missing or "Unknown User"
+          if ((!displayUserName || displayUserName === "Unknown User") && msg.userEmail) {
             const emailUsername = msg.userEmail.split("@")[0];
             if (emailUsername) {
               displayUserName = emailUsername;

@@ -13,11 +13,16 @@ import { updateProfile as updateProfileAction } from "@/lib/store/slices/authSli
 import { FaPlay, FaPause, FaCrown } from "react-icons/fa";
 import { LuCheck, LuLink, LuLogOut, LuPencil, LuUser, LuMail } from "react-icons/lu";
 import { showError, showSuccess } from "@/utils/toast";
+import { useSocket } from "@/context/SocketContext";
+import { useRoomContext } from "@/context/RoomContext";
+import { SocketEvent } from "@/types/socketEvents";
 
 const SettingTab = () => {
   const host = useSelector((state: RootState) => state.room.host);
   const roomId = useSelector((state: RootState) => state.room.roomId);
   const dispatch = useDispatch();
+  const { socket } = useSocket();
+  const { roomId: roomIdFromContext } = useRoomContext();
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const [updateRoom] = useUpdateRoomMutation();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
@@ -207,6 +212,16 @@ const SettingTab = () => {
                         name: result.data.name,
                         username: result.data.username,
                       }));
+                    }
+
+                    // Emit username update to socket so all users in the room see the updated username
+                    if (socket && (roomId || roomIdFromContext)) {
+                      const currentRoomId = roomId || roomIdFromContext;
+                      socket.emit(SocketEvent.USERNAME_UPDATED, {
+                        username: result.data?.username || username.trim(),
+                        name: result.data?.name || name.trim(),
+                        profile: result.data?.profile || authState.user?.profile,
+                      });
                     }
 
                     showSuccess("Profile updated successfully");

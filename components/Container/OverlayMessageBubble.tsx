@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
 import { ChatMessage } from "@/types/chatTypes";
 import { formatChatTime } from "@/utils/timeFormatter";
 
@@ -13,10 +15,14 @@ interface OverlayMessageBubbleProps {
 
 const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBubbleProps) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const user = useSelector((state: RootState) => state.auth.user);
 
   // Check if this is the current user's message
-  const isOwnMessage = message.userName === (window as any).__currentUser?.username || 
-                       message.userEmail === (window as any).__currentUser?.email;
+  const isOwnMessage = user && (
+    (user.email && message.userEmail && user.email.toLowerCase() === message.userEmail.toLowerCase()) ||
+    ((user.username || user.name) && message.userName && 
+     (user.username || user.name || "").toLowerCase() === message.userName.toLowerCase())
+  );
 
   // Auto-dismiss after 60 seconds from when the message was SENT (not when it appears)
   useEffect(() => {
@@ -71,15 +77,29 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
     return null;
   }
 
-  // Extract username from email for display
+  // Extract username for display
+  // Always use message.userName first (which gets updated by useChat when USERNAME_UPDATED is received)
+  // For current user's messages, also check Redux for the latest username
   const getDisplayUsername = () => {
+    // Always start with message.userName (which is updated by useChat when USERNAME_UPDATED is received)
     let displayUsername = message.userName || "Unknown User";
-    if (message.userEmail) {
+    
+    // For current user's messages, use current username from Redux (most up-to-date)
+    if (isOwnMessage && user) {
+      const currentUsername = user.username || user.name || "";
+      if (currentUsername) {
+        displayUsername = currentUsername;
+      }
+    }
+    
+    // Only fall back to email extraction if userName is missing or "Unknown User"
+    if ((!displayUsername || displayUsername === "Unknown User") && message.userEmail) {
       const emailUsername = message.userEmail.split("@")[0];
       if (emailUsername) {
         displayUsername = emailUsername;
       }
     }
+    
     return displayUsername;
   };
 
@@ -101,7 +121,7 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
   <div>
     <span 
       className="text-sm  inline"
-      style={{ color: getUserColor(message.userName) }}
+      style={{ color: getUserColor(displayUsername) }}
       title={displayUsername}
     >
       {displayUsername}:{' '}

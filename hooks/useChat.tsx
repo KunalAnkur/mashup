@@ -111,8 +111,20 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
         if (!socket || !enabled) return;
 
         const handleReceiveMessage = (data: ChatMessage) => {
-            if (!data?.message) return;
-            setMessages(prev => prev.some(m => m.id === data.id) ? prev : [...prev, data]);
+            console.log("[useChat] Received message:", data);
+            if (!data?.message) {
+                console.warn("[useChat] Message missing message field:", data);
+                return;
+            }
+            setMessages(prev => {
+                const exists = prev.some(m => m.id === data.id);
+                if (exists) {
+                    console.log("[useChat] Message already exists, skipping:", data.id);
+                    return prev;
+                }
+                console.log("[useChat] Adding new message to state:", data);
+                return [...prev, data];
+            });
         };
 
         const handleUserTyping = (data: TypingUser) => {
@@ -131,16 +143,48 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
             }, 3000);
         };
 
+        const handleUsernameUpdated = (data: { socketId: string; username?: string; name?: string; profile?: string }) => {
+            // Determine the new username to use (prioritize username over name)
+            const newUsername = data.username || data.name;
+            
+            if (!newUsername) return; // Skip if no username provided
+            
+            // Update all messages from this user with the new username
+            setMessages(prev => prev.map(msg => {
+                if (msg.userId === data.socketId) {
+                    return {
+                        ...msg,
+                        userName: newUsername,
+                        userProfile: data.profile || msg.userProfile,
+                    };
+                }
+                return msg;
+            }));
+
+            // Update typing users with new username
+            setTypingUsers(prev => prev.map(typingUser => {
+                if (typingUser.userId === data.socketId) {
+                    return {
+                        ...typingUser,
+                        userName: newUsername,
+                    };
+                }
+                return typingUser;
+            }));
+        };
+
         socket.on(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
         socket.on(SocketEvent.USER_TYPING, handleUserTyping);
         socket.on(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
         socket.on(SocketEvent.RECEIVE_REACTION, handleReceiveReaction);
+        socket.on(SocketEvent.USERNAME_UPDATED, handleUsernameUpdated);
 
         return () => {
             socket.off(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
             socket.off(SocketEvent.USER_TYPING, handleUserTyping);
             socket.off(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
             socket.off(SocketEvent.RECEIVE_REACTION, handleReceiveReaction);
+            socket.off(SocketEvent.USERNAME_UPDATED, handleUsernameUpdated);
 
             if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         };
