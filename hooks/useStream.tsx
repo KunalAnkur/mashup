@@ -93,16 +93,6 @@ export const useStream = ({
         });
     }, [socket]);
 
-    const createSilentAudioTrack = useCallback((): MediaStreamTrack => {
-        const ctx = new AudioContext();
-        const oscillator = ctx.createOscillator();
-        const dst = ctx.createMediaStreamDestination();
-        oscillator.connect(dst);
-        oscillator.start();
-        const track = dst.stream.getAudioTracks()[0];
-        track.enabled = false; // Mute it
-        return track;
-    }, []);
     // Create producers (host only)
     const createProducers = useCallback(async (transport: Transport, stream: MediaStream, currentRoomId: string) => {
         if (!socket || audioProducerRef.current || videoProducerRef.current) return;
@@ -111,9 +101,8 @@ export const useStream = ({
         const videoTrack = stream.getVideoTracks()[0];
         if (audioTrack?.readyState === 'live') {
             audioProducerRef.current = await transport.produce({ track: audioTrack });
-        } else {
-            audioProducerRef.current = await transport.produce({ track: createSilentAudioTrack() });
         }
+
         if (videoTrack?.readyState === 'live') {
             videoProducerRef.current = await transport.produce({ track: videoTrack });
         }
@@ -321,7 +310,6 @@ export const useStream = ({
         if (!socket || isHost || !enabled || !roomId) return;
         const handleIncomingProducer = async (data: { roomId: string; producers: Record<string, any[]> }) => {
             if (data.roomId !== roomId) return;
-            debugger
 
             const device = deviceRef.current;
             const transport = consumerTransportRef.current;
