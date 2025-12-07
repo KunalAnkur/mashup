@@ -504,16 +504,34 @@ export async function showFilePicker(
     }
 
     try {
-        const handles = await (window as any).showOpenFilePicker({
-            multiple: options?.multiple ?? true,
-            types: options?.types ?? [
-                {
-                    description: 'Video files',
-                    accept: {
-                        'video/*': ['.mp4', '.mkv', '.webm', '.avi', '.mov', '.flv', '.m3u8'],
-                    },
-                },
-            ],
+        const handles = await(window as any).showOpenFilePicker({
+          multiple: options?.multiple ?? true,
+          types: options?.types ?? [
+            {
+              description: "Media files",
+              accept: {
+                "video/*": [
+                  ".mp4",
+                  ".mkv",
+                  ".webm",
+                  ".avi",
+                  ".mov",
+                  ".flv",
+                  ".m3u8",
+                ],
+                "audio/*": [
+                  ".mp3",
+                  ".wav",
+                  ".ogg",
+                  ".aac",
+                  ".m4a",
+                  ".flac",
+                  ".opus",
+                  ".wma",
+                ],
+              },
+            },
+          ],
         });
 
         return handles;

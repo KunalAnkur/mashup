@@ -154,17 +154,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         }
 
         try {
-            const handles = await showFilePicker({
-                multiple: true,
-                types: [
-                    {
-                        description: 'Video files',
-                        accept: {
-                            'video/*': ['.mp4', '.mkv', '.webm', '.avi', '.mov', '.flv', '.m3u8'],
-                        },
-                    },
-                ],
-            });
+            const handles = await showFilePicker();
 
             // If appending, preserve existing handles; otherwise clear all
             if (!append && handles.length > 0) {
