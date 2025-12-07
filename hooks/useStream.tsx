@@ -36,6 +36,7 @@ export const useStream = ({
 }: UseStreamParams) => {
     const { socket } = useSocket();
     const [isInitialized, setIsInitialized] = useState(false);
+    const [trackUpdateCounter, setTrackUpdateCounter] = useState(0); // Trigger effect when tracks are replaced
     const roomState = useSelector((state: RootState) => state.room);
     // MediaSoup state refs
     const deviceRef = useRef<mediasoupClient.Device | null>(null);
@@ -118,6 +119,8 @@ export const useStream = ({
                 roomId: currentRoomId,
                 producers: { [socket.id!]: producers }
             });
+            // Trigger effect to set up listeners on new producer tracks
+            setTrackUpdateCounter(prev => prev + 1);
         }
     }, [socket]);
 
@@ -246,11 +249,19 @@ export const useStream = ({
         const videoTrack = newStream.getVideoTracks()[0];
 
         try {
+            let tracksReplaced = false;
             if (audioProducerRef.current && !audioProducerRef.current.closed && audioTrack) {
                 await audioProducerRef.current.replaceTrack({ track: audioTrack });
+                tracksReplaced = true;
             }
             if (videoProducerRef.current && !videoProducerRef.current.closed && videoTrack) {
                 await videoProducerRef.current.replaceTrack({ track: videoTrack });
+                tracksReplaced = true;
+            }
+            
+            // Update counter to trigger effect to re-setup listeners on new tracks
+            if (tracksReplaced) {
+                setTrackUpdateCounter(prev => prev + 1);
             }
         } catch (error) {
             console.error("[STREAM] Replace tracks error:", error);
@@ -287,11 +298,19 @@ export const useStream = ({
                 const videoTrack = newStream.getVideoTracks()[0];
 
                 try {
+                    let tracksReplaced = false;
                     if (audioProducerRef.current && !audioProducerRef.current.closed && audioTrack?.readyState === 'live') {
                         await audioProducerRef.current.replaceTrack({ track: audioTrack });
+                        tracksReplaced = true;
                     }
                     if (videoProducerRef.current && !videoProducerRef.current.closed && videoTrack?.readyState === 'live') {
                         await videoProducerRef.current.replaceTrack({ track: videoTrack });
+                        tracksReplaced = true;
+                    }
+                    
+                    // Update counter to trigger effect to re-setup listeners on new tracks
+                    if (tracksReplaced) {
+                        setTrackUpdateCounter(prev => prev + 1);
                     }
                 } catch (error) {
                     console.error("[STREAM] Replace ended tracks error:", error);
@@ -461,11 +480,15 @@ export const useStream = ({
     }, [socket, isHost, enabled]);
 
     // Handle track ended events (when user stops sharing screen)
+    // Only listen to producer tracks, not stream tracks, because:
+    // 1. For file streaming, stream tracks change when captureStream() is called again
+    // 2. Producer tracks are the actual tracks being sent to consumers
+    // 3. This prevents listening to stale/inactive tracks
     useEffect(() => {
-        if (!isHost || !enabled) return;
+        if (!isHost || !enabled || !isInitialized) return;
 
         const handleTrackEnded = () => {
-            console.log("[useStream] Screen sharing stopped by user - track ended, cleaning up producers");
+            console.log("[useStream] Track ended - cleaning up producers");
             
             // Close producers when tracks end
             audioProducerRef.current?.close();
@@ -477,29 +500,28 @@ export const useStream = ({
             // Reset initialization state
             setIsInitialized(false);
             socket?.emit(SocketEvent.STREAM_STOPPED, { roomId });
-            // Notify that stream is no longer available
-            // The MediaStreamContext will also handle setting stream to null
         };
 
         const tracks: MediaStreamTrack[] = [];
 
-        // Listen to producer tracks (these are the actual tracks being sent)
+        // Only listen to producer tracks (the actual tracks being sent)
+        // Don't listen to stream tracks because they change when captureStream() is called again
         const audioTrack = audioProducerRef.current?.track;
         const videoTrack = videoProducerRef.current?.track;
-        if (audioTrack) tracks.push(audioTrack);
-        if (videoTrack) tracks.push(videoTrack);
+        
+        if (audioTrack) {
+            tracks.push(audioTrack);
+            console.log("[useStream] Listening to audio producer track ended event");
+        }
+        if (videoTrack) {
+            tracks.push(videoTrack);
+            console.log("[useStream] Listening to video producer track ended event");
+        }
 
-        // Also listen to stream tracks as a fallback (in case producers aren't created yet)
-        const stream = getStreamRef.current();
-        if (stream) {
-            const streamAudioTracks = stream.getAudioTracks();
-            const streamVideoTracks = stream.getVideoTracks();
-            streamAudioTracks.forEach(track => {
-                if (!tracks.includes(track)) tracks.push(track);
-            });
-            streamVideoTracks.forEach(track => {
-                if (!tracks.includes(track)) tracks.push(track);
-            });
+        // If no producer tracks yet, don't set up listeners
+        // They will be set up when producers are created
+        if (tracks.length === 0) {
+            return;
         }
 
         tracks.forEach(track => {
@@ -512,7 +534,7 @@ export const useStream = ({
                 track.removeEventListener('ended', handleTrackEnded);
             });
         };
-    }, [isHost, enabled, isInitialized]); // Re-run when initialization state changes (producers created/destroyed)
+    }, [isHost, enabled, isInitialized, socket, roomId, trackUpdateCounter]); // Re-run when tracks are created or replaced
 
     // Reset state when enabled changes (e.g., room type changes from stream to sync)
     useEffect(() => {
