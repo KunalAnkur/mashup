@@ -16,6 +16,7 @@ import { showError, showSuccess } from "@/utils/toast";
 import { useSocket } from "@/context/SocketContext";
 import { useRoomContext } from "@/context/RoomContext";
 import { SocketEvent } from "@/types/socketEvents";
+import { validateUsername } from "@/utils/validation";
 
 const SettingTab = () => {
   const host = useSelector((state: RootState) => state.room.host);
@@ -40,6 +41,7 @@ const SettingTab = () => {
   const [username, setUsername] = useState<string>(authState.user?.username || "");
   const [email, setEmail] = useState<string>(authState.user?.email || "");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [usernameError, setUsernameError] = useState<string>("");
 
   // Construct room URL
   const roomUrl = roomId
@@ -141,14 +143,41 @@ const SettingTab = () => {
             <div className="space-y-1.5">
               <label className="text-xs text-gray-400 font-medium">Username</label>
               {isEditingProfile ? (
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/5 rounded-lg text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-colors"
-                  placeholder="Enter your username"
-                  disabled={isUpdatingProfile}
-                />
+                <div className="space-y-1">
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => {
+                      const newUsername = e.target.value;
+                      setUsername(newUsername);
+                      
+                      // Real-time validation
+                      if (newUsername.trim()) {
+                        const validation = validateUsername(newUsername);
+                        if (!validation.valid) {
+                          setUsernameError(validation.error || "");
+                        } else {
+                          setUsernameError("");
+                        }
+                      } else {
+                        setUsernameError("");
+                      }
+                    }}
+                    className={`w-full px-3 py-2 bg-white/5 rounded-lg text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-colors ${
+                      usernameError 
+                        ? "focus:ring-red-500/50 border border-red-500/30" 
+                        : "focus:ring-rose-500/50"
+                    }`}
+                    placeholder="Enter your username (letters, numbers, underscores only)"
+                    disabled={isUpdatingProfile}
+                  />
+                  {usernameError && (
+                    <p className="text-red-400 text-xs font-medium px-1">{usernameError}</p>
+                  )}
+                  {!usernameError && username.trim() && (
+                    <p className="text-gray-500 text-xs px-1">Username can only contain letters, numbers, and underscores</p>
+                  )}
+                </div>
               ) : (
                 <div className="px-3 py-2 bg-white/5 rounded-lg">
                   <p className="text-white text-sm">{username || "Not set"}</p>
@@ -181,6 +210,7 @@ const SettingTab = () => {
                   setName(authState.user?.name || "");
                   setUsername(authState.user?.username || "");
                   setEmail(authState.user?.email || "");
+                  setUsernameError("");
                 }}
                 className="flex-1 px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium rounded-lg transition-all duration-200"
                 disabled={isUpdatingProfile}
@@ -198,6 +228,17 @@ const SettingTab = () => {
                     showError("Validation error", "Please fill in name and username.");
                     return;
                   }
+
+                  // Validate username format
+                  const usernameValidation = validateUsername(username);
+                  if (!usernameValidation.valid) {
+                    setUsernameError(usernameValidation.error || "");
+                    showError("Invalid username", usernameValidation.error || "Please enter a valid username.");
+                    return;
+                  }
+
+                  // Clear any previous errors
+                  setUsernameError("");
 
                   try {
                     const result = await updateProfile({
@@ -229,10 +270,17 @@ const SettingTab = () => {
                   } catch (error: any) {
                     console.error("Failed to update profile:", error);
                     const errorMessage = error?.data?.message || error?.message || "Failed to update profile";
+                    
+                    // Check if it's a username already exists error
+                    if (errorMessage.toLowerCase().includes("username already exists") || 
+                        errorMessage.toLowerCase().includes("already exists")) {
+                      setUsernameError("This username is already taken. Please choose a different one.");
+                    }
+                    
                     showError("Update failed", errorMessage);
                   }
                 }}
-                disabled={isUpdatingProfile || !name.trim() || !username.trim()}
+                disabled={isUpdatingProfile || !name.trim() || !username.trim() || !!usernameError}
                 className="flex-1 px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isUpdatingProfile ? "Saving..." : "Save Changes"}
