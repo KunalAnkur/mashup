@@ -52,6 +52,7 @@ interface RoomContextType {
     isHost: boolean;
     username: string;
     leaveRoom: () => void;
+    participants: UserInfo[];
 }
 
 const RoomContext = createContext<RoomContextType | null>(null);
@@ -76,7 +77,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const [hostLeft, setHostLeft] = useState(false);
     const [roomClosed, setRoomClosed] = useState(false);
     const [joinResponse, setJoinResponse] = useState<JoinResponse | null>(null);
-    
+    const [participants, setParticipants] = useState<UserInfo[]>([]);
     // Sync roomType from Redux when it changes (e.g., from room info update)
     useEffect(() => {
         if (roomTypeFromRedux && roomTypeFromRedux !== roomType) {
@@ -119,6 +120,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 currentRoomRef.current = roomId;
                 setRoomType(response.roomType || roomTypeFromRedux);
                 setJoinResponse(response);
+                setParticipants(response.users || []);
                 setHostLeft(false);
                 setRoomClosed(false);
             } else {
@@ -278,7 +280,22 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             socket.off(SocketEvent.ROOM_INFO_UPDATED, handleRoomInfoUpdated);
         };
     }, [socket, roomId, isHost, dispatch]);
+    
+    useEffect(() => {
+        if (!socket || !roomId) return;
 
+        const handleUsersUpdated = (data: { roomId: string; users: UserInfo[] }) => {
+            if (data.roomId === roomId && Array.isArray(data.users)) {
+                setParticipants(data.users);
+            }
+        };
+
+        socket.on(SocketEvent.USERS_UPDATED, handleUsersUpdated);
+
+        return () => {
+            socket.off(SocketEvent.USERS_UPDATED, handleUsersUpdated);
+        };
+    }, [socket, roomId]);
     // Cleanup on unmount
     useEffect(() => {
         return () => {
@@ -300,6 +317,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             isHost,
             username,
             leaveRoom,
+            participants,
         }}>
             {children}
         </RoomContext.Provider>

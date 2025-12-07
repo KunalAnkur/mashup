@@ -1,15 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useRoomContext, UserInfo } from "@/context/RoomContext";
-import { useSocket } from "@/context/SocketContext";
-import { SocketEvent } from "@/types/socketEvents";
 import { FaCrown, FaUserShield } from "react-icons/fa";
 import Avatar from "../UI/Avatar";
 
-// Generate consistent color for a username (same as ChatTab)
 const getUserColor = (username: string) => {
   const colors = [
     {
@@ -54,36 +50,8 @@ const getUserColor = (username: string) => {
 };
 
 const PeopleTab = () => {
-  const { joinResponse, roomId } = useRoomContext();
-  const { socket } = useSocket();
-  const host = useSelector((state: RootState) => state.room.host);
+  const { participants } = useRoomContext();
   const currentUser = useSelector((state: RootState) => state.auth.user);
-  const [participants, setParticipants] = useState<UserInfo[]>([]);
-
-  // Initialize participants from join response
-  // The join response includes the current list of users in the room
-  useEffect(() => {
-    if (joinResponse?.users && Array.isArray(joinResponse.users)) {
-      setParticipants(joinResponse.users);
-    }
-  }, [joinResponse]);
-
-  // Listen for user list updates from socket
-  useEffect(() => {
-    if (!socket || !roomId) return;
-
-    const handleUsersUpdated = (data: { roomId: string; users: UserInfo[] }) => {
-      if (data.roomId === roomId && Array.isArray(data.users)) {
-        setParticipants(data.users);
-      }
-    };
-
-    socket.on(SocketEvent.USERS_UPDATED, handleUsersUpdated);
-
-    return () => {
-      socket.off(SocketEvent.USERS_UPDATED, handleUsersUpdated);
-    };
-  }, [socket, roomId]);
 
   // Get avatar URL helper
   const getAvatarUrl = (user: UserInfo) => {
