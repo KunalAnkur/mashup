@@ -7,11 +7,11 @@ import { useFileContext } from "@/context/FileContext";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Player } from "@/components/VideoPlayer";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
+import StreamPlayerEmptyState from "@/components/Container/StreamPlayerEmptyState";
 import type ReactPlayer from "react-player";
 import { useStream } from "@/hooks";
-import { useRoomContext } from "@/context/RoomContext";
+import { useRoomContext, RoomType } from "@/context/RoomContext";
 import { helper } from "@/utils";
-import getPlayerMessage from "@/utils/playerState";
 import { showError } from "@/utils/toast";
 
 type Props = {
@@ -33,8 +33,18 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
 
     const hasInitializedRef = useRef(false);
     const lastVideoIndexRef = useRef(-1);
-    const videoEndedRef = useRef(false); 
+    const videoEndedRef = useRef(false);
+    const lastRoomTypeRef = useRef<RoomType | null>(null);
     const { isJoined, roomType, joinResponse, isHost, hostLeft } = useRoomContext();
+    
+    // Reset initialization when room type changes
+    useEffect(() => {
+        if (lastRoomTypeRef.current !== null && lastRoomTypeRef.current !== roomType) {
+            console.log(`[StreamPlayer] Room type changed from ${lastRoomTypeRef.current} to ${roomType} - resetting initialization`);
+            hasInitializedRef.current = false;
+        }
+        lastRoomTypeRef.current = roomType;
+    }, [roomType]);
 
     const isScreenSharing = roomState.type === "stream" && roomState.source === "stream" && screenStream !== null;
     const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
@@ -85,12 +95,17 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         setIsPaused(false);
         setTimeout(() => setPauseFrameUrl(null), 500);
     }, []);
+    const handleStreamStopped = useCallback(() => {
+        console.log("[StreamPlayer] Stream stopped", remoteStream);
+        setRemoteStream(null);
+    }, [captureFrame]);
     const { isInitialized, initializeFromJoinResponse, replaceProducerTracks, onSeekStart, onSeekEnd, onPlay: streamOnPlay, onPause } = useStream({
         roomId: roomState.roomId,
         getStream,
         onStreamReceived: handleStreamReceived,
         onStreamPaused: handleStreamPaused,
         onStreamResumed: handleStreamResumed,
+        onStreamStopped: handleStreamStopped,
         isHost,
         enabled: isJoined && roomType === "stream",
         username: authState.user?.username || authState.user?.name || "User",
@@ -122,6 +137,27 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         setCurrentFileUrl(url);
         return () => URL.revokeObjectURL(url);
     }, [files, roomState.selectedFileIndex, isHost, isFileStreaming]);
+
+    // Handle screen stream changes (when user shares a different screen)
+    useEffect(() => {
+        if (!isHost || !isScreenSharing || !screenStream || !isInitialized) return;
+
+        // Small delay to ensure the stream is ready
+        const timeoutId = setTimeout(async () => {
+            const stream = getStream();
+            if (stream) {
+                console.log("[StreamPlayer] Screen stream changed, updating producer tracks");
+                try {
+                    await replaceProducerTracks(stream);
+                    console.log("[StreamPlayer] Producer tracks updated successfully");
+                } catch (error) {
+                    console.error("[StreamPlayer] Error updating producer tracks:", error);
+                }
+            }
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [screenStream, isHost, isScreenSharing, isInitialized, getStream, replaceProducerTracks]);
 
     // Handle video ready
     const handleVideoReady = useCallback(() => {
@@ -173,30 +209,19 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         }
     }, [streamOnPlay, isInitialized, isHost, getStream, replaceProducerTracks]);
 
-    // const onPlay = useCallback((event: string) => {
-    //     streamOnPlay(event);
-    //     if (isHost && isInitialized) resumeProducers();
-    // }, [isHost, isInitialized, resumeProducers]);
-
-    // const onPause = useCallback((event: string) => {
-    //     streamOnPause(event);
-    //     if (isHost && isInitialized) pauseProducers();
-    // }, [isHost, isInitialized, pauseProducers]);
-
     const source = isHost ? (isScreenSharing ? screenStream : currentFileUrl) : remoteStream;
-    console.log("source", source, remoteStream, getPlayerMessage(isHost, roomType || "sync", hostLeft, remoteStream));
+    console.log("source", source, remoteStream);
+    
+    // Show empty state when: no source available OR host has left
     if (!source || hostLeft) {
         return (
-            <div className="flex items-center justify-center h-full bg-black">
-                <div className="text-white/60 text-center">
-                    <div className="animate-pulse mb-2">
-                        {isHost ? "🎬 Loading video..." : getPlayerMessage(isHost, roomType || "sync", hostLeft, remoteStream) }
-                    </div>
-                    <div className="text-sm text-white/40">
-                        {isHost ? "Preparing to stream" : `Connecting... ${isInitialized ? '(Ready)' : ''}`}
-                    </div>
-                </div>
-            </div>
+            <StreamPlayerEmptyState
+                isHost={isHost}
+                roomType={roomType}
+                hostLeft={hostLeft}
+                remoteStream={remoteStream}
+                isInitialized={isInitialized}
+            />
         );
     }
 

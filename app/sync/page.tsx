@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { setRefers } from "@/lib/store/slices/roomSlice";
@@ -26,9 +26,12 @@ const SyncPage = () => {
     isAddDisabled,
     tooltipMessage,
     loadingMetadata,
+    isAdding,
     handleAddUrl,
     handleRemoveUrl,
   } = useUrlManagement();
+  
+  const [isEntering, setIsEntering] = useState(false);
 
   const handleOnSourceUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSourceUrlInput(e.target.value);
@@ -41,19 +44,26 @@ const SyncPage = () => {
   };
 
   const handleOnEnterRoom = async () => {
-    if (addedUrls.length === 0) return;
-    dispatch(
-      setRefers({
-        refer: true,
-        type: "sync",
-        source: "url",
-        urls: addedUrls.map((item) => item.url),
-      })
-    );
-    if (!authState.isAuthenticated) {
-      router.push("/login");
+    if (addedUrls.length === 0 || isEntering) return;
+    
+    setIsEntering(true);
+    try {
+      dispatch(
+        setRefers({
+          refer: true,
+          type: "sync",
+          source: "url",
+          urls: addedUrls.map((item) => item.url),
+        })
+      );
+      if (!authState.isAuthenticated) {
+        router.push("/login");
+      }
+      // If authenticated, AuthGuard will handle room creation and navigation
+    } finally {
+      // Keep loading state for a bit to show feedback, then reset if navigation doesn't happen
+      setTimeout(() => setIsEntering(false), 1000);
     }
-    // If authenticated, AuthGuard will handle room creation and navigation
   };
 
   const handleBack = () => {
@@ -102,6 +112,8 @@ const SyncPage = () => {
             onEnterRoom={handleOnEnterRoom}
             getPlatformById={getPlatformById}
             getUrlDisplayName={getUrlDisplayName}
+            isAdding={isAdding}
+            isEntering={isEntering}
           />
         </div>
       </div>

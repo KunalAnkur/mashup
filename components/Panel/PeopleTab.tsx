@@ -2,10 +2,10 @@
 
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { useRoomContext, UserInfo } from "@/context/RoomContext";
 import { FaCrown, FaUserShield } from "react-icons/fa";
 import Avatar from "../UI/Avatar";
 
-// Generate consistent color for a username (same as ChatTab)
 const getUserColor = (username: string) => {
   const colors = [
     {
@@ -49,168 +49,149 @@ const getUserColor = (username: string) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
-// Mock data - replace with real participants from socket/API
-const mockParticipants = [
-  {
-    id: "1",
-    name: "You",
-    email: "you@example.com",
-    isHost: true,
-    hasRemote: false,
-  },
-  {
-    id: "2",
-    name: "ankurkunal",
-    email: "ankur@example.com",
-    isHost: false,
-    hasRemote: false,
-  },
-  {
-    id: "3",
-    name: "maria_s",
-    email: "maria@example.com",
-    isHost: false,
-    hasRemote: true,
-  },
-  {
-    id: "4",
-    name: "jake_doe",
-    email: "jake@example.com",
-    isHost: false,
-    hasRemote: false,
-  },
-];
-
 const PeopleTab = () => {
-  const host = useSelector((state: RootState) => state.room.host);
+  const { participants } = useRoomContext();
   const currentUser = useSelector((state: RootState) => state.auth.user);
 
   // Get avatar URL helper
-  const getAvatarUrl = (name: string) => {
+  const getAvatarUrl = (user: UserInfo) => {
+    if (user.profile) {
+      return user.profile;
+    }
+    const displayName = user.name || user.username || "User";
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      name
+      displayName
     )}&background=random&color=fff&size=200`;
   };
 
-  // Handle giving remote control to a user (host only)
-  const handleGiveRemote = (userId: string) => {
-    if (host) {
-      // TODO: Emit socket event to give remote control
-      console.log("Giving remote control to user:", userId);
-    }
-  };
-
   // Filter participants - put host first, then current user, then others
-  const sortedParticipants = [...mockParticipants].sort((a, b) => {
-    if (a.isHost) return -1;
-    if (b.isHost) return 1;
-    if (a.name === "You" || a.name === currentUser?.name) return -1;
-    if (b.name === "You" || b.name === currentUser?.name) return 1;
+  const sortedParticipants = [...participants].sort((a, b) => {
+    if (a.host) return -1;
+    if (b.host) return 1;
+    if (a.username === currentUser?.username || a.email === currentUser?.email) return -1;
+    if (b.username === currentUser?.username || b.email === currentUser?.email) return 1;
     return 0;
   });
 
   return (
     <div className="flex flex-col h-full w-full gap-4">
       {/* Participants List */}
-      <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-        <div className="flex items-center gap-2 mb-1 px-1">
-          <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-wider">
-            Participants ({sortedParticipants.length})
+      <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <div className="flex items-center gap-2 mb-2 px-1">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+          <h3 className="text-gray-300 text-xs font-bold uppercase tracking-widest px-3 py-1 bg-gradient-to-r from-rose-500/10 via-pink-500/10 to-fuchsia-500/10 rounded-full ">
+            {sortedParticipants.length} {sortedParticipants.length === 1 ? 'Participant' : 'Participants'}
           </h3>
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
         </div>
 
-        {sortedParticipants.map((participant) => {
-          const userColor = getUserColor(participant.name);
-          const isCurrentUser =
-            participant.name === "You" ||
-            participant.name === currentUser?.name;
+        {sortedParticipants.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-white/5 to-white/0  flex items-center justify-center mb-4">
+              <FaUserShield className="text-gray-500" size={24} />
+            </div>
+            <p className="text-gray-400 text-sm font-medium">No participants yet</p>
+            <p className="text-gray-500 text-xs mt-1">Waiting for others to join...</p>
+          </div>
+        ) : (
+          sortedParticipants.map((participant, index) => {
+            const displayName = participant.name || participant.username || "User";
+            const userColor = getUserColor(displayName);
+            const isCurrentUser =
+              participant.username === currentUser?.username ||
+              participant.email === currentUser?.email;
 
           return (
             <div
-              key={participant.id}
-              className="group bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-white/10 hover:border-white/20 rounded-xl p-3 transition-all duration-200 animate-fade-in"
+              key={participant.socketId}
+              className="group relative animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className="flex items-center gap-3">
-                {/* Avatar */}
-                <div className="relative flex-shrink-0">
-                  <Avatar
-                    url={getAvatarUrl(participant.name)}
-                    alt={participant.name}
-                    size={40}
-                    isDefault={true}
-                  />
-                  {participant.isHost && (
-                    <div className="absolute -top-1 -right-1 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full p-1 shadow-lg">
-                      <FaCrown className="text-white" size={10} />
+              {/* Glow effect on hover */}
+              <div className={`absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-2xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-300`}></div>
+              
+              {/* Card */}
+              <div className="relative bg-gradient-to-br from-white/[0.08] via-white/[0.05] to-white/[0.02] backdrop-blur-sm   rounded-2xl p-4 transition-all duration-300 shadow-lg group-hover:shadow-xl">
+                <div className="flex items-center gap-4">
+                  {/* Avatar with enhanced styling */}
+                  <div className="relative flex-shrink-0">
+                    {/* Avatar glow */}
+                    <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${userColor.bg} opacity-0 group-hover:opacity-30 blur-md transition-opacity duration-300`}></div>
+                    
+                    {/* Avatar border */}
+                    <div className={`relative rounded-full p-0.5 bg-gradient-to-br ${userColor.bg} ${isCurrentUser ? 'ring-2 ring-rose-500/50' : ''}`}>
+                      <Avatar
+                        url={getAvatarUrl(participant)}
+                        alt={displayName}
+                        size={48}
+                        isDefault={true}
+                      />
                     </div>
-                  )}
-                  {participant.hasRemote && (
-                    <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-rose-500 to-pink-500 rounded-full p-1 shadow-lg">
-                      <FaUserShield className="text-white" size={10} />
-                    </div>
-                  )}
-                </div>
-
-                {/* User Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`font-semibold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient} truncate`}
-                    >
-                      {participant.name}
-                      {isCurrentUser && (
-                        <span className="text-gray-500 ml-1">(You)</span>
-                      )}
-                    </span>
-                    {participant.isHost && (
-                      <span className="px-2 py-0.5 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 rounded-full text-yellow-400 text-xs font-medium">
-                        Host
-                      </span>
+                    
+                    {/* Host crown badge */}
+                    {participant.host && (
+                      <div className="absolute -top-1 -right-1 bg-gradient-to-br from-yellow-400 via-amber-400 to-yellow-500 rounded-full p-1.5 shadow-lg shadow-yellow-500/30 ring-2 ring-yellow-500/20">
+                        <FaCrown className="text-white" size={12} />
+                      </div>
                     )}
-                    {participant.hasRemote && (
-                      <span className="px-2 py-0.5 bg-gradient-to-r from-rose-500/20 to-pink-500/20 border border-rose-500/30 rounded-full text-rose-400 text-xs font-medium">
-                        Remote
+                    
+                    {/* Online indicator */}
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full  shadow-lg"></div>
+                  </div>
+
+                  {/* User Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <span
+                        className={`font-bold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient} truncate`}
+                      >
+                        {displayName}
                       </span>
+                      
+                      {isCurrentUser && (
+                        <span className="px-2 py-0.5 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full text-rose-300 text-[10px] font-semibold uppercase tracking-wide">
+                          You
+                        </span>
+                      )}
+                      
+                      {participant.host && (
+                        <span className="px-2 py-0.5 bg-gradient-to-r from-yellow-500/25 via-amber-500/25 to-yellow-500/25 rounded-full text-yellow-300 text-[10px] font-semibold uppercase tracking-wide shadow-lg shadow-yellow-500/10">
+                          Host
+                        </span>
+                      )}
+                    </div>
+                    
+                    {participant.email && (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <div className="w-1 h-1 rounded-full bg-gray-500"></div>
+                        <p className="text-gray-400 text-xs truncate font-medium">
+                          {participant.email}
+                        </p>
+                      </div>
                     )}
                   </div>
-                  <p className="text-gray-400 text-xs truncate mt-0.5">
-                    {participant.email}
-                  </p>
                 </div>
-
-                {/* Give Remote Button (Host only, not for self) */}
-                {host && !participant.isHost && !isCurrentUser && (
-                  <button
-                    onClick={() => handleGiveRemote(participant.id)}
-                    className="flex-shrink-0 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-rose-500/50 rounded-lg transition-all duration-200 group"
-                    title="Give remote control"
-                  >
-                    <FaUserShield
-                      className="text-gray-400 group-hover:text-rose-400"
-                      size={14}
-                    />
-                  </button>
-                )}
               </div>
             </div>
           );
-        })}
+        })
+        )}
       </div>
 
       <style jsx>{`
         @keyframes fade-in {
           from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(8px) scale(0.98);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
         }
 
         .animate-fade-in {
-          animation: fade-in 0.3s ease-out forwards;
+          animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           opacity: 0;
         }
       `}</style>

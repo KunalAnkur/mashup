@@ -4,6 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { ProfileHeader, Logo } from "@/components";
 import { FaArrowLeft, FaCheckCircle, FaShare, FaDesktop, FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
+import { ImSpinner2 } from "react-icons/im";
 import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 import { RootState } from "@/lib/store";
 import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
@@ -566,14 +567,15 @@ const PlatformStreamPage = () => {
               <button
                 onClick={handleStartStreaming}
                 disabled={isCreatingRoom || !isStreamReady}
-                className={`px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg text-white ${
+                className={`px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg text-white inline-flex items-center justify-center gap-2 ${
                   isCreatingRoom || !isStreamReady
                     ? "bg-gray-600 cursor-not-allowed opacity-50"
                     : "hover:scale-105"
                 }`}
                 style={isCreatingRoom || !isStreamReady ? {} : platform.bgStyle}
               >
-                {isCreatingRoom ? "Creating Room..." : "Start Streaming"}
+                {isCreatingRoom && <ImSpinner2 className="animate-spin" />}
+                Start Streaming
               </button>
               <p className="text-gray-400 text-sm mt-3">
                 This will create a room and redirect you to start watching together

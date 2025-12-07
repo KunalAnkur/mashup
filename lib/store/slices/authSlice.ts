@@ -73,6 +73,31 @@ const authSlice = createSlice({
     },
 
     /**
+     * Update user profile information (name, username only - email cannot be updated)
+     * Used when user updates their profile in settings
+     */
+    updateProfile: (
+      state,
+      action: PayloadAction<{
+        name?: string;
+        username?: string;
+      }>
+    ) => {
+      if (!state.user) {
+        console.warn("Cannot update profile: no user in state");
+        return;
+      }
+
+      if (action.payload.name !== undefined) {
+        state.user.name = action.payload.name;
+      }
+      if (action.payload.username !== undefined) {
+        state.user.username = action.payload.username;
+      }
+      // Email is not updated - it remains read-only
+    },
+
+    /**
      * Clear authentication state and logout user
      * Resets all auth-related state to initial values
      */
@@ -122,6 +147,7 @@ const authSlice = createSlice({
 export const {
   setUser,
   setGoogleUser,
+  updateProfile,
   logout,
   setLoading,
   setError,

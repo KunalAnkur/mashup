@@ -13,6 +13,7 @@ export const useUrlManagement = () => {
   const [loadingMetadata, setLoadingMetadata] = useState<Set<number>>(
     new Set()
   );
+  const [isAdding, setIsAdding] = useState<boolean>(false);
 
   // Validate URL input
   useEffect(() => {
@@ -62,31 +63,36 @@ export const useUrlManagement = () => {
 
   const handleAddUrl = async () => {
     const validation = validateUrl(sourceUrlInput);
-    if (!validation.valid) return;
+    if (!validation.valid || isAdding) return;
 
-    const detectedPlatform = detectPlatform(sourceUrlInput);
-    const url = sourceUrlInput.trim();
+    setIsAdding(true);
+    try {
+      const detectedPlatform = detectPlatform(sourceUrlInput);
+      const url = sourceUrlInput.trim();
 
-    // Add URL immediately with empty metadata
-    const newIndex = addedUrls.length;
-    setAddedUrls((prev) => [...prev, { url, platformId: detectedPlatform }]);
-    setSourceUrlInput("");
+      // Add URL immediately with empty metadata
+      const newIndex = addedUrls.length;
+      setAddedUrls((prev) => [...prev, { url, platformId: detectedPlatform }]);
+      setSourceUrlInput("");
 
-    // Fetch metadata asynchronously
-    setLoadingMetadata((prev) => new Set(prev).add(newIndex));
-    const metadata = await fetchUrlMetadata(url);
-    setAddedUrls((prev) => {
-      const updated = [...prev];
-      if (updated[newIndex]) {
-        updated[newIndex] = { ...updated[newIndex], metadata };
-      }
-      return updated;
-    });
-    setLoadingMetadata((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(newIndex);
-      return newSet;
-    });
+      // Fetch metadata asynchronously
+      setLoadingMetadata((prev) => new Set(prev).add(newIndex));
+      const metadata = await fetchUrlMetadata(url);
+      setAddedUrls((prev) => {
+        const updated = [...prev];
+        if (updated[newIndex]) {
+          updated[newIndex] = { ...updated[newIndex], metadata };
+        }
+        return updated;
+      });
+      setLoadingMetadata((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(newIndex);
+        return newSet;
+      });
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   const handleRemoveUrl = (indexToRemove: number) => {
@@ -100,6 +106,7 @@ export const useUrlManagement = () => {
     isAddDisabled,
     tooltipMessage,
     loadingMetadata,
+    isAdding,
     handleAddUrl,
     handleRemoveUrl,
   };

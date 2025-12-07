@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
-import { setUrlMetadata } from "@/lib/store/slices/roomSlice";
+import { setUrlMetadata, updateRoomInfo, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
 import { useFileContext } from "@/context/FileContext";
 import { useVideoSelection } from "@/context/VideoSelectionContext";
-import { LuPlay, LuFilm, LuLock, LuCrown } from "react-icons/lu";
+import { useMediaStreamContext } from "@/context/MediaStreamContext";
+import { helper } from "@/utils";
+import { LuPlay, LuFilm, LuLock, LuCrown, LuPlus, LuShare2, LuX } from "react-icons/lu";
 import { FaBroadcastTower } from "react-icons/fa";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
 import { detectPlatform, getPlatformById, getUrlDisplayName } from "@/types/ModalTypes/urlUtils";
@@ -162,16 +164,20 @@ const PlaylistScreenShareCard = ({
     platformLogo,
     platformBgStyle,
     isPlaying,
+    onStop,
+    isHost,
 }: {
     platformName: string;
     platformLogo: React.ReactNode;
     platformBgStyle: React.CSSProperties;
     isPlaying: boolean;
+    onStop?: () => void;
+    isHost: boolean;
 }) => {
     return (
         <div
             className={`
-                w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0
+                w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0 relative group
                 ${isPlaying
                     ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
                     : 'bg-white/5 border border-transparent'
@@ -222,16 +228,26 @@ const PlaylistScreenShareCard = ({
                 </p>
             </div>
 
-            {/* Streaming icon */}
-            <div className={`
-                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
-                ${isPlaying
-                    ? 'bg-pink-500/20 text-pink-400'
-                    : 'bg-white/5 text-gray-500'
-                }
-            `}>
-                <FaBroadcastTower size={12} />
-            </div>
+            {/* Stop button or Streaming icon */}
+            {isHost && onStop ? (
+                <button
+                    onClick={onStop}
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 group-hover:scale-110"
+                    title="Stop screen sharing"
+                >
+                    <LuX size={12} />
+                </button>
+            ) : (
+                <div className={`
+                    w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+                    ${isPlaying
+                        ? 'bg-pink-500/20 text-pink-400'
+                        : 'bg-white/5 text-gray-500'
+                    }
+                `}>
+                    <FaBroadcastTower size={12} />
+                </div>
+            )}
         </div>
     );
 };
@@ -334,8 +350,11 @@ const PlaylistTab = () => {
     const dispatch = useDispatch();
     const roomState = useSelector((state: RootState) => state.room);
     const authState = useSelector((state: RootState) => state.auth);
-    const { files, getThumbnail } = useFileContext();
+    const { files, getThumbnail, requestFilePicker, setFiles, isPersistenceSupported, showPermissionPrompt } = useFileContext();
     const { selectVideo, isHost } = useVideoSelection();
+    const { stream: screenStream, setStream: setScreenStream } = useMediaStreamContext();
+    const [isSharingScreen, setIsSharingScreen] = useState(false);
+    const [isAddingFiles, setIsAddingFiles] = useState(false);
 
     // Determine streaming mode from room state only
     const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
@@ -357,14 +376,16 @@ const PlaylistTab = () => {
 
     // Track which URLs are currently being fetched
     const [loadingUrls, setLoadingUrls] = useState<Set<string>>(new Set());
+    // Track failed URLs to prevent retries
+    const failedUrlsRef = useRef<Set<string>>(new Set());
 
     // Fetch metadata for URLs that aren't cached yet
     useEffect(() => {
         if (isFileStreaming || urls.length === 0) return;
 
-        // Find URLs that need metadata fetching
+        // Find URLs that need metadata fetching (not cached, not loading, not failed)
         const urlsToFetch = urls.filter(
-            (url) => !urlMetadataCache[url] && !loadingUrls.has(url)
+            (url) => !urlMetadataCache[url] && !loadingUrls.has(url) && !failedUrlsRef.current.has(url)
         );
 
         if (urlsToFetch.length === 0) return;
@@ -378,6 +399,7 @@ const PlaylistTab = () => {
 
         // Fetch metadata for each URL
         const fetchMetadata = async () => {
+            console.log("[PlaylistTab] Fetching metadata for URLs:", urlsToFetch);
             for (const url of urlsToFetch) {
                 try {
                     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -404,9 +426,17 @@ const PlaylistTab = () => {
                                 author: data.data?.author || data.data?.siteName || undefined,
                             },
                         }));
+                        // Remove from failed set if it was there (in case of manual retry)
+                        failedUrlsRef.current.delete(url);
+                    } else {
+                        // Mark as failed if response is not OK
+                        console.warn(`[PlaylistTab] Failed to fetch metadata for ${url}: ${response.status}`);
+                        failedUrlsRef.current.add(url);
                     }
                 } catch (error) {
                     console.error("Error fetching metadata for URL:", url, error);
+                    // Mark as failed on error to prevent retries
+                    failedUrlsRef.current.add(url);
                 }
 
                 // Remove from loading set
@@ -436,6 +466,146 @@ const PlaylistTab = () => {
         if (!isHost) return;
         selectVideo(index);
     };
+
+    // Handle stop screen sharing
+    const handleStopScreenSharing = useCallback(() => {
+        if (!isHost || !isScreenSharing) return;
+        
+        // Stop all tracks in the screen stream
+        if (screenStream) {
+            screenStream.getTracks().forEach(track => {
+                track.stop();
+            });
+            setScreenStream(null);
+        }
+
+        // Update room source from "stream" to "file" if files exist, otherwise keep as is
+        // The card will be removed because isScreenSharing will become false
+        if (files.length > 0) {
+            // Switch to file mode if files exist
+            dispatch(updateRoomInfo({
+                source: "file",
+            }));
+            // Select first file
+            dispatch(setSelectedFileIndex(0));
+            selectVideo(0);
+        } else {
+            // No files, just update source to clear screen sharing
+            dispatch(updateRoomInfo({
+                source: "file", // or we could use "url" but file seems safer
+            }));
+        }
+        
+        console.log("[PlaylistTab] Screen sharing stopped");
+    }, [isHost, isScreenSharing, screenStream, setScreenStream, files, dispatch, selectVideo]);
+
+    // Handle share screen again (for stream source)
+    const handleShareScreenAgain = useCallback(async () => {
+        if (!isHost || !isScreenSharing) return;
+        
+        setIsSharingScreen(true);
+        try {
+            // Stop existing stream if any
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+                setScreenStream(null);
+            }
+
+            // Use the cross-browser helper function to capture tab stream
+            const mediaStream = await helper.captureTabStream({
+                audioOnly: false,
+                preferredDisplaySurface: 'tab'
+            });
+
+            if (!mediaStream) {
+                // User cancelled or capture failed - silently handle
+                return;
+            }
+
+            // Store in MediaStreamContext - this will replace the old stream
+            setScreenStream(mediaStream);
+            console.log("[PlaylistTab] Screen sharing replaced with new stream");
+        } catch (err: any) {
+            // Only show alert for unexpected errors, not user cancellations
+            if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
+                // User cancelled or permission denied - silently handle
+                console.log("Screen sharing cancelled or permission denied");
+                return;
+            }
+            
+            // For other errors, log but don't show alert
+            console.error("Screen sharing error:", err);
+            if (err.name !== 'NotFoundError' && err.name !== 'NotReadableError') {
+                alert("Screen sharing failed. Please try again.");
+            }
+        } finally {
+            setIsSharingScreen(false);
+        }
+    }, [isHost, isScreenSharing, screenStream, setScreenStream]);
+
+    // Handle add more files (for file source)
+    const handleAddMoreFiles = useCallback(async () => {
+        if (!isHost || !isFileStreaming) return;
+        
+        setIsAddingFiles(true);
+        try {
+            if (isPersistenceSupported) {
+                // Use File System Access API for persistence (same as stream page)
+                const newFiles = await requestFilePicker(true); // true = append mode
+                
+                if (newFiles.length > 0) {
+                    // Combine existing files with new files
+                    const combinedFiles = [...files, ...newFiles];
+                    // Use setFiles to update state (it will handle persistence via filesFromAPIRef)
+                    await setFiles(combinedFiles);
+                    console.log(`[PlaylistTab] Added ${newFiles.length} new file(s), total: ${combinedFiles.length}`);
+                }
+            } else {
+                // Fallback: use traditional file input
+                showPermissionPrompt();
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.multiple = true;
+                input.accept = 'video/*';
+                
+                input.onchange = async (e) => {
+                    try {
+                        const target = e.target as HTMLInputElement;
+                        const newFiles = target.files ? Array.from(target.files) : [];
+                        
+                        if (newFiles.length > 0) {
+                            // Combine existing files with new files
+                            const combinedFiles = [...files, ...newFiles];
+                            await setFiles(combinedFiles);
+                            console.log(`[PlaylistTab] Added ${newFiles.length} new file(s), total: ${combinedFiles.length}`);
+                        }
+                    } catch (error) {
+                        console.error('Error adding files:', error);
+                        alert("Failed to add files. Please try again.");
+                    } finally {
+                        setIsAddingFiles(false);
+                        input.remove();
+                    }
+                };
+                
+                input.oncancel = () => {
+                    setIsAddingFiles(false);
+                    input.remove();
+                };
+                
+                input.click();
+            }
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                // User cancelled, do nothing
+                return;
+            }
+            console.error('Error adding files:', error);
+            alert("Failed to add files. Please try again.");
+        } finally {
+            setIsAddingFiles(false);
+        }
+    }, [isHost, isFileStreaming, isPersistenceSupported, files, requestFilePicker, setFiles, showPermissionPrompt]);
 
     // Get playlist items
     const getPlaylistItems = () => {
@@ -502,6 +672,8 @@ const PlaylistTab = () => {
                         platformLogo={streamingPlatform.logo}
                         platformBgStyle={streamingPlatform.bgStyle}
                         isPlaying={true}
+                        onStop={handleStopScreenSharing}
+                        isHost={isHost}
                     />
                 )}
 
@@ -547,8 +719,51 @@ const PlaylistTab = () => {
                 })}
             </div>
 
+            {/* Action Button - Only show for host */}
+            {isHost && (isScreenSharing || isFileStreaming) && (
+                <div className="mt-4 pt-4 border-t border-white/5">
+                    {isScreenSharing ? (
+                        <button
+                            onClick={handleShareScreenAgain}
+                            disabled={isSharingScreen}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isSharingScreen ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin"></div>
+                                    <span className="text-sm font-medium">Sharing...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <LuShare2 size={16} />
+                                    <span className="text-sm font-medium">Share Screen Again</span>
+                                </>
+                            )}
+                        </button>
+                    ) : isFileStreaming ? (
+                        <button
+                            onClick={handleAddMoreFiles}
+                            disabled={isAddingFiles}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isAddingFiles ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin"></div>
+                                    <span className="text-sm font-medium">Adding...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <LuPlus size={16} />
+                                    <span className="text-sm font-medium">Add More Files</span>
+                                </>
+                            )}
+                        </button>
+                    ) : null}
+                </div>
+            )}
+
             {/* Host indicator */}
-            {isHost && (
+            {isHost && !isScreenSharing && !isFileStreaming && (
                 <div className="mt-4 pt-4 border-t border-white/5">
                     <div className="flex items-center gap-2 text-xs text-gray-500">
                         <LuCrown className="text-amber-500" size={14} />

@@ -7,6 +7,8 @@ import {
     removeFileHandle,
     showFilePicker,
     clearFileHandles,
+    getAllFileHandles,
+    appendFileHandles,
 } from "@/utils/filePersistence";
 import { showInfo } from "@/utils/toast";
 
@@ -19,7 +21,7 @@ type FileContextType = {
     removeFile: (index: number) => void;
     getThumbnail: (file: File) => string | null;
     isPersistenceSupported: boolean;
-    requestFilePicker: () => Promise<File[]>;
+    requestFilePicker: (append?: boolean) => Promise<File[]>;
     showPermissionPrompt: () => void;
 };
 
@@ -146,7 +148,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     }, [isPersistenceSupported]);
 
     // Request file picker using File System Access API
-    const requestFilePicker = async (): Promise<File[]> => {
+    const requestFilePicker = async (append: boolean = false): Promise<File[]> => {
         if (!isFileSystemAccessSupported()) {
             throw new Error('File System Access API is not supported');
         }
@@ -164,10 +166,10 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
                 ],
             });
 
-            // Clear all previously stored files before saving new ones
-            if (handles.length > 0) {
+            // If appending, preserve existing handles; otherwise clear all
+            if (!append && handles.length > 0) {
                 try {
-                    console.log(`requestFilePicker: Clearing ${handles.length} old file handle(s) before saving ${handles.length} new one(s)`);
+                    console.log(`requestFilePicker: Clearing old file handle(s) before saving ${handles.length} new one(s)`);
                     const cleared = await clearFileHandles();
                     if (cleared) {
                         console.log('requestFilePicker: ✓ Successfully cleared all previously stored files');
@@ -188,14 +190,20 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
                     const file = await handle.getFile();
                     newFiles.push(file);
                     // Save handle for persistence
-                    await saveFileHandle(handle);
+                    if (append) {
+                        // Append mode: just save the new handle
+                        await saveFileHandle(handle);
+                    } else {
+                        // Replace mode: save handle (already cleared above)
+                        await saveFileHandle(handle);
+                    }
                     console.log(`requestFilePicker: ✓ Saved file ${i + 1}/${handles.length}: ${file.name}`);
                 } catch (error) {
                     console.error(`requestFilePicker: Error getting/saving file from handle ${i + 1}:`, error);
                 }
             }
             
-            console.log(`requestFilePicker: ✓ Successfully processed ${newFiles.length} file(s)`);
+            console.log(`requestFilePicker: ✓ Successfully processed ${newFiles.length} file(s)${append ? ' (appended)' : ''}`);
 
             // Mark that files came from API to avoid double-clearing in setFilesWithPersistence
             filesFromAPIRef.current = true;

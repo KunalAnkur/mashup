@@ -22,7 +22,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
     const [hasVideoTrack, setHasVideoTrack] = useState<boolean | undefined>(true);
     const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const { isJoined, roomType, isHost } = useRoomContext();
+    const { isJoined, roomType, isHost, hostLeft } = useRoomContext();
 
     const {
         onPlay,
@@ -88,8 +88,8 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
             fullscreenTargetRef={fullscreenTargetRef}
             url={videoUrl}
             muted={false}
-            disableControls={helper.getPlayerControlsConfig(videoUrl, isHost).disableControls}
-            hideControls={helper.getPlayerControlsConfig(videoUrl, isHost).hideControls}
+            disableControls={helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft).disableControls}
+            hideControls={helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft).hideControls}
         >
             <PlayerOverlay />
         </Player>

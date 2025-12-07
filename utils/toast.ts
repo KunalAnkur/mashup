@@ -117,16 +117,43 @@ export const showError = (title: string, description?: string) => {
  * Show a success toast notification
  */
 export const showSuccess = (message: string) => {
-  return toast.success(message, {
-    duration: 3000,
-    style: {
-      background: '#1f1f23',
-      color: '#fff',
-      border: '1px solid rgba(34, 197, 94, 0.3)',
-      borderRadius: '12px',
-      padding: '8px 5px',
-    },
-  });
+  return toast(
+    (t) =>
+      React.createElement(
+        'div',
+        { className: 'flex items-center justify-between w-full gap-4' },
+        React.createElement(
+          'div',
+          { className: 'flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center' },
+          React.createElement('span', { className: 'text-white font-bold text-sm' }, '✓')
+        ),
+        React.createElement(
+          'div',
+          { className: 'flex-1 min-w-0 flex flex-col justify-center' },
+          React.createElement('p', { className: 'font-semibold text-white/70 text-sm' }, message)
+        ),
+        React.createElement(
+          'button',
+          {
+            onClick: () => toast.dismiss(t.id),
+            className: 'flex-shrink-0 text-white/50 hover:text-white/80 transition-colors cursor-pointer',
+            'aria-label': 'Close',
+          },
+          React.createElement('span', { className: 'text-lg font-bold' }, '✕')
+        )
+      ),
+    {
+      duration: 3000,
+      icon: undefined, // Disable default icon
+      style: {
+        background: '#1f1f23',
+        borderRadius: '12px',
+        padding: '8px 10px',
+        maxWidth: '400px',
+      },
+      className: 'custom-error-toast',
+    }
+  );
 };
 
 /**

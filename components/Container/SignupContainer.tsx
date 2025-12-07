@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import GoogleButton from "../GoogleAuth/GoogleButton";
 import { useRouter, useSearchParams } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import { ImSpinner2 } from "react-icons/im";
 import { showError } from "@/utils/toast";
 
 type Prop = {
@@ -148,9 +149,11 @@ const SignupContainer = ({ setContainer }: Prop) => {
         {/* Action Buttons */}
         <div className="flex flex-col gap-4 pt-2">
           <Button
-            name={"Signup"}
-            className="w-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40"
+            name={signupState.isLoading ? "Signing up..." : "Signup"}
+            icon={signupState.isLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
+            className="w-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleOnSignUp}
+            disabled={signupState.isLoading}
           />
           
           {/* Separator */}

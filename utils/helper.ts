@@ -354,7 +354,7 @@ export function captureStreamFromVideo(videoElement: HTMLVideoElement): MediaStr
     }
 }
 
-export function getPlayerControlsConfig(url: string | string[] | SourceProps[] | MediaStream, host: boolean) {
+export function getPlayerControlsConfig(url: string | string[] | SourceProps[] | MediaStream, host: boolean, hostLeft: boolean = false) {
     if (host) {
         if (typeof MediaStream !== "undefined" && url instanceof MediaStream) {
           // url is MediaStream
@@ -376,13 +376,13 @@ export function getPlayerControlsConfig(url: string | string[] | SourceProps[] |
     if (typeof url === "string") {
       // url is a single string
       return {
-        disableControls: [ControlComponents.PLAY, ControlComponents.PROGRESS],
+        disableControls: hostLeft ? [] : [ControlComponents.PLAY, ControlComponents.PROGRESS],
         hideControls: [],
       };
     } else if (Array.isArray(url) && url.length && typeof url[0] === "string") {
       // url is string[]
       return {
-        disableControls: [],
+        disableControls: hostLeft ? []: [ControlComponents.PLAY, ControlComponents.PROGRESS],
         hideControls: [],
       };
     } else if (Array.isArray(url) && url.length && typeof url[0] === "object") {
