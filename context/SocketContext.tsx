@@ -7,34 +7,63 @@ import React, {
     useEffect,
     useState,
     ReactNode,
+    useRef,
 } from "react";
 import { Socket } from "socket.io-client";
+import { showError } from "@/utils/toast";
 
 interface SocketContextType {
     socketService: SocketService;
     isConnected: boolean;
-    getSocket: (namespace?: string) => Socket;
+    getSocket: () => Socket; // Unified socket - no namespace needed
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
-    const [socketService] = useState(() => new SocketService({  }));
+    const [socketService] = useState(() => new SocketService({}));
     const [isConnected, setIsConnected] = useState(false);
+    const errorShownRef = useRef(false); // Prevent showing multiple error toasts
 
     useEffect(() => {
-        // Initialize the main socket connection
+        // Initialize the unified socket connection (single namespace)
         const mainSocket = socketService.getSocket();
 
-        // Setup connection status listeners for main socket
+        // Setup connection status listeners
         const onConnect = () => {
-            console.log('socket connection started ...') 
-            setIsConnected(true)
+            console.log('[SOCKET] Connection started...');
+            setIsConnected(true);
+            errorShownRef.current = false; // Reset error flag on successful connection
         };
-        const onDisconnect = () => setIsConnected(false);
+        
+        const onDisconnect = (reason: string) => {
+            console.log('[SOCKET] Connection disconnected', reason);
+            setIsConnected(false);
+            
+            // Show error toast for unexpected disconnections (not user-initiated)
+            if (reason !== 'io client disconnect' && !errorShownRef.current) {
+                errorShownRef.current = true;
+                showError("Connection lost", "Trying to reconnect automatically. Please wait...");
+            }
+        };
+
+        const onConnectError = (error: Error) => {
+            console.error('[SOCKET] Connection error:', error);
+            if (!errorShownRef.current) {
+                errorShownRef.current = true;
+                showError("Failed to connect", "Please check your internet connection and try again.");
+            }
+        };
+
+        // Heartbeat handler - respond to server pings
+        const handlePing = () => {
+            mainSocket.emit('pong');
+        };
 
         mainSocket.on("connect", onConnect);
         mainSocket.on("disconnect", onDisconnect);
+        mainSocket.on("connect_error", onConnectError);
+        mainSocket.on("ping", handlePing);
 
         // Set initial connection status
         setIsConnected(mainSocket.connected);
@@ -43,15 +72,15 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         return () => {
             mainSocket.off("connect", onConnect);
             mainSocket.off("disconnect", onDisconnect);
+            mainSocket.off("connect_error", onConnectError);
+            mainSocket.off("ping", handlePing);
             socketService.disconnect();
         };
     }, [socketService]);
 
-    const getSocket = (namespace?: string) => {
-        if (!namespace || namespace === "/") {
-            return socketService.getSocket();
-        }
-        return socketService.getNamespaceSocket(namespace);
+    const getSocket = () => {
+        // Always return the main socket (unified namespace)
+        return socketService.getSocket();
     };
 
     return (
@@ -61,41 +90,24 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-// Updated useSocket hook with optional namespace parameter
-export const useSocket = (namespace?: string) => {
+// Unified useSocket hook - no namespace parameter needed
+export const useSocket = () => {
     const context = useContext(SocketContext);
     if (context === undefined) {
         throw new Error("useSocket must be used within a SocketProvider");
     }
 
     const [socket, setSocket] = useState<Socket | null>(null);
-    const [namespaceConnected, setNamespaceConnected] = useState(false);
 
     useEffect(() => {
-        // Get the appropriate socket based on namespace
-        const socketInstance = context.getSocket(namespace);
+        // Get the unified socket
+        const socketInstance = context.getSocket();
         setSocket(socketInstance);
-
-        // Setup namespace-specific connection listeners
-        const onConnect = () => setNamespaceConnected(true);
-        const onDisconnect = () => setNamespaceConnected(false);
-
-        socketInstance.on("connect", onConnect);
-        socketInstance.on("disconnect", onDisconnect);
-
-        // Set initial connection status
-        setNamespaceConnected(socketInstance.connected);
-
-        // Cleanup
-        return () => {
-            socketInstance.off("connect", onConnect);
-            socketInstance.off("disconnect", onDisconnect);
-        };
-    }, [namespace, context]);
+    }, [context]);
 
     return {
         socket,
-        isConnected: namespace ? namespaceConnected : context.isConnected,
+        isConnected: context.isConnected,
         socketService: context.socketService,
     };
 };

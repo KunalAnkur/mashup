@@ -34,6 +34,7 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
     // Refs to avoid stale closures
     const isPlayingRef = useRef(isPlaying);
     const pendingSyncRef = useRef<FullVideoState | null>(null);
+    const seekTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     
     useEffect(() => {
         isPlayingRef.current = isPlaying;
@@ -136,10 +137,51 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
         if (!isJoined || !socket || !roomId) return;
         
         if (isHost) {
-            const state = getHostState();
-            socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: state });
+            // Cancel any pending seek notification to prevent duplicates
+            if (seekTimeoutRef.current) {
+                clearTimeout(seekTimeoutRef.current);
+                seekTimeoutRef.current = null;
+            }
+            
+            // Store the time when seek started to detect when it changes
+            const timeAtSeekStart = playerRef.current?.getCurrentTime?.() || 0;
+            let lastCheckedTime = timeAtSeekStart;
+            
+            // Retry logic: try multiple times to get the updated currentTime
+            const tryGetSeekedTime = (attempt: number, maxAttempts: number = 8) => {
+                const state = getHostState();
+                const currentTime = state?.currentTime || 0;
+                
+                // Check if time has changed significantly (more than 0.5 seconds difference)
+                // This indicates the seek has completed and time has updated
+                const timeChanged = Math.abs(currentTime - lastCheckedTime) > 0.5;
+                const isValidTime = currentTime >= 0;
+                
+                if (isValidTime && (timeChanged || attempt >= 3)) {
+                    // Time has updated or we've tried enough times, send the notification
+                    // Only send if time is not 0 (unless it's actually at the start)
+                    if (currentTime > 0 || attempt >= maxAttempts) {
+                        socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: state });
+                    }
+                    seekTimeoutRef.current = null;
+                } else if (attempt < maxAttempts) {
+                    // Time not updated yet, retry after a delay
+                    lastCheckedTime = currentTime;
+                    seekTimeoutRef.current = setTimeout(() => {
+                        tryGetSeekedTime(attempt + 1, maxAttempts);
+                    }, 150); // Check every 150ms
+                } else {
+                    // Max attempts reached, don't send if time is still 0
+                    seekTimeoutRef.current = null;
+                }
+            };
+            
+            // Start trying after initial delay to give player time to update
+            seekTimeoutRef.current = setTimeout(() => {
+                tryGetSeekedTime(1);
+            }, 300); // Initial delay - give player time to process the seek
         }
-    }, [isHost, isJoined, roomId, socket, getHostState]);
+    }, [isHost, isJoined, roomId, socket, getHostState, playerRef]);
 
     // Select video (host only)
     const selectVideo = useCallback((index: number) => {
@@ -250,6 +292,12 @@ export const useVideoSync = ({ playerRef, isHost }: UseVideoSyncParams) => {
             socket.off(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
             socket.off(SocketEvent.REQUEST_CURRENT_VIDEO, handleRequestCurrentVideo);
             socket.off(SocketEvent.CURRENT_VIDEO_STATE, handleCurrentVideoState);
+            
+            // Cleanup seek timeout
+            if (seekTimeoutRef.current) {
+                clearTimeout(seekTimeoutRef.current);
+                seekTimeoutRef.current = null;
+            }
         };
     }, [socket, isHost, playerRef, roomId, getHostState, applySyncState, dispatch]);
 

@@ -1,10 +1,5 @@
 "use client";
-import React, { useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "@/lib/store";
-import { OnboardStep } from "@/types/storeTypes";
-import { changeStep } from "@/lib/store/slices/onboardSlice";
-import { FileSelection, ProfileHeader, Logo } from "@/components";
+import React, { useRef, useState } from "react";
 import { useFileContext } from "@/context/FileContext";
 import { useRouter } from "next/navigation";
 import {
@@ -14,21 +9,52 @@ import {
   ContentDivider,
   useDragAndDrop,
 } from "@/components/Modals/DeviceModalComponents";
+import { ProfileHeader, Logo } from "@/components";
 import { FaArrowLeft } from "react-icons/fa";
+import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 
 const StreamPage = () => {
   const router = useRouter();
-  const dispatch = useDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const step = useSelector((state: RootState) => state.onboard.step);
-  const { setFiles } = useFileContext();
+  const { setFiles, isPersistenceSupported, requestFilePicker, showPermissionPrompt } = useFileContext();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleOnVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOnVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0 && fileInputRef.current) {
+      // For traditional file input, files won't persist (no handles)
       setFiles(Array.from(files));
-      dispatch(changeStep(OnboardStep.FILE_SELECTION));
+      router.push("/stream/files");
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileSelection = async () => {
+    if (isPersistenceSupported) {
+      // Use File System Access API for persistence
+      try {
+        setIsLoading(true);
+        const selectedFiles = await requestFilePicker();
+        
+        if (selectedFiles.length > 0) {
+          setFiles(selectedFiles);
+          router.push("/stream/files");
+        }
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          // User cancelled, do nothing
+          return;
+        }
+        console.error('Error selecting files:', error);
+        // Fallback to traditional file input
+        showPermissionPrompt();
+        fileInputRef.current?.click();
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Fallback to traditional file input
+      fileInputRef.current?.click();
     }
   };
 
@@ -38,18 +64,18 @@ const StreamPage = () => {
   );
 
   const handleUploadClick = () => {
-    fileInputRef.current?.click();
+    handleFileSelection();
   };
 
-  const handlePlatformClick = (url: string) => {
-    window.open(url, "_blank", "noopener,noreferrer");
+  const handlePlatformClick = (platformName: string) => {
+    // Convert platform name to lowercase for URL (e.g., "Netflix" -> "netflix", "Disney+" -> "disney-plus")
+    const platformSlug = platformName.toLowerCase().replace(/\s+/g, "-").replace(/\+/g, "-plus");
+    router.push(`/stream/${platformSlug}`);
   };
 
   const handleBack = () => {
     router.push("/");
   };
-
-  const showFileSelection = step === OnboardStep.FILE_SELECTION;
 
   return (
     <div
@@ -89,13 +115,9 @@ const StreamPage = () => {
 
           <ContentDivider />
 
-          {/* Right Side - Platform Grid or File Selection */}
+          {/* Right Side - Platform Grid */}
           <div className="w-full lg:w-2/3 flex flex-col">
-            {showFileSelection ? (
-              <FileSelection />
-            ) : (
-              <PlatformGrid onPlatformClick={handlePlatformClick} />
-            )}
+            <PlatformGrid onPlatformClick={handlePlatformClick} />
           </div>
         </div>
       </div>

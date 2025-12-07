@@ -7,6 +7,7 @@ import { ControlBar } from "@/components/VideoPlayer/ControlBar";
 import AudioVisualizer from "@/components/VideoPlayer/AudioVisualizer";
 import { SourceProps } from "react-player/base";
 import { FileConfig } from "react-player/file";
+import { formatVideoTime } from "@/utils/timeFormatter";
 export enum ControlComponents {
     PLAY = 'play',
     VOLUME = 'volume',
@@ -229,14 +230,6 @@ const VideoPlayer = ({
         onDuration?.(duration);
     };
 
-    const formatTime = (seconds: number): string => {
-        const date = new Date(seconds * 1000);
-        const hh = date.getUTCHours();
-        const mm = date.getUTCMinutes();
-        const ss = date.getUTCSeconds().toString().padStart(2, "0");
-        return hh ? `${hh}:${mm.toString().padStart(2, "0")}:${ss}` : `${mm}:${ss}`;
-    };
-
     const onBufferEnd = () => {
         setIsBuffering(false);
     };
@@ -275,8 +268,10 @@ const VideoPlayer = ({
                             playerVars: {
                                 controls: 0,
                                 disablekb: 0,
-                                modestbranding: 0,
-                                showinfo: 0,
+                                cc_load_policy: 0,
+                                modestbranding: 1,
+                                showinfo: 1,
+                                rel: 0
                             },
                         },
                     }}
@@ -314,7 +309,7 @@ const VideoPlayer = ({
                         onMuteToggle={toggleMute}
                         onVolumeChange={handleVolumeChange}
                         onFullscreenToggle={toggleFullscreen}
-                        formatTime={formatTime}
+                        formatTime={formatVideoTime}
                         hideControls={hideControls}
                     />
                 )}

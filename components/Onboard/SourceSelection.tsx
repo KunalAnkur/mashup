@@ -1,6 +1,6 @@
 "use client";
 
-import { FaUpload, FaLink } from "react-icons/fa";
+import { FaBroadcastTower, FaSync } from "react-icons/fa";
 import { Button } from "../UI";
 import { useState } from "react";
 import Image from "next/image";
@@ -40,7 +40,10 @@ const SourceSelection = () => {
     try {
       const response = await getRoomByRoomId(trimmedRoomId).unwrap();
 
-      if (response?.success && response?.data) {
+      if (
+        response?.statusCode === 401 ||
+        (response?.success && response?.data)
+      ) {
         // Room exists and is active, navigate to it
         router.push(`/room/${trimmedRoomId}`);
       } else {
@@ -104,10 +107,10 @@ const SourceSelection = () => {
               ></div>
             </div>
             <p className="text-gray-400 text-center mb-3 sm:mb-4 text-xs sm:text-sm font-medium px-2">
-              Start a new session by uploading a file or using a URL.
+              Start a new session by streaming content or syncing playback.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch w-full">
-              {/* From Device */}
+              {/* Stream */}
               <button
                 onClick={handleOnUploadSelection}
                 className="relative overflow-hidden w-full sm:w-1/2 h-36 sm:h-40 md:h-44 group animate-scale-in"
@@ -117,15 +120,15 @@ const SourceSelection = () => {
                 <div className="absolute inset-[2px] bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl"></div>
                 <div className="relative flex flex-col items-center justify-center h-full text-gray-400 group-hover:text-white transition-colors duration-300">
                   <div className="flex items-center justify-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-full bg-gradient-to-br from-rose-500/10 to-pink-500/10 group-hover:from-rose-500 group-hover:to-pink-500 transition-all duration-300 mb-1 md:mb-2 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-pink-500/50">
-                    <FaUpload className="text-xl sm:text-2xl text-rose-400 group-hover:text-white transition-colors duration-300" />
+                    <FaBroadcastTower className="text-xl sm:text-2xl text-rose-400 group-hover:text-white transition-colors duration-300" />
                   </div>
                   <span className="text-base sm:text-lg font-semibold">
-                    From Device
+                    Stream
                   </span>
                 </div>
               </button>
 
-              {/* From URL */}
+              {/* Sync */}
               <button
                 onClick={handleOnURLSelection}
                 className="relative overflow-hidden w-full sm:w-1/2 h-36 sm:h-40 md:h-44 group animate-scale-in"
@@ -135,10 +138,10 @@ const SourceSelection = () => {
                 <div className="absolute inset-[2px] bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl"></div>
                 <div className="relative flex flex-col items-center justify-center h-full text-gray-400 group-hover:text-white transition-colors duration-300">
                   <div className="flex items-center justify-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-full bg-gradient-to-br from-pink-500/10 to-fuchsia-500/10 group-hover:from-pink-500 group-hover:to-fuchsia-500 transition-all duration-300 mb-1 md:mb-2 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-fuchsia-500/50">
-                    <FaLink className="text-xl sm:text-2xl text-fuchsia-400 group-hover:text-white transition-colors duration-300" />
+                    <FaSync className="text-xl sm:text-2xl text-fuchsia-400 group-hover:text-white transition-colors duration-300" />
                   </div>
                   <span className="text-base sm:text-lg font-semibold">
-                    From URL
+                    Sync
                   </span>
                 </div>
               </button>

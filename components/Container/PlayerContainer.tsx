@@ -2,7 +2,7 @@
 import { Player } from "../VideoPlayer"
 import { useRef, useState } from "react";
 import type ReactPlayer from "react-player";
-import { useVideoSync } from "@/hooks/useVideoSync"; // adjust path if needed
+import { useVideoSync } from "@/hooks-old/useVideoSync"; // adjust path if needed
 
 
 const PlayerContainer = () => {

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import * as constants from "@/constants";
 import { SocketProvider } from "@/context/SocketContext";
+import { VideoSelectionProvider } from "@/context/VideoSelectionContext";
+import { ChatProvider } from "@/context/ChatContext";
+import { RoomProvider } from "@/context/RoomContext";
 
 export const metadata: Metadata = {
     title: constants.seo.BRAND_NAME,
@@ -19,7 +22,13 @@ export default function RootLayout({
 }>) {
     return (
         <SocketProvider>
-            {children}
+            <RoomProvider>
+                <ChatProvider>
+                    <VideoSelectionProvider>
+                        {children}
+                    </VideoSelectionProvider>
+                </ChatProvider>
+            </RoomProvider>
         </SocketProvider>
     );
 }

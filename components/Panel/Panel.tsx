@@ -15,34 +15,40 @@ import { AvatarDropdown } from "../UI";
 import Image from "next/image";
 import * as constants from "../../constants";
 import { LuCheck, LuLink, LuLogOut } from "react-icons/lu";
+import { useRoomContext } from "@/context/RoomContext";
+import { showError } from "@/utils/toast";
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
-
+  const { leaveRoom, roomId } = useRoomContext(); // Use centralized room management
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-  const roomUrl = "https://movmash.com/room/3wJz21";
   const router = useRouter();
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const roomState = useSelector((state: RootState) => state.room);
   const host = roomState.host;
   const dispatch = useDispatch();
 
+  // Generate room URL dynamically
+  const roomUrl = roomId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/room/${roomId}` : '';
+
   // Determine which tabs to show based on source type and host status
-  // - For file (stream): Playlist tab only visible to host (since files are local)
-  // - For URL (sync): Playlist tab visible to all
+  // - For stream with file source: Playlist tab only visible to host (since files are local)
+  // - For stream with stream source (screen): Playlist tab visible to all (shows platform being streamed)
+  // - For sync: Playlist tab visible to all (everyone can see the URLs)
   const visibleTabs = useMemo(() => {
-    const isFileMode = roomState.sourceType === "file";
-    
+    const isFileStreaming =
+      roomState.type === "stream" && roomState.source === "file";
+
     return Object.values(Tabs).filter((tab) => {
       if (tab === Tabs.PLAYLIST) {
-        // For file mode: only show to host (files are local, non-hosts can't see them)
-        // For URL mode: always show (everyone can see the URLs)
-        return isFileMode ? host : true;
+        // For file streaming: only show to host (files are local, non-hosts can't see them)
+        // For screen streaming or sync: always show (everyone can see)
+        return isFileStreaming ? host : true;
       }
       return true;
     });
-  }, [roomState.sourceType, host]);
+  }, [roomState.type, roomState.source, host]);
 
   const renderTabContent = (tab: Tabs) => {
     switch (tab) {
@@ -58,20 +64,37 @@ const Panel = () => {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(roomUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    if (roomUrl) {
+      navigator.clipboard.writeText(roomUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
   };
 
   const handleLeaveParty = async () => {
-    const response = await inactiveMyRoomApi();
-    if (host) {
-      console.log(response);
-    } else {
+    try {
+      // 1. Call the API to inactivate the room (if host)
+      if (host) {
+        const response = await inactiveMyRoomApi();
+        console.log("Room inactivated:", response);
+      }
+
+      // 2. Leave the room via RoomContext (handles socket disconnect and cleanup)
+      leaveRoom();
+
+      // 3. Navigate to home page
+      setTimeout(() => {
+        router.push("/");
+        setShowLeaveConfirm(false);
+      }, 100);
+    } catch (error) {
+      console.error("Error leaving party:", error);
+      showError("Failed to leave room", "There was an error leaving the room. You have been removed locally.");
+      // Still navigate even if there's an error
+      dispatch(exitRoom());
+      router.push("/");
+      setShowLeaveConfirm(false);
     }
-    dispatch(exitRoom());
-    router.push("/");
-    setShowLeaveConfirm(false);
   };
 
   const handleLeaveClick = () => {
@@ -89,7 +112,7 @@ const Panel = () => {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a]  rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-xl bg-red-500/20">
+              <div className="p-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600">
                 <LuLogOut className="text-red-400" size={20} />
               </div>
               <h3 className="text-white text-lg font-bold font-parkinsans">
@@ -160,7 +183,7 @@ const Panel = () => {
                 />
               )}
               {copied && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-[#2a2a2e] text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl border border-white/10 animate-fade-in">
+                <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-[#2a2a2e] text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl border border-white/10 animate-fade-in">
                   Link copied!
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-[#2a2a2e]"></div>
                 </div>
@@ -180,30 +203,30 @@ const Panel = () => {
           </div>
         </div>
       </div>
-
-      {/* Tabs */}
-      <div className="flex justify-center gap-1 pt-2 pb-1">
-        {visibleTabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 font-medium text-sm transition-all duration-200 relative rounded-t-xl
-                            ${
-                              activeTab === tab
-                                ? "text-white"
-                                : "text-gray-500 hover:text-gray-300"
-                            }`}
-          >
-            {tab}
-            {activeTab === tab && (
-              <>
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 rounded-full"></div>
-                <div className="absolute inset-0 bg-white/5 rounded-t-xl"></div>
-              </>
-            )}
-          </button>
-        ))}
-      </div>
+      
+{/* Tabs */}
+<div className="flex items-center w-full justify-between pt-2 pb-1">
+  {visibleTabs.map((tab) => (
+    <button
+      key={tab}
+      onClick={() => setActiveTab(tab)}
+      className={`px-3 py-2 font-medium text-xs sm:text-sm transition-all duration-200 relative rounded-t-xl
+                  ${
+                    activeTab === tab
+                      ? "text-white"
+                      : "text-gray-500 hover:text-gray-300"
+                  }`}
+    >
+      {tab}
+       {activeTab === tab && (
+        <>
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 rounded-full"></div>
+          <div className="absolute inset-0 bg-white/5 rounded-t-xl"></div>
+        </>
+      )} 
+    </button>
+  ))}
+</div>
 
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden pt-4">

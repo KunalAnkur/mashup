@@ -4,12 +4,12 @@ import { SectionTitle } from "./SectionTitle";
 
 interface PlatformCardProps {
   platform: (typeof STREAMING_PLATFORMS)[0];
-  onClick: (url: string) => void;
+  onClick: (platformName: string) => void;
 }
 
 const PlatformCard: React.FC<PlatformCardProps> = ({ platform, onClick }) => (
   <button
-    onClick={() => onClick(platform.url)}
+    onClick={() => onClick(platform.name)}
     style={platform.bgStyle}
     className="aspect-square flex flex-col items-center justify-center hover:scale-105 rounded-2xl transition-all duration-300 cursor-pointer shadow-lg p-6 md:p-7 group min-h-[140px] md:min-h-[160px]"
   >
@@ -23,7 +23,7 @@ const PlatformCard: React.FC<PlatformCardProps> = ({ platform, onClick }) => (
 );
 
 interface PlatformGridProps {
-  onPlatformClick: (url: string) => void;
+  onPlatformClick: (platformName: string) => void;
 }
 
 export const PlatformGrid: React.FC<PlatformGridProps> = ({

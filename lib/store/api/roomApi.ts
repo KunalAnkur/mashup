@@ -18,16 +18,19 @@ export const roomApi = createApi({
     // POST /api/v1/room/
     createRoom: builder.mutation<
       RoomCreateResponse,
-      { urls?: string[]; sourceType: "file" | "url" }
+      { urls?: string[]; type: "stream" | "sync"; source: "file" | "url" | "stream" }
     >({
-      query: (body: { urls?: string[]; sourceType: "file" | "url" }) => ({
-        url: `/`,
-        method: "POST",
-        body: {
-          urls: body.urls,
-          source_type: body.sourceType,
-        },
-      }),
+      query: (body: { urls?: string[]; type: "stream" | "sync"; source: "file" | "url" | "stream" }) => {
+        return {
+          url: `/`,
+          method: "POST",
+          body: {
+            urls: body.urls,
+            type: body.type,
+            source: body.source,
+          },
+        };
+      },
     }),
     // GET /api/v1/room/my-room
     getMyRoom: builder.mutation<any, void>({

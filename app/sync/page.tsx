@@ -45,7 +45,8 @@ const SyncPage = () => {
     dispatch(
       setRefers({
         refer: true,
-        sourceType: "url",
+        type: "sync",
+        source: "url",
         urls: addedUrls.map((item) => item.url),
       })
     );

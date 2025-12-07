@@ -8,6 +8,7 @@ import { exitRoom, setRoom } from "@/lib/store/slices/roomSlice";
 import { useVerifyTokenMutation } from "@/lib/store/api/authApi";
 import { useCreateRoomMutation, useGetMyRoomMutation, useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { Skeleton } from "@/components";
+import { showError } from "@/utils/toast";
 
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -63,7 +64,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const createRoomWithRefer = async () => {
         try {
-            const response = await createRoomApi({ urls: roomState.urls, sourceType: roomState.sourceType! }).unwrap();
+            const response = await createRoomApi({ 
+                urls: roomState.urls, 
+                type: roomState.type!,
+                source: roomState.source!
+            }).unwrap();
             if (response.success) {
                 const roomWithAuth = { ...response, authId: authState.user!.id };
                 dispatch(setRoom(roomWithAuth));
@@ -119,7 +124,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                     return;
                 }
                 // If user has refer data, create room and redirect
-                if (roomState.refer && roomState.sourceType) {
+                if (roomState.refer && roomState.type) {
                     const result = await createRoomWithRefer();
                     if (result && result.data?.room_id) {
                         router.replace(`/room/${result.data.room_id}`);
@@ -136,7 +141,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                 if (authState.isAuthenticated) {
                     // Only redirect to existing room if user has refer data (coming from stream/sync)
                     // Don't auto-redirect if user intentionally navigated to home
-                    if (roomState.refer && roomState.sourceType) {
+                    if (roomState.refer && roomState.type) {
                         // If user has refer data (from /stream or /sync), create room
                         const result = await createRoomWithRefer();
                         if (result && result.data?.room_id) {
@@ -150,9 +155,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                 // Otherwise, stay on home page (source selection)
             }
 
-            // Handle /stream and /sync routes - create room if authenticated and has refer data
-            if ((pathname === "/stream" || pathname === "/sync") && authState.isAuthenticated) {
-                if (roomState.refer && roomState.sourceType) {
+            // Handle /stream, /stream/files, /stream/[source], and /sync routes - create room if authenticated and has refer data
+            const isStreamRoute = pathname === "/stream" || 
+                                  pathname === "/stream/files" || 
+                                  (pathname?.startsWith("/stream/") && pathname !== "/stream/files");
+            if ((isStreamRoute || pathname === "/sync") && authState.isAuthenticated) {
+                if (roomState.refer && roomState.type) {
                     const result = await createRoomWithRefer();
                     if (result && result.data?.room_id) {
                         router.replace(`/room/${result.data.room_id}`);
@@ -171,7 +179,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         roomState.haveRoom,
         roomState.roomId,
         roomState.refer,
-        roomState.sourceType,
+        roomState.type,
+        roomState.source,
         roomState.urls,
     ]);
 
@@ -196,8 +205,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                             // Wait for Redux state to update and DOM to render
                             await new Promise(resolve => setTimeout(resolve, 250));
                         } catch (error) {
-                            // TODO: Notify User: Handle this error gracefully
+                            // Notify user about the error
                             console.error("Error fetching room details:", error);
+                            showError("Failed to load room", "The room may not exist or you may not have access. Please check the room ID and try again.");
                             router.replace("/");
                             setIsRoomLoading(false);
                             setSkeleton(false);
@@ -251,8 +261,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     
     // Don't show skeleton on public pages
-    const publicRoutes = ["/", "/login", "/signup", "/stream", "/sync"];
-    const isPublicRoute = pathname && publicRoutes.includes(pathname);
+    const publicRoutes = ["/", "/login", "/signup", "/stream", "/stream/files", "/sync"];
+    const isStreamSourceRoute = pathname?.startsWith("/stream/") && pathname !== "/stream/files";
+    const isPublicRoute = pathname && (publicRoutes.includes(pathname) || isStreamSourceRoute);
     const isRoomRoute = pathname?.startsWith("/room/");
     
     // Show skeleton if:
