@@ -1,70 +1,37 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useFileContext } from "@/context/FileContext";
 import { useRouter } from "next/navigation";
 import {
-  DragOverlay,
-  UploadSection,
   ContentDivider,
+  DragOverlay,
   useDragAndDrop,
-  PlatformGrid,
+  ACCEPTED_FILE_TYPES,
 } from "@/components/Modals/DeviceModalComponents";
 import { FileSelection, ProfileHeader, Logo } from "@/components";
 import { FaArrowLeft } from "react-icons/fa";
-import { showError } from "@/utils/toast";
 import { ScreenShareBox } from "@/components/ScreenShare/ScreenShareBox";
 const StreamFilesPage = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { setFiles, isPersistenceSupported, requestFilePicker, showPermissionPrompt } = useFileContext();
-  const [isLoading, setIsLoading] = useState(false);
+  const { files, setFiles } = useFileContext();
 
-  const handleOnVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0 && fileInputRef.current) {
-      // For traditional file input, files won't persist (no handles)
-      setFiles(Array.from(files));
+  // Handle file drop - append to existing files
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = e.target.files;
+    if (newFiles && newFiles.length > 0 && fileInputRef.current) {
+      // Append new files to existing files instead of replacing
+      const filesArray = Array.from(newFiles);
+      setFiles([...files, ...filesArray]);
       fileInputRef.current.value = "";
     }
   };
 
-  const handleFileSelection = async () => {
-    if (isPersistenceSupported) {
-      // Use File System Access API for persistence
-      try {
-        setIsLoading(true);
-        const selectedFiles = await requestFilePicker();
-        
-        if (selectedFiles.length > 0) {
-          setFiles(selectedFiles);
-        }
-      } catch (error: any) {
-        if (error.name === 'AbortError') {
-          // User cancelled, do nothing
-          return;
-        }
-        console.error('Error selecting files:', error);
-        showError("Failed to select files", "Please check your browser permissions and try again.");
-        // Fallback to traditional file input
-        showPermissionPrompt();
-        fileInputRef.current?.click();
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      // Fallback to traditional file input
-      fileInputRef.current?.click();
-    }
-  };
-
+  // Drag and drop functionality for the whole page
   const { isDragging, dragHandlers } = useDragAndDrop(
     fileInputRef,
-    handleOnVideoChange
+    handleFileChange
   );
-
-  const handleUploadClick = () => {
-    handleFileSelection();
-  };
 
   const handleBack = () => {
     router.push("/stream");
@@ -80,6 +47,16 @@ const StreamFilesPage = () => {
       {...dragHandlers}
     >
       <DragOverlay isVisible={isDragging} />
+      
+      {/* Hidden file input for drag and drop */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ACCEPTED_FILE_TYPES}
+        multiple
+        className="hidden"
+        onChange={handleFileChange}
+      />
       
       {/* Header with logo, back button, and profile */}
       <div className="w-full flex items-center justify-between p-4 md:p-6 border-b border-white/10 relative z-40">
