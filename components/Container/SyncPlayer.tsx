@@ -88,7 +88,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
             hasVideoTrack={hasVideoTrack}
             fullscreenTargetRef={fullscreenTargetRef}
             url={videoUrl}
-            muted={false}
+            muted={helper.getInitialPlayerState(videoUrl, roomType || "sync", isHost, false).muted}
             disableControls={helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft).disableControls}
             hideControls={helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft).hideControls}
             disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
