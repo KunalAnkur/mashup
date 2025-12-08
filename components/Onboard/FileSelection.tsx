@@ -137,7 +137,7 @@ const FileSelection = () => {
         <div className="flex items-center gap-2">
           <span className="w-1 h-6 bg-gradient-to-b from-fuchsia-500 to-purple-500 rounded-full"></span>
           <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
-            Your Files
+            Choose Files
           </h3>
         </div>
         <button
@@ -252,22 +252,26 @@ const FileSelection = () => {
             </div>
           ))}
 
-          {/* Show preview placeholders to fill up to 2 items */}
+          {/* Show preview placeholders to fill up to 2 items - same size as actual file items */}
           {files.length < 2 &&
             Array.from({ length: 2 - files.length }).map((_, i) => (
               <div
                 key={`placeholder-${i}`}
-                className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-dashed border-white/10"
+                className="flex justify-between items-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-dashed border-white/10"
               >
-                <div className="p-3 rounded-xl bg-white/[0.03] flex-shrink-0">
-                  <FaFileVideo className="text-gray-700 text-lg" />
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex-shrink-0 rounded-xl overflow-hidden bg-white/5 w-16 h-10 flex items-center justify-center">
+                    <FaFileVideo className="text-gray-700 text-lg" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="h-4 bg-white/[0.03] rounded-full w-3/4 mb-2" />
+                    <div className="h-3 bg-white/[0.02] rounded-full w-1/3" />
+                  </div>
                 </div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-white/[0.03] rounded-full w-3/4" />
-                  <div className="h-2 bg-white/[0.02] rounded-full w-1/3" />
-                </div>
-                <div className="w-8 h-8 rounded-lg bg-white/[0.02] flex items-center justify-center">
-                  <FaTrash className="text-gray-700 text-xs" />
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-white/[0.02] flex items-center justify-center">
+                    <FaTrash className="text-gray-700 text-xs" />
+                  </div>
                 </div>
               </div>
             ))}
