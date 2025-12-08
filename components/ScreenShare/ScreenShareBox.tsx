@@ -7,11 +7,11 @@ interface ScreenShareBoxProps {
 }
 
 const ScreenShareInfo: React.FC = () => (
-  <div className="p-4 bg-white/[0.03] rounded-xl">
-    <p className="text-gray-400 text-xs text-center leading-relaxed">
-      <span className="text-gray-300 font-medium">Share your screen:</span>
+  <div className="p-4 bg-gradient-to-br from-purple-500/10 via-fuchsia-500/10 to-pink-500/10 rounded-xl border border-purple-500/20">
+    <p className="text-gray-300 text-xs text-center leading-relaxed">
+      <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 font-semibold">Share your screen:</span>
       <br />
-      Share any browser tab with others in real-time
+      <span className="text-gray-400">Share any browser tab with others in real-time</span>
     </p>
   </div>
 );

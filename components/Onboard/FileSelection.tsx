@@ -135,7 +135,7 @@ const FileSelection = () => {
   return (
     <div className="flex flex-col h-full bg-[#18181b] w-full max-w-full overflow-hidden">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span className="w-1 h-6 bg-gradient-to-b from-fuchsia-500 to-purple-500 rounded-full"></span>
           <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
             Choose Files
@@ -163,11 +163,11 @@ const FileSelection = () => {
         className="hidden"
       />
 
-      <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-4 w-full">
+      <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-5 w-full">
         <div className="flex-1 flex flex-col gap-4 w-full max-w-full overflow-hidden">
         {/* Files List with Preview Placeholders */}
         <div
-          className="space-y-2 pr-2 overflow-y-auto max-h-[160px] w-full"
+          className="space-y-3 pr-2 overflow-y-auto max-h-[160px] w-full"
         >
           {/* Show actual files */}
           {files.map((file, index) => (
@@ -256,9 +256,9 @@ const FileSelection = () => {
             // Upload area when no files
             <button
               onClick={handleAddFileClick}
-              className="flex flex-col items-center justify-center p-6 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border-2 border-dashed border-white/20 hover:border-fuchsia-500/50 w-full h-[140px] transition-all duration-300 cursor-pointer group"
+              className="flex flex-col items-center justify-center p-6 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border-2 border-dashed border-white/20 hover:border-fuchsia-500/50 w-full h-[160px] transition-all duration-300 cursor-pointer group"
             >
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/5 group-hover:bg-fuchsia-500/20 transition-all duration-300 mb-3">
+              <div className="flex p-4 items-center justify-center w-16 h-16 rounded-full bg-white/5 group-hover:bg-fuchsia-500/20 transition-all duration-300 mb-3">
                 <FaUpload className="text-gray-400 group-hover:text-fuchsia-400 transition-colors duration-300 text-2xl" />
               </div>
               <span className="text-base font-semibold text-gray-300 group-hover:text-white transition-colors duration-300 mb-1">
@@ -336,7 +336,7 @@ p-3 bg-white/[0.03]  rounded-xl">
 
         </div>
 
-        <div className="flex gap-3 ">
+        <div className="flex gap-2 ">
           <Button
             onClick={handleBack}
             className="w-full rounded-xl flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10  hover:border-white/20 text-white text-sm px-4 py-3 transition-all duration-200"
