@@ -320,299 +320,310 @@ const ScreenSharePage = () => {
       {/* Content */}
       <div className="flex h-full flex-1 items-start justify-center w-full overflow-y-auto overflow-x-hidden py-8">
         <div className="flex flex-col gap-8 w-full max-w-4xl mx-auto px-6">
-          
-        
-          {/* Stream Preview */}
-          {stream && (
-            <div className="rounded-xl overflow-hidden bg-black animate-fade-in">
-              <div className="relative aspect-video">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted={true}
-                  playsInline
-                  className={audioOnly ? "hidden" : "w-full h-full object-contain"}
-                />
-                {audioOnly && (
-                  <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-fuchsia-900/20 to-pink-900/20">
-                    <FaVolumeUp className="text-5xl text-fuchsia-400/60 mb-4" />
-                    <div className="text-fuchsia-300 font-semibold text-base mb-1">Audio Only Mode</div>
-                    <div className="text-gray-400 text-sm">Streaming audio from your tab</div>
+          {!stream ? (
+            <>
+              {/* Initial State - Before Preview */}
+              {/* Main Action Section */}
+              <div className="flex flex-col gap-6 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl p-6 shadow-xl">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 shadow-lg shadow-purple-500/25">
+                    <FaDesktop className="text-xl text-white" />
                   </div>
-                )}
-                {isStreamReady && (
-                  <div className="absolute top-4 right-4 px-3 py-1.5 bg-green-500/20 border border-green-500/50 rounded-lg backdrop-blur-sm">
+                  <div className="flex-1 flex flex-col">
+                    <h2 className="text-xl font-semibold text-white mb-1">Ready to Share?</h2>
+                    <p className="text-gray-400 text-sm">Click the button below to start sharing your screen</p>
+                  </div>
+                </div>
+
+                {/* Share Button */}
+                <button
+                  onClick={() => handleShareScreen()}
+                  disabled={!!stream}
+                  className={`w-full px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 text-white ${
+                    stream
+                      ? "bg-gray-600 cursor-not-allowed opacity-50"
+                      : "bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-500 hover:via-fuchsia-500 hover:to-pink-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-purple-500/30"
+                  }`}
+                >
+                  {stream ? "✓ Screen Sharing Active" : "Share Your Screen"}
+                </button>
+              </div>
+
+              {/* Simple Steps Guide - Only show when no preview */}
+              <div className="flex flex-col gap-6">
+                <h3 className="text-2xl font-bold text-white text-center">How it works</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                  {/* Step 1 */}
+                  <div 
+                    className="flex flex-col items-center text-center px-5 py-8 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:border-white/10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/10"
+                    style={{ 
+                      animation: 'float 3s ease-in-out infinite',
+                      animationDelay: '0s'
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-purple-500/25">
+                      1
+                    </div>
+                    <h4 className="text-base font-semibold text-white mb-2">
+                      Click on screen share button
+                    </h4>
+                    <p className="text-gray-400 text-xs leading-relaxed">
+                      Click the "Share Screen" button above to start the sharing process.
+                    </p>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div 
+                    className="flex flex-col items-center text-center px-5 py-8 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:border-white/10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/10"
+                    style={{ 
+                      animation: 'float 3s ease-in-out infinite',
+                      animationDelay: '0.2s'
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-purple-500/25">
+                      2
+                    </div>
+                    <h4 className="text-base font-semibold text-white mb-2">
+                      Choose the tab you want to share
+                    </h4>
+                    <p className="text-gray-400 text-xs leading-relaxed">Make sure to choose a tab (not your entire screen) for best audio quality.
+                    </p>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div 
+                    className="flex flex-col items-center text-center px-5 py-8 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:border-white/10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/10"
+                    style={{ 
+                      animation: 'float 3s ease-in-out infinite',
+                      animationDelay: '0.4s'
+                    }}
+                  >
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-purple-500/25">
+                      3
+                    </div>
+                    <h4 className="text-base font-semibold text-white mb-2">
+                      Click on "Start Sharing"
+                    </h4>
+                    <p className="text-gray-400 text-xs leading-relaxed">
+                      Once your stream is ready, click "Start Sharing" to create a room and enjoy watching together!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Tips */}
+              <div className="p-6 bg-gradient-to-br from-purple-500/10 via-fuchsia-500/10 to-pink-500/10 rounded-xl backdrop-blur-sm">
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 mt-1">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-fuchsia-600 flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-semibold mb-3 text-sm">Quick Tips</p>
+                    <div className="space-y-2.5">
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
+                        <p className="text-gray-300 text-xs leading-relaxed">Select a specific tab (not your entire screen) for best audio quality</p>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
+                        <p className="text-gray-300 text-xs leading-relaxed">Keep the tab active and playing for the best experience</p>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
+                        <p className="text-gray-300 text-xs leading-relaxed">Make sure you have permission to share the content</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Post-Preview State - After Tab Selection */}
+              {/* Stream Preview */}
+              <div className="rounded-xl overflow-hidden bg-black animate-fade-in">
+                <div className="relative aspect-video">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    muted={true}
+                    playsInline
+                    className={audioOnly ? "hidden" : "w-full h-full object-contain"}
+                  />
+                  {audioOnly && (
+                    <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-fuchsia-900/20 to-pink-900/20">
+                      <FaVolumeUp className="text-5xl text-fuchsia-400/60 mb-4" />
+                      <div className="text-fuchsia-300 font-semibold text-base mb-1">Audio Only Mode</div>
+                      <div className="text-gray-400 text-sm">Streaming audio from your tab</div>
+                    </div>
+                  )}
+                  {isStreamReady && (
+                    <div className="absolute top-4 right-4 px-3 py-1.5 bg-green-500/20 border border-green-500/50 rounded-lg backdrop-blur-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-green-400 text-xs font-semibold">
+                          {audioOnly ? 'Audio Ready' : 'Ready'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Post-Preview Action Section */}
+              <div className="flex flex-col gap-6 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl p-6 shadow-xl">
+                {/* Status Header */}
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-white mb-2">Preview Active</h2>
+                  <p className="text-gray-400 text-sm">Your screen share is ready. Adjust settings below and start sharing when ready.</p>
+                </div>
+
+                {/* Audio-only toggle */}
+                <div className="flex items-center justify-center p-4 bg-gradient-to-br from-purple-500/10 via-fuchsia-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 backdrop-blur-sm">
+                  <label className="flex items-center gap-4 cursor-pointer group">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-green-400 text-xs font-semibold">
-                        {audioOnly ? 'Audio Ready' : 'Ready'}
+                      {audioOnly ? (
+                        <FaVolumeMute className="text-lg text-fuchsia-400 transition-colors" />
+                      ) : (
+                        <FaVolumeUp className="text-lg text-purple-400 transition-colors" />
+                      )}
+                      <span className="text-sm font-medium text-white">
+                        {audioOnly ? "Audio Only" : "Video + Audio"}
                       </span>
                     </div>
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={audioOnly}
+                        onChange={async (e) => {
+                          const newAudioOnly = e.target.checked;
+                          
+                          if (stream) {
+                            if (newAudioOnly) {
+                              // Enable audio-only: remove video tracks
+                              setAudioOnly(true);
+                              const videoTracks = stream.getVideoTracks();
+                              const audioTracks = stream.getAudioTracks();
+                              if (videoTracks.length > 0) {
+                                const audioOnlyStream = new MediaStream(audioTracks);
+                                videoTracks.forEach(track => {
+                                  track.stop();
+                                  stream.removeTrack(track);
+                                });
+                                setStream(audioOnlyStream);
+                                setMediaStream(audioOnlyStream);
+                              } else {
+                                setMediaStream(stream);
+                              }
+                            } else {
+                              // Disable audio-only: need to re-capture with video
+                              // Keep the current stream active while re-capturing
+                              try {
+                                const newStream = await helper.captureTabStream({
+                                  audioOnly: false,
+                                  preferredDisplaySurface: 'tab'
+                                });
+                                
+                                if (newStream) {
+                                  // Successfully captured new stream with video
+                                  // Stop old stream tracks
+                                  const oldStream = stream;
+                                  oldStream.getTracks().forEach(track => track.stop());
+                                  
+                                  // Set new stream
+                                  setStream(newStream);
+                                  setMediaStream(newStream);
+                                  setAudioOnly(false);
+                                  // State will be validated by useEffect
+                                } else {
+                                  // User cancelled - keep current stream and audio-only mode
+                                  console.log("Re-capture cancelled, keeping audio-only mode");
+                                  // audioOnly state stays true, stream stays active
+                                }
+                              } catch (error: any) {
+                                console.error("Error re-capturing stream with video:", error);
+                                // If re-capture fails, keep current stream active
+                                // Don't stop the stream or change state
+                                if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+                                  // User cancelled or permission denied - silently keep current state
+                                  console.log("Re-capture cancelled or denied, keeping audio-only mode");
+                                } else {
+                                  // Other errors - show message but keep stream active
+                                  showError("Failed to re-enable video", "Your audio-only stream is still active. Please try sharing again if you want video.");
+                                }
+                                // Keep audioOnly as true, stream stays active
+                              }
+                            }
+                          } else {
+                            // No stream yet, just update state
+                            setAudioOnly(newAudioOnly);
+                          }
+                        }}
+                        className="sr-only"
+                      />
+                      <div className={`relative w-14 h-7 rounded-full transition-all duration-300 ease-in-out ${
+                        audioOnly 
+                          ? 'bg-gradient-to-r from-fuchsia-600 to-pink-600' 
+                          : 'bg-gradient-to-r from-purple-600 to-fuchsia-600'
+                      }`}>
+                        <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow-lg transform transition-transform duration-300 ease-in-out ${
+                          audioOnly ? 'translate-x-7' : 'translate-x-0'
+                        }`}></div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Warning */}
+                {showWarning && (
+                  <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg animate-fade-in">
+                    <FaExclamationTriangle className="text-yellow-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-yellow-300 font-medium text-sm mb-1">Tab Selection Required</p>
+                      <p className="text-yellow-200/80 text-xs leading-relaxed">
+                        {!isTabSelected
+                          ? "Please select a specific tab (not your entire screen) to capture audio properly."
+                          : "For best audio quality, select the specific tab with your content."}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Start Sharing Button */}
+                {isStreamReady && (
+                  <div className="text-center animate-fade-in">
+                    <button
+                      onClick={handleStartStreaming}
+                      disabled={isCreatingRoom || !isStreamReady}
+                      className={`w-full px-8 py-5 rounded-xl font-bold text-lg transition-all duration-200 text-white inline-flex items-center justify-center gap-3 ${
+                        isCreatingRoom || !isStreamReady
+                          ? "bg-gray-600 cursor-not-allowed opacity-50"
+                          : "bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-500 hover:via-fuchsia-500 hover:to-pink-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-purple-500/30"
+                      }`}
+                    >
+                      {isCreatingRoom && <ImSpinner2 className="animate-spin" />}
+                      {isCreatingRoom ? "Creating Room..." : "Start Sharing"}
+                    </button>
+                    <p className="text-gray-400 text-sm mt-3">
+                      Your room will be created and you can enjoy watching together!
+                    </p>
                   </div>
                 )}
               </div>
-            </div>
+            </>
           )}
-
-          {/* Main Action Section */}
-          <div className="flex flex-col gap-6 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl p-6  shadow-xl">
-            <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 shadow-lg shadow-purple-500/25">
-                <FaDesktop className="text-xl text-white" />
-              </div>
-              <div className="flex-1 flex flex-col">
-                <h2 className="text-xl font-semibold text-white mb-1">Ready to Share?</h2>
-                <p className="text-gray-400 text-sm">Click the button below to start sharing your screen</p>
-              </div>
-            </div>
-
-            {/* Audio-only toggle */}
-            {stream && (
-              <div className="flex items-center justify-center p-4 bg-gradient-to-br from-purple-500/10 via-fuchsia-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 backdrop-blur-sm">
-                <label className="flex items-center gap-4 cursor-pointer group">
-                  <div className="flex items-center gap-2">
-                    {audioOnly ? (
-                      <FaVolumeMute className="text-lg text-fuchsia-400 transition-colors" />
-                    ) : (
-                      <FaVolumeUp className="text-lg text-purple-400 transition-colors" />
-                    )}
-                    <span className="text-sm font-medium text-white">
-                      {audioOnly ? "Audio Only" : "Video + Audio"}
-                    </span>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={audioOnly}
-                      onChange={async (e) => {
-                        const newAudioOnly = e.target.checked;
-                        
-                        if (stream) {
-                          if (newAudioOnly) {
-                            // Enable audio-only: remove video tracks
-                            setAudioOnly(true);
-                            const videoTracks = stream.getVideoTracks();
-                            const audioTracks = stream.getAudioTracks();
-                            if (videoTracks.length > 0) {
-                              const audioOnlyStream = new MediaStream(audioTracks);
-                              videoTracks.forEach(track => {
-                                track.stop();
-                                stream.removeTrack(track);
-                              });
-                              setStream(audioOnlyStream);
-                              setMediaStream(audioOnlyStream);
-                            } else {
-                              setMediaStream(stream);
-                            }
-                          } else {
-                            // Disable audio-only: need to re-capture with video
-                            // Keep the current stream active while re-capturing
-                            try {
-                              const newStream = await helper.captureTabStream({
-                                audioOnly: false,
-                                preferredDisplaySurface: 'tab'
-                              });
-                              
-                              if (newStream) {
-                                // Successfully captured new stream with video
-                                // Stop old stream tracks
-                                const oldStream = stream;
-                                oldStream.getTracks().forEach(track => track.stop());
-                                
-                                // Set new stream
-                                setStream(newStream);
-                                setMediaStream(newStream);
-                                setAudioOnly(false);
-                                // State will be validated by useEffect
-                              } else {
-                                // User cancelled - keep current stream and audio-only mode
-                                console.log("Re-capture cancelled, keeping audio-only mode");
-                                // audioOnly state stays true, stream stays active
-                              }
-                            } catch (error: any) {
-                              console.error("Error re-capturing stream with video:", error);
-                              // If re-capture fails, keep current stream active
-                              // Don't stop the stream or change state
-                              if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
-                                // User cancelled or permission denied - silently keep current state
-                                console.log("Re-capture cancelled or denied, keeping audio-only mode");
-                              } else {
-                                // Other errors - show message but keep stream active
-                                showError("Failed to re-enable video", "Your audio-only stream is still active. Please try sharing again if you want video.");
-                              }
-                              // Keep audioOnly as true, stream stays active
-                            }
-                          }
-                        } else {
-                          // No stream yet, just update state
-                          setAudioOnly(newAudioOnly);
-                        }
-                      }}
-                      className="sr-only"
-                    />
-                    <div className={`relative w-14 h-7 rounded-full transition-all duration-300 ease-in-out ${
-                      audioOnly 
-                        ? 'bg-gradient-to-r from-fuchsia-600 to-pink-600' 
-                        : 'bg-gradient-to-r from-purple-600 to-fuchsia-600'
-                    }`}>
-                      <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow-lg transform transition-transform duration-300 ease-in-out ${
-                        audioOnly ? 'translate-x-7' : 'translate-x-0'
-                      }`}></div>
-                    </div>
-                  </div>
-                </label>
-              </div>
-            )}
-
-            {/* Share Button */}
-            <button
-              onClick={() => handleShareScreen()}
-              disabled={!!stream}
-              className={`w-full px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 text-white ${
-                stream
-                  ? "bg-gray-600 cursor-not-allowed opacity-50"
-                  : "bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-500 hover:via-fuchsia-500 hover:to-pink-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-purple-500/30"
-              }`}
-            >
-              {stream ? "✓ Screen Sharing Active" : "Share Your Screen"}
-            </button>
-
-            {/* Warning */}
-            {showWarning && (
-              <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg animate-fade-in">
-                <FaExclamationTriangle className="text-yellow-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-yellow-300 font-medium text-sm mb-1">Tab Selection Required</p>
-                  <p className="text-yellow-200/80 text-xs leading-relaxed">
-                    {!isTabSelected
-                      ? "Please select a specific tab (not your entire screen) to capture audio properly."
-                      : "For best audio quality, select the specific tab with your content."}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Simple Steps Guide */}
-          <div className="flex flex-col gap-6">
-            <h3 className="text-2xl font-bold text-white text-center">How it works</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              {/* Step 1 */}
-              <div 
-                className="flex flex-col items-center text-center px-5 py-8 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:border-white/10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/10"
-                style={{ 
-                  animation: 'float 3s ease-in-out infinite',
-                  animationDelay: '0s'
-                }}
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-purple-500/25">
-                  1
-                </div>
-                <h4 className="text-base font-semibold text-white mb-2">
-                  Click on screen share button
-                </h4>
-                <p className="text-gray-400 text-xs leading-relaxed">
-                  Click the "Share Screen" button above to start the sharing process.
-                </p>
-              </div>
-
-              {/* Step 2 */}
-              <div 
-                className="flex flex-col items-center text-center px-5 py-8 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:border-white/10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/10"
-                style={{ 
-                  animation: 'float 3s ease-in-out infinite',
-                  animationDelay: '0.2s'
-                }}
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-purple-500/25">
-                  2
-                </div>
-                <h4 className="text-base font-semibold text-white mb-2">
-                  Choose the tab you want to share
-                </h4>
-                <p className="text-gray-400 text-xs leading-relaxed">Make sure to choose a tab (not your entire screen) for best audio quality.
-                </p>
-              </div>
-
-              {/* Step 3 */}
-              <div 
-                className="flex flex-col items-center text-center px-5 py-8 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:border-white/10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/10"
-                style={{ 
-                  animation: 'float 3s ease-in-out infinite',
-                  animationDelay: '0.4s'
-                }}
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-purple-500/25">
-                  3
-                </div>
-                <h4 className="text-base font-semibold text-white mb-2">
-                  Click on "Start Sharing"
-                </h4>
-                <p className="text-gray-400 text-xs leading-relaxed">
-                  Once your stream is ready, click "Start Sharing" to create a room and enjoy watching together!
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Final Action Button */}
-          {isStreamReady && (
-            <div className="text-center animate-fade-in">
-              <button
-                onClick={handleStartStreaming}
-                disabled={isCreatingRoom || !isStreamReady}
-                className={`px-12 py-5 rounded-xl font-bold text-lg transition-all duration-200 text-white inline-flex items-center justify-center gap-3 ${
-                  isCreatingRoom || !isStreamReady
-                    ? "bg-gray-600 cursor-not-allowed opacity-50"
-                    : "bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-500 hover:via-fuchsia-500 hover:to-pink-500 hover:scale-105 active:scale-95 shadow-xl shadow-purple-500/30"
-                }`}
-              >
-                {isCreatingRoom && <ImSpinner2 className="animate-spin" />}
-                {isCreatingRoom ? "Creating Room..." : "Start Sharing"}
-              </button>
-              <p className="text-gray-500 text-sm mt-4">
-                Your room will be created and you can enjoy watching together!
-              </p>
-            </div>
-          )}
-
-          {/* Quick Tips */}
-          <div className="p-6 bg-gradient-to-br from-purple-500/10 via-fuchsia-500/10 to-pink-500/10 rounded-xl  backdrop-blur-sm">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 mt-1">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-fuchsia-600 flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold mb-3 text-sm">Quick Tips</p>
-                <div className="space-y-2.5">
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
-                    <p className="text-gray-300 text-xs leading-relaxed">Select a specific tab (not your entire screen) for best audio quality</p>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
-                    <p className="text-gray-300 text-xs leading-relaxed">Keep the tab active and playing for the best experience</p>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
-                    <p className="text-gray-300 text-xs leading-relaxed">Make sure you have permission to share the content</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
