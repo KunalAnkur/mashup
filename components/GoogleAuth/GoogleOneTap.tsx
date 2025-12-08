@@ -93,46 +93,7 @@ const GoogleOneTap = () => {
   };
 
   const handleOneTapError = () => {
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log("⚠️ Google One Tap Failed to Initialize");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log("");
-    console.log("📋 TROUBLESHOOTING CHECKLIST:");
-    console.log("");
-    console.log("1️⃣  Google Cloud Console Configuration:");
-    console.log("   → https://console.cloud.google.com/apis/credentials");
-    console.log("   → Client ID: 150825594230-h8an9t7c5eu99etrhda4gtam7660g1tt.apps.googleusercontent.com");
-    console.log("   → Click 'Edit' and check 'Authorized JavaScript origins'");
-    console.log("");
-    console.log("2️⃣  Required Origins (ADD BOTH):");
-    console.log("   ✓ http://localhost");
-    console.log("   ✓ http://localhost:3000");
-    console.log("");
-    console.log("3️⃣  Your Current Origin:");
-    console.log(`   → ${debugInfo?.origin || 'Not detected yet'}`);
-    console.log("");
-    console.log("4️⃣  If using 127.0.0.1:");
-    console.log("   → Change package.json: 'next dev -H localhost'");
-    console.log("   → Access via: http://localhost:3000 (NOT 127.0.0.1)");
-    console.log("");
-    console.log("5️⃣  Clear Everything:");
-    console.log("   → Browser cache (Ctrl+Shift+Delete)");
-    console.log("   → Google cookies (chrome://settings/cookies)");
-    console.log("   → Hard reload (Ctrl+Shift+R)");
-    console.log("");
-    console.log("6️⃣  Disable Extensions:");
-    console.log("   → Password managers (1Password, LastPass, etc.)");
-    console.log("   → Try incognito mode");
-    console.log("");
-    console.log("7️⃣  Verify Client ID Type:");
-    console.log("   → Must be 'OAuth 2.0 Client ID' (Web application)");
-    console.log("   → NOT API Key or Service Account");
-    console.log("");
-    console.log("8️⃣  Wait for Google:");
-    console.log("   → Changes take 5-10 minutes to propagate");
-    console.log("");
-    console.log("✅ Users can still login with the Login button!");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    showError("Authentication failed");
   };
 
   useGoogleOneTapLogin({
