@@ -15,13 +15,13 @@ const AuthWrapper = ({ isModel = false }: { isModel?: boolean }) => {
   };
   return (
     <div className="flex flex-col items-center justify-center w-full h-full px-8 md:px-0 gap-8 bg-[#18181b] ">
-      <AuthHeader
+      {/* <AuthHeader
         title={
           `/${container}` === constants.pageType.signup
             ? "Signup to start watching"
             : "Welcome again!"
         }
-      />
+      /> */}
       <div className="w-full max-w-md">
         {container === "login" && (
           <LoginContainer setContainer={setContainer} />

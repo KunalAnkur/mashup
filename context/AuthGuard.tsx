@@ -111,7 +111,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             if (authState.loading) return;
 
             // Auth routes
-            const authRoutes = ["/login", "/signup"];
+            // const authRoutes = ["/login", "/signup"];
+            const authRoutes = ["/login"];
             const isAuthRoute = authRoutes.includes(pathname);
             const redirectParam = searchParams?.get("redirect");
             const safeRedirect =

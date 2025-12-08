@@ -1,23 +1,25 @@
 "use client";
 import { useState } from "react";
-import { Button, Anchor } from "../UI";
+import { Button } from "../UI";
 import GoogleButton from "../GoogleAuth/GoogleButton";
-import * as constants from "@/constants/common";
 import {
   useLoginMutation,
   useAuthProviderMutation,
+  useContinueAsGuestMutation,
 } from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
-import { IoEye, IoEyeOff } from "react-icons/io5";
 import { ImSpinner2 } from "react-icons/im";
-import { showError } from "@/utils/toast";
+import { showError, showSuccess } from "@/utils/toast";
+import Image from "next/image";
+
 
 type Prop = {
   setContainer?: (container: "login" | "signup") => void | null;
-  isModel?: boolean; // Optional prop to indicate if it's a modal
+  isModel?: boolean;
 };
+
 const LoginContainer = ({ setContainer }: Prop) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,31 +27,12 @@ const LoginContainer = ({ setContainer }: Prop) => {
 
   const buildAuthRoute = (path: string) =>
     redirectParam ? `${path}?redirect=${encodeURIComponent(redirectParam)}` : path;
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+
   const [loginUser, loginState] = useLoginMutation();
   const [authProvider] = useAuthProviderMutation();
+  const [continueAsGuest, { isLoading: isGuestLoading }] = useContinueAsGuestMutation();
+  const [isGuestProcessing, setIsGuestProcessing] = useState(false);
   const dispatch = useDispatch();
-  const handleTogglePassword = () => {
-    setShowPassword((prevState) => !prevState);
-    console.log("toggle func is clicked");
-  };
-
-  const handleLogin = async () => {
-    try {
-      const response = await loginUser({ email, password }).unwrap();
-      console.log(response.data, loginState);
-      dispatch(setUser(response));
-    } catch (error: any) {
-      // console.error("Login failed:", error);
-      const errorMessage = error?.data?.message || error?.message || "Invalid credentials";
-      const errorDescription = error?.data?.message || error?.message 
-        ? "Please check your email or password and try again."
-        : "Please check your email or password.";
-      showError(errorMessage, errorDescription);
-    }
-  };
 
   const handleGoogleAuthSuccess = async (userInfo: any) => {
     try {
@@ -61,10 +44,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
         provider_name: "google",
       }).unwrap();
 
-      // Set the user with backend response
       dispatch(setUser(response));
-
-      // Update with Google OAuth specific data (profile picture, name)
       dispatch(
         setGoogleUser({
           profilePicture: userInfo.picture,
@@ -78,105 +58,91 @@ const LoginContainer = ({ setContainer }: Prop) => {
     }
   };
 
-  const handleOnEmailChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setEmail(e.target.value);
-  const handleOnPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setPassword(e.target.value);
-  const handleOnSignupClick = () => {
-    if (setContainer) {
-      setContainer("signup");
-    } else {
-      router.push(buildAuthRoute("/signup"));
+  const handleContinueAsGuest = async () => {
+    if (isGuestProcessing || isGuestLoading) return;
+    
+    setIsGuestProcessing(true);
+    try {
+      const response = await continueAsGuest().unwrap();
+      dispatch(setUser(response));
+      showSuccess("Welcome! You're now signed in as a guest");
+    } catch (error: any) {
+      console.error("Guest signup failed:", error);
+      const errorMessage = error?.data?.message || error?.message || "Failed to continue as guest";
+      showError("Guest signup failed", errorMessage);
+    } finally {
+      setIsGuestProcessing(false);
     }
   };
+
   return (
-    <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-6 md:p-8 shadow-xl w-full">
-      <div className="flex flex-col gap-5">
-        {/* Email Input */}
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-300">Email</label>
-          <input
-            type="email"
-            placeholder="Enter your email address"
-            value={email}
-            onChange={handleOnEmailChange}
-            className="w-full rounded-xl bg-white/5 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
-          />
-        </div>
-
-        {/* Password Input */}
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-300">Password</label>
+    <div className="bg-gradient-to-br from-[#1f1f23] via-[#252529] to-[#27272a] rounded-3xl p-8 md:p-10 shadow-2xl w-full max-w-md mx-auto border border-white/5">
+      <div className="flex flex-col items-center gap-7">
+        {/* Logo and Welcome Section */}
+        <header className="flex flex-col items-center gap-4 w-full">
+          {/* Logo with glow effect */}
           <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
-              value={password}
-              onChange={handleOnPasswordChange}
-              className="w-full rounded-xl bg-white/5 text-white text-sm px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
-            />
-            <button
-              type="button"
-              onClick={handleTogglePassword}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-            >
-              {showPassword ? (
-                <IoEye size={20} />
-              ) : (
-                <IoEyeOff size={20} />
-              )}
-            </button>
+            <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-xl animate-pulse"></div>
+            <div className="relative z-10">
+              <Image 
+                src="/assets/logo.svg" 
+                alt="Movmash Logo" 
+                width={64} 
+                height={64}
+                className="drop-shadow-lg"
+              />
+            </div>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-4 pt-2">
-          <Button
-            name={loginState.isLoading ? "Logging in..." : "Login"}
-            icon={loginState.isLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className="w-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={handleLogin}
-            disabled={loginState.isLoading}
-          />
           
-          {/* Separator */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/10"></div>
-            <span className="text-xs text-gray-500">or</span>
-            <div className="flex-1 h-px bg-white/10"></div>
+          {/* Brand Name */}
+          <div className="flex flex-col items-center gap-1.5">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white text-center font-parkinsans tracking-tight bg-gradient-to-r from-rose-400 via-pink-400 to-fuchsia-400 bg-clip-text text-transparent">
+              Movmash
+            </h1>
+            <p className="text-base md:text-lg text-gray-300 text-center font-medium">
+              Welcome back!
+            </p>
+            <p className="text-xs md:text-sm text-gray-400 text-center max-w-xs mt-0.5">
+              Choose how you'd like to continue
+            </p>
           </div>
+        </header>
 
+        {/* Authentication Buttons */}
+        <div className="flex flex-col gap-3.5 w-full">
           {/* Google Button */}
           <GoogleButton
             name="Continue with Google"
             onSuccess={handleGoogleAuthSuccess}
             onError={() => {
               console.log("Google authentication failed");
-              // Handle authentication failure, e.g., show a notification
             }}
           />
 
-          {/* Signup Link */}
-          <div className="pt-2">
-            <span className="flex items-center justify-center text-sm text-gray-400">
-              New on movmash?{" "}
-              {!!setContainer ? (
-                <button
-                  onClick={handleOnSignupClick}
-                  className="ml-1 text-pink-500 hover:text-pink-400 font-semibold transition-colors"
-                >
-                  SIGNUP NOW
-                </button>
-              ) : (
-                <Anchor
-                  name="SIGNUP NOW"
-                  url={buildAuthRoute(constants.pageType.signup)}
-                  className="ml-1 text-pink-500 hover:text-pink-400 font-semibold transition-colors"
-                />
-              )}
-            </span>
+          {/* Separator */}
+          <div className="flex items-center gap-3 py-0.5">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-white/15"></div>
+            <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">or</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-white/15 via-white/15 to-transparent"></div>
           </div>
+
+          {/* Continue as Guest Button */}
+          <Button
+            name={isGuestProcessing || isGuestLoading ? "Creating account..." : "Continue as Guest"}
+            icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
+            className="w-full bg-white/5 hover:bg-white/10 text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 border border-white/10 hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-white/5 hover:scale-[1.02] active:scale-[0.98]"
+            onClick={handleContinueAsGuest}
+            disabled={isGuestProcessing || isGuestLoading}
+          />
         </div>
+
+        {/* Footer Note */}
+        <p className="text-xs text-gray-500 text-center leading-relaxed max-w-sm mt-1">
+          By continuing, you agree to Movmash's{" "}
+          <span className="text-gray-400 hover:text-pink-400 transition-colors cursor-pointer">Terms of Service</span>
+          {" "}and{" "}
+          <span className="text-gray-400 hover:text-pink-400 transition-colors cursor-pointer">Privacy Policy</span>
+        </p>
       </div>
     </div>
   );
