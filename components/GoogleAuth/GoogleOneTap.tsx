@@ -11,31 +11,6 @@ const GoogleOneTap = () => {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [authProvider] = useAuthProviderMutation();
-  const [isReady, setIsReady] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<any>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsReady(true);
-      
-      // Collect debug info
-      const info = {
-        origin: window.location.origin,
-        href: window.location.href,
-        hostname: window.location.hostname,
-        port: window.location.port,
-        protocol: window.location.protocol,
-      };
-      setDebugInfo(info);
-      
-      console.log("🔍 Google One Tap Debug Info:", info);
-      console.log("✅ Make sure these origins are in Google Cloud Console:");
-      console.log("   • http://localhost");
-      console.log("   • http://localhost:3000");
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleOneTapSuccess = async (credentialResponse: any) => {
     try {
@@ -99,7 +74,7 @@ const GoogleOneTap = () => {
   useGoogleOneTapLogin({
     onSuccess: handleOneTapSuccess,
     onError: handleOneTapError,
-    disabled: isAuthenticated || !isReady,
+    disabled: isAuthenticated,
     auto_select: false,
     cancel_on_tap_outside: false,
   });
