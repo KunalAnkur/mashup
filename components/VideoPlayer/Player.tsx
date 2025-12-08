@@ -244,6 +244,9 @@ const VideoPlayer = ({
         setIsBuffering(false);
     };
 
+    const onBufferStart = () => {
+        setIsBuffering(true);
+    };
     return (
         // TODO: Need to check about the fullscreen if there is no external control for fullscreen
         <div
@@ -268,7 +271,7 @@ const VideoPlayer = ({
                     volume={volume}
                     onProgress={handleProgress}
                     onDuration={handleDuration}
-                    onBuffer={() => setIsBuffering(true)}
+                    onBuffer={onBufferStart}
                     onBufferEnd={onBufferEnd}
                     onClick={togglePlay}
                     onReady={onReady}
