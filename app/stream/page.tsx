@@ -79,16 +79,15 @@ const StreamFilesPage = () => {
 
       {/* Content */}
       <div className="  max-w-5xl lg:max-w-6xl 3xl:max-w-7xl flex h-full flex-1 items-center justify-center w-full overflow-y-auto overflow-x-hidden py-4 md:py-6">
-        <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-12 xl:gap-16 w-full mx-auto px-6 md:px-10">
+        <div className="flex flex-col lg:flex-row items-stretch gap-4 lg:gap-8 xl:gap-12 w-full mx-auto px-6 md:px-10">
           {/* Left Side - Screen Share Section */}
-          <div className="w-full lg:w-1/2 flex flex-col">
             <ScreenShareBox handleScreenShareClick={handleScreenShareClick} />
-          </div>
-          
+    
+      
           <ContentDivider />
 
           {/* Right Side - File Selection */}
-          <div className="w-full lg:w-1/2 flex flex-col">
+          <div className="w-full lg:w-2/3 flex flex-col">
             <FileSelection />
           </div>
         </div>

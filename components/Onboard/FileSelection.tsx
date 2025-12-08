@@ -132,8 +132,8 @@ const FileSelection = () => {
     }
   };
   return (
-    <div className="flex flex-col h-full bg-[#18181b]">
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full bg-[#18181b] w-full max-w-full overflow-hidden">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="w-1 h-6 bg-gradient-to-b from-fuchsia-500 to-purple-500 rounded-full"></span>
           <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
@@ -142,7 +142,7 @@ const FileSelection = () => {
         </div>
         <button
           onClick={handleAddFileClick}
-          className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 hover:border-pink-500/50 border border-white/10 transition-all duration-300 cursor-pointer group shadow-lg"
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 hover:border-pink-500/50 border border-white/10 transition-all duration-300 cursor-pointer group "
           title="Add more files"
         >
           <FaPlus className="text-gray-400 group-hover:text-white transition-colors duration-300 text-lg" />
@@ -159,7 +159,8 @@ const FileSelection = () => {
         className="hidden"
       />
 
-      <div className="flex-1 flex flex-col space-y-4">
+      <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-4 w-full">
+        <div className="flex-1 flex flex-col gap-4 w-full max-w-full overflow-hidden">
         <p className="text-gray-400 text-sm">
           {files.length > 0
             ? "Select a file to start watching"
@@ -168,22 +169,20 @@ const FileSelection = () => {
 
         {/* Files List with Preview Placeholders */}
         <div
-          className={`space-y-2 pr-2 ${
-            files.length > 2 ? "overflow-y-auto max-h-[180px]" : ""
-          }`}
+          className="space-y-2 pr-2 overflow-y-auto max-h-[160px] w-full"
         >
           {/* Show actual files */}
           {files.map((file, index) => (
             <div
               key={index}
               onClick={() => handleFileSelect(index)}
-              className={`flex justify-between items-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] cursor-pointer hover:bg-zinc-800 transition-all duration-200 border ${
+              className={`flex justify-between items-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] cursor-pointer hover:bg-zinc-800 transition-all duration-200 border w-full max-w-full h-[70px] ${
                 selectedFileIndex === index
                   ? "border-fuchsia-500/50 ring-1 ring-fuchsia-500/30"
                   : "border-white/5 hover:border-white/10"
               }`}
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-1 min-w-0 max-w-full overflow-hidden">
                 {(() => {
                   const thumbnail = getThumbnail(file);
                   const isVideo = isVideoFile(file);
@@ -224,21 +223,23 @@ const FileSelection = () => {
                     </div>
                   );
                 })()}
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-white text-sm font-semibold truncate">
+                <div className="w-[430px] ">
+                  <h4 className=" text-white text-sm font-semibold truncate">
                     {file.name}
                   </h4>
-                  <p className="text-gray-400 text-xs mt-0.5">
+                  <p className="text-gray-400 text-xs mt-0.5 truncate">
                     {(file.size / (1024 * 1024)).toFixed(2)} MB
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
-                {selectedFileIndex === index && (
-                  <div className="w-5 h-5 rounded-full bg-fuchsia-500/20 flex items-center justify-center">
-                    <FaCheck className="text-fuchsia-500 text-xs" />
-                  </div>
-                )}
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${
+                  selectedFileIndex === index 
+                    ? "bg-fuchsia-500/20 opacity-100" 
+                    : "opacity-0"
+                }`}>
+                  <FaCheck className="text-fuchsia-500 text-xs" />
+                </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -257,13 +258,13 @@ const FileSelection = () => {
             Array.from({ length: 2 - files.length }).map((_, i) => (
               <div
                 key={`placeholder-${i}`}
-                className="flex justify-between items-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-dashed border-white/10"
+                className="flex justify-between items-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-dashed border-white/10 w-full max-w-full h-[72px]"
               >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center gap-3 flex-1 min-w-0 max-w-full overflow-hidden">
                   <div className="flex-shrink-0 rounded-xl overflow-hidden bg-white/5 w-16 h-10 flex items-center justify-center">
                     <FaFileVideo className="text-gray-700 text-lg" />
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 max-w-full overflow-hidden">
                     <div className="h-4 bg-white/[0.03] rounded-full w-3/4 mb-2" />
                     <div className="h-3 bg-white/[0.02] rounded-full w-1/3" />
                   </div>
@@ -323,13 +324,14 @@ const FileSelection = () => {
           disabled={!selectedFile || isStarting}
           onClick={handleOnStartWatching}
           icon={isStarting ? <ImSpinner2 className="animate-spin" /> : undefined}
-          className={`w-full rounded-xl font-bold text-sm px-4 py-3.5 transition-all duration-200 shadow-lg ${
+          className={`w-full rounded-xl font-bold text-sm px-4 py-3.5 transition-all duration-200  ${
             selectedFile && !isStarting
               ? "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-700 hover:via-pink-700 hover:to-fuchsia-700 text-white"
               : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 text-white opacity-50 cursor-not-allowed"
           }`}
           name={isStarting ? "Starting..." : "Start Watching"}
         />
+        </div>
       </div>
     </div>
   );
