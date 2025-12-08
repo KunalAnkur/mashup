@@ -50,9 +50,10 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
 
                 if (hasVideo) {
                     setHasVideoTrack(true);
-                } else {
-                    delayTimerRef.current = setTimeout(() => setHasVideoTrack(false), 100);
-                }
+                } 
+                // else {
+                //     delayTimerRef.current = setTimeout(() => setHasVideoTrack(false), 100);
+                // }
             }
         } else if (typeof videoUrl === 'string' && helper.isVideoPlatform(videoUrl)) {
             setHasVideoTrack(true);
