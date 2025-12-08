@@ -77,7 +77,7 @@ const SourceSelection = () => {
 
   return (
     <>
-      <div className="w-full min-h-screen flex flex-col items-center justify-center bg-[#18181b] px-4 py-6 overflow-y-auto overflow-x-hidden">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-[#18181b] px-4 py-6 overflow-y-auto overflow-x-hidden">
         <div className="w-full max-w-lg flex flex-col items-center gap-3 sm:gap-4 md:gap-5 my-auto">
           {/* LOGO & BRAND */}
           <div className="flex items-center justify-center gap-3 ">

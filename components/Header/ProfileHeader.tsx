@@ -54,14 +54,14 @@ const ProfileHeader = ({ onLoginClick }: ProfileHeaderProps) => {
   // For other pages, it should be fixed
   if (isFixedPage) {
     return (
-      <div className="fixed relative right-4  top-4 z-50 flex items-center justify-end">
+      <div className="absolute top-4 right-4 z-50 flex items-center justify-end">
         {isAuthenticated ? (
           <AvatarDropdown size={40} />
         ) : (
-          <div className="" ref={dropdownRef}>
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={handleLoginClick}
-              className="text-white mt-2 text-sm font-medium hover:text-pink-400 transition-colors duration-200"
+              className="text-white text-sm font-medium hover:text-pink-400 transition-colors duration-200"
             >
               Login
             </button>
