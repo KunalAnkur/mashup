@@ -11,6 +11,7 @@ interface UseSyncParams {
     isHost: boolean;
     roomId: string | null;
     enabled?: boolean;
+    initialPlaying: boolean;
 }
 
 type VideoState = {
@@ -19,17 +20,17 @@ type VideoState = {
     currentTime: number;
 };
 
-export const useSync = ({ playerRef, isHost, roomId, enabled = true }: UseSyncParams) => {
+export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = true }: UseSyncParams) => {
     const { socket, isConnected } = useSocket();
     const dispatch = useDispatch();
 
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(initialPlaying);
 
     const isPlayingRef = useRef(isPlaying);
     const pendingSyncRef = useRef<VideoState | null>(null);
     const seekTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const initialSyncDoneRef = useRef(false);
-
+    const isApplyingRemoteStateRef = useRef(false);
     useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
     // Reset sync state when roomId changes
@@ -62,7 +63,7 @@ export const useSync = ({ playerRef, isHost, roomId, enabled = true }: UseSyncPa
         // Same video - apply time and play state
         const currentTime = playerRef.current.getCurrentTime?.() || 0;
         const drift = Math.abs(currentTime - syncState.currentTime);
-
+        isApplyingRemoteStateRef.current = true;
         // Tighter drift threshold (0.5s) for better sync
         if (drift > 0.5 || forceSeek) {
             playerRef.current.seekTo(syncState.currentTime, "seconds");
@@ -80,12 +81,16 @@ export const useSync = ({ playerRef, isHost, roomId, enabled = true }: UseSyncPa
             // Apply pending sync after video loads
             setTimeout(() => {
                 if (playerRef.current && pendingSyncRef.current) {
+                    isApplyingRemoteStateRef.current = true;
                     playerRef.current.seekTo(pendingSyncRef.current.currentTime, "seconds");
                     setIsPlaying(pendingSyncRef.current.playing);
                     pendingSyncRef.current = null;
+                    setTimeout(() => {
+                        isApplyingRemoteStateRef.current = false;
+                    }, 100);
                 }
             }, 800);
-        } else if (!isHost && roomId && !pendingSyncRef.current) {
+        } else if (!isHost && roomId && !initialSyncDoneRef.current) {
             // No pending sync - request current state from host
             // This handles cases where we missed the initial sync
             socket?.emit(SocketEvent.REQUEST_CURRENT_VIDEO, { roomId });
@@ -108,7 +113,7 @@ export const useSync = ({ playerRef, isHost, roomId, enabled = true }: UseSyncPa
 
     const onPlay = useCallback((event: string) => {
         if (event === 'seekend' || !enabled) return;
-
+        if (isApplyingRemoteStateRef.current && !isHost) return;
         setIsPlaying(true);
         isPlayingRef.current = true;
 
@@ -119,7 +124,7 @@ export const useSync = ({ playerRef, isHost, roomId, enabled = true }: UseSyncPa
 
     const onPause = useCallback((event: string) => {
         if (event === "seekend" || !enabled) return;
-
+        if (isApplyingRemoteStateRef.current && !isHost) return;
         setIsPlaying(false);
         isPlayingRef.current = false;
 
@@ -157,18 +162,7 @@ export const useSync = ({ playerRef, isHost, roomId, enabled = true }: UseSyncPa
             
             // Always send if we have a valid number (including 0) or max attempts reached
             if (isValidTime || attempt >= max) {
-                if (isValidTime || attempt >= max) {
-                    console.log(`[useSync] ✓ Emitting ONSEEKED (attempt ${attempt}/${max}):`, { 
-                        roomId, 
-                        videoState: state,
-                        currentTime,
-                        selectedIndex: state.selectedIndex,
-                        playing: state.playing
-                    });
-                    socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: state });
-                } else {
-                    console.warn(`[useSync] ✗ Not emitting - invalid time after ${attempt} attempts:`, currentTime);
-                }
+                socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: state });
                 seekTimeoutRef.current = null;
             } else {
                 // Retry after a short delay to let player update
