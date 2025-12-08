@@ -15,22 +15,31 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   logoGap = "gap-4",
 }) => {
   return (
-    <div className="w-full flex items-center justify-between p-4 md:p-6 border-b border-white/10 relative z-40">
-      <div className={`flex items-center ${logoGap}`}>
-        <div className="flex items-center">
-          <Logo size="sm" href="/" showText={true} />
-        </div>
+    <div className="w-full flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 relative z-40 bg-[#18181b]">
+      {/* Left Section: Back Button + Logo */}
+      <div className="flex items-center gap-5 flex-1 min-w-0">
         <button
           onClick={onBack}
-          className="flex items-center text-gray-400 hover:text-white transition-colors"
+          className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 active:bg-white/15 text-gray-300 hover:text-white transition-all duration-200 flex-shrink-0 group"
+          aria-label="Go back"
         >
-          <FaArrowLeft className="text-lg" />
+          <FaArrowLeft className="text-base group-hover:-translate-x-0.5 transition-transform duration-200" />
         </button>
+        <div className="h-5 w-px bg-white/10 flex-shrink-0"></div>
+        <div className="flex items-center flex-shrink-0">
+          <Logo size="sm" href="/" showText={true} />
+        </div>
       </div>
-      <h2 className="text-xl font-bold text-white absolute left-1/2 -translate-x-1/2">
-        {title}
-      </h2>
-      <div className="flex items-center">
+
+      {/* Center Section: Title */}
+      <div className="flex-1 flex justify-center items-center px-4">
+        <h2 className="text-lg md:text-xl font-semibold text-white truncate">
+          {title}
+        </h2>
+      </div>
+
+      {/* Right Section: Profile */}
+      <div className="flex items-center justify-end flex-1 min-w-0">
         <ProfileHeader />
       </div>
     </div>
