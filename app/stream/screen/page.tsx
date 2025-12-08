@@ -2,8 +2,8 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { ProfileHeader, Logo } from "@/components";
-import { FaArrowLeft, FaCheckCircle, FaShare, FaDesktop, FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
+import { PageHeader } from "@/components/UI";
+import { FaCheckCircle, FaShare, FaDesktop, FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { RootState } from "@/lib/store";
 import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
@@ -295,27 +295,8 @@ const ScreenSharePage = () => {
           }
         }
       `}</style>
-      <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
-      {/* Header with logo, back button, and profile */}
-      <div className="w-full flex items-center justify-between p-4 md:p-6 border-b border-white/10 relative z-40">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center">
-            <Logo size="sm" href="/" showText={true} />
-          </div>
-          <button
-            onClick={handleBack}
-            className="flex items-center text-gray-400 hover:text-white transition-colors"
-          >
-            <FaArrowLeft className="text-lg" />
-          </button>
-        </div>
-        <h2 className="text-xl font-bold text-white absolute left-1/2 -translate-x-1/2">
-          Screen Share
-        </h2>
-        <div className="flex items-center">
-          <ProfileHeader />
-        </div>
-      </div>
+    <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
+      <PageHeader title="Screen Share" onBack={handleBack} logoGap="gap-8" />
 
       {/* Content */}
       <div className="flex h-full flex-1 items-start justify-center w-full overflow-y-auto overflow-x-hidden py-8">
@@ -382,7 +363,7 @@ const ScreenSharePage = () => {
                   >
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-purple-500/25">
                       2
-                    </div>
+            </div>
                     <h4 className="text-base font-semibold text-white mb-2">
                       Choose the tab you want to share
                     </h4>
@@ -458,37 +439,37 @@ const ScreenSharePage = () => {
                   <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent mb-2">Preview Active</h2>
                   <p className="text-gray-300 text-sm">Your screen share is ready. Adjust settings below and start sharing when ready.</p>
                 </div>
-              </div>
+          </div>
 
-              {/* Stream Preview */}
+          {/* Stream Preview */}
               <div className="rounded-xl overflow-hidden bg-black animate-fade-in">
                 <div className="relative aspect-video">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    muted={true}
-                    playsInline
-                    className={audioOnly ? "hidden" : "w-full h-full object-contain"}
-                  />
-                  {audioOnly && (
-                    <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-fuchsia-900/20 to-pink-900/20">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  muted={true}
+                  playsInline
+                  className={audioOnly ? "hidden" : "w-full h-full object-contain"}
+                />
+                {audioOnly && (
+                  <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-fuchsia-900/20 to-pink-900/20">
                       <FaVolumeUp className="text-5xl text-fuchsia-400/60 mb-4" />
                       <div className="text-fuchsia-300 font-semibold text-base mb-1">Audio Only Mode</div>
                       <div className="text-gray-400 text-sm">Streaming audio from your tab</div>
-                    </div>
-                  )}
-                  {isStreamReady && (
-                    <div className="absolute top-4 right-4 px-3 py-1.5 bg-green-500/20 border border-green-500/50 rounded-lg backdrop-blur-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-green-400 text-xs font-semibold">
+                  </div>
+                )}
+                {isStreamReady && (
+                  <div className="absolute top-4 right-4 px-3 py-1.5 bg-green-500/20 border border-green-500/50 rounded-lg backdrop-blur-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-green-400 text-xs font-semibold">
                           {audioOnly ? 'Audio Ready' : 'Ready'}
-                        </span>
-                      </div>
+                      </span>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
+            </div>
 
               {/* Post-Preview Action Section - Below Video */}
               <div className="flex flex-col gap-6 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl p-6 shadow-xl">
@@ -599,30 +580,30 @@ const ScreenSharePage = () => {
                           ? "Please select a specific tab (not your entire screen) to capture audio properly."
                           : "For best audio quality, select the specific tab with your content."}
                       </p>
-                    </div>
-                  </div>
+                </div>
+              </div>
                 )}
 
                 {/* Start Sharing Button */}
-                {isStreamReady && (
+          {isStreamReady && (
                   <div className="text-center animate-fade-in">
-                    <button
-                      onClick={handleStartStreaming}
-                      disabled={isCreatingRoom || !isStreamReady}
+              <button
+                onClick={handleStartStreaming}
+                disabled={isCreatingRoom || !isStreamReady}
                       className={`w-full px-8 py-5 rounded-xl font-bold text-lg transition-all duration-200 text-white inline-flex items-center justify-center gap-3 ${
-                        isCreatingRoom || !isStreamReady
-                          ? "bg-gray-600 cursor-not-allowed opacity-50"
+                  isCreatingRoom || !isStreamReady
+                    ? "bg-gray-600 cursor-not-allowed opacity-50"
                           : "bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-500 hover:via-fuchsia-500 hover:to-pink-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-purple-500/30"
-                      }`}
-                    >
-                      {isCreatingRoom && <ImSpinner2 className="animate-spin" />}
+                }`}
+              >
+                {isCreatingRoom && <ImSpinner2 className="animate-spin" />}
                       {isCreatingRoom ? "Creating Room..." : "Start Sharing"}
-                    </button>
-                    <p className="text-gray-400 text-sm mt-3">
+              </button>
+              <p className="text-gray-400 text-sm mt-3">
                       Your room will be created and you can enjoy watching together!
-                    </p>
-                  </div>
-                )}
+              </p>
+            </div>
+          )}
               </div>
             </>
           )}
