@@ -23,7 +23,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
     const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const { isJoined, roomType, isHost, hostLeft } = useRoomContext();
-
+    const initialPlayerState = helper.getInitialPlayerState(roomState.urls[roomState.selectedFileIndex], roomType || "sync", isHost, false);
     const {
         onPlay,
         onPause,
@@ -34,6 +34,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
         playerRef,
         isHost,
         roomId: roomState.roomId,
+        initialPlaying: initialPlayerState.playing,
         enabled: isJoined && roomType === "sync",
     });
 
@@ -90,6 +91,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
             muted={false}
             disableControls={helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft).disableControls}
             hideControls={helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft).hideControls}
+            disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
         >
             <PlayerOverlay />
         </Player>

@@ -11,6 +11,7 @@ interface UseSyncParams {
     isHost: boolean;
     roomId: string | null;
     enabled?: boolean;
+    initialPlaying: boolean;
 }
 
 type VideoState = {
@@ -19,11 +20,11 @@ type VideoState = {
     currentTime: number;
 };
 
-export const useSync = ({ playerRef, isHost, roomId, enabled = true }: UseSyncParams) => {
+export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = true }: UseSyncParams) => {
     const { socket, isConnected } = useSocket();
     const dispatch = useDispatch();
 
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(initialPlaying);
 
     const isPlayingRef = useRef(isPlaying);
     const pendingSyncRef = useRef<VideoState | null>(null);

@@ -1,4 +1,5 @@
 import { ControlComponents } from "@/components/VideoPlayer/Player";
+import { RoomType } from "@/context/RoomContext";
 import { SourceProps } from "react-player/base";
 
 /**
@@ -354,6 +355,43 @@ export function captureStreamFromVideo(videoElement: HTMLVideoElement): MediaStr
     }
 }
 
+export function getInitialPlayerState(url: string | string[] | SourceProps[] | MediaStream, roomType: RoomType = "stream", host: boolean, screenSharing: boolean = false, hostLeft: boolean = false, paused: boolean = false) {
+    if (roomType === "sync") {
+        if ((url as string).includes('twitch.tv')) {
+            return {
+                playing: false,
+                muted: false,
+            };
+        }
+        return {
+            playing: false,
+            muted: false,
+        };
+    }
+    if (roomType === "stream") {
+        return {
+          playing: host ? screenSharing : !paused,
+          muted: host ? screenSharing : false,
+        };
+    }
+    return {
+        playing: false,
+        muted: false,
+    };
+}
+
+/**
+ * Determines if seek pause/resume behavior should be disabled for a URL
+ * @param url - The URL to check
+ * @returns true if seek pause/resume should be disabled
+ */
+export function shouldDisableSeekPauseResume(url: string | string[] | SourceProps[] | MediaStream): boolean {
+    if (typeof url === "string") {
+        return url.includes('twitch.tv');
+    }
+    return false;
+}
+
 export function getPlayerControlsConfig(url: string | string[] | SourceProps[] | MediaStream, host: boolean, hostLeft: boolean = false) {
     if (host) {
         if (typeof MediaStream !== "undefined" && url instanceof MediaStream) {
@@ -367,13 +405,44 @@ export function getPlayerControlsConfig(url: string | string[] | SourceProps[] |
             ],
           };
         }
-        return {
-          disableControls: [],
-          hideControls: [],
-        };
+        if (typeof url === "string"){
+            if (url.includes('twitch.tv')) {
+                if (url.includes('videos')) {
+                    return {
+                        disableControls: [],
+                        hideControls: [ControlComponents.OVERLAY],
+                    };
+                }
+                return {
+                  disableControls: [],
+                  hideControls: [ControlComponents.OVERLAY, ControlComponents.PROGRESS, ControlComponents.DURATION],
+                };
+            }
+        }
+          return {
+            disableControls: [],
+            hideControls: [],
+          };
     }
 
     if (typeof url === "string") {
+        if (url.includes('twitch.tv')) {
+            if (url.includes("videos")) {
+              return {
+                disableControls: [],
+                hideControls: [ControlComponents.OVERLAY],
+              };
+            }
+            // Twitch live stream
+            return {
+              disableControls: [ControlComponents.PLAY],
+              hideControls: [
+                ControlComponents.OVERLAY, ControlComponents.PLAY,
+                ControlComponents.PROGRESS,
+                ControlComponents.DURATION,
+              ],
+            };
+        }
       // url is a single string
       return {
         disableControls: hostLeft ? [] : [ControlComponents.PLAY, ControlComponents.PROGRESS],
