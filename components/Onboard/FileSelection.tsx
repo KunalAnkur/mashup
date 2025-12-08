@@ -10,6 +10,7 @@ import {
   FaTrash,
   FaCheck,
   FaPlus,
+  FaUpload,
 } from "react-icons/fa";
 import { Button } from "../UI";
 import { useEffect, useState, useRef } from "react";
@@ -142,10 +143,13 @@ const FileSelection = () => {
         </div>
         <button
           onClick={handleAddFileClick}
-          className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 hover:border-pink-500/50 border border-white/10 transition-all duration-300 cursor-pointer group "
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 hover:border-pink-500/50 border border-white/10 transition-all duration-300 cursor-pointer group"
           title="Add more files"
         >
-          <FaPlus className="text-gray-400 group-hover:text-white transition-colors duration-300 text-lg" />
+          <FaUpload className="text-gray-400 group-hover:text-white transition-colors duration-300 text-sm" />
+          <span className="text-sm font-medium text-gray-400 group-hover:text-white transition-colors duration-300">
+            Add Files
+          </span>
         </button>
       </div>
 
@@ -161,12 +165,6 @@ const FileSelection = () => {
 
       <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-4 w-full">
         <div className="flex-1 flex flex-col gap-4 w-full max-w-full overflow-hidden">
-        <p className="text-gray-400 text-sm">
-          {files.length > 0
-            ? "Select a file to start watching"
-            : "Your selected files will appear here"}
-        </p>
-
         {/* Files List with Preview Placeholders */}
         <div
           className="space-y-2 pr-2 overflow-y-auto max-h-[160px] w-full"
@@ -253,33 +251,44 @@ const FileSelection = () => {
             </div>
           ))}
 
-          {/* Show preview placeholders to fill up to 2 items - same size as actual file items */}
-          {files.length < 2 &&
-            Array.from({ length: 2 - files.length }).map((_, i) => (
-              <div
-                key={`placeholder-${i}`}
-                className="flex justify-between items-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-dashed border-white/10 w-full max-w-full h-[72px]"
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0 max-w-full overflow-hidden">
-                  <div className="flex-shrink-0 rounded-xl overflow-hidden bg-white/5 w-16 h-10 flex items-center justify-center">
-                    <FaFileVideo className="text-gray-700 text-lg" />
-                  </div>
-                  <div className="min-w-0 flex-1 max-w-full overflow-hidden">
-                    <div className="h-4 bg-white/[0.03] rounded-full w-3/4 mb-2" />
-                    <div className="h-3 bg-white/[0.02] rounded-full w-1/3" />
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.02] flex items-center justify-center">
-                    <FaTrash className="text-gray-700 text-xs" />
-                  </div>
-                </div>
+          {/* Show preview placeholders or upload area */}
+          {files.length === 0 ? (
+            // Upload area when no files
+            <button
+              onClick={handleAddFileClick}
+              className="flex flex-col items-center justify-center p-6 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border-2 border-dashed border-white/20 hover:border-fuchsia-500/50 w-full h-[140px] transition-all duration-300 cursor-pointer group"
+            >
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/5 group-hover:bg-fuchsia-500/20 transition-all duration-300 mb-3">
+                <FaUpload className="text-gray-400 group-hover:text-fuchsia-400 transition-colors duration-300 text-2xl" />
               </div>
-            ))}
+              <span className="text-base font-semibold text-gray-300 group-hover:text-white transition-colors duration-300 mb-1">
+                Click to Upload Files
+              </span>
+              <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors duration-300">
+                or drag and drop files here
+              </span>
+            </button>
+          ) : files.length < 2 ? (
+            // Placeholder when 1 file exists
+            <div
+              onClick={handleAddFileClick}
+              className="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-dashed border-white/10 hover:border-fuchsia-500/30 w-full h-[70px] transition-all duration-200 cursor-pointer group"
+            >
+              <div className="flex items-center gap-2">
+                <FaPlus className="text-gray-500 group-hover:text-fuchsia-400 transition-colors duration-200 text-sm" />
+                <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors duration-200">
+                  Click to add more files
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {/* Info Section */}
-        <div className="flex items-start gap-2 p-3 bg-white/[0.03]  rounded-xl">
+        <div className="flex justify-between items-center p-3 bg-white/[0.03]  rounded-xl
+p-3 bg-white/[0.03]  rounded-xl">
+          {/* tip 1 */}
+        <div className="flex items-start gap-2 ">
           <div className="shrink-0 mt-0.5">
             <svg
               className="w-4 h-4 text-fuchsia-500"
@@ -293,12 +302,38 @@ const FileSelection = () => {
               />
             </svg>
           </div>
-          <div className="flex-1">
+          <div className="">
             <p className="text-gray-400 text-xs leading-relaxed">
-              <span className="text-gray-300 font-medium">Pro tip:</span> You
-              can select multiple files at once to create a playlist experience
+              <span className="text-gray-300 font-medium">Tip 1:</span> You
+              can select multiple files at once.
             </p>
+          
           </div>
+        </div>
+        {/* tip 2 */}
+        <div className="flex items-start gap-2 ">
+          <div className="shrink-0 mt-0.5">
+            <svg
+              className="w-4 h-4 text-fuchsia-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="">
+            <p className="text-gray-400 text-xs leading-relaxed">
+              <span className="text-gray-300 font-medium">Tip 2:</span> You
+              can drag and drop files to upload.
+            </p>
+          
+          </div>
+        </div>
+
         </div>
 
         <div className="flex gap-3 ">
