@@ -452,6 +452,14 @@ const ScreenSharePage = () => {
           ) : (
             <>
               {/* Post-Preview State - After Tab Selection */}
+              {/* Preview Active Status Header - Above Video */}
+              <div className="flex flex-col gap-6 bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 rounded-xl p-6 shadow-xl border border-purple-500/30">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent mb-2">Preview Active</h2>
+                  <p className="text-gray-300 text-sm">Your screen share is ready. Adjust settings below and start sharing when ready.</p>
+                </div>
+              </div>
+
               {/* Stream Preview */}
               <div className="rounded-xl overflow-hidden bg-black animate-fade-in">
                 <div className="relative aspect-video">
@@ -482,14 +490,8 @@ const ScreenSharePage = () => {
                 </div>
               </div>
 
-              {/* Post-Preview Action Section */}
+              {/* Post-Preview Action Section - Below Video */}
               <div className="flex flex-col gap-6 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl p-6 shadow-xl">
-                {/* Status Header */}
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-white mb-2">Preview Active</h2>
-                  <p className="text-gray-400 text-sm">Your screen share is ready. Adjust settings below and start sharing when ready.</p>
-                </div>
-
                 {/* Audio-only toggle */}
                 <div className="flex items-center justify-center p-4 bg-gradient-to-br from-purple-500/10 via-fuchsia-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 backdrop-blur-sm">
                   <label className="flex items-center gap-4 cursor-pointer group">
