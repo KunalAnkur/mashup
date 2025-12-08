@@ -140,7 +140,7 @@ const GoogleOneTap = () => {
     onError: handleOneTapError,
     disabled: isAuthenticated || !isReady,
     auto_select: false,
-    cancel_on_tap_outside: true,
+    cancel_on_tap_outside: false,
   });
 
   return null;
