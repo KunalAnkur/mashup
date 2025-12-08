@@ -9,14 +9,16 @@ import {
   FaArrowLeft,
   FaTrash,
   FaCheck,
+  FaPlus,
 } from "react-icons/fa";
 import { Button } from "../UI";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { useFileContext } from "@/context/FileContext";
 import { setRefers, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
 import { useRouter } from "next/navigation";
+import { ACCEPTED_FILE_TYPES } from "@/types/ModalTypes/acceptedFileTypes";
 
 const FileSelection = () => {
   const dispatch = useDispatch();
@@ -26,9 +28,10 @@ const FileSelection = () => {
   );
   const authState = useSelector((state: RootState) => state.auth);
 
-  const { files, removeFile, getThumbnail, thumbnails } = useFileContext();
+  const { files, removeFile, getThumbnail, thumbnails, setFiles } = useFileContext();
   const selectedFile = files[selectedFileIndex] ?? null;
   const [isStarting, setIsStarting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (files.length > 0 && selectedFileIndex === -1) {
@@ -114,14 +117,47 @@ const FileSelection = () => {
       setTimeout(() => setIsStarting(false), 1000);
     }
   };
+
+  const handleAddFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = e.target.files;
+    if (newFiles && newFiles.length > 0 && fileInputRef.current) {
+      // Append new files to existing files instead of replacing
+      const filesArray = Array.from(newFiles);
+      setFiles([...files, ...filesArray]);
+      fileInputRef.current.value = "";
+    }
+  };
   return (
     <div className="flex flex-col h-full bg-[#18181b]">
-      <div className="flex items-center gap-2 mb-6">
-        <span className="w-1 h-6 bg-gradient-to-b from-fuchsia-500 to-purple-500 rounded-full"></span>
-        <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
-          Your Files
-        </h3>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <span className="w-1 h-6 bg-gradient-to-b from-fuchsia-500 to-purple-500 rounded-full"></span>
+          <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
+            Your Files
+          </h3>
+        </div>
+        <button
+          onClick={handleAddFileClick}
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 hover:border-pink-500/50 border border-white/10 transition-all duration-300 cursor-pointer group shadow-lg"
+          title="Add more files"
+        >
+          <FaPlus className="text-gray-400 group-hover:text-white transition-colors duration-300 text-lg" />
+        </button>
       </div>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        type="file"
+        accept={ACCEPTED_FILE_TYPES}
+        multiple
+        className="hidden"
+      />
 
       <div className="flex-1 flex flex-col space-y-4">
         <p className="text-gray-400 text-sm">
