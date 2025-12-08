@@ -55,6 +55,32 @@ const authSlice = createSlice({
     setUrls: (state, action: PayloadAction<string[]>) => {
       state.urls = action.payload;
     },
+    updateRoomInfo: (
+      state,
+      action: PayloadAction<{
+        urls?: string[];
+        files?: string[];
+        selectedFileIndex?: number;
+        source?: "file" | "url" | "stream";
+        type?: "stream" | "sync";
+      }>
+    ) => {
+      if (action.payload.urls !== undefined) {
+        state.urls = action.payload.urls;
+      }
+      if (action.payload.files !== undefined) {
+        state.files = action.payload.files;
+      }
+      if (action.payload.selectedFileIndex !== undefined) {
+        state.selectedFileIndex = action.payload.selectedFileIndex;
+      }
+      if (action.payload.source !== undefined) {
+        state.source = action.payload.source;
+      }
+      if (action.payload.type !== undefined) {
+        state.type = action.payload.type;
+      }
+    },
     setPanelCollapsed: (state, action: PayloadAction<Partial<RoomSetting>>) => {
       state.settings = {
         ...state.settings,
@@ -113,6 +139,7 @@ export const {
   setPanelCollapsed,
   setRefers,
   setUrls,
+  updateRoomInfo,
   setUrlMetadata,
   setUrlMetadataBatch,
   clearUrlMetadataCache,

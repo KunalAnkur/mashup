@@ -46,6 +46,7 @@ type VideoPlayerProps = {
     disableControls?: ControlComponents[];
     hideControls?: ControlComponents[];
     hasVideoTrack?: boolean; // External prop to indicate if video track exists (for AudioVisualizer)
+    disableSeekPauseResume?: boolean; // If true, video won't pause on seek start or resume on seek end
 };
 
 const VideoPlayer = ({
@@ -76,7 +77,8 @@ const VideoPlayer = ({
     disableControls = [],
     hideControls = [],
     children,
-    hasVideoTrack: externalHasVideoTrack
+    hasVideoTrack: externalHasVideoTrack,
+    disableSeekPauseResume = false
 }: VideoPlayerProps) => {
     // State management
     const [playing, setPlaying] = useState(externalPlaying);
@@ -196,11 +198,15 @@ const VideoPlayer = ({
 
     const handleSeekStart = () => {
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
+        
         wasPlayingBeforeSeek.current = playing;
-        if (playing) {
+        
+        // Only pause on seek start if disableSeekPauseResume is false
+        if (playing && !disableSeekPauseResume) {
             setPlaying(false);
             onPause?.('seekend');
         }
+        
         onSeekStart?.();
     };
 
@@ -217,12 +223,16 @@ const VideoPlayer = ({
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
         onSeekEnd?.();
-        seekDebounceRef.current = setTimeout(() => {
-            if (wasPlayingBeforeSeek.current) {
-                setPlaying(true);
-                onPlay?.('seekend');
-            }
-        }, 300);
+        
+        // Only resume on seek end if disableSeekPauseResume is false
+        if (!disableSeekPauseResume) {
+            seekDebounceRef.current = setTimeout(() => {
+                if (wasPlayingBeforeSeek.current) {
+                    setPlaying(true);
+                    onPlay?.('seekend');
+                }
+            }, 300);
+        }
     };
 
     const handleDuration = (duration: number) => {
@@ -234,6 +244,9 @@ const VideoPlayer = ({
         setIsBuffering(false);
     };
 
+    const onBufferStart = () => {
+        setIsBuffering(true);
+    };
     return (
         // TODO: Need to check about the fullscreen if there is no external control for fullscreen
         <div
@@ -258,7 +271,7 @@ const VideoPlayer = ({
                     volume={volume}
                     onProgress={handleProgress}
                     onDuration={handleDuration}
-                    onBuffer={() => setIsBuffering(true)}
+                    onBuffer={onBufferStart}
                     onBufferEnd={onBufferEnd}
                     onClick={togglePlay}
                     onReady={onReady}

@@ -2,7 +2,7 @@
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import AvatarDropdown from "@/components/UI/AvatarDropdown";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const ProfileHeader = () => {
   const router = useRouter();

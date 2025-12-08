@@ -10,6 +10,7 @@ import AuthGuard from "@/context/AuthGuard";
 import { FileProvider } from "@/context/FileContext";
 import { MediaStreamProvider } from "@/context/MediaStreamContext";
 import GoogleAuthProvider from "@/components/GoogleAuth/GoogleOAuthProvider";
+import GoogleOneTap from "@/components/GoogleAuth/GoogleOneTap";
 import { Toaster } from 'react-hot-toast';
 
 export default function ClientRoot({ children }: { children: ReactNode }) {
@@ -17,6 +18,7 @@ export default function ClientRoot({ children }: { children: ReactNode }) {
         <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
                 <GoogleAuthProvider>
+                          <GoogleOneTap />
                     <AuthGuard>
                         <FileProvider>
                             <MediaStreamProvider>
