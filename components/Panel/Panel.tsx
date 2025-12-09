@@ -80,14 +80,15 @@ const Panel = () => {
 
       // 2. Leave the room via RoomContext (handles socket disconnect and cleanup)
       leaveRoom();
-
+      setShowLeaveConfirm(false);
+      router.push("/");
       // 3. Navigate to home page
-      setTimeout(() => {
-        router.push("/");
-        setShowLeaveConfirm(false);
-      }, 100);
+      // setTimeout(() => {
+      //   router.push("/");
+      //   setShowLeaveConfirm(false);
+      // }, 100);
     } catch (error) {
-      console.error("Error leaving party:", error);
+      // console.error("Error leaving party:", error);
       showError("Failed to leave room", "There was an error leaving the room. You have been removed locally.");
       // Still navigate even if there's an error
       dispatch(exitRoom());

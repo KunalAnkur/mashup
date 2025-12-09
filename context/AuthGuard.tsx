@@ -207,8 +207,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                             await new Promise(resolve => setTimeout(resolve, 250));
                         } catch (error) {
                             // Notify user about the error
-                            console.error("Error fetching room details:", error);
-                            showError("Failed to load room", "The room may not exist or you may not have access. Please check the room ID and try again.");
+                            // console.error("Error fetching room details:", error);
+                            // showError("Failed to load room", "The room may not exist or you may not have access. Please check the room ID and try again.");
                             router.replace("/");
                             setIsRoomLoading(false);
                             setSkeleton(false);
