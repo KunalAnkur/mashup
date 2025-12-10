@@ -11,8 +11,11 @@ import { helper } from "@/utils";
 import { LuPlay, LuFilm, LuLock, LuCrown, LuPlus, LuShare2, LuX } from "react-icons/lu";
 import { FaBroadcastTower } from "react-icons/fa";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
-import { detectPlatform, getPlatformById, getUrlDisplayName } from "@/types/ModalTypes/urlUtils";
+import { detectPlatform, getPlatformById, getUrlDisplayName, validateUrl } from "@/types/ModalTypes/urlUtils";
 import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
+import { useUpdateRoomMutation, useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
+import { useSocket } from "@/context/SocketContext";
+import { SocketEvent } from "@/types/socketEvents";
 
 // Playlist URL Card - Modified version for playing state with loading support
 const PlaylistUrlCard = ({
@@ -355,10 +358,15 @@ const PlaylistTab = () => {
     const { stream: screenStream, screenType, setStream: setScreenStream, setScreenType } = useMediaStreamContext();
     const [isSharingScreen, setIsSharingScreen] = useState(false);
     const [isAddingFiles, setIsAddingFiles] = useState(false);
+    const [isAddingUrls, setIsAddingUrls] = useState(false);
+    const { socket } = useSocket();
+    const [updateRoom] = useUpdateRoomMutation();
+    const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
 
     // Determine streaming mode from room state only
     const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
     const isScreenSharing = roomState.type === "stream" && roomState.source === "stream";
+    const isSyncMode = roomState.type === "sync" && roomState.source === "url";
     const urls = roomState.urls;
     const selectedIndex = roomState.selectedFileIndex;
     const urlMetadataCache = roomState.urlMetadataCache;
@@ -608,6 +616,123 @@ const PlaylistTab = () => {
         }
     }, [isHost, isFileStreaming, isPersistenceSupported, files, requestFilePicker, setFiles, showPermissionPrompt]);
 
+    // Handle add more URLs (for sync mode)
+    const handleAddMoreUrls = useCallback(async () => {
+        if (!isHost || !isSyncMode || !roomState.roomId) return;
+        
+        setIsAddingUrls(true);
+        try {
+            // Prompt user for URL
+            const urlInput = prompt("Enter a video URL to add to the playlist:");
+            
+            if (!urlInput || !urlInput.trim()) {
+                // User cancelled or empty input
+                return;
+            }
+            
+            const url = urlInput.trim();
+            
+            // Validate URL
+            const validation = validateUrl(url);
+            if (!validation.valid) {
+                alert(validation.tooltip || "Invalid URL. Please enter a supported video URL.");
+                return;
+            }
+            
+            // Check if URL already exists
+            if (urls.includes(url)) {
+                alert("This URL is already in the playlist.");
+                return;
+            }
+            
+            // Combine existing URLs with new URL
+            const newUrls = [...urls, url];
+            
+            // Update room via API
+            try {
+                if (!roomState.roomId) {
+                    throw new Error("Room ID is missing");
+                }
+                
+                // First, get the database UUID from room_id
+                let databaseId: string;
+                try {
+                    const roomInfo = await getRoomByRoomId(roomState.roomId).unwrap();
+                    // The response structure: { success: true, data: { id: "...", ... } }
+                    databaseId = roomInfo?.data?.id;
+                    if (!databaseId) {
+                        console.error('Room info response:', roomInfo);
+                        throw new Error("Could not find database ID for room");
+                    }
+                    console.log('[PlaylistTab] Got database ID:', databaseId);
+                } catch (fetchError: any) {
+                    console.error('Error fetching room info:', fetchError);
+                    const fetchErrorMessage = fetchError?.data?.message || fetchError?.message || "Failed to fetch room information";
+                    throw new Error(fetchErrorMessage);
+                }
+                
+                // Update room using database UUID
+                const result = await updateRoom({
+                    id: databaseId,
+                    body: {
+                        urls: newUrls,
+                        type: "sync",
+                        source: "url",
+                    },
+                }).unwrap();
+                
+                console.log('[PlaylistTab] Room updated successfully:', result);
+                
+                // Update Redux state
+                dispatch(updateRoomInfo({
+                    urls: newUrls,
+                }));
+                
+                // Emit socket event to notify other users
+                if (socket && roomState.roomId) {
+                    socket.emit(SocketEvent.ROOM_INFO_UPDATED, {
+                        roomId: roomState.roomId,
+                        room: {
+                            urls: newUrls,
+                            files: roomState.files || [],
+                            selectedFileIndex: roomState.selectedFileIndex || 0,
+                            source: "url",
+                            type: "sync",
+                        },
+                    });
+                }
+                
+                console.log(`[PlaylistTab] Added new URL, total: ${newUrls.length}`);
+            } catch (error: any) {
+                // RTK Query errors have a specific structure
+                const errorData = error?.data || error;
+                const errorMessage = errorData?.message || error?.message || error?.error || "Failed to add URL. Please try again.";
+                const errorStatus = error?.status || errorData?.statusCode;
+                
+                console.error('Error adding URL to room:', error);
+                console.error('Error details:', {
+                    message: errorMessage,
+                    status: errorStatus,
+                    statusText: error?.statusText,
+                    data: errorData,
+                    originalError: error,
+                    roomId: roomState.roomId,
+                });
+                
+                alert(errorMessage);
+            }
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                // User cancelled, do nothing
+                return;
+            }
+            console.error('Error adding URLs:', error);
+            alert("Failed to add URL. Please try again.");
+        } finally {
+            setIsAddingUrls(false);
+        }
+    }, [isHost, isSyncMode, roomState.roomId, roomState.files, roomState.selectedFileIndex, urls, updateRoom, dispatch, socket]);
+
     // Get playlist items
     const getPlaylistItems = () => {
         if (isFileStreaming) {
@@ -722,7 +847,7 @@ const PlaylistTab = () => {
             </div>
 
             {/* Action Button - Only show for host */}
-            {isHost && (isScreenSharing || isFileStreaming) && (
+            {isHost && (isScreenSharing || isFileStreaming || isSyncMode) && (
                 <div className="mt-4 pt-4 border-t border-white/5">
                     {isScreenSharing ? (
                         <button
@@ -757,6 +882,24 @@ const PlaylistTab = () => {
                                 <>
                                     <LuPlus size={16} />
                                     <span className="text-sm font-medium">Add More Files</span>
+                                </>
+                            )}
+                        </button>
+                    ) : isSyncMode ? (
+                        <button
+                            onClick={handleAddMoreUrls}
+                            disabled={isAddingUrls}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isAddingUrls ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin"></div>
+                                    <span className="text-sm font-medium">Adding...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <LuPlus size={16} />
+                                    <span className="text-sm font-medium">Add More URLs</span>
                                 </>
                             )}
                         </button>
