@@ -1,80 +1,46 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useFileContext } from "@/context/FileContext";
 import { useRouter } from "next/navigation";
 import {
-  DragOverlay,
-  UploadSection,
-  PlatformGrid,
   ContentDivider,
+  DragOverlay,
   useDragAndDrop,
+  ACCEPTED_FILE_TYPES,
 } from "@/components/Modals/DeviceModalComponents";
-import { ProfileHeader, Logo } from "@/components";
-import { FaArrowLeft } from "react-icons/fa";
-import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
+import { FileSelection } from "@/components";
+import { PageHeader } from "@/components/UI";
+import { ScreenShareBox } from "@/components/ScreenShare/ScreenShareBox";
 
-const StreamPage = () => {
+const StreamFilesPage = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { setFiles, isPersistenceSupported, requestFilePicker, showPermissionPrompt } = useFileContext();
-  const [isLoading, setIsLoading] = useState(false);
+  const { files, setFiles } = useFileContext();
 
-  const handleOnVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0 && fileInputRef.current) {
+  // Handle file drop - append to existing files
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = e.target.files;
+    if (newFiles && newFiles.length > 0 && fileInputRef.current) {
       // For traditional file input, files won't persist (no handles)
-      setFiles(Array.from(files));
-      router.push("/stream/files");
+      // Append new files to existing files instead of replacing
+      const filesArray = Array.from(newFiles);
+      setFiles([...files, ...filesArray]);
       fileInputRef.current.value = "";
     }
   };
 
-  const handleFileSelection = async () => {
-    if (isPersistenceSupported) {
-      // Use File System Access API for persistence
-      try {
-        setIsLoading(true);
-        const selectedFiles = await requestFilePicker();
-        
-        if (selectedFiles.length > 0) {
-          setFiles(selectedFiles);
-          router.push("/stream/files");
-        }
-      } catch (error: any) {
-        if (error.name === 'AbortError') {
-          // User cancelled, do nothing
-          return;
-        }
-        console.error('Error selecting files:', error);
-        // Fallback to traditional file input
-        showPermissionPrompt();
-        fileInputRef.current?.click();
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      // Fallback to traditional file input
-      fileInputRef.current?.click();
-    }
-  };
-
+  // Drag and drop functionality for the whole page
   const { isDragging, dragHandlers } = useDragAndDrop(
     fileInputRef,
-    handleOnVideoChange
+    handleFileChange
   );
-
-  const handleUploadClick = () => {
-    handleFileSelection();
-  };
-
-  const handlePlatformClick = (platformName: string) => {
-    // Convert platform name to lowercase for URL (e.g., "Netflix" -> "netflix", "Disney+" -> "disney-plus")
-    const platformSlug = platformName.toLowerCase().replace(/\s+/g, "-").replace(/\+/g, "-plus");
-    router.push(`/stream/${platformSlug}`);
-  };
 
   const handleBack = () => {
     router.push("/");
+  };
+
+  const handleScreenShareClick = (platformName: string) => {
+    router.push(`/stream/screen`);
   };
 
   return (
@@ -84,40 +50,31 @@ const StreamPage = () => {
     >
       <DragOverlay isVisible={isDragging} />
       
-      {/* Header with logo, back button, and profile */}
-      <div className="w-full flex items-center justify-between p-4 md:p-6 border-b border-white/10 relative z-40">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center">
-            <Logo size="sm" href="/" showText={true} />
-          </div>
-          <button
-            onClick={handleBack}
-            className="flex items-center text-gray-400 hover:text-white transition-colors"
-          >
-            <FaArrowLeft className="text-lg" />
-          </button>
-        </div>
-        <h2 className="text-xl font-bold text-white absolute left-1/2 -translate-x-1/2">Upload from Device</h2>
-        <div className="flex items-center">
-          <ProfileHeader />
-        </div>
-      </div>
+      {/* Hidden file input for drag and drop */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ACCEPTED_FILE_TYPES}
+        multiple
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      
+      <PageHeader title="Stream Options" onBack={handleBack} />
 
       {/* Content */}
-      <div className="flex h-full flex-1 items-center justify-center w-full overflow-y-auto overflow-x-hidden py-4 md:py-6">
-        <div className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-12 xl:gap-16 w-full max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-6 md:px-10">
-          {/* Left Side - Upload Section */}
-          <UploadSection
-            fileInputRef={fileInputRef}
-            onUploadClick={handleUploadClick}
-            onFileChange={handleOnVideoChange}
-          />
-
+      <div className="max-w-5xl lg:max-w-6xl 3xl:max-w-7xl flex h-full flex-1 items-center justify-center w-full overflow-y-auto overflow-x-hidden py-4 sm:py-6 px-4 sm:px-6 md:px-10">
+        <div className="flex flex-col lg:flex-row items-stretch gap-4 sm:gap-6 lg:gap-8 xl:gap-12 w-full mx-auto">
+          {/* Left Side - Screen Share Section */}
+          <div className="w-full lg:w-1/3 flex flex-col">
+            <ScreenShareBox handleScreenShareClick={handleScreenShareClick} />
+          </div>
+      
           <ContentDivider />
 
-          {/* Right Side - Platform Grid */}
-          <div className="w-full lg:w-2/3 flex flex-col">
-            <PlatformGrid onPlatformClick={handlePlatformClick} />
+          {/* Right Side - File Selection */}
+          <div className="w-full lg:w-2/3 flex flex-col min-w-0">
+            <FileSelection />
           </div>
         </div>
       </div>
@@ -125,4 +82,5 @@ const StreamPage = () => {
   );
 };
 
-export default StreamPage;
+export default StreamFilesPage;
+

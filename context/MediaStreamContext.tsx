@@ -3,22 +3,28 @@ import { createContext, useContext, useState, ReactNode, useEffect } from "react
 
 type MediaStreamType = {
     stream: MediaStream | null;
+    screenType: string | null;
     setStream: (stream: MediaStream | null) => void;
+    setScreenType: (screenType: string | null) => void;
 };
 
 const MediaStreamContext = createContext<MediaStreamType>({
     stream: null,
+    screenType: null,
     setStream: () => { },
+    setScreenType: () => { },
 });
 
 export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
     const [stream, setStream] = useState<MediaStream | null>(null);
+    const [screenType, setScreenType] = useState<string | null>(null);
     useEffect(() => {
         if (!stream) return;
 
         const handleTrackEnded = () => {
             console.log("[SourceTab] Screen sharing stopped by user - track ended");
             setStream(null);
+            setScreenType(null);
         };
 
         // Listen to all tracks (video + audio)
@@ -36,9 +42,9 @@ export const MediaStreamProvider = ({ children }: { children: ReactNode }) => {
                 track.removeEventListener('ended', handleTrackEnded);
             });
         };
-    }, [stream, setStream]);
+    }, [stream, setStream, setScreenType]);
     return (
-        <MediaStreamContext.Provider value={{ stream, setStream }}>
+        <MediaStreamContext.Provider value={{ stream, screenType, setStream, setScreenType }}>
             {children}
         </MediaStreamContext.Provider>
     );

@@ -109,8 +109,9 @@ export const UrlCard: React.FC<UrlCardProps> = ({
   onRemove,
   getUrlDisplayName,
 }) => {
-  const hasMetadata =
-    url.metadata && (url.metadata.title || url.metadata.thumbnail);
+  const hasMetadata = !!(
+    url.metadata && (url.metadata.title || url.metadata.thumbnail)
+  );
 
   return (
     <div className="group flex gap-3 bg-white/5 hover:bg-white/10 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0">

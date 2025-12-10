@@ -352,7 +352,7 @@ const PlaylistTab = () => {
     const authState = useSelector((state: RootState) => state.auth);
     const { files, getThumbnail, requestFilePicker, setFiles, isPersistenceSupported, showPermissionPrompt } = useFileContext();
     const { selectVideo, isHost } = useVideoSelection();
-    const { stream: screenStream, setStream: setScreenStream } = useMediaStreamContext();
+    const { stream: screenStream, screenType, setStream: setScreenStream, setScreenType } = useMediaStreamContext();
     const [isSharingScreen, setIsSharingScreen] = useState(false);
     const [isAddingFiles, setIsAddingFiles] = useState(false);
 
@@ -365,11 +365,11 @@ const PlaylistTab = () => {
 
     // Find the platform being streamed
     const getStreamingPlatform = () => {
-        if (!isScreenSharing || urls.length === 0) return null;
+        if (!isScreenSharing) return null;
         
         // The first URL should be the platform URL
-        const platformUrl = urls[0];
-        return STREAMING_PLATFORMS.find(p => p.url === platformUrl);
+        // const name = screenType || "Screen Sharing";
+        return STREAMING_PLATFORMS.find(p => p.url === screenType);
     };
 
     const streamingPlatform = getStreamingPlatform();
@@ -512,7 +512,7 @@ const PlaylistTab = () => {
             }
 
             // Use the cross-browser helper function to capture tab stream
-            const mediaStream = await helper.captureTabStream({
+            const {mediaStream, screenType } = await helper.captureTabStream({
                 audioOnly: false,
                 preferredDisplaySurface: 'tab'
             });
@@ -524,6 +524,7 @@ const PlaylistTab = () => {
 
             // Store in MediaStreamContext - this will replace the old stream
             setScreenStream(mediaStream);
+            setScreenType(screenType);
             console.log("[PlaylistTab] Screen sharing replaced with new stream");
         } catch (err: any) {
             // Only show alert for unexpected errors, not user cancellations
@@ -541,7 +542,7 @@ const PlaylistTab = () => {
         } finally {
             setIsSharingScreen(false);
         }
-    }, [isHost, isScreenSharing, screenStream, setScreenStream]);
+    }, [isHost, isScreenSharing, screenStream, setScreenStream, setScreenType]);
 
     // Handle add more files (for file source)
     const handleAddMoreFiles = useCallback(async () => {
@@ -653,6 +654,7 @@ const PlaylistTab = () => {
                             ? "(Screen sharing)"
                             : `(${playlistItems.length} ${playlistItems.length === 1 ? 'video' : 'videos'})`
                         }
+                        {isScreenSharing && playlistItems.length >= 1 && `(Screen sharing) & (${playlistItems.length} ${playlistItems.length === 1 ? 'video' : 'videos'})`}
                     </span>
                 </div>
                 {!isHost && (
