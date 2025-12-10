@@ -87,6 +87,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
               <Image 
                 src="/assets/logo.svg" 
                 alt="Movmash Logo" 
+                priority
                 width={64} 
                 height={64}
                 className="drop-shadow-lg"

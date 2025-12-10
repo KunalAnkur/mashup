@@ -84,6 +84,7 @@ const SourceSelection = () => {
             <Image
               src="/assets/logo.svg"
               alt="Movmash Logo"
+              priority
               width={36}
               height={36}
               className="sm:w-10 sm:h-10 md:w-12 md:h-12"

@@ -15,6 +15,7 @@ const NotFound = () => {
           <Image
             src="/assets/logo.svg"
             alt="Movmash Logo"
+            priority
             width={48}
             height={48}
             className="w-12 h-12"
