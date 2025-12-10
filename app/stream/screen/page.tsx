@@ -24,7 +24,7 @@ const ScreenSharePage = () => {
   const dispatch = useDispatch();
   const authState = useSelector((state: RootState) => state.auth);
   const [createRoom] = useCreateRoomMutation();
-  const { setStream: setMediaStream } = useMediaStreamContext();
+  const { setStream: setMediaStream, setScreenType } = useMediaStreamContext();
 
   // State management
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -41,6 +41,7 @@ const ScreenSharePage = () => {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
       setMediaStream(null);
+      setScreenType(null);
       setIsStreamReady(false);
       setIsTabSelected(false);
     }
@@ -95,6 +96,7 @@ const ScreenSharePage = () => {
         const handleTrackEnded = () => {
           setStream(null);
           setMediaStream(null);
+          setScreenType(null);
           setIsStreamReady(false);
           setIsTabSelected(false);
           setShowWarning(false);
@@ -154,6 +156,7 @@ const ScreenSharePage = () => {
       const handleTrackEnded = () => {
         setStream(null);
         setMediaStream(null);
+        setScreenType(null);
         setIsStreamReady(false);
         setIsTabSelected(false);
         setShowWarning(false);
@@ -192,10 +195,11 @@ const ScreenSharePage = () => {
         stream.getTracks().forEach(track => track.stop());
         setStream(null);
         setMediaStream(null);
+        setScreenType(null);
       }
 
       // Use the cross-browser helper function to capture tab stream
-      const mediaStream = await helper.captureTabStream({
+      const { mediaStream, screenType } = await helper.captureTabStream({
         audioOnly: currentAudioOnly,
         preferredDisplaySurface: 'tab'
       });
@@ -205,9 +209,10 @@ const ScreenSharePage = () => {
         return;
       }
 
-      setStream(mediaStream);
+      setStream(mediaStream); 
       // Store in MediaStreamContext for use in room (MediaStream cannot be in Redux)
       setMediaStream(mediaStream);
+      setScreenType(screenType);
     } catch (err: any) {
       // Only show alert for unexpected errors, not user cancellations
       if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
@@ -514,7 +519,7 @@ const ScreenSharePage = () => {
                               // Disable audio-only: need to re-capture with video
                               // Keep the current stream active while re-capturing
                               try {
-                                const newStream = await helper.captureTabStream({
+                                const {mediaStream: newStream, screenType: newScreenType} = await helper.captureTabStream({
                                   audioOnly: false,
                                   preferredDisplaySurface: 'tab'
                                 });
@@ -528,6 +533,7 @@ const ScreenSharePage = () => {
                                   // Set new stream
                                   setStream(newStream);
                                   setMediaStream(newStream);
+                                  setScreenType(newScreenType);
                                   setAudioOnly(false);
                                   // State will be validated by useEffect
                                 } else {

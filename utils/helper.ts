@@ -98,7 +98,7 @@ export function detectBrowser(): { name: string; version: number; isChrome: bool
 export async function captureTabStream(options: {
     audioOnly?: boolean;
     preferredDisplaySurface?: 'tab' | 'window' | 'screen';
-} = {}): Promise<MediaStream | null> {
+} = {}): Promise<{ mediaStream: MediaStream | null, screenType: string | null }> {
     const { audioOnly = false, preferredDisplaySurface = 'tab' } = options;
     const browser = detectBrowser();
 
@@ -106,7 +106,7 @@ export async function captureTabStream(options: {
         // Check if getDisplayMedia is supported
         if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
             console.error('captureTabStream: getDisplayMedia is not supported in this browser');
-            return null;
+            return { mediaStream: null, screenType: null };
         }
 
         // Build constraints based on browser capabilities
@@ -155,7 +155,9 @@ export async function captureTabStream(options: {
         
         // Request the stream
         const mediaStream = await navigator.mediaDevices.getDisplayMedia(constraints);
-
+        const videoTrack = mediaStream.getVideoTracks()[0];
+        const screenType = videoTrack?.getSettings()?.displaySurface as string | null;
+        console.log("captureTabStream: Screen type:", screenType);
         // Post-processing based on browser and options
         if (audioOnly) {
             // Remove video tracks if audio-only mode
@@ -230,12 +232,12 @@ export async function captureTabStream(options: {
             }
         }
 
-        return mediaStream;
+        return { mediaStream, screenType };
     } catch (error: any) {
         // Handle user cancellation gracefully
         if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
             console.log('captureTabStream: User cancelled or permission denied');
-            return null;
+            return { mediaStream: null, screenType: null };
         }
 
         // Log other errors
@@ -246,7 +248,7 @@ export async function captureTabStream(options: {
             console.error('captureTabStream: Firefox may require HTTPS or specific permissions');
         }
         
-        return null;
+        return { mediaStream: null, screenType: null };
     }
 }
 
@@ -357,12 +359,12 @@ export function captureStreamFromVideo(videoElement: HTMLVideoElement): MediaStr
 
 export function getInitialPlayerState(url: string | string[] | SourceProps[] | MediaStream, roomType: RoomType = "stream", host: boolean, screenSharing: boolean = false, hostLeft: boolean = false, paused: boolean = false) {
     if (roomType === "sync") {
-        if ((url as string).includes('twitch.tv')) {
-            return {
-                playing: false,
-                muted: false,
-            };
-        }
+        // if ((url as string).includes('twitch.tv')) {
+        //     return {
+        //         playing: false,
+        //         muted: false,
+        //     };
+        // }
         return {
             playing: false,
             muted: false,

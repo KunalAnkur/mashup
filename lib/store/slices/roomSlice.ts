@@ -95,12 +95,14 @@ const authSlice = createSlice({
         type: "stream" | "sync";
         source: "file" | "url" | "stream";
         urls?: string[];
+        files?: string[];
       }>
     ) => {
       state.refer = action.payload.refer;
       state.type = action.payload.type;
       state.source = action.payload.source;
       state.urls = action.payload.urls || [];
+      state.files = action.payload.files || [];
     },
     
     /** Cache metadata for a single URL */

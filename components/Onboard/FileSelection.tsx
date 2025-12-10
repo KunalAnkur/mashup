@@ -20,6 +20,7 @@ import { setRefers, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { ACCEPTED_FILE_TYPES } from "@/types/ModalTypes/acceptedFileTypes";
+import { showError } from "@/utils/toast";
 
 const FileSelection = () => {
   const dispatch = useDispatch();
@@ -29,9 +30,10 @@ const FileSelection = () => {
   );
   const authState = useSelector((state: RootState) => state.auth);
 
-  const { files, removeFile, getThumbnail, thumbnails, setFiles } = useFileContext();
+  const { files, removeFile, getThumbnail, thumbnails, setFiles, isPersistenceSupported, requestFilePicker, showPermissionPrompt } = useFileContext();
   const selectedFile = files[selectedFileIndex] ?? null;
   const [isStarting, setIsStarting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -48,7 +50,7 @@ const FileSelection = () => {
   }, [thumbnails]);
 
   const handleBack = () => {
-    router.push("/stream");
+    router.back();
   };
   
   const handleOnURLSelection = () => router.push("/sync");
@@ -105,7 +107,7 @@ const FileSelection = () => {
           refer: true,
           type: "stream",
           source: "file",
-          urls: urlList,
+          files: urlList,
         })
       );
       
@@ -119,13 +121,40 @@ const FileSelection = () => {
     }
   };
 
-  const handleAddFileClick = () => {
-    fileInputRef.current?.click();
+  const handleAddFileClick = async () => {
+    if (isPersistenceSupported) {
+      // Use File System Access API for persistence
+      try {
+        setIsLoading(true);
+        const selectedFiles = await requestFilePicker(true); // Append mode
+        
+        if (selectedFiles.length > 0) {
+          // Append new files to existing files
+          setFiles([...files, ...selectedFiles]);
+        }
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          // User cancelled, do nothing
+          return;
+        }
+        console.error('Error selecting files:', error);
+        showError("Failed to select files", "Please check your browser permissions and try again.");
+        // Fallback to traditional file input
+        showPermissionPrompt();
+        fileInputRef.current?.click();
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Fallback to traditional file input
+      fileInputRef.current?.click();
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = e.target.files;
     if (newFiles && newFiles.length > 0 && fileInputRef.current) {
+      // For traditional file input, files won't persist (no handles)
       // Append new files to existing files instead of replacing
       const filesArray = Array.from(newFiles);
       setFiles([...files, ...filesArray]);
@@ -143,12 +172,17 @@ const FileSelection = () => {
         </div>
         <button
           onClick={handleAddFileClick}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 hover:border-pink-500/50 border border-white/10 transition-all duration-300 cursor-pointer group"
+          disabled={isLoading}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 hover:border-pink-500/50 border border-white/10 transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
           title="Add more files"
         >
-          <FaUpload className="text-gray-400 group-hover:text-white transition-colors duration-300 text-sm" />
+          {isLoading ? (
+            <ImSpinner2 className="text-gray-400 group-hover:text-white transition-colors duration-300 text-sm animate-spin" />
+          ) : (
+            <FaUpload className="text-gray-400 group-hover:text-white transition-colors duration-300 text-sm" />
+          )}
           <span className="text-sm font-medium text-gray-400 group-hover:text-white transition-colors duration-300">
-            Add Files
+            {isLoading ? "Loading..." : "Add Files"}
           </span>
         </button>
       </div>
@@ -256,28 +290,37 @@ const FileSelection = () => {
             // Upload area when no files
             <button
               onClick={handleAddFileClick}
-              className="flex flex-col items-center justify-center p-6 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border-2 border-dashed border-white/20 hover:border-fuchsia-500/50 w-full h-[160px] transition-all duration-300 cursor-pointer group"
+              disabled={isLoading}
+              className="flex flex-col items-center justify-center p-6 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border-2 border-dashed border-white/20 hover:border-fuchsia-500/50 w-full h-[160px] transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex p-4 items-center justify-center w-16 h-16 rounded-full bg-white/5 group-hover:bg-fuchsia-500/20 transition-all duration-300 mb-3">
-                <FaUpload className="text-gray-400 group-hover:text-fuchsia-400 transition-colors duration-300 text-2xl" />
+                {isLoading ? (
+                  <ImSpinner2 className="text-gray-400 group-hover:text-fuchsia-400 transition-colors duration-300 text-2xl animate-spin" />
+                ) : (
+                  <FaUpload className="text-gray-400 group-hover:text-fuchsia-400 transition-colors duration-300 text-2xl" />
+                )}
               </div>
               <span className="text-base font-semibold text-gray-300 group-hover:text-white transition-colors duration-300 mb-1">
-                Click to Upload Files
+                {isLoading ? "Loading..." : "Click to Upload Files"}
               </span>
               <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors duration-300">
-                or drag and drop files here
+                {isLoading ? "Please wait..." : "or drag and drop files here"}
               </span>
             </button>
           ) : files.length < 2 ? (
             // Placeholder when 1 file exists
             <div
               onClick={handleAddFileClick}
-              className="flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-dashed border-white/10 hover:border-fuchsia-500/30 w-full h-[70px] transition-all duration-200 cursor-pointer group"
+              className={`flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-dashed border-white/10 hover:border-fuchsia-500/30 w-full h-[70px] transition-all duration-200 cursor-pointer group ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <div className="flex items-center gap-2">
-                <FaPlus className="text-gray-500 group-hover:text-fuchsia-400 transition-colors duration-200 text-sm" />
+                {isLoading ? (
+                  <ImSpinner2 className="text-gray-500 group-hover:text-fuchsia-400 transition-colors duration-200 text-sm animate-spin" />
+                ) : (
+                  <FaPlus className="text-gray-500 group-hover:text-fuchsia-400 transition-colors duration-200 text-sm" />
+                )}
                 <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors duration-200">
-                  Click to add more files
+                  {isLoading ? "Loading..." : "Click to add more files"}
                 </span>
               </div>
             </div>
@@ -285,8 +328,7 @@ const FileSelection = () => {
         </div>
 
         {/* Info Section */}
-        <div className="flex justify-between items-center p-3 bg-white/[0.03]  rounded-xl
-p-3 bg-white/[0.03]  rounded-xl">
+        <div className="flex justify-between items-center p-3 bg-white/[0.03]  rounded-xl">
           {/* tip 1 */}
         <div className="flex items-start gap-2 ">
           <div className="shrink-0 mt-0.5">
@@ -348,10 +390,10 @@ p-3 bg-white/[0.03]  rounded-xl">
           <Button
             onClick={handleOnURLSelection}
             className="w-full rounded-xl flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10  hover:border-white/20 text-white text-sm px-4 py-3 transition-all duration-200"
-            name="Use URL"
+            name="Use Sync"
           >
             <FaLink className="text-xs" />
-            Use URL
+            Use Sync
           </Button>
         </div>
 

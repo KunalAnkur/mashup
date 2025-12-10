@@ -20,7 +20,7 @@ const PlatformStreamPage = () => {
   const dispatch = useDispatch();
   const authState = useSelector((state: RootState) => state.auth);
   const [createRoom] = useCreateRoomMutation();
-  const { setStream: setMediaStream } = useMediaStreamContext();
+  const { setStream: setMediaStream, setScreenType } = useMediaStreamContext();
 
   // State management
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -43,6 +43,7 @@ const PlatformStreamPage = () => {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
       setMediaStream(null);
+      setScreenType(null);
       setIsStreamReady(false);
       setIsTabSelected(false);
     }
@@ -104,6 +105,7 @@ const PlatformStreamPage = () => {
         const handleTrackEnded = () => {
           setStream(null);
           setMediaStream(null);
+          setScreenType(null);
           setIsStreamReady(false);
           setIsTabSelected(false);
           setShowWarning(false);
@@ -163,6 +165,7 @@ const PlatformStreamPage = () => {
       const handleTrackEnded = () => {
         setStream(null);
         setMediaStream(null);
+        setScreenType(null);
         setIsStreamReady(false);
         setIsTabSelected(false);
         setShowWarning(false);
@@ -206,10 +209,11 @@ const PlatformStreamPage = () => {
         stream.getTracks().forEach(track => track.stop());
         setStream(null);
         setMediaStream(null);
+        setScreenType(null);
       }
 
       // Use the cross-browser helper function to capture tab stream
-      const mediaStream = await helper.captureTabStream({
+      const { mediaStream, screenType } = await helper.captureTabStream({
         audioOnly: currentAudioOnly,
         preferredDisplaySurface: 'tab'
       });
@@ -222,6 +226,7 @@ const PlatformStreamPage = () => {
       setStream(mediaStream);
       // Store in MediaStreamContext for use in room (MediaStream cannot be in Redux)
       setMediaStream(mediaStream);
+      setScreenType(screenType);
     } catch (err: any) {
       // Only show alert for unexpected errors, not user cancellations
       if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
@@ -237,7 +242,7 @@ const PlatformStreamPage = () => {
         showError("Screen sharing failed", "Please check your browser permissions and try again.");
       }
     }
-  }, [audioOnly, setMediaStream, stream]);
+  }, [audioOnly, setMediaStream, setScreenType, stream]);
 
   const handleStartStreaming = async () => {
     if (!isStreamReady || !stream) return;
@@ -255,7 +260,6 @@ const PlatformStreamPage = () => {
       const response = await createRoom({
         type: "stream",
         source: "stream",
-        urls: [platform?.url || ""], // Store platform URL for reference
       }).unwrap();
 
       if (response.success && response.data?.room_id) {
@@ -265,7 +269,6 @@ const PlatformStreamPage = () => {
             refer: true,
             type: "stream",
             source: "stream",
-            urls: [platform?.url || ""],
           })
         );
 
