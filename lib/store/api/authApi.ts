@@ -146,6 +146,13 @@ export const authApi = createApi({
         },
       }),
     }),
+    continueAsGuest: builder.mutation<UserLoginResp, void>({
+      query: () => ({
+        url: "/continue-as-guest",
+        method: "POST",
+        body: {},
+      }),
+    }),
     
     logout: builder.mutation<any, void>({
       query: () => ({
@@ -164,5 +171,6 @@ export const {
   useProviderLoginMutation,
   useProviderSignupMutation,
   useAuthProviderMutation,
+  useContinueAsGuestMutation,
   useLogoutMutation
 } = authApi;
