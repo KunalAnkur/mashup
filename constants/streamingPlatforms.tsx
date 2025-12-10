@@ -1,4 +1,5 @@
 import React from "react";
+import { FaGlobe, FaWindowMaximize, FaDesktop } from "react-icons/fa";
 
 export const STREAMING_PLATFORMS = [
   {
@@ -33,6 +34,36 @@ export const STREAMING_PLATFORMS = [
           Disney+
         </text>
       </svg>
+    ),
+  },
+  {
+    name: "Browser Sharing",
+    url: "browser",
+    bgStyle: {
+      background: "linear-gradient(to bottom right, #10b981, #059669)",
+    },
+    logo: (
+      <FaGlobe className="w-16 h-16 sm:w-20 sm:h-20" />
+    ),
+  },
+  {
+    name: "Window Sharing",
+    url: "window",
+    bgStyle: {
+      background: "linear-gradient(to bottom right, #8b5cf6, #7c3aed)",
+    },
+    logo: (
+      <FaWindowMaximize className="w-16 h-16 sm:w-20 sm:h-20" />
+    ),
+  },
+  {
+    name: "Monitor Sharing",
+    url: "monitor",
+    bgStyle: {
+      background: "linear-gradient(to bottom right, #f59e0b, #d97706)",
+    },
+    logo: (
+      <FaDesktop className="w-16 h-16 sm:w-20 sm:h-20" />
     ),
   },
   {

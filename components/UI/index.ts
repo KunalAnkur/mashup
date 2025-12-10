@@ -7,6 +7,7 @@ import Logo from "./Logo";
 import Input from "./Input";
 import Notification from "./Notification";
 import AuthHeader from "./AuthHeader";
+import PageHeader from "./PageHeader";
 export {
   Avatar,
   AvatarDropdown,
@@ -17,4 +18,5 @@ export {
   Input,
   Notification,
   AuthHeader,
+  PageHeader,
 };

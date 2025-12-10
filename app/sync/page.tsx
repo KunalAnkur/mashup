@@ -11,8 +11,7 @@ import {
   getPlatformById,
   getUrlDisplayName,
 } from "@/components/Modals/UrlModalComponents";
-import { ProfileHeader, Logo } from "@/components";
-import { FaArrowLeft } from "react-icons/fa";
+import { PageHeader } from "@/components/UI";
 
 const SyncPage = () => {
   const dispatch = useDispatch();
@@ -72,24 +71,7 @@ const SyncPage = () => {
 
   return (
     <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
-      {/* Header with logo, back button, and profile */}
-      <div className="w-full flex items-center justify-between p-4 md:p-6 border-b border-white/10 relative z-40">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center">
-            <Logo size="sm" href="/" showText={true} />
-          </div>
-          <button
-            onClick={handleBack}
-            className="flex items-center text-gray-400 hover:text-white transition-colors"
-          >
-            <FaArrowLeft className="text-lg" />
-          </button>
-        </div>
-        <h2 className="text-xl font-bold text-white absolute left-1/2 -translate-x-1/2">Enter Source URL</h2>
-        <div className="flex items-center">
-          <ProfileHeader />
-        </div>
-      </div>
+      <PageHeader title="Enter Source URL" onBack={handleBack} />
 
       {/* Content */}
       <div className="flex h-full flex-1 items-center justify-center w-full overflow-y-auto overflow-x-hidden py-6 md:py-10">
