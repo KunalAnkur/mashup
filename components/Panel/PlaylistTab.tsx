@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { setUrlMetadata, updateRoomInfo, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
@@ -359,6 +359,9 @@ const PlaylistTab = () => {
     const [isSharingScreen, setIsSharingScreen] = useState(false);
     const [isAddingFiles, setIsAddingFiles] = useState(false);
     const [isAddingUrls, setIsAddingUrls] = useState(false);
+    const [showAddUrlModal, setShowAddUrlModal] = useState(false);
+    const [urlInput, setUrlInput] = useState("");
+    const [urlError, setUrlError] = useState("");
     const { socket } = useSocket();
     const [updateRoom] = useUpdateRoomMutation();
     const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
@@ -616,40 +619,54 @@ const PlaylistTab = () => {
         }
     }, [isHost, isFileStreaming, isPersistenceSupported, files, requestFilePicker, setFiles, showPermissionPrompt]);
 
+    // Handle opening add URL modal
+    const handleOpenAddUrlModal = useCallback(() => {
+        if (!isHost || !isSyncMode || !roomState.roomId) return;
+        setShowAddUrlModal(true);
+        setUrlInput("");
+        setUrlError("");
+    }, [isHost, isSyncMode, roomState.roomId]);
+
+    // Handle closing add URL modal
+    const handleCloseAddUrlModal = useCallback(() => {
+        setShowAddUrlModal(false);
+        setUrlInput("");
+        setUrlError("");
+    }, []);
+
+    // Handle URL input change
+    const handleUrlInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setUrlInput(value);
+        setUrlError(""); // Clear error on input change
+    }, []);
+
     // Handle add more URLs (for sync mode)
     const handleAddMoreUrls = useCallback(async () => {
         if (!isHost || !isSyncMode || !roomState.roomId) return;
         
+        const url = urlInput.trim();
+        
+        // Validate URL
+        if (!url) {
+            setUrlError("Please enter a URL");
+            return;
+        }
+        
+        const validation = validateUrl(url);
+        if (!validation.valid) {
+            setUrlError(validation.tooltip || "Invalid URL. Please enter a supported video URL.");
+            return;
+        }
+        
         setIsAddingUrls(true);
+        setUrlError("");
+        
+        // Combine existing URLs with new URL
+        const newUrls = [...urls, url];
+        
+        // Update room via API
         try {
-            // Prompt user for URL
-            const urlInput = prompt("Enter a video URL to add to the playlist:");
-            
-            if (!urlInput || !urlInput.trim()) {
-                // User cancelled or empty input
-                return;
-            }
-            
-            const url = urlInput.trim();
-            
-            // Validate URL
-            const validation = validateUrl(url);
-            if (!validation.valid) {
-                alert(validation.tooltip || "Invalid URL. Please enter a supported video URL.");
-                return;
-            }
-            
-            // Check if URL already exists
-            if (urls.includes(url)) {
-                alert("This URL is already in the playlist.");
-                return;
-            }
-            
-            // Combine existing URLs with new URL
-            const newUrls = [...urls, url];
-            
-            // Update room via API
-            try {
                 if (!roomState.roomId) {
                     throw new Error("Room ID is missing");
                 }
@@ -703,35 +720,39 @@ const PlaylistTab = () => {
                 }
                 
                 console.log(`[PlaylistTab] Added new URL, total: ${newUrls.length}`);
-            } catch (error: any) {
-                // RTK Query errors have a specific structure
-                const errorData = error?.data || error;
-                const errorMessage = errorData?.message || error?.message || error?.error || "Failed to add URL. Please try again.";
-                const errorStatus = error?.status || errorData?.statusCode;
                 
-                console.error('Error adding URL to room:', error);
-                console.error('Error details:', {
-                    message: errorMessage,
-                    status: errorStatus,
-                    statusText: error?.statusText,
-                    data: errorData,
-                    originalError: error,
-                    roomId: roomState.roomId,
-                });
-                
-                alert(errorMessage);
-            }
+            // Close modal and reset on success
+            handleCloseAddUrlModal();
         } catch (error: any) {
-            if (error.name === 'AbortError') {
-                // User cancelled, do nothing
-                return;
-            }
-            console.error('Error adding URLs:', error);
-            alert("Failed to add URL. Please try again.");
+            // RTK Query errors have a specific structure
+            const errorData = error?.data || error;
+            const errorMessage = errorData?.message || error?.message || error?.error || "Failed to add URL. Please try again.";
+            const errorStatus = error?.status || errorData?.statusCode;
+            
+            console.error('Error adding URL to room:', error);
+            console.error('Error details:', {
+                message: errorMessage,
+                status: errorStatus,
+                statusText: error?.statusText,
+                data: errorData,
+                originalError: error,
+                roomId: roomState.roomId,
+            });
+            
+            setUrlError(errorMessage);
         } finally {
             setIsAddingUrls(false);
         }
-    }, [isHost, isSyncMode, roomState.roomId, roomState.files, roomState.selectedFileIndex, urls, updateRoom, dispatch, socket]);
+    }, [isHost, isSyncMode, roomState.roomId, roomState.files, roomState.selectedFileIndex, urls, updateRoom, dispatch, socket, urlInput, handleCloseAddUrlModal, getRoomByRoomId]);
+
+    // Handle URL input keydown
+    const handleUrlInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && !urlError && urlInput.trim()) {
+            handleAddMoreUrls();
+        } else if (e.key === "Escape") {
+            handleCloseAddUrlModal();
+        }
+    }, [urlInput, urlError, handleAddMoreUrls, handleCloseAddUrlModal]);
 
     // Get playlist items
     const getPlaylistItems = () => {
@@ -767,6 +788,7 @@ const PlaylistTab = () => {
     }
 
     return (
+        <>
         <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex items-center justify-between mb-4 px-1">
@@ -887,7 +909,7 @@ const PlaylistTab = () => {
                         </button>
                     ) : isSyncMode ? (
                         <button
-                            onClick={handleAddMoreUrls}
+                            onClick={handleOpenAddUrlModal}
                             disabled={isAddingUrls}
                             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -917,6 +939,87 @@ const PlaylistTab = () => {
                 </div>
             )}
         </div>
+
+        {/* Add URL Modal */}
+        {showAddUrlModal && (
+            <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                onClick={handleCloseAddUrlModal}
+            >
+                <div
+                    className="relative w-full max-w-md mx-4 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-6 shadow-xl border border-white/10"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-2 rounded-lg">
+                                <LuPlus className="text-white text-lg" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white">Add Video URL</h3>
+                        </div>
+                        <button
+                            onClick={handleCloseAddUrlModal}
+                            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+                            aria-label="Close"
+                        >
+                            <LuX size={20} />
+                        </button>
+                    </div>
+
+                    {/* Input Section */}
+                    <div className="space-y-4">
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Paste your video URL here"
+                                value={urlInput}
+                                onChange={handleUrlInputChange}
+                                onKeyDown={handleUrlInputKeyDown}
+                                className="w-full rounded-xl bg-white/5 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
+                                disabled={isAddingUrls}
+                                autoFocus
+                            />
+                            {urlError && (
+                                <p className="mt-2 text-sm text-red-400 flex items-center gap-1.5">
+                                    <span>⚠️</span>
+                                    <span>{urlError}</span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={handleCloseAddUrlModal}
+                                disabled={isAddingUrls}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-medium text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleAddMoreUrls}
+                                disabled={isAddingUrls || !urlInput.trim() || !!urlError}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {isAddingUrls ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        <span>Adding...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <LuPlus size={16} />
+                                        <span>Add URL</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 };
 
