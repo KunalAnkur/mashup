@@ -16,6 +16,7 @@ import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 import { useUpdateRoomMutation, useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
+import { useRoomContext } from "@/context/RoomContext";
 
 // Playlist URL Card - Modified version for playing state with loading support
 const PlaylistUrlCard = ({
@@ -355,6 +356,7 @@ const PlaylistTab = () => {
     const authState = useSelector((state: RootState) => state.auth);
     const { files, getThumbnail, requestFilePicker, setFiles, isPersistenceSupported, showPermissionPrompt } = useFileContext();
     const { selectVideo, isHost } = useVideoSelection();
+    const { updatePlaylist } = useRoomContext();
     const { stream: screenStream, screenType, setStream: setScreenStream, setScreenType } = useMediaStreamContext();
     const [isSharingScreen, setIsSharingScreen] = useState(false);
     const [isAddingFiles, setIsAddingFiles] = useState(false);
@@ -706,19 +708,19 @@ const PlaylistTab = () => {
                 }));
                 
                 // Emit socket event to notify other users
-                if (socket && roomState.roomId) {
-                    socket.emit(SocketEvent.ROOM_INFO_UPDATED, {
-                        roomId: roomState.roomId,
-                        room: {
-                            urls: newUrls,
-                            files: roomState.files || [],
-                            selectedFileIndex: roomState.selectedFileIndex || 0,
-                            source: "url",
-                            type: "sync",
-                        },
-                    });
-                }
-                
+                // if (socket && roomState.roomId) {
+                //     socket.emit(SocketEvent.ROOM_INFO_UPDATED, {
+                //         roomId: roomState.roomId,
+                //         room: {
+                //             urls: newUrls,
+                //             files: roomState.files || [],
+                //             selectedFileIndex: roomState.selectedFileIndex || 0,
+                //             source: "url",
+                //             type: "sync",
+                //         },
+                //     });
+                // }
+            await updatePlaylist(newUrls);
                 console.log(`[PlaylistTab] Added new URL, total: ${newUrls.length}`);
                 
             // Close modal and reset on success
@@ -743,7 +745,7 @@ const PlaylistTab = () => {
         } finally {
             setIsAddingUrls(false);
         }
-    }, [isHost, isSyncMode, roomState.roomId, roomState.files, roomState.selectedFileIndex, urls, updateRoom, dispatch, socket, urlInput, handleCloseAddUrlModal, getRoomByRoomId]);
+    }, [isHost, isSyncMode, roomState.roomId, roomState.files, roomState.selectedFileIndex, urls, updateRoom, dispatch, socket, urlInput, handleCloseAddUrlModal, getRoomByRoomId, updatePlaylist]);
 
     // Handle URL input keydown
     const handleUrlInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {

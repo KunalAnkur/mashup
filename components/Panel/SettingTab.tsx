@@ -10,20 +10,16 @@ import {
 import { useUpdateProfileMutation } from "@/lib/store/api/userApi";
 import { exitRoom } from "@/lib/store/slices/roomSlice";
 import { updateProfile as updateProfileAction } from "@/lib/store/slices/authSlice";
-import { FaPlay, FaPause, FaCrown } from "react-icons/fa";
 import { LuCheck, LuLink, LuLogOut, LuPencil, LuUser, LuMail } from "react-icons/lu";
 import { showError, showSuccess } from "@/utils/toast";
-import { useSocket } from "@/context/SocketContext";
 import { useRoomContext } from "@/context/RoomContext";
-import { SocketEvent } from "@/types/socketEvents";
 import { validateUsername } from "@/utils/validation";
 
 const SettingTab = () => {
   const host = useSelector((state: RootState) => state.room.host);
   const roomId = useSelector((state: RootState) => state.room.roomId);
   const dispatch = useDispatch();
-  const { socket } = useSocket();
-  const { roomId: roomIdFromContext } = useRoomContext();
+  const { updateUserName } = useRoomContext();
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const [updateRoom] = useUpdateRoomMutation();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
@@ -98,6 +94,71 @@ const SettingTab = () => {
       dispatch(exitRoom());
       setShowLeaveConfirm(false);
       window.location.href = "/";
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!authState.user?.id) {
+      showError("Error", "User not found. Please log in again.");
+      return;
+    }
+
+    if (!name.trim() || !username.trim()) {
+      showError("Validation error", "Please fill in name and username.");
+      return;
+    }
+
+    // Validate username format
+    const usernameValidation = validateUsername(username);
+    if (!usernameValidation.valid) {
+      setUsernameError(usernameValidation.error || "");
+      showError("Invalid username", usernameValidation.error || "Please enter a valid username.");
+      return;
+    }
+
+    // Clear any previous errors
+    setUsernameError("");
+
+    try {
+      const result = await updateProfile({
+        id: authState.user.id,
+        name: name.trim(),
+        username: username.trim(),
+      }).unwrap();
+
+      // Update Redux state with new user data
+      if (result.data) {
+        dispatch(updateProfileAction({
+          name: result.data.name,
+          username: result.data.username,
+        }));
+      }
+
+      // Emit username update to socket so all users in the room see the updated username
+      // if (socket && (roomId || roomIdFromContext)) {
+      //   const currentRoomId = roomId || roomIdFromContext;
+      //   socket.emit(SocketEvent.USERNAME_UPDATED, {
+      //     username: result.data?.username || username.trim(),
+      //     name: result.data?.name || name.trim(),
+      //     profile: result.data?.picture || authState.user?.profile,
+      //   });
+      // }
+
+      await updateUserName(result.data?.username || username.trim(), result.data?.name || name.trim(), result.data?.picture || authState.user?.profile || "");
+
+      showSuccess("Profile updated successfully");
+      setIsEditingProfile(false);
+    } catch (error: any) {
+      console.error("Failed to update profile:", error);
+      const errorMessage = error?.data?.message || error?.message || "Failed to update profile";
+
+      // Check if it's a username already exists error
+      if (errorMessage.toLowerCase().includes("username already exists") ||
+        errorMessage.toLowerCase().includes("already exists")) {
+        setUsernameError("This username is already taken. Please choose a different one.");
+      }
+
+      showError("Update failed", errorMessage);
     }
   };
 
@@ -218,68 +279,7 @@ const SettingTab = () => {
                 Cancel
               </button>
               <button
-                onClick={async () => {
-                  if (!authState.user?.id) {
-                    showError("Error", "User not found. Please log in again.");
-                    return;
-                  }
-
-                  if (!name.trim() || !username.trim()) {
-                    showError("Validation error", "Please fill in name and username.");
-                    return;
-                  }
-
-                  // Validate username format
-                  const usernameValidation = validateUsername(username);
-                  if (!usernameValidation.valid) {
-                    setUsernameError(usernameValidation.error || "");
-                    showError("Invalid username", usernameValidation.error || "Please enter a valid username.");
-                    return;
-                  }
-
-                  // Clear any previous errors
-                  setUsernameError("");
-
-                  try {
-                    const result = await updateProfile({
-                      id: authState.user.id,
-                      name: name.trim(),
-                      username: username.trim(),
-                    }).unwrap();
-
-                    // Update Redux state with new user data
-                    if (result.data) {
-                      dispatch(updateProfileAction({
-                        name: result.data.name,
-                        username: result.data.username,
-                      }));
-                    }
-
-                    // Emit username update to socket so all users in the room see the updated username
-                    if (socket && (roomId || roomIdFromContext)) {
-                      const currentRoomId = roomId || roomIdFromContext;
-                      socket.emit(SocketEvent.USERNAME_UPDATED, {
-                        username: result.data?.username || username.trim(),
-                        name: result.data?.name || name.trim(),
-                        profile: result.data?.profile || authState.user?.profile,
-                      });
-                    }
-
-                    showSuccess("Profile updated successfully");
-                    setIsEditingProfile(false);
-                  } catch (error: any) {
-                    console.error("Failed to update profile:", error);
-                    const errorMessage = error?.data?.message || error?.message || "Failed to update profile";
-                    
-                    // Check if it's a username already exists error
-                    if (errorMessage.toLowerCase().includes("username already exists") || 
-                        errorMessage.toLowerCase().includes("already exists")) {
-                      setUsernameError("This username is already taken. Please choose a different one.");
-                    }
-                    
-                    showError("Update failed", errorMessage);
-                  }
-                }}
+                onClick={handleUpdateProfile}
                 disabled={isUpdatingProfile || !name.trim() || !username.trim() || !!usernameError}
                 className="flex-1 px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
