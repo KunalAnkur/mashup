@@ -52,6 +52,8 @@ interface RoomContextType {
     isHost: boolean;
     username: string;
     leaveRoom: () => void;
+    updatePlaylist: (urls: string[]) => void;
+    updateUserName: (username: string, name: string, profile: string) => void;
     participants: UserInfo[];
 }
 
@@ -140,6 +142,26 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             setIsLoading(false);
         }
     }, [socket, roomId, isHost, username, email, profile, roomState, roomTypeFromRedux, isJoined]);
+
+    const updatePlaylist = useCallback(async (urls: string[]) => {
+        if (!socket || !roomId) return;
+        await socket.emit(SocketEvent.UPDATE_PLAYLIST, {
+            roomId,
+            room: {
+                ...roomState,
+                urls,
+            },
+        });
+    }, [socket, roomId, roomState]);
+
+    const updateUserName = useCallback(async (username: string, name: string, profile: string) => {
+        if (!socket || !roomId) return;
+        socket.emit(SocketEvent.USERNAME_UPDATED, {
+            username,
+            name,
+            profile,
+        });
+    }, [socket, roomId]);
 
     const leaveRoom = useCallback(() => {
         if (!socket || !roomId) return;
@@ -317,6 +339,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             isHost,
             username,
             leaveRoom,
+            updatePlaylist,
+            updateUserName,
             participants,
         }}>
             {children}

@@ -12,6 +12,7 @@ export enum SocketEvent {
   HOSTVIDEOSTATE = "hostvideostate",
   NOTIFY = "notify",
   ROOM_INFO_UPDATED = "roomInfoUpdated",
+  UPDATE_PLAYLIST = "updatePlaylist",
   // Video selection events
   SELECT_VIDEO = "selectVideo",
   VIDEO_SELECTED = "videoSelected",

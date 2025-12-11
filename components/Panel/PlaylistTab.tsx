@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { setUrlMetadata, updateRoomInfo, setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
@@ -11,8 +11,12 @@ import { helper } from "@/utils";
 import { LuPlay, LuFilm, LuLock, LuCrown, LuPlus, LuShare2, LuX } from "react-icons/lu";
 import { FaBroadcastTower } from "react-icons/fa";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
-import { detectPlatform, getPlatformById, getUrlDisplayName } from "@/types/ModalTypes/urlUtils";
+import { detectPlatform, getPlatformById, getUrlDisplayName, validateUrl } from "@/types/ModalTypes/urlUtils";
 import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
+import { useUpdateRoomMutation, useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
+import { useSocket } from "@/context/SocketContext";
+import { SocketEvent } from "@/types/socketEvents";
+import { useRoomContext } from "@/context/RoomContext";
 
 // Playlist URL Card - Modified version for playing state with loading support
 const PlaylistUrlCard = ({
@@ -352,13 +356,22 @@ const PlaylistTab = () => {
     const authState = useSelector((state: RootState) => state.auth);
     const { files, getThumbnail, requestFilePicker, setFiles, isPersistenceSupported, showPermissionPrompt } = useFileContext();
     const { selectVideo, isHost } = useVideoSelection();
+    const { updatePlaylist } = useRoomContext();
     const { stream: screenStream, screenType, setStream: setScreenStream, setScreenType } = useMediaStreamContext();
     const [isSharingScreen, setIsSharingScreen] = useState(false);
     const [isAddingFiles, setIsAddingFiles] = useState(false);
+    const [isAddingUrls, setIsAddingUrls] = useState(false);
+    const [showAddUrlModal, setShowAddUrlModal] = useState(false);
+    const [urlInput, setUrlInput] = useState("");
+    const [urlError, setUrlError] = useState("");
+    const { socket } = useSocket();
+    const [updateRoom] = useUpdateRoomMutation();
+    const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
 
     // Determine streaming mode from room state only
     const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
     const isScreenSharing = roomState.type === "stream" && roomState.source === "stream";
+    const isSyncMode = roomState.type === "sync" && roomState.source === "url";
     const urls = roomState.urls;
     const selectedIndex = roomState.selectedFileIndex;
     const urlMetadataCache = roomState.urlMetadataCache;
@@ -608,6 +621,141 @@ const PlaylistTab = () => {
         }
     }, [isHost, isFileStreaming, isPersistenceSupported, files, requestFilePicker, setFiles, showPermissionPrompt]);
 
+    // Handle opening add URL modal
+    const handleOpenAddUrlModal = useCallback(() => {
+        if (!isHost || !isSyncMode || !roomState.roomId) return;
+        setShowAddUrlModal(true);
+        setUrlInput("");
+        setUrlError("");
+    }, [isHost, isSyncMode, roomState.roomId]);
+
+    // Handle closing add URL modal
+    const handleCloseAddUrlModal = useCallback(() => {
+        setShowAddUrlModal(false);
+        setUrlInput("");
+        setUrlError("");
+    }, []);
+
+    // Handle URL input change
+    const handleUrlInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setUrlInput(value);
+        setUrlError(""); // Clear error on input change
+    }, []);
+
+    // Handle add more URLs (for sync mode)
+    const handleAddMoreUrls = useCallback(async () => {
+        if (!isHost || !isSyncMode || !roomState.roomId) return;
+        
+        const url = urlInput.trim();
+        
+        // Validate URL
+        if (!url) {
+            setUrlError("Please enter a URL");
+            return;
+        }
+        
+        const validation = validateUrl(url);
+        if (!validation.valid) {
+            setUrlError(validation.tooltip || "Invalid URL. Please enter a supported video URL.");
+            return;
+        }
+        
+        setIsAddingUrls(true);
+        setUrlError("");
+        
+        // Combine existing URLs with new URL
+        const newUrls = [...urls, url];
+        
+        // Update room via API
+        try {
+                if (!roomState.roomId) {
+                    throw new Error("Room ID is missing");
+                }
+                
+                // First, get the database UUID from room_id
+                let databaseId: string;
+                try {
+                    const roomInfo = await getRoomByRoomId(roomState.roomId).unwrap();
+                    // The response structure: { success: true, data: { id: "...", ... } }
+                    databaseId = roomInfo?.data?.id;
+                    if (!databaseId) {
+                        console.error('Room info response:', roomInfo);
+                        throw new Error("Could not find database ID for room");
+                    }
+                    console.log('[PlaylistTab] Got database ID:', databaseId);
+                } catch (fetchError: any) {
+                    console.error('Error fetching room info:', fetchError);
+                    const fetchErrorMessage = fetchError?.data?.message || fetchError?.message || "Failed to fetch room information";
+                    throw new Error(fetchErrorMessage);
+                }
+                
+                // Update room using database UUID
+                const result = await updateRoom({
+                    id: databaseId,
+                    body: {
+                        urls: newUrls,
+                        type: "sync",
+                        source: "url",
+                    },
+                }).unwrap();
+                
+                console.log('[PlaylistTab] Room updated successfully:', result);
+                
+                // Update Redux state
+                dispatch(updateRoomInfo({
+                    urls: newUrls,
+                }));
+                
+                // Emit socket event to notify other users
+                // if (socket && roomState.roomId) {
+                //     socket.emit(SocketEvent.ROOM_INFO_UPDATED, {
+                //         roomId: roomState.roomId,
+                //         room: {
+                //             urls: newUrls,
+                //             files: roomState.files || [],
+                //             selectedFileIndex: roomState.selectedFileIndex || 0,
+                //             source: "url",
+                //             type: "sync",
+                //         },
+                //     });
+                // }
+            await updatePlaylist(newUrls);
+                console.log(`[PlaylistTab] Added new URL, total: ${newUrls.length}`);
+                
+            // Close modal and reset on success
+            handleCloseAddUrlModal();
+        } catch (error: any) {
+            // RTK Query errors have a specific structure
+            const errorData = error?.data || error;
+            const errorMessage = errorData?.message || error?.message || error?.error || "Failed to add URL. Please try again.";
+            const errorStatus = error?.status || errorData?.statusCode;
+            
+            console.error('Error adding URL to room:', error);
+            console.error('Error details:', {
+                message: errorMessage,
+                status: errorStatus,
+                statusText: error?.statusText,
+                data: errorData,
+                originalError: error,
+                roomId: roomState.roomId,
+            });
+            
+            setUrlError(errorMessage);
+        } finally {
+            setIsAddingUrls(false);
+        }
+    }, [isHost, isSyncMode, roomState.roomId, roomState.files, roomState.selectedFileIndex, urls, updateRoom, dispatch, socket, urlInput, handleCloseAddUrlModal, getRoomByRoomId, updatePlaylist]);
+
+    // Handle URL input keydown
+    const handleUrlInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && !urlError && urlInput.trim()) {
+            handleAddMoreUrls();
+        } else if (e.key === "Escape") {
+            handleCloseAddUrlModal();
+        }
+    }, [urlInput, urlError, handleAddMoreUrls, handleCloseAddUrlModal]);
+
     // Get playlist items
     const getPlaylistItems = () => {
         if (isFileStreaming) {
@@ -642,6 +790,7 @@ const PlaylistTab = () => {
     }
 
     return (
+        <>
         <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex items-center justify-between mb-4 px-1">
@@ -722,7 +871,7 @@ const PlaylistTab = () => {
             </div>
 
             {/* Action Button - Only show for host */}
-            {isHost && (isScreenSharing || isFileStreaming) && (
+            {isHost && (isScreenSharing || isFileStreaming || isSyncMode) && (
                 <div className="mt-4 pt-4 border-t border-white/5">
                     {isScreenSharing ? (
                         <button
@@ -760,6 +909,24 @@ const PlaylistTab = () => {
                                 </>
                             )}
                         </button>
+                    ) : isSyncMode ? (
+                        <button
+                            onClick={handleOpenAddUrlModal}
+                            disabled={isAddingUrls}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isAddingUrls ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin"></div>
+                                    <span className="text-sm font-medium">Adding...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <LuPlus size={16} />
+                                    <span className="text-sm font-medium">Add More URLs</span>
+                                </>
+                            )}
+                        </button>
                     ) : null}
                 </div>
             )}
@@ -774,6 +941,87 @@ const PlaylistTab = () => {
                 </div>
             )}
         </div>
+
+        {/* Add URL Modal */}
+        {showAddUrlModal && (
+            <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                onClick={handleCloseAddUrlModal}
+            >
+                <div
+                    className="relative w-full max-w-md mx-4 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-6 shadow-xl border border-white/10"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-2 rounded-lg">
+                                <LuPlus className="text-white text-lg" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white">Add Video URL</h3>
+                        </div>
+                        <button
+                            onClick={handleCloseAddUrlModal}
+                            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+                            aria-label="Close"
+                        >
+                            <LuX size={20} />
+                        </button>
+                    </div>
+
+                    {/* Input Section */}
+                    <div className="space-y-4">
+                        <div>
+                            <input
+                                type="text"
+                                placeholder="Paste your video URL here"
+                                value={urlInput}
+                                onChange={handleUrlInputChange}
+                                onKeyDown={handleUrlInputKeyDown}
+                                className="w-full rounded-xl bg-white/5 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
+                                disabled={isAddingUrls}
+                                autoFocus
+                            />
+                            {urlError && (
+                                <p className="mt-2 text-sm text-red-400 flex items-center gap-1.5">
+                                    <span>⚠️</span>
+                                    <span>{urlError}</span>
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={handleCloseAddUrlModal}
+                                disabled={isAddingUrls}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-medium text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleAddMoreUrls}
+                                disabled={isAddingUrls || !urlInput.trim() || !!urlError}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {isAddingUrls ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        <span>Adding...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <LuPlus size={16} />
+                                        <span>Add URL</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 };
 
