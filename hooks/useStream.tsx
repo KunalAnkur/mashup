@@ -6,6 +6,7 @@ import { SocketEvent } from "@/types/socketEvents";
 import { showError } from "@/utils/toast";
 import { RootState } from "@/lib/store";
 import { useSelector } from "react-redux";
+import turnConfig from "@/constants/turnConstant";
 
 interface UseStreamParams {
     roomId: string | null;
@@ -365,7 +366,11 @@ export const useStream = ({
             await newDevice.load({ routerRtpCapabilities: response.rtpCapabilities });
             deviceRef.current = newDevice;
 
-            const newTransport = newDevice.createRecvTransport(response.recvTransportOptions);
+            const newTransport = newDevice.createRecvTransport({
+                ...response.recvTransportOptions,
+                iceServers: turnConfig.iceServers,
+                iceTransportPolicy: turnConfig.iceTransportPolicy,
+            });
             createConnectHandler(newTransport, roomId);
             consumerTransportRef.current = newTransport;
             setIsInitialized(true);
@@ -407,7 +412,11 @@ export const useStream = ({
             if (isHost) {
                 if (!joinResponse.sendTransportOptions) throw new Error("No sendTransportOptions");
                 console.log("[STREAM] Creating send transport", joinResponse.sendTransportOptions);
-                const transport = device.createSendTransport(joinResponse.sendTransportOptions);
+                const transport = device.createSendTransport({
+                    ...joinResponse.sendTransportOptions,
+                    iceServers: turnConfig.iceServers,
+                    iceTransportPolicy: turnConfig.iceTransportPolicy,
+                });
                 createConnectHandler(transport, roomId);
 
                 transport.on("produce", async ({ kind, rtpParameters }, callback, errback) => {
@@ -432,7 +441,11 @@ export const useStream = ({
                 if (stream) await createProducers(transport, stream, roomId);
             } else {
                 if (!joinResponse.recvTransportOptions) throw new Error("No recvTransportOptions");
-                const transport = device.createRecvTransport(joinResponse.recvTransportOptions);
+                const transport = device.createRecvTransport({
+                    ...joinResponse.recvTransportOptions,
+                    iceServers: turnConfig.iceServers,
+                    iceTransportPolicy: turnConfig.iceTransportPolicy,
+                });
                 createConnectHandler(transport, roomId);
                 consumerTransportRef.current = transport;
 
