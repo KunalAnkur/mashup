@@ -26,7 +26,6 @@ export class SocketService {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       autoConnect: true,
-      transports: ["websocket"],
       ...options,
     };
     this.namespaces = namespaces;
