@@ -407,28 +407,7 @@ export const useStream = ({
             if (isHost) {
                 if (!joinResponse.sendTransportOptions) throw new Error("No sendTransportOptions");
                 console.log("[STREAM] Creating send transport", joinResponse.sendTransportOptions);
-                const iceServers = [
-                    {
-                        urls: [
-                            "stun:gateway.movmash.com:3478",
-
-                            // TURN (UDP)
-                            "turn:gateway.movmash.com:3478?transport=udp",
-
-                            // TURN (TCP)
-                            "turn:gateway.movmash.com:3478?transport=tcp",
-
-                            // TURN over TLS (secure)
-                            "turns:gateway.movmash.com:5349?transport=tcp"
-                        ],
-                        username: "turn_user",
-                        credential: "0a6c9d2b2948690"
-                    }
-                ]
-                const transport = device.createSendTransport({
-                    ...joinResponse.sendTransportOptions,
-                    iceServers,
-                });
+                const transport = device.createSendTransport(joinResponse.sendTransportOptions);
                 createConnectHandler(transport, roomId);
 
                 transport.on("produce", async ({ kind, rtpParameters }, callback, errback) => {
@@ -453,28 +432,7 @@ export const useStream = ({
                 if (stream) await createProducers(transport, stream, roomId);
             } else {
                 if (!joinResponse.recvTransportOptions) throw new Error("No recvTransportOptions");
-                const iceServers = [
-                    {
-                        urls: [
-                            "stun:gateway.movmash.com:3478",
-
-                            // TURN (UDP)
-                            "turn:gateway.movmash.com:3478?transport=udp",
-
-                            // TURN (TCP)
-                            "turn:gateway.movmash.com:3478?transport=tcp",
-
-                            // TURN over TLS (secure)
-                            "turns:gateway.movmash.com:5349?transport=tcp"
-                        ],
-                        username: "turn_user",
-                        credential: "0a6c9d2b2948690"
-                    }
-                ]
-                const transport = device.createRecvTransport({
-                    ...joinResponse.recvTransportOptions,
-                    iceServers,
-                });
+                const transport = device.createRecvTransport(joinResponse.recvTransportOptions);
                 createConnectHandler(transport, roomId);
                 consumerTransportRef.current = transport;
 
