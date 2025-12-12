@@ -369,7 +369,6 @@ export const useStream = ({
             const newTransport = newDevice.createRecvTransport({
                 ...response.recvTransportOptions,
                 iceServers: turnConfig.iceServers,
-                iceTransportPolicy: turnConfig.iceTransportPolicy,
             });
             createConnectHandler(newTransport, roomId);
             consumerTransportRef.current = newTransport;
@@ -415,7 +414,6 @@ export const useStream = ({
                 const transport = device.createSendTransport({
                     ...joinResponse.sendTransportOptions,
                     iceServers: turnConfig.iceServers,
-                    iceTransportPolicy: turnConfig.iceTransportPolicy,
                 });
                 createConnectHandler(transport, roomId);
 
@@ -444,7 +442,6 @@ export const useStream = ({
                 const transport = device.createRecvTransport({
                     ...joinResponse.recvTransportOptions,
                     iceServers: turnConfig.iceServers,
-                    iceTransportPolicy: turnConfig.iceTransportPolicy,
                 });
                 createConnectHandler(transport, roomId);
                 consumerTransportRef.current = transport;
