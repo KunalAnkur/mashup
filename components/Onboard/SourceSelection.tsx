@@ -77,7 +77,7 @@ const SourceSelection = () => {
 
   return (
     <>
-      <div className="w-full h-full flex flex-col items-center justify-center bg-[#18181b] px-4 py-6 overflow-y-auto overflow-x-hidden">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-transparent px-4 py-6 overflow-y-auto overflow-x-hidden">
         <div className="w-full max-w-lg flex flex-col items-center gap-3 sm:gap-4 md:gap-5 my-auto">
           {/* LOGO & BRAND */}
           <div className="flex items-center justify-center gap-3 ">
@@ -116,14 +116,14 @@ const SourceSelection = () => {
               {/* Stream */}
               <button
                 onClick={handleOnUploadSelection}
-                className="relative overflow-hidden w-full sm:w-1/2 h-36 sm:h-40 md:h-44 group animate-scale-in"
+                className="relative w-full sm:w-1/2 h-36 sm:h-40 md:h-44 group animate-scale-in"
                 style={{ animationDelay: "0.2s" }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
-                <div className="absolute inset-[2px] bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl"></div>
-                <div className="relative flex flex-col items-center justify-center h-full text-gray-400 group-hover:text-white transition-colors duration-300">
-                  <div className="flex items-center justify-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-full bg-gradient-to-br from-rose-500/10 to-pink-500/10 group-hover:from-rose-500 group-hover:to-pink-500 transition-all duration-300 mb-1 md:mb-2 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-pink-500/50">
-                    <FaBroadcastTower className="text-xl sm:text-2xl text-rose-400 group-hover:text-white transition-colors duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 backdrop-blur-5xl  rounded-xl group-hover:from-rose-600/30 group-hover:via-pink-600/30 group-hover:to-fuchsia-600/30 group-hover:border-white/20 transition-all duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-xl backdrop-blur-sm"></div>
+                <div className="relative flex flex-col items-center justify-center h-full text-white/80 group-hover:text-white transition-colors duration-300">
+                  <div className="flex items-center justify-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-full bg-gradient-to-br from-blue-500/15 to-cyan-500/15 backdrop-blur-md border border-blue-400/20 group-hover:from-blue-500/30 group-hover:to-cyan-500/30 group-hover:border-blue-400/40 transition-all duration-300 mb-1 md:mb-2 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-blue-500/50">
+                    <FaBroadcastTower className="text-xl sm:text-2xl text-blue-300 group-hover:text-white transition-colors duration-300" />
                   </div>
                   <span className="text-base sm:text-lg font-semibold">
                     Stream
@@ -137,11 +137,11 @@ const SourceSelection = () => {
                 className="relative overflow-hidden w-full sm:w-1/2 h-36 sm:h-40 md:h-44 group animate-scale-in"
                 style={{ animationDelay: "0.3s" }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
-                <div className="absolute inset-[2px] bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl"></div>
-                <div className="relative flex flex-col items-center justify-center h-full text-gray-400 group-hover:text-white transition-colors duration-300">
-                  <div className="flex items-center justify-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-full bg-gradient-to-br from-pink-500/10 to-fuchsia-500/10 group-hover:from-pink-500 group-hover:to-fuchsia-500 transition-all duration-300 mb-1 md:mb-2 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-fuchsia-500/50">
-                    <FaSync className="text-xl sm:text-2xl text-fuchsia-400 group-hover:text-white transition-colors duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 via-fuchsia-600/20 to-purple-600/20 backdrop-blur-2xl rounded-xl group-hover:from-pink-600/30 group-hover:via-fuchsia-600/30 group-hover:to-purple-600/30 group-hover:border-white/20 transition-all duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-pink-600 via-fuchsia-600 to-purple-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-xl backdrop-blur-sm"></div>
+                <div className="relative flex flex-col items-center justify-center h-full text-white/80 group-hover:text-white transition-colors duration-300">
+                  <div className="flex items-center justify-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-full bg-gradient-to-br from-indigo-500/15 to-purple-500/15 backdrop-blur-md border border-indigo-400/20 group-hover:from-indigo-500/30 group-hover:to-purple-500/30 group-hover:border-indigo-400/40 transition-all duration-300 mb-1 md:mb-2 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-indigo-500/50">
+                    <FaSync className="text-xl sm:text-2xl text-indigo-300 group-hover:text-white transition-colors duration-300" />
                   </div>
                   <span className="text-base sm:text-lg font-semibold">
                     Sync
@@ -183,10 +183,10 @@ const SourceSelection = () => {
                   onChange={handleOnRoomIdChange}
                   onKeyDown={handleKeyDown}
                   disabled={isJoining}
-                  className={`text-sm sm:text-base flex-1 rounded-xl bg-white/5 border text-gray-100 placeholder:text-gray-500 p-2.5 sm:p-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 ${
+                  className={`outline-none text-sm sm:text-base flex-1 rounded-xl bg-white/5 backdrop-blur-2xl border text-white placeholder:text-white/50 p-2.5 sm:p-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 ${
                     joinError
                       ? "border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50"
-                      : "border-white/10"
+                      : "border-none"
                   } ${isJoining ? "opacity-50 cursor-not-allowed" : ""}`}
                 />
                 <div className="relative">

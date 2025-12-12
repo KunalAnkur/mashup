@@ -162,10 +162,10 @@ const FileSelection = () => {
     }
   };
   return (
-    <div className="flex flex-col h-full bg-[#18181b] w-full max-w-full overflow-hidden">
+    <div className="flex flex-col h-full bg-transparent w-full max-w-full overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <span className="w-1 h-6 bg-gradient-to-b from-fuchsia-500 to-purple-500 rounded-full"></span>
+          <span className="w-1 h-6 bg-gradient-to-b from-purple-500 to-fuchsia-500 rounded-full"></span>
           <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
             Choose Files
           </h3>
@@ -173,15 +173,17 @@ const FileSelection = () => {
         <button
           onClick={handleAddFileClick}
           disabled={isLoading}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] hover:from-rose-600 hover:via-pink-600 hover:to-fuchsia-600 hover:border-pink-500/50 border border-white/10 transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
+          className="relative flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/40 border border-zinc-600/15 transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
           title="Add more files"
         >
+          {/* Gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-fuchsia-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
           {isLoading ? (
-            <ImSpinner2 className="text-gray-400 group-hover:text-white transition-colors duration-300 text-sm animate-spin" />
+            <ImSpinner2 className="relative z-10 text-zinc-300 group-hover:text-white transition-colors duration-300 text-sm animate-spin" />
           ) : (
-            <FaUpload className="text-gray-400 group-hover:text-white transition-colors duration-300 text-sm" />
+            <FaUpload className="relative z-10 text-zinc-300 group-hover:text-white transition-colors duration-300 text-sm" />
           )}
-          <span className="text-sm font-medium text-gray-400 group-hover:text-white transition-colors duration-300">
+          <span className="relative z-10 text-sm font-medium text-white/80 group-hover:text-white transition-colors duration-300">
             {isLoading ? "Loading..." : "Add Files"}
           </span>
         </button>
@@ -197,7 +199,7 @@ const FileSelection = () => {
         className="hidden"
       />
 
-      <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-5 w-full">
+      <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-sm border border-zinc-600/15 rounded-2xl p-5 w-full">
         <div className="flex-1 flex flex-col gap-4 w-full max-w-full overflow-hidden">
         {/* Files List with Preview Placeholders */}
         <div
@@ -208,10 +210,10 @@ const FileSelection = () => {
             <div
               key={index}
               onClick={() => handleFileSelect(index)}
-              className={`flex justify-between items-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] cursor-pointer hover:bg-zinc-800 transition-all duration-200 border w-full max-w-full h-[70px] ${
+              className={`relative flex justify-between items-center p-4 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl cursor-pointer transition-all duration-200 border w-full max-w-full h-[70px] overflow-hidden ${
                 selectedFileIndex === index
-                  ? "border-fuchsia-500/50 ring-1 ring-fuchsia-500/30"
-                  : "border-white/5 hover:border-white/10"
+                  ? "border-purple-500/40 ring-2 ring-purple-500/25 bg-gradient-to-br from-zinc-700/25 via-zinc-600/25 to-zinc-700/25"
+                  : "border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10"
               }`}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0 max-w-full overflow-hidden">
@@ -221,7 +223,7 @@ const FileSelection = () => {
                   
                   return (
                     <div className={`
-                      flex-shrink-0 rounded-xl overflow-hidden bg-white/5
+                      flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-zinc-800/15 to-zinc-700/15 backdrop-blur-sm border border-zinc-600/20
                       ${isVideo ? 'w-16 h-10' : 'p-3'}
                       flex items-center justify-center
                     `}>
@@ -238,15 +240,15 @@ const FileSelection = () => {
                               const parent = target.parentElement;
                               if (parent) {
                                 parent.innerHTML = '';
-                                parent.className = 'p-3 rounded-xl bg-white/5 flex-shrink-0 flex items-center justify-center';
+                                parent.className = 'p-3 rounded-xl bg-gradient-to-br from-zinc-800/15 to-zinc-700/15 backdrop-blur-sm border border-zinc-600/20 flex-shrink-0 flex items-center justify-center';
                                 parent.appendChild(getFileIcon(file.type) as any);
                               }
                             }}
                           />
                         ) : (
                           // Show loading state or icon while thumbnail is being generated
-                          <div className="w-full h-full flex items-center justify-center bg-white/5">
-                            <FaFileVideo className="text-pink-600 text-sm" />
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800/15 to-zinc-700/15">
+                            <FaFileVideo className="text-zinc-300 text-sm" />
                           </div>
                         )
                       ) : (
@@ -259,7 +261,7 @@ const FileSelection = () => {
                   <h4 className=" text-white text-sm font-semibold truncate">
                     {file.name}
                   </h4>
-                  <p className="text-gray-400 text-xs mt-0.5 truncate">
+                  <p className="text-white/60 text-xs mt-0.5 truncate">
                     {(file.size / (1024 * 1024)).toFixed(2)} MB
                   </p>
                 </div>
@@ -267,10 +269,10 @@ const FileSelection = () => {
               <div className="flex items-center gap-3 flex-shrink-0">
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${
                   selectedFileIndex === index 
-                    ? "bg-fuchsia-500/20 opacity-100" 
+                    ? "bg-purple-500/30 opacity-100" 
                     : "opacity-0"
                 }`}>
-                  <FaCheck className="text-fuchsia-500 text-xs" />
+                  <FaCheck className="text-purple-300 text-xs" />
                 </div>
                 <button
                   onClick={(e) => {
@@ -291,19 +293,21 @@ const FileSelection = () => {
             <button
               onClick={handleAddFileClick}
               disabled={isLoading}
-              className="flex flex-col items-center justify-center p-6 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border-2 border-dashed border-white/20 hover:border-fuchsia-500/50 w-full h-[160px] transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative flex flex-col items-center justify-center p-6 rounded-xl  border-2 border-dashed border-zinc-600/15 hover:border-purple-500/40 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 w-full h-[160px] transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
             >
-              <div className="flex p-4 items-center justify-center w-16 h-16 rounded-full bg-white/5 group-hover:bg-fuchsia-500/20 transition-all duration-300 mb-3">
+              {/* Gradient overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-fuchsia-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+              <div className="relative z-10 flex p-4 items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-zinc-700/10 to-zinc-600/10 backdrop-blur-md border border-zinc-500/20 group-hover:from-purple-500/25 group-hover:to-fuchsia-500/25 group-hover:border-purple-400/35 transition-all duration-300 mb-3">
                 {isLoading ? (
-                  <ImSpinner2 className="text-gray-400 group-hover:text-fuchsia-400 transition-colors duration-300 text-2xl animate-spin" />
+                  <ImSpinner2 className="text-zinc-300 group-hover:text-white transition-colors duration-300 text-2xl animate-spin" />
                 ) : (
-                  <FaUpload className="text-gray-400 group-hover:text-fuchsia-400 transition-colors duration-300 text-2xl" />
+                  <FaUpload className="text-zinc-300 group-hover:text-white transition-colors duration-300 text-2xl" />
                 )}
               </div>
-              <span className="text-base font-semibold text-gray-300 group-hover:text-white transition-colors duration-300 mb-1">
+              <span className="relative z-10 text-base font-semibold text-white/90 group-hover:text-white transition-colors duration-300 mb-1">
                 {isLoading ? "Loading..." : "Click to Upload Files"}
               </span>
-              <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors duration-300">
+              <span className="relative z-10 text-xs text-white/60 group-hover:text-white/80 transition-colors duration-300">
                 {isLoading ? "Please wait..." : "or drag and drop files here"}
               </span>
             </button>
@@ -311,15 +315,17 @@ const FileSelection = () => {
             // Placeholder when 1 file exists
             <div
               onClick={handleAddFileClick}
-              className={`flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-dashed border-white/10 hover:border-fuchsia-500/30 w-full h-[70px] transition-all duration-200 cursor-pointer group ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`relative flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-2xl border border-dashed border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/8 hover:via-pink-600/8 hover:to-fuchsia-600/8 w-full h-[70px] transition-all duration-200 cursor-pointer group overflow-hidden ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <div className="flex items-center gap-2">
+              {/* Gradient overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/8 via-pink-600/8 to-fuchsia-600/8 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl" />
+              <div className="relative z-10 flex items-center gap-2">
                 {isLoading ? (
-                  <ImSpinner2 className="text-gray-500 group-hover:text-fuchsia-400 transition-colors duration-200 text-sm animate-spin" />
+                  <ImSpinner2 className="text-zinc-300 group-hover:text-white transition-colors duration-200 text-sm animate-spin" />
                 ) : (
-                  <FaPlus className="text-gray-500 group-hover:text-fuchsia-400 transition-colors duration-200 text-sm" />
+                  <FaPlus className="text-zinc-300 group-hover:text-white transition-colors duration-200 text-sm" />
                 )}
-                <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors duration-200">
+                <span className="text-xs text-white/70 group-hover:text-white transition-colors duration-200">
                   {isLoading ? "Loading..." : "Click to add more files"}
                 </span>
               </div>
@@ -328,7 +334,7 @@ const FileSelection = () => {
         </div>
 
         {/* Info Section */}
-        <div className="flex justify-between items-center p-3 bg-white/[0.03]  rounded-xl">
+        <div className="flex justify-between items-center p-3 bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-2xl border border-zinc-600/10 rounded-xl hover:border-purple-500/20 hover:bg-gradient-to-br hover:from-purple-600/8 hover:via-pink-600/8 hover:to-fuchsia-600/8 transition-all duration-300">
           {/* tip 1 */}
         <div className="flex items-start gap-2 ">
           <div className="shrink-0 mt-0.5">
@@ -345,8 +351,8 @@ const FileSelection = () => {
             </svg>
           </div>
           <div className="">
-            <p className="text-gray-400 text-xs leading-relaxed">
-              <span className="text-gray-300 font-medium">Tip 1:</span> You
+            <p className="text-white/70 text-xs leading-relaxed">
+              <span className="text-white/90 font-medium">Tip 1:</span> You
               can select multiple files at once.
             </p>
           
@@ -368,8 +374,8 @@ const FileSelection = () => {
             </svg>
           </div>
           <div className="">
-            <p className="text-gray-400 text-xs leading-relaxed">
-              <span className="text-gray-300 font-medium">Tip 2:</span> You
+            <p className="text-white/70 text-xs leading-relaxed">
+              <span className="text-white/90 font-medium">Tip 2:</span> You
               can drag and drop files to upload.
             </p>
           
@@ -381,7 +387,7 @@ const FileSelection = () => {
         <div className="flex gap-2 ">
           <Button
             onClick={handleBack}
-            className="w-full rounded-xl flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10  hover:border-white/20 text-white text-sm px-4 py-3 transition-all duration-200"
+            className="w-full rounded-xl flex items-center justify-center gap-2  bg-gray-900/10 hover:from-purple-600/15 hover:via-pink-600/15 hover:to-fuchsia-600/15 hover:border-purple-500/30 border border-zinc-600/10 text-white text-sm px-4 py-3 transition-all duration-200"
             name="Back"
           >
             <FaArrowLeft className="text-xs" />
@@ -389,7 +395,7 @@ const FileSelection = () => {
           </Button>
           <Button
             onClick={handleOnURLSelection}
-            className="w-full rounded-xl flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10  hover:border-white/20 text-white text-sm px-4 py-3 transition-all duration-200"
+            className="w-full rounded-xl flex items-center justify-center gap-2  bg-gray-900/10 hover:from-purple-600/15 hover:via-pink-600/15 hover:to-fuchsia-600/15 hover:border-purple-500/30 border border-zinc-600/10 text-white text-sm px-4 py-3 transition-all duration-200"
             name="Use Sync"
           >
             <FaLink className="text-xs" />
