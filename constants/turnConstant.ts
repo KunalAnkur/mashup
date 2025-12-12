@@ -1,11 +1,9 @@
 const turnConfig = {
   iceServers: [
     {
-      urls: [
-        "turn:turn.movmash.com:3478",
-      ],
-      username: "movmash",
-      credential: "0a6c9d2b2948690",
+      urls: ["turn:relay1.expressturn.com:3480"],
+      username: "000000002080924083",
+      credential: "Qyviu5CZcybuLBOSmnzDO/NOsgY=",
     },
   ],
 };
