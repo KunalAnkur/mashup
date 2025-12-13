@@ -48,11 +48,10 @@ const StreamFilesPage = () => {
       className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen"
       {...dragHandlers}
     >
-      {/* Background Image with Overlay - Behind All Components */}
+      {/* Background Effects - Matching CTASection */}
       <div className="absolute inset-0 z-0">
-       
-        <div className="absolute inset-0 bg-gradient-to-b from-[#18181b]/80 via-[#18181b]/60 to-[#18181b]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(225,29,72,0.12)_0%,_transparent_70%)]" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#e11d48]/20 rounded-full blur-[128px] animate-pulse-glow" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#c026d3]/20 rounded-full blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
       </div>
 
       {/* Floating Emojis - Behind All Components */}
