@@ -15,7 +15,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   logoGap = "gap-4",
 }) => {
   return (
-    <div className="w-full flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 relative z-40 bg-[#18181b]">
+    <div className="w-full flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-white/10 relative z-40">
       {/* Left Section: Back Button + Logo */}
       <div className="flex items-center gap-5 flex-1 min-w-0">
         <button

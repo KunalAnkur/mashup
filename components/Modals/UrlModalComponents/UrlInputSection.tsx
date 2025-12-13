@@ -50,7 +50,7 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
       title="Paste Your URLs"
     />
 
-    <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-4 shadow-xl flex flex-col flex-1">
+    <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-2xl p-5 flex flex-col flex-1">
       <div className="flex flex-col h-full gap-3">
         {/* URL Input Field */}
         <UrlInputField
@@ -88,13 +88,13 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
         <div className="flex gap-3">
           <Button
             onClick={onCancel}
-            className="flex-1 rounded-xl flex items-center justify-center bg-white/5 text-gray-300 text-sm px-4 py-3 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium"
+            className="flex-1 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-sm px-4 py-3 transition-all duration-200 font-medium"
             name="Cancel"
           />
           <Button
             onClick={onEnterRoom}
             icon={isEntering ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className="flex-1 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:bg-none disabled:shadow-none disabled:opacity-50"
+            className="flex-1 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:bg-zinc-700/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
             name={isEntering ? "Entering..." : "Enter"}
             disabled={addedUrls.length === 0 || isEntering}
           />

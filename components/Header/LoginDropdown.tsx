@@ -65,7 +65,7 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
   };
 
   return (
-    <div className="border border-white/10 absolute top-0 right-0 mt-2 w-[300px] bg-[#1f1f23] rounded-lg p-3">
+    <div className="border border-zinc-600/10 absolute -top-2 right-0 mt-2 w-[300px] bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-2xl rounded-xl p-4 shadow-lg">
       <div className="flex flex-col gap-3">
         {/* Google Button */}
         <GoogleButton
@@ -78,16 +78,16 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
 
         {/* Separator */}
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-px bg-white/10"></div>
-          <span className="text-xs text-gray-400">or</span>
-          <div className="flex-1 h-px bg-white/10"></div>
+          <div className="flex-1 h-px bg-zinc-600/15"></div>
+          <span className="text-xs text-white/50">or</span>
+          <div className="flex-1 h-px bg-zinc-600/15"></div>
         </div>
 
         {/* Continue as Guest Button */}
         <Button
           name={isGuestProcessing || isGuestLoading ? "Creating account..." : "Continue as Guest"}
           icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-          className="w-full py-3 rounded-xl bg-white/5 text-gray-300 text-sm px-4 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 rounded-xl bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-xl border border-zinc-600/10 hover:from-purple-600/15 hover:via-pink-600/15 hover:to-fuchsia-600/15 hover:border-purple-500/25 text-white text-sm px-4 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleContinueAsGuest}
           disabled={isGuestProcessing || isGuestLoading}
         />

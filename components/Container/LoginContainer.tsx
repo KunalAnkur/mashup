@@ -76,7 +76,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#1f1f23] via-[#252529] to-[#27272a] rounded-3xl p-8 md:p-10 shadow-2xl w-full max-w-md mx-auto border border-white/5">
+    <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl rounded-3xl p-8 md:p-10 shadow-xl w-full max-w-md mx-auto border border-zinc-600/15">
       <div className="flex flex-col items-center gap-7">
         {/* Logo and Welcome Section */}
         <header className="flex flex-col items-center gap-4 w-full">
@@ -100,10 +100,10 @@ const LoginContainer = ({ setContainer }: Prop) => {
             <h1 className="text-3xl md:text-4xl font-extrabold text-white text-center font-parkinsans tracking-tight bg-gradient-to-r from-rose-400 via-pink-400 to-fuchsia-400 bg-clip-text text-transparent">
               Movmash
             </h1>
-            <p className="text-base md:text-lg text-gray-300 text-center font-medium">
+            <p className="text-base md:text-lg text-white/90 text-center font-medium">
               Welcome back!
             </p>
-            <p className="text-xs md:text-sm text-gray-400 text-center max-w-xs mt-0.5">
+            <p className="text-xs md:text-sm text-white/60 text-center max-w-xs mt-0.5">
               Choose how you'd like to continue
             </p>
           </div>
@@ -122,27 +122,27 @@ const LoginContainer = ({ setContainer }: Prop) => {
 
           {/* Separator */}
           <div className="flex items-center gap-3 py-0.5">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-white/15"></div>
-            <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">or</span>
-            <div className="flex-1 h-px bg-gradient-to-r from-white/15 via-white/15 to-transparent"></div>
+            <div className="flex-1 h-px bg-zinc-600/20"></div>
+            <span className="text-xs text-white/50 font-medium uppercase tracking-wider">or</span>
+            <div className="flex-1 h-px bg-zinc-600/20"></div>
           </div>
 
           {/* Continue as Guest Button */}
           <Button
             name={isGuestProcessing || isGuestLoading ? "Creating account..." : "Continue as Guest"}
             icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className="w-full bg-white/5 hover:bg-white/10 text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 border border-white/10 hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-white/5 hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleContinueAsGuest}
             disabled={isGuestProcessing || isGuestLoading}
           />
         </div>
 
         {/* Footer Note */}
-        <p className="text-xs text-gray-500 text-center leading-relaxed max-w-sm mt-1">
+        <p className="text-xs text-white/60 text-center leading-relaxed max-w-sm mt-1">
           By continuing, you agree to Movmash's{" "}
-          <span className="text-gray-400 hover:text-pink-400 transition-colors cursor-pointer">Terms of Service</span>
+          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">Terms of Service</span>
           {" "}and{" "}
-          <span className="text-gray-400 hover:text-pink-400 transition-colors cursor-pointer">Privacy Policy</span>
+          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">Privacy Policy</span>
         </p>
       </div>
     </div>

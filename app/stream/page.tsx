@@ -48,6 +48,25 @@ const StreamFilesPage = () => {
       className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen"
       {...dragHandlers}
     >
+      {/* Background Effects - Matching CTASection */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#e11d48]/20 rounded-full blur-[128px] animate-pulse-glow" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#c026d3]/20 rounded-full blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
+      </div>
+
+      {/* Floating Emojis - Behind All Components */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+        <span className="absolute top-1/4 left-[8%] text-4xl animate-float opacity-50">🎬</span>
+        <span className="absolute top-1/3 right-[12%] text-3xl animate-float-delayed opacity-40">🍿</span>
+        <span className="absolute bottom-1/3 left-[15%] text-5xl animate-float opacity-30">😍</span>
+        <span className="absolute top-1/2 right-[8%] text-4xl animate-float-delayed opacity-40">🎉</span>
+        <span className="absolute bottom-1/4 right-[20%] text-3xl animate-float opacity-50">❤️</span>
+        <span className="absolute top-2/3 left-[12%] text-3xl animate-float-delayed opacity-40">⭐</span>
+        <span className="absolute bottom-1/2 right-[15%] text-4xl animate-float opacity-40">🎊</span>
+        <span className="absolute top-[15%] left-[25%] text-3xl animate-float-delayed opacity-35">🎞️</span>
+        <span className="absolute bottom-[20%] left-[30%] text-4xl animate-float opacity-45">🎭</span>
+      </div>
+
       <DragOverlay isVisible={isDragging} />
       
       {/* Hidden file input for drag and drop */}
@@ -60,21 +79,26 @@ const StreamFilesPage = () => {
         onChange={handleFileChange}
       />
       
-      <PageHeader title="Stream Options" onBack={handleBack} />
+      {/* Content - Above Background */}
+      <div className="relative z-20 w-full h-screen flex flex-col">
+        <PageHeader title="Stream Options" onBack={handleBack} />
 
-      {/* Content */}
-      <div className="max-w-5xl lg:max-w-6xl 3xl:max-w-7xl flex h-full flex-1 items-center justify-center w-full overflow-y-auto overflow-x-hidden py-4 sm:py-6 px-4 sm:px-6 md:px-10">
-        <div className="flex flex-col lg:flex-row items-stretch gap-4 sm:gap-6 lg:gap-8 xl:gap-12 w-full mx-auto">
-          {/* Left Side - Screen Share Section */}
-          <div className="w-full lg:w-1/3 flex flex-col">
-            <ScreenShareBox handleScreenShareClick={handleScreenShareClick} />
-          </div>
-      
-          <ContentDivider />
+        {/* Content - Centered Vertically and Horizontally */}
+        <div className="flex-1 flex items-center justify-center w-full min-h-0">
+          <div className="w-full max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-4 sm:px-6 md:px-10 py-4 sm:py-6 overflow-y-auto overflow-x-hidden">
+            <div className="flex flex-col lg:flex-row items-stretch gap-4 sm:gap-6 lg:gap-8 xl:gap-12 w-full">
+              {/* Left Side - Screen Share Section */}
+              <div className="w-full lg:w-1/3 flex flex-col">
+                <ScreenShareBox handleScreenShareClick={handleScreenShareClick} />
+              </div>
+          
+              <ContentDivider />
 
-          {/* Right Side - File Selection */}
-          <div className="w-full lg:w-2/3 flex flex-col min-w-0">
-            <FileSelection />
+              {/* Right Side - File Selection */}
+              <div className="w-full lg:w-2/3 flex flex-col min-w-0">
+                <FileSelection />
+              </div>
+            </div>
           </div>
         </div>
       </div>

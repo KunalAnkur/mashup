@@ -27,10 +27,12 @@ export const SupportedPlatformsGrid: React.FC = () => (
       gradientTo="to-pink-500"
       title="Supported Platforms"
     />
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-      {platforms.map((platform) => (
-        <PlatformCard key={platform.id} platform={platform} />
-      ))}
+    <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-2xl p-5">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {platforms.map((platform) => (
+          <PlatformCard key={platform.id} platform={platform} />
+        ))}
+      </div>
     </div>
   </div>
 );
