@@ -373,7 +373,7 @@ export function getInitialPlayerState(url: string | string[] | SourceProps[] | M
     if (roomType === "stream") {
         return {
           playing: host ? screenSharing : !paused,
-          muted: host ? screenSharing : false,
+          muted: host ? screenSharing : true,
         };
     }
     return {

@@ -237,7 +237,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 onSeekEnd={onSeekEnd}
                 fullscreenTargetRef={fullscreenTargetRef}
                 url={source}
-                muted={ helper.getInitialPlayerState(source, roomType || "stream", isHost, isScreenSharing, hostLeft, isPaused).muted }
+                muted={helper.getInitialPlayerState(source, roomType || "stream", isHost, isScreenSharing, hostLeft, isPaused).muted }
                 onPlay={onPlay}
                 onPause={onPause}
                 hasVideoTrack={hasVideoTrack}
