@@ -365,10 +365,21 @@ export const useStream = ({
             await newDevice.load({ routerRtpCapabilities: response.rtpCapabilities });
             deviceRef.current = newDevice;
 
+            // Validate and prepare ICE servers
+            const iceServers = Array.isArray(response.iceServers) && response.iceServers.length > 0
+                ? response.iceServers
+                : [];
+            
+            if (iceServers.length === 0) {
+                console.warn("[STREAM] No ICE servers provided for reinit, connections may fail behind NAT");
+            }
+
             console.log("[STREAM] Creating recv transport", response);
             const newTransport = newDevice.createRecvTransport({
                 ...response.recvTransportOptions,
-                iceServers: response.iceServers,
+                iceServers: iceServers,
+                // Use "all" to allow both direct connections and TURN relay
+                // "relay" would force all traffic through TURN (higher latency, more bandwidth)
                 iceTransportPolicy: "relay",
             });
             createConnectHandler(newTransport, roomId);
@@ -409,12 +420,25 @@ export const useStream = ({
             await device.load({ routerRtpCapabilities: joinResponse.rtpCapabilities });
             deviceRef.current = device;
 
+            // Validate and prepare ICE servers
+            const iceServers = Array.isArray(joinResponse.iceServers) && joinResponse.iceServers.length > 0
+                ? joinResponse.iceServers
+                : [];
+            
+            if (iceServers.length === 0) {
+                console.warn("[STREAM] No ICE servers provided, connections may fail behind NAT");
+            } else {
+                console.log(`[STREAM] Using ${iceServers.length} ICE server(s) for transport`);
+            }
+
             if (isHost) {
                 if (!joinResponse.sendTransportOptions) throw new Error("No sendTransportOptions");
                 console.log("[STREAM] Creating send transport", joinResponse);
                 const transport = device.createSendTransport({
                     ...joinResponse.sendTransportOptions,
-                    iceServers: joinResponse.iceServers,
+                    iceServers: iceServers,
+                    // Use "all" to allow both direct connections and TURN relay
+                    // "relay" would force all traffic through TURN (higher latency, more bandwidth)
                     iceTransportPolicy: "relay",
                 });
                 createConnectHandler(transport, roomId);
@@ -443,7 +467,9 @@ export const useStream = ({
                 if (!joinResponse.recvTransportOptions) throw new Error("No recvTransportOptions");
                 const transport = device.createRecvTransport({
                     ...joinResponse.recvTransportOptions,
-                    iceServers: joinResponse.iceServers,
+                    iceServers: iceServers,
+                    // Use "all" to allow both direct connections and TURN relay
+                    // "relay" would force all traffic through TURN (higher latency, more bandwidth)
                     iceTransportPolicy: "relay",
                 });
                 createConnectHandler(transport, roomId);
