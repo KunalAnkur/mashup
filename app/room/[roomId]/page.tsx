@@ -16,7 +16,6 @@ const Page = () => {
   
   // Chat warning modal state
   const [showChatWarning, setShowChatWarning] = useState(false);
-  const [chatWarningAccepted, setChatWarningAccepted] = useState(false);
   const warningShownRef = useRef(false);
   const roomIdRef = useRef<string | null>(null);
 
@@ -28,7 +27,6 @@ const Page = () => {
       roomIdRef.current = roomId;
       warningShownRef.current = false;
       setShowChatWarning(false);
-      setChatWarningAccepted(false);
     }
   }, [roomId]);
 
@@ -82,12 +80,7 @@ const Page = () => {
 
   // Handle accepting the warning
   const handleAcceptChatWarning = () => {
-    console.log('[RoomPage] handleAcceptChatWarning called, chatWarningAccepted:', chatWarningAccepted);
-    if (!chatWarningAccepted) {
-      console.log('[RoomPage] Checkbox not checked, returning');
-      return;
-    }
-    
+    console.log('[RoomPage] handleAcceptChatWarning called');
     // Just close the modal - we don't need localStorage since we show it per room
     setShowChatWarning(false);
     warningShownRef.current = true;
@@ -149,30 +142,12 @@ const Page = () => {
             I promise to talk nice. Not illegal on chat.
           </p>
 
-          {/* Checkbox */}
-          <div className="flex items-center gap-3 mb-6 p-4 bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 backdrop-blur-xl border border-zinc-600/15 rounded-xl">
-            <input
-              type="checkbox"
-              id="chatWarningCheckbox"
-              checked={chatWarningAccepted}
-              onChange={(e) => setChatWarningAccepted(e.target.checked)}
-              className="w-5 h-5 rounded border-zinc-600/30 bg-zinc-800/50 text-purple-600 focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-0 cursor-pointer"
-            />
-            <label
-              htmlFor="chatWarningCheckbox"
-              className="text-white/90 text-sm md:text-base cursor-pointer flex-1"
-            >
-              I understand and agree to follow the chat guidelines
-            </label>
-          </div>
-
           {/* Continue Button */}
           <button
             onClick={handleAcceptChatWarning}
-            disabled={!chatWarningAccepted}
-            className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/25"
+            className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-purple-500/25"
           >
-            Continue Watching
+            I agree to continue watching
           </button>
         </motion.div>
       </div>,
