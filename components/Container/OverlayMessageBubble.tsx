@@ -115,24 +115,24 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
     >
-     {/* Message Bubble - Glassmorphism Design */}
-<div className="relative backdrop-blur-md bg-black/05 rounded-2xl p-3  transition-all duration-200">
+     {/* Message Bubble - Glassmorphism Design with Purplish Gradient */}
+<div className="relative bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 backdrop-blur-xl  rounded-2xl p-3 transition-all duration-200 ">
   {/* Username and Message */}
   <div>
     <span 
-      className="text-sm  inline"
+      className="text-sm font-semibold inline"
       style={{ color: getUserColor(displayUsername) }}
       title={displayUsername}
     >
       {displayUsername}:{' '}
     </span>
-    <span className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap break-words">
+    <span className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap break-words">
       {message.message}
     </span>
   </div>
   {/* Timestamp */}
-  <div className="flex justify-end">
-    <span className="text-white/80 text-[10px] font-medium">
+  <div className="flex justify-end mt-1.5">
+    <span className="text-white/50 text-[10px] font-medium">
       {formatChatTime(message.timestamp || Date.now())}
     </span>
   </div>

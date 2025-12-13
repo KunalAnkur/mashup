@@ -169,10 +169,10 @@ const SettingTab = () => {
       {/* Room Settings */}
       <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {/* Profile Update Section */}
-        <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-xl p-4 space-y-4">
+        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-4 space-y-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
-              <LuUser className="text-rose-400" size={16} />
+            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
+              <LuUser className="text-purple-400" size={16} />
             </div>
             <h3 className="text-white font-semibold text-sm font-parkinsans">
               Profile Settings
@@ -183,18 +183,18 @@ const SettingTab = () => {
           <div className="space-y-3">
             {/* Name Field */}
             <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 font-medium">Name</label>
+              <label className="text-xs text-white/70 font-medium">Name</label>
               {isEditingProfile ? (
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/5 rounded-lg text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-colors"
+                  className="w-full px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-colors"
                   placeholder="Enter your name"
                   disabled={isUpdatingProfile}
                 />
               ) : (
-                <div className="px-3 py-2 bg-white/5 rounded-lg">
+                <div className="px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
                   <p className="text-white text-sm">{name || "Not set"}</p>
                 </div>
               )}
@@ -202,7 +202,7 @@ const SettingTab = () => {
 
             {/* Username Field */}
             <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 font-medium">Username</label>
+              <label className="text-xs text-white/70 font-medium">Username</label>
               {isEditingProfile ? (
                 <div className="space-y-1">
                   <input
@@ -224,10 +224,10 @@ const SettingTab = () => {
                         setUsernameError("");
                       }
                     }}
-                    className={`w-full px-3 py-2 bg-white/5 rounded-lg text-white text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-colors ${
+                    className={`w-full px-3 py-2 bg-black/10 backdrop-blur-xl border rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 transition-colors ${
                       usernameError 
-                        ? "focus:ring-red-500/50 border border-red-500/30" 
-                        : "focus:ring-rose-500/50"
+                        ? "focus:ring-red-500/50 border-red-500/30" 
+                        : "focus:ring-purple-500/50 border-zinc-600/15"
                     }`}
                     placeholder="Enter your username (letters, numbers, underscores only)"
                     disabled={isUpdatingProfile}
@@ -236,11 +236,11 @@ const SettingTab = () => {
                     <p className="text-red-400 text-xs font-medium px-1">{usernameError}</p>
                   )}
                   {!usernameError && username.trim() && (
-                    <p className="text-gray-500 text-xs px-1">Username can only contain letters, numbers, and underscores</p>
+                    <p className="text-white/50 text-xs px-1">Username can only contain letters, numbers, and underscores</p>
                   )}
                 </div>
               ) : (
-                <div className="px-3 py-2 bg-white/5 rounded-lg">
+                <div className="px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
                   <p className="text-white text-sm">{username || "Not set"}</p>
                 </div>
               )}
@@ -248,15 +248,15 @@ const SettingTab = () => {
 
             {/* Email Field - Read Only */}
             <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 font-medium flex items-center gap-1">
+              <label className="text-xs text-white/70 font-medium flex items-center gap-1">
                 <LuMail size={12} />
                 Email Address
               </label>
-              <div className="px-3 py-2 bg-white/5 rounded-lg min-w-0">
+              <div className="px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg min-w-0">
                 <p className="text-white text-sm truncate" title={email || "Not set"}>
                   {email || "Not set"}
                 </p>
-                <p className="text-gray-500 text-xs mt-1">Email cannot be changed</p>
+                <p className="text-white/50 text-xs mt-1">Email cannot be changed</p>
               </div>
             </div>
           </div>
@@ -273,7 +273,7 @@ const SettingTab = () => {
                   setEmail(authState.user?.email || "");
                   setUsernameError("");
                 }}
-                className="flex-1 px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 text-sm font-medium rounded-lg transition-all duration-200"
+                className="flex-1 px-4 py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-sm font-medium rounded-lg transition-all duration-200"
                 disabled={isUpdatingProfile}
               >
                 Cancel
@@ -281,7 +281,7 @@ const SettingTab = () => {
               <button
                 onClick={handleUpdateProfile}
                 disabled={isUpdatingProfile || !name.trim() || !username.trim() || !!usernameError}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isUpdatingProfile ? "Saving..." : "Save Changes"}
               </button>
@@ -289,7 +289,7 @@ const SettingTab = () => {
           ) : (
             <button
               onClick={() => setIsEditingProfile(true)}
-              className="w-full px-4 py-2 bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 hover:from-rose-600/30 hover:via-pink-600/30 hover:to-fuchsia-600/30 text-rose-400 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full px-4 py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-purple-400 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
             >
               <LuPencil size={14} />
               Edit Profile
@@ -300,10 +300,10 @@ const SettingTab = () => {
        
 
         {/* Copy Room Link */}
-        <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a]  rounded-xl p-4 space-y-3">
+        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
-              <LuLink className="text-rose-400" size={16} />
+            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
+              <LuLink className="text-purple-400" size={16} />
             </div>
             <h3 className="text-white font-semibold text-sm font-parkinsans">
               Room Link
@@ -311,14 +311,14 @@ const SettingTab = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-white/5  rounded-lg">
-              <p className="text-gray-400 text-xs truncate">
+            <div className="flex-1 px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
+              <p className="text-white/70 text-xs truncate">
                 {roomUrl || "No room link available"}
               </p>
             </div>
             <button
               onClick={handleCopyLink}
-              className="relative p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all duration-200 group"
+              className="relative p-2 rounded-lg bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group"
             >
               {copied ? (
                 <LuCheck
@@ -328,13 +328,13 @@ const SettingTab = () => {
               ) : (
                 <LuLink
                   size={18}
-                  className="text-gray-400 group-hover:text-pink-400 transition-colors"
+                  className="text-white/70 group-hover:text-white transition-colors"
                 />
               )}
               {copied && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-[#2a2a2e] text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl animate-fade-in">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl animate-fade-in">
                   Link copied!
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-[#2a2a2e]"></div>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
                 </div>
               )}
             </button>
@@ -342,9 +342,9 @@ const SettingTab = () => {
         </div>
 
         {/* Leave Party */}
-        <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-white/10 rounded-xl p-4 space-y-3">
+        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-red-500/20">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
               <LuLogOut className="text-red-400" size={16} />
             </div>
             <h3 className="text-white font-semibold text-sm font-parkinsans">
@@ -352,7 +352,7 @@ const SettingTab = () => {
             </h3>
           </div>
 
-          <p className="text-gray-400 text-xs leading-relaxed">
+          <p className="text-white/70 text-xs leading-relaxed">
             {host
               ? "Leaving will end the party for everyone. You'll need the room ID to rejoin."
               : "You'll need the room ID to rejoin this party."}
@@ -360,7 +360,7 @@ const SettingTab = () => {
 
           <button
             onClick={() => setShowLeaveConfirm(true)}
-            className="w-full px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
+            className="w-full px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
           >
             Leave Party
           </button>
