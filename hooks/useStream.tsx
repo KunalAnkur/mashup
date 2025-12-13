@@ -364,13 +364,10 @@ export const useStream = ({
             const newDevice = new mediasoupClient.Device();
             await newDevice.load({ routerRtpCapabilities: response.rtpCapabilities });
             deviceRef.current = newDevice;
-            
+
             const newTransport = newDevice.createRecvTransport({
                 ...response.recvTransportOptions,
                 iceServers: response.iceServers,
-                // Use "all" to allow both direct connections and TURN relay
-                // "relay" would force all traffic through TURN (higher latency, more bandwidth)
-                iceTransportPolicy: "relay",
             });
             createConnectHandler(newTransport, roomId);
             consumerTransportRef.current = newTransport;
@@ -416,9 +413,6 @@ export const useStream = ({
                 const transport = device.createSendTransport({
                     ...joinResponse.sendTransportOptions,
                     iceServers: joinResponse.iceServers,
-                    // Use "all" to allow both direct connections and TURN relay
-                    // "relay" would force all traffic through TURN (higher latency, more bandwidth)
-                    iceTransportPolicy: "relay",
                 });
                 createConnectHandler(transport, roomId);
 
@@ -447,9 +441,6 @@ export const useStream = ({
                 const transport = device.createRecvTransport({
                     ...joinResponse.recvTransportOptions,
                     iceServers: joinResponse.iceServers,
-                    // Use "all" to allow both direct connections and TURN relay
-                    // "relay" would force all traffic through TURN (higher latency, more bandwidth)
-                    iceTransportPolicy: "relay",
                 });
                 createConnectHandler(transport, roomId);
                 consumerTransportRef.current = transport;
