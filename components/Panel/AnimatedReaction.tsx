@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ReactionType } from "@/types/chatTypes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface AnimatedReactionProps {
   emoji: ReactionType;
@@ -24,6 +24,7 @@ const AnimatedReaction = ({
   className = "",
 }: AnimatedReactionProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Map our emojis to Microsoft Fluent Animated Emoji URLs (60 emojis)
   const getAnimatedEmojiUrl = (emoji: ReactionType): string | null => {
@@ -117,6 +118,22 @@ const AnimatedReaction = ({
   const animatedUrl = getAnimatedEmojiUrl(emoji);
   const hasAnimatedVersion = animatedUrl !== null;
 
+  // Preload image when component mounts or when emoji changes
+  // This ensures the image is ready before first hover
+  useEffect(() => {
+    if (animatedUrl && !imageLoaded) {
+      const img = new Image();
+      img.onload = () => {
+        setImageLoaded(true);
+      };
+      img.onerror = () => {
+        // If image fails to load, keep showing static emoji
+        // Don't set imageLoaded to true, so we always show static
+      };
+      img.src = animatedUrl;
+    }
+  }, [animatedUrl, imageLoaded]);
+
   return (
     <motion.button
       onClick={onClick}
@@ -131,11 +148,12 @@ const AnimatedReaction = ({
       title={`Send ${emoji} reaction`}
       style={{ width: "32px", height: "32px" }} // Fixed size to prevent jumping
     >
-      {shouldShowAnimated && hasAnimatedVersion ? (
-        // Animated emoji (on hover or when sending) - only if available
+      {/* Show animated image only when it's loaded, otherwise show static emoji */}
+      {shouldShowAnimated && hasAnimatedVersion && imageLoaded ? (
+        // Animated emoji (on hover or when sending) - only if available and loaded
         <img
           key={`animated-${emoji}`}
-          src={animatedUrl}
+          src={animatedUrl!}
           alt={emoji}
           width={28}
           height={28}
@@ -143,7 +161,7 @@ const AnimatedReaction = ({
           style={{ imageRendering: "auto" }}
         />
       ) : (
-        // Static emoji (default state or no animated version)
+        // Static emoji (default state, no animated version, or image not loaded yet)
         <span className="text-xl leading-none">{emoji}</span>
       )}
     </motion.button>
