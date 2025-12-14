@@ -5,14 +5,16 @@ import { useRef, useEffect, useState } from "react";
 import { RootState } from "@/lib/store";
 import { Panel } from "@/components/Panel";
 import ReactionsContainer from "@/components/Panel/ReactionsContainer";
-import { useRoomContext } from "@/context/RoomContext";
+import { UserInfo, useRoomContext } from "@/context/RoomContext";
 import ModalOnRoomCreate from "@/components/Modals/ModalOnRoomCreate";
-
+import { useDispatch } from "react-redux";
+import { setFocused } from "@/lib/store/slices/roomSlice";
 const Page = () => {
+  const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isJoined, roomId, isHost } = useRoomContext();
-  
+  const { isJoined, roomId, isHost, joinResponse } = useRoomContext();
+  const hostUsername = joinResponse?.users?.find((user: UserInfo) => user.host)?.username as string | null;
   // Welcome/invite modal state
   const [showModal, setShowModal] = useState(false);
   const modalShownRef = useRef(false);
@@ -53,6 +55,7 @@ const Page = () => {
   // Handle closing modal
   const handleCloseModal = () => {
     setShowModal(false);
+    dispatch(setFocused(true));
     modalShownRef.current = true;
   };
 
@@ -87,6 +90,7 @@ const Page = () => {
       {/* Modal */}
       <ModalOnRoomCreate
         isHost={isHost}
+        hostUsername={hostUsername}
         showModal={showModal}
         onClose={handleCloseModal}
         roomUrl={roomUrl}

@@ -16,6 +16,7 @@ const initialState: RoomState = {
     panelCollapsed: false
   },
   loading: false,
+  focused: false,
   urlMetadataCache: {},
 };
 
@@ -128,6 +129,9 @@ const authSlice = createSlice({
     clearUrlMetadataCache: (state) => {
       state.urlMetadataCache = {};
     },
+    setFocused: (state, action: PayloadAction<boolean>) => {
+      state.focused = action.payload;
+    },
   },
   extraReducers: (builder) => {},
 });
@@ -145,5 +149,6 @@ export const {
   setUrlMetadata,
   setUrlMetadataBatch,
   clearUrlMetadataCache,
+  setFocused,
 } = authSlice.actions;
 export default authSlice;

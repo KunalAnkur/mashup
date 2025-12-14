@@ -36,6 +36,7 @@ export interface RoomState {
   settings: RoomSetting;
   selectedFileIndex: number;
   refer: boolean;
+  focused: boolean;
   /** Cached metadata for URLs (keyed by URL string) */
   urlMetadataCache: Record<string, UrlMetadata>;
 }

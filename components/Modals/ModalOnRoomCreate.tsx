@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 
 interface ModalOnRoomCreateProps {
   isHost: boolean;
+  hostUsername: string | null;
   showModal: boolean;
   onClose: () => void;
   roomUrl: string;
@@ -13,6 +14,7 @@ interface ModalOnRoomCreateProps {
 
 const ModalOnRoomCreate = ({
   isHost,
+  hostUsername,
   showModal,
   onClose,
   roomUrl,
@@ -160,7 +162,7 @@ const ModalOnRoomCreate = ({
           <h3 className="text-white text-lg font-semibold mb-2">
             {isHost
               ? 'Your watch party is ready!'
-              : "You've been invited to a watch party on Movmash"}
+              : `You've been invited to a watch party on Movmash ${hostUsername ? `by ${hostUsername}` : ''}`}
           </h3>
           <p className="text-white/60 text-xs">
             {isHost

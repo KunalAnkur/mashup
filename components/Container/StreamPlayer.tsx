@@ -230,14 +230,14 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
             <Player
                 key={isHost ? `host-${roomState.selectedFileIndex}` : `consumer-${remoteStream?.id}`}
                 playerRef={playerRef}
-                playing={helper.getInitialPlayerState(source, roomType || "stream", isHost, isScreenSharing, hostLeft, isPaused).playing }
+                playing={helper.getInitialPlayerState({ url: source, roomType: roomType || "stream", host: isHost, focused: roomState.focused, screenSharing: isScreenSharing, hostLeft: hostLeft, paused: isPaused }).playing }
                 onReady={handleVideoReady}
                 onEnded={handleVideoEnded}
                 onSeekStart={onSeekStart}
                 onSeekEnd={onSeekEnd}
                 fullscreenTargetRef={fullscreenTargetRef}
                 url={source}
-                muted={helper.getInitialPlayerState(source, roomType || "stream", isHost, isScreenSharing, hostLeft, isPaused).muted }
+                muted={helper.getInitialPlayerState({ url: source, roomType: roomType || "stream", host: isHost, focused: roomState.focused, screenSharing: isScreenSharing, hostLeft: hostLeft, paused: isPaused }).muted }
                 onPlay={onPlay}
                 onPause={onPause}
                 hasVideoTrack={hasVideoTrack}
