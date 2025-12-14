@@ -789,32 +789,32 @@ const ChatTab = () => {
         @keyframes fade-in {
           from {
             opacity: 0;
-            transform: translateY(8px) scale(0.98);
+            transform: translateY(4px);
           }
           to {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
           }
         }
 
         @keyframes slide-up {
           from {
             opacity: 0;
-            transform: translateY(12px) scale(0.96);
+            transform: translateY(6px);
           }
           to {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateY(0);
           }
         }
 
         .animate-fade-in {
-          animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
           opacity: 0;
         }
 
         .animate-slide-up {
-          animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: slide-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .scrollbar-hide {
