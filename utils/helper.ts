@@ -356,8 +356,17 @@ export function captureStreamFromVideo(videoElement: HTMLVideoElement): MediaStr
         return null;
     }
 }
-
-export function getInitialPlayerState(url: string | string[] | SourceProps[] | MediaStream, roomType: RoomType = "stream", host: boolean, screenSharing: boolean = false, hostLeft: boolean = false, paused: boolean = false) {
+type GetInitialPlayerStateProps = {
+    url: string | string[] | SourceProps[] | MediaStream;
+    roomType: RoomType;
+    host: boolean;
+    screenSharing: boolean;
+    hostLeft: boolean;
+    paused: boolean;
+    focused: boolean;
+}
+// screenSharing: boolean = false, hostLeft: boolean = false, paused: boolean = false
+export function getInitialPlayerState({ url, roomType, host, focused, screenSharing = false, hostLeft = false, paused = false }: GetInitialPlayerStateProps) {
     if (roomType === "sync") {
         // if ((url as string).includes('twitch.tv')) {
         //     return {
@@ -373,7 +382,7 @@ export function getInitialPlayerState(url: string | string[] | SourceProps[] | M
     if (roomType === "stream") {
         return {
           playing: host ? screenSharing : !paused,
-          muted: host ? screenSharing : true,
+          muted: host ? screenSharing : !focused,
         };
     }
     return {
