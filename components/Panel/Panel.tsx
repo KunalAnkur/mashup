@@ -106,7 +106,16 @@ const Panel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-transparent px-4 py-4">
+    <div className="relative flex flex-col h-full w-full bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] px-4 py-4 overflow-hidden">
+      {/* Background Effects - Lighter gradient glows */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#c026d3]/12 rounded-full blur-[120px] opacity-70" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#e11d48]/12 rounded-full blur-[120px] opacity-70" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#7c3aed]/8 rounded-full blur-[140px] opacity-50" />
+      </div>
+      
+      {/* Content - Above Background */}
+      <div className="relative z-10 flex flex-col h-full w-full">
       {/* Leave Confirmation Modal */}
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -141,8 +150,8 @@ const Panel = () => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col gap-4 mb-2">
+        {/* Header */}
+        <div className="flex flex-col gap-4 mb-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <button
@@ -204,8 +213,8 @@ const Panel = () => {
         </div>
       </div>
       
-{/* Tabs */}
-<div className="flex items-center w-full justify-between pt-2 pb-1">
+        {/* Tabs */}
+        <div className="flex items-center w-full justify-between pt-2 pb-1">
   {visibleTabs.map((tab) => {
     // Different gradient colors for each tab type
     const getTabGradient = (tabName: string) => {
@@ -261,9 +270,10 @@ const Panel = () => {
   })}
 </div>
 
-      {/* Tab Content */}
-      <div className="flex-1 overflow-hidden pt-4">
-        {renderTabContent(activeTab)}
+        {/* Tab Content */}
+        <div className="flex-1 overflow-hidden pt-4">
+          {renderTabContent(activeTab)}
+        </div>
       </div>
     </div>
   );
