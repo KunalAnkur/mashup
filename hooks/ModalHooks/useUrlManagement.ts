@@ -16,37 +16,46 @@ export const useUrlManagement = () => {
   );
   const [isAdding, setIsAdding] = useState<boolean>(false);
   
-  const fetchUrlMetadata = useCallback(async (url: string): Promise<AddedUrl["metadata"]> => {
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      const token = authState.token;
+  const fetchUrlMetadata = useCallback(
+    async (url: string): Promise<AddedUrl["metadata"]> => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const token = authState.token;
 
-      const response = await fetch(`${baseUrl}/api/v1/url/metadata`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({ url }),
-      });
+        const response = await fetch(`${baseUrl}/api/v1/url/metadata`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify({ url }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch metadata: ${response.statusText}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          const message =
+            data?.message ||
+            data?.error ||
+            `Failed to fetch metadata: ${response.statusText}`;
+          // Background metadata (existing URLs) should not crash the app; just log and return empty.
+          console.warn("Background metadata fetch failed:", message);
+          return {};
+        }
+
+        return {
+          title: data.data?.title || undefined,
+          description: data.data?.description || undefined,
+          thumbnail: data.data?.thumbnail || undefined,
+          author: data.data?.author || data.data?.siteName || undefined,
+        };
+      } catch (error) {
+        console.error("Error fetching metadata:", error);
+        return {};
       }
-
-      const data = await response.json();
-
-      return {
-        title: data.data?.title || undefined,
-        description: data.data?.description || undefined,
-        thumbnail: data.data?.thumbnail || undefined,
-        author: data.data?.author || data.data?.siteName || undefined,
-      };
-    } catch (error) {
-      console.error("Error fetching metadata:", error);
-      return {};
-    }
-  }, [authState.token]);
+    },
+    [authState.token]
+  );
 
   useEffect(() => {
     if (!roomState.urls || roomState.urls.length === 0) {
@@ -115,11 +124,26 @@ export const useUrlManagement = () => {
           body: JSON.stringify({ url }),
         });
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch metadata: ${response.statusText}`);
-        }
-
         const data = await response.json();
+
+        if (!response.ok) {
+          const message =
+            data?.message ||
+            data?.error ||
+            `Failed to fetch metadata: ${response.statusText}`;
+
+          // Show friendly error text instead of throwing a runtime error
+          setTooltipMessage(message);
+
+          // Remove the temporary placeholder entry since adding failed
+          setAddedUrls((prev) => {
+            const updated = prev.filter((_, index) => index !== newIndex);
+            localStorage.setItem("addedUrls", JSON.stringify(updated));
+            return updated;
+          });
+
+          return;
+        }
         const serverData = data.data || {};
         const playlistItems = serverData.playlistItems as
           | {
@@ -175,6 +199,20 @@ export const useUrlManagement = () => {
         }
       } catch (error) {
         console.error("Error fetching metadata:", error);
+
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Could not add this URL. Please try a different one.";
+
+        setTooltipMessage(message);
+
+        // Remove the temporary placeholder entry since adding failed
+        setAddedUrls((prev) => {
+          const updated = prev.filter((_, index) => index !== newIndex);
+          localStorage.setItem("addedUrls", JSON.stringify(updated));
+          return updated;
+        });
       }
 
       setLoadingMetadata((prev) => {

@@ -63,10 +63,17 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
           isAdding={isAdding}
         />
 
+        {/* Inline error / info message for URL issues (e.g. YouTube Mix playlists) */}
+        {tooltipMessage && (
+          <p className="text-xs text-red-400 mt-1">
+            {tooltipMessage}
+          </p>
+        )}
+
         {/* Added URLs List or Empty State */}
         <div className="flex-1 min-h-0 max-h-full overflow-hidden">
           {addedUrls.length > 0 ? (
-            <div className="flex flex-col gap-2 pr-1 overflow-y-auto max-h-[230px]">
+            <div className="flex flex-col gap-2 pr-1 overflow-y-auto max-h-[200px]">
               {addedUrls.map((item, index) => (
                 <UrlCard
                   key={`${item.url}-${index}`}
@@ -79,10 +86,9 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
                 />
               ))}
             </div>
-          ) : (
-              <EmptyUrlState />
-            
-          )}
+          ) : !tooltipMessage ? (
+            <EmptyUrlState />
+          ) : null}
         </div>
 
         {/* Action Buttons */}
