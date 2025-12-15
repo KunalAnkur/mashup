@@ -99,18 +99,84 @@ export const useUrlManagement = () => {
       const newIndex = addedUrls.length;
       setAddedUrls((prev) => [...prev, { url, platformId: detectedPlatform }]);
       setSourceUrlInput("");
-
-      // Fetch metadata asynchronously
       setLoadingMetadata((prev) => new Set(prev).add(newIndex));
-      const metadata = await fetchUrlMetadata(url);
-      setAddedUrls((prev) => {
-        const updated = [...prev];
-        if (updated[newIndex]) {
-          updated[newIndex] = { ...updated[newIndex], metadata };
+
+      // Fetch metadata (and possible playlist) from backend
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const token = authState.token;
+
+        const response = await fetch(`${baseUrl}/api/v1/url/metadata`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify({ url }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch metadata: ${response.statusText}`);
         }
-        localStorage.setItem("addedUrls", JSON.stringify(updated));
-        return updated;
-      });
+
+        const data = await response.json();
+        const serverData = data.data || {};
+        const playlistItems = serverData.playlistItems as
+          | {
+              url: string;
+              title?: string;
+              description?: string;
+              thumbnail?: string;
+              author?: string;
+            }[]
+          | undefined;
+
+        if (playlistItems && playlistItems.length > 0) {
+          // If backend returned a playlist, replace the single placeholder
+          // with all playlist video URLs as separate entries.
+          setAddedUrls((prev) => {
+            const withoutPlaceholder = [...prev];
+            if (withoutPlaceholder[newIndex]) {
+              withoutPlaceholder.splice(newIndex, 1);
+            }
+
+            const playlistEntries: AddedUrl[] = playlistItems.map((item) => ({
+              url: item.url,
+              platformId: detectPlatform(item.url),
+              metadata: {
+                title: item.title,
+                description: item.description,
+                thumbnail: item.thumbnail,
+                author: item.author,
+              },
+            }));
+
+            const updated = [...withoutPlaceholder, ...playlistEntries];
+            localStorage.setItem("addedUrls", JSON.stringify(updated));
+            return updated;
+          });
+        } else {
+          // Normal single URL behavior
+          const metadata: AddedUrl["metadata"] = {
+            title: serverData.title || undefined,
+            description: serverData.description || undefined,
+            thumbnail: serverData.thumbnail || undefined,
+            author: serverData.author || serverData.siteName || undefined,
+          };
+
+          setAddedUrls((prev) => {
+            const updated = [...prev];
+            if (updated[newIndex]) {
+              updated[newIndex] = { ...updated[newIndex], metadata };
+            }
+            localStorage.setItem("addedUrls", JSON.stringify(updated));
+            return updated;
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching metadata:", error);
+      }
+
       setLoadingMetadata((prev) => {
         const newSet = new Set(prev);
         newSet.delete(newIndex);
