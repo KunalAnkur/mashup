@@ -2,7 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
-import { validateUrl, detectPlatform } from "../../types/ModalTypes/urlUtils";
+import {
+  validateUrl,
+  detectPlatform,
+  normalizeUrlForPlayer,
+} from "../../types/ModalTypes/urlUtils";
 
 export const useUrlManagement = () => {
   const authState = useSelector((state: RootState) => state.auth);
@@ -102,7 +106,8 @@ export const useUrlManagement = () => {
     setIsAdding(true);
     try {
       const detectedPlatform = detectPlatform(sourceUrlInput);
-      const url = sourceUrlInput.trim();
+      const rawUrl = sourceUrlInput.trim();
+      const url = normalizeUrlForPlayer(rawUrl);
 
       // Add URL immediately with empty metadata
       const newIndex = addedUrls.length;
