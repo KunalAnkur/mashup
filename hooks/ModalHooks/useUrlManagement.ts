@@ -226,8 +226,11 @@ export const useUrlManagement = () => {
   };
 
   const handleRemoveUrl = (indexToRemove: number) => {
-    setAddedUrls((prev) => prev.filter((_, index) => index !== indexToRemove));
-    localStorage.setItem("addedUrls", JSON.stringify(addedUrls));
+    setAddedUrls((prev) => {
+      const updated = prev.filter((_, index) => index !== indexToRemove);
+      localStorage.setItem("addedUrls", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   return {

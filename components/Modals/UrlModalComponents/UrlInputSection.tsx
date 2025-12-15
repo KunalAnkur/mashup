@@ -73,7 +73,7 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
         {/* Added URLs List or Empty State */}
         <div className="flex-1 min-h-0 max-h-full overflow-hidden">
           {addedUrls.length > 0 ? (
-            <div className="flex flex-col gap-2 pr-1 overflow-y-auto max-h-[200px]">
+            <div className="flex flex-col gap-2 pr-1 overflow-y-auto max-h-[215px]">
               {addedUrls.map((item, index) => (
                 <UrlCard
                   key={`${item.url}-${index}`}
