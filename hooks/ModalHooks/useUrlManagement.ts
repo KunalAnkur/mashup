@@ -2,9 +2,28 @@ import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
-import { validateUrl, detectPlatform } from "../../types/ModalTypes/urlUtils";
+import {
+  validateUrl,
+  detectPlatform,
+  normalizeUrlForPlayer,
+} from "../../types/ModalTypes/urlUtils";
 
-export const useUrlManagement = () => {
+interface UseUrlManagementOptions {
+  /**
+   * Optional callback when URLs are successfully added.
+   * If provided, the hook will call this callback with the URLs to add instead of managing local state.
+   * This is useful for API-based flows (e.g., updating room in database).
+   */
+  onUrlAdded?: (urls: string[]) => Promise<void>;
+  /**
+   * Whether to persist URLs to localStorage. Defaults to true.
+   * Set to false when using onUrlAdded callback (API-based flow).
+   */
+  persistToLocalStorage?: boolean;
+}
+
+export const useUrlManagement = (options?: UseUrlManagementOptions) => {
+  const { onUrlAdded, persistToLocalStorage = !options?.onUrlAdded } = options || {};
   const authState = useSelector((state: RootState) => state.auth);
   const roomState = useSelector((state: RootState) => state.room);
   const [sourceUrlInput, setSourceUrlInput] = useState<string>("");
@@ -15,6 +34,7 @@ export const useUrlManagement = () => {
     new Set()
   );
   const [isAdding, setIsAdding] = useState<boolean>(false);
+  const [urlError, setUrlError] = useState<string>("");
   
   const fetchUrlMetadata = useCallback(
     async (url: string): Promise<AddedUrl["metadata"]> => {
@@ -31,11 +51,17 @@ export const useUrlManagement = () => {
           body: JSON.stringify({ url }),
         });
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch metadata: ${response.statusText}`);
-        }
-
         const data = await response.json();
+
+        if (!response.ok) {
+          const message =
+            data?.message ||
+            data?.error ||
+            `Failed to fetch metadata: ${response.statusText}`;
+          // Background metadata (existing URLs) should not crash the app; just log and return empty.
+          console.warn("Background metadata fetch failed:", message);
+          return {};
+        }
 
         return {
           title: data.data?.title || undefined,
@@ -52,10 +78,17 @@ export const useUrlManagement = () => {
   );
 
   useEffect(() => {
+    // Only sync from roomState if not using API-based flow
+    if (onUrlAdded) return;
+    
     if (!roomState.urls || roomState.urls.length === 0) {
-      const addedUrls = localStorage.getItem("addedUrls");
-      if (addedUrls) {
-        setAddedUrls(JSON.parse(addedUrls));
+      if (persistToLocalStorage) {
+        const addedUrls = localStorage.getItem("addedUrls");
+        if (addedUrls) {
+          setAddedUrls(JSON.parse(addedUrls));
+        } else {
+          setAddedUrls([]);
+        }
       } else {
         setAddedUrls([]);
       }
@@ -68,12 +101,14 @@ export const useUrlManagement = () => {
         return { url, platformId: detectPlatform(url), metadata };
       });
       const results = await Promise.all(promises);
-      localStorage.setItem("addedUrls", JSON.stringify(results));
+      if (persistToLocalStorage) {
+        localStorage.setItem("addedUrls", JSON.stringify(results));
+      }
       setAddedUrls(results);
     };
     
     fetchMetadata();
-  }, [roomState.urls, fetchUrlMetadata]);
+  }, [roomState.urls, fetchUrlMetadata, onUrlAdded, persistToLocalStorage]);
 
   // Validate URL input
   useEffect(() => {
@@ -94,113 +129,166 @@ export const useUrlManagement = () => {
     if (!validation.valid || isAdding) return;
 
     setIsAdding(true);
+    setUrlError("");
+    setTooltipMessage("");
+    
     try {
+      const rawUrl = sourceUrlInput.trim();
+      const url = normalizeUrlForPlayer(rawUrl);
+
+      // Check if it's a YouTube Mix playlist (RD) - these should only add the first video
+      let isMixPlaylist = false;
+      try {
+        const urlObj = new URL(rawUrl);
+        const playlistId = urlObj.searchParams.get("list");
+        if (playlistId && playlistId.startsWith("RD")) {
+          isMixPlaylist = true;
+        }
+      } catch {
+        // Ignore URL parsing errors
+      }
+
+      // Fetch metadata (and possible playlist) from backend
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
       const token = authState.token;
-      const rawUrl = sourceUrlInput.trim();
 
-      // Detect if this is a YouTube playlist/mix (has list=)
-      const isPlaylist =
-        /youtube\.com/i.test(rawUrl) && rawUrl.includes("list=");
+      const response = await fetch(`${baseUrl}/api/v1/url/metadata`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ url }),
+      });
 
-      if (isPlaylist) {
-        // Call playlist endpoint to get all videos
-        const response = await fetch(
-          `${baseUrl}/api/v1/url/youtube-playlist`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token && { Authorization: `Bearer ${token}` }),
-            },
-            body: JSON.stringify({ url: rawUrl }),
-          }
-        );
+      const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch playlist: ${response.statusText}`
-          );
-        }
+      if (!response.ok) {
+        const message =
+          data?.message ||
+          data?.error ||
+          `Failed to fetch metadata: ${response.statusText}`;
 
-        const data = await response.json();
-        const items = (data.data as Array<{ url: string; metadata: any }>) || [];
-
-        if (items.length === 0) {
-          // Fallback: treat as single URL if playlist fetch returned nothing
-          const detectedPlatform = detectPlatform(rawUrl);
-          const newIndex = addedUrls.length;
-          setAddedUrls((prev) => [
-            ...prev,
-            { url: rawUrl, platformId: detectedPlatform },
-          ]);
-          setSourceUrlInput("");
-
-          setLoadingMetadata((prev) => new Set(prev).add(newIndex));
-          const metadata = await fetchUrlMetadata(rawUrl);
-          setAddedUrls((prev) => {
-            const updated = [...prev];
-            if (updated[newIndex]) {
-              updated[newIndex] = { ...updated[newIndex], metadata };
-            }
-            localStorage.setItem("addedUrls", JSON.stringify(updated));
-            return updated;
-          });
-          setLoadingMetadata((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(newIndex);
-            return newSet;
-          });
+        // Show error message
+        if (onUrlAdded) {
+          setUrlError(message);
         } else {
-          // Add all playlist items at once, with ready metadata
-          const playlistEntries: AddedUrl[] = items.map((item) => ({
+          setTooltipMessage(message);
+        }
+        return;
+      }
+
+      const serverData = data.data || {};
+      const playlistItems = serverData.playlistItems as
+        | {
+            url: string;
+            title?: string;
+            description?: string;
+            thumbnail?: string;
+            author?: string;
+          }[]
+        | undefined;
+
+      // Determine URLs to add
+      let urlsToAdd: string[] = [];
+      
+      if (playlistItems && playlistItems.length > 0 && !isMixPlaylist) {
+        // If backend returned a playlist (and it's not a Mix), add all playlist video URLs
+        urlsToAdd = playlistItems.map((item) => item.url);
+      } else {
+        // Normal single URL behavior (including Mix playlists which only add the first video)
+        urlsToAdd = [url];
+      }
+
+      // If onUrlAdded callback is provided, use API-based flow
+      if (onUrlAdded) {
+        try {
+          await onUrlAdded(urlsToAdd);
+          setSourceUrlInput(""); // Clear input on success
+        } catch (error: any) {
+          const errorMessage = 
+            error?.message || 
+            error?.error ||
+            "Failed to add URLs. Please try again.";
+          setUrlError(errorMessage);
+          throw error; // Re-throw to prevent clearing input
+        }
+        return;
+      }
+
+      // Otherwise, use local state management flow (original behavior)
+      const detectedPlatform = detectPlatform(url);
+      const newIndex = addedUrls.length;
+      
+      // Add URL immediately with empty metadata
+      setAddedUrls((prev) => [...prev, { url, platformId: detectedPlatform }]);
+      setSourceUrlInput("");
+      setLoadingMetadata((prev) => new Set(prev).add(newIndex));
+
+      if (playlistItems && playlistItems.length > 0 && !isMixPlaylist) {
+        // If backend returned a playlist, replace the single placeholder
+        // with all playlist video URLs as separate entries.
+        setAddedUrls((prev) => {
+          const withoutPlaceholder = [...prev];
+          if (withoutPlaceholder[newIndex]) {
+            withoutPlaceholder.splice(newIndex, 1);
+          }
+
+          const playlistEntries: AddedUrl[] = playlistItems.map((item) => ({
             url: item.url,
             platformId: detectPlatform(item.url),
             metadata: {
-              title: item.metadata?.title,
-              description: item.metadata?.description,
-              thumbnail: item.metadata?.thumbnail,
-              author:
-                item.metadata?.author || item.metadata?.siteName,
+              title: item.title,
+              description: item.description,
+              thumbnail: item.thumbnail,
+              author: item.author,
             },
           }));
 
-          setAddedUrls((prev) => {
-            const updated = [...prev, ...playlistEntries];
+          const updated = [...withoutPlaceholder, ...playlistEntries];
+          if (persistToLocalStorage) {
             localStorage.setItem("addedUrls", JSON.stringify(updated));
-            return updated;
-          });
-
-          setSourceUrlInput("");
-        }
+          }
+          return updated;
+        });
       } else {
-        // Single URL flow (existing behavior)
-        const detectedPlatform = detectPlatform(rawUrl);
+        // Normal single URL behavior
+        const metadata: AddedUrl["metadata"] = {
+          title: serverData.title || undefined,
+          description: serverData.description || undefined,
+          thumbnail: serverData.thumbnail || undefined,
+          author: serverData.author || serverData.siteName || undefined,
+        };
 
-        // Add URL immediately with empty metadata
-        const newIndex = addedUrls.length;
-        setAddedUrls((prev) => [
-          ...prev,
-          { url: rawUrl, platformId: detectedPlatform },
-        ]);
-        setSourceUrlInput("");
-
-        // Fetch metadata asynchronously
-        setLoadingMetadata((prev) => new Set(prev).add(newIndex));
-        const metadata = await fetchUrlMetadata(rawUrl);
         setAddedUrls((prev) => {
           const updated = [...prev];
           if (updated[newIndex]) {
             updated[newIndex] = { ...updated[newIndex], metadata };
           }
-          localStorage.setItem("addedUrls", JSON.stringify(updated));
+          if (persistToLocalStorage) {
+            localStorage.setItem("addedUrls", JSON.stringify(updated));
+          }
           return updated;
         });
-        setLoadingMetadata((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(newIndex);
-          return newSet;
-        });
+      }
+
+      setLoadingMetadata((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(newIndex);
+        return newSet;
+      });
+    } catch (error) {
+      console.error("Error adding URL:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not add this URL. Please try a different one.";
+
+      if (onUrlAdded) {
+        setUrlError(message);
+      } else {
+        setTooltipMessage(message);
       }
     } finally {
       setIsAdding(false);
@@ -208,8 +296,13 @@ export const useUrlManagement = () => {
   };
 
   const handleRemoveUrl = (indexToRemove: number) => {
-    setAddedUrls((prev) => prev.filter((_, index) => index !== indexToRemove));
-    localStorage.setItem("addedUrls", JSON.stringify(addedUrls));
+    setAddedUrls((prev) => {
+      const updated = prev.filter((_, index) => index !== indexToRemove);
+      if (persistToLocalStorage) {
+        localStorage.setItem("addedUrls", JSON.stringify(updated));
+      }
+      return updated;
+    });
   };
 
   return {
@@ -220,6 +313,8 @@ export const useUrlManagement = () => {
     tooltipMessage,
     loadingMetadata,
     isAdding,
+    urlError,
+    setUrlError,
     handleAddUrl,
     handleRemoveUrl,
   };
