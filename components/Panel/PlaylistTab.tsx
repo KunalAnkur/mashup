@@ -16,7 +16,9 @@ import { PlaylistUrlCard, PlaylistScreenShareCard, PlaylistFileCard } from "./Pl
 import { AddUrlModal } from "./AddUrlModal";
 import { PlaylistEmptyState } from "./PlaylistEmptyState";
 import { usePlaylistMetadata } from "@/hooks/usePlaylistMetadata";
-import { usePlaylistUrlManagement } from "@/hooks/usePlaylistUrlManagement";
+import { useUrlManagement } from "@/hooks/ModalHooks/useUrlManagement";
+import { useUpdateRoomMutation, useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
+import { useRoomContext } from "@/context/RoomContext";
 
 const PlaylistTab = () => {
     const dispatch = useDispatch();
@@ -28,7 +30,6 @@ const PlaylistTab = () => {
     const [isSharingScreen, setIsSharingScreen] = useState(false);
     const [isAddingFiles, setIsAddingFiles] = useState(false);
     const [showAddUrlModal, setShowAddUrlModal] = useState(false);
-    const [urlInput, setUrlInput] = useState("");
 
     // Determine streaming mode from room state only
     const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
@@ -38,9 +39,121 @@ const PlaylistTab = () => {
     const selectedIndex = roomState.selectedFileIndex;
     const urlMetadataCache = roomState.urlMetadataCache;
 
+    // RTK Query hooks for room updates
+    const [updateRoom] = useUpdateRoomMutation();
+    const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
+    const { updatePlaylist } = useRoomContext();
+
+    // Callback to handle adding URLs to room (API-based flow)
+    const handleUrlAdded = useCallback(async (urlsToAdd: string[]) => {
+        if (!roomState.roomId) {
+            throw new Error("Room ID is missing");
+        }
+
+        // First, get the database UUID from room_id
+        let databaseId: string;
+        try {
+            const roomInfo = await getRoomByRoomId(roomState.roomId).unwrap();
+            databaseId = roomInfo?.data?.id;
+            if (!databaseId) {
+                console.error('Room info response:', roomInfo);
+                throw new Error("Could not find database ID for room");
+            }
+        } catch (fetchError: any) {
+            console.error('Error fetching room info:', fetchError);
+            const fetchErrorMessage = 
+                fetchError?.data?.message || 
+                fetchError?.message || 
+                "Failed to fetch room information";
+            throw new Error(fetchErrorMessage);
+        }
+
+        // Combine existing URLs with new URLs
+        const newUrls = [...urls, ...urlsToAdd];
+        
+        // Validate URLs array
+        if (!Array.isArray(newUrls) || newUrls.length === 0) {
+            throw new Error("Invalid URLs array. Please try again.");
+        }
+        
+        // Filter out any invalid URLs
+        const validUrls = newUrls.filter((u) => u && typeof u === 'string' && u.trim().length > 0);
+        
+        if (validUrls.length === 0) {
+            throw new Error("No valid URLs to add. Please check your input.");
+        }
+
+        // Update room using database UUID
+        try {
+            await updateRoom({
+                id: databaseId,
+                body: {
+                    urls: validUrls,
+                    type: "sync",
+                    source: "url",
+                },
+            }).unwrap();
+
+            // Update Redux state
+            dispatch(updateRoomInfo({
+                urls: validUrls,
+            }));
+
+            await updatePlaylist(validUrls);
+        } catch (updateError: any) {
+            // RTK Query errors can have different structures
+            console.error('Error updating room - raw error:', updateError);
+            
+            // Try to extract error message from various possible structures
+            let updateErrorMessage = "Failed to update room. Please try again.";
+            
+            // Check for RTK Query serialized error structure
+            if (updateError?.data) {
+                const errorData = updateError.data;
+                if (typeof errorData === 'string') {
+                    updateErrorMessage = errorData;
+                } else if (errorData?.message) {
+                    updateErrorMessage = errorData.message;
+                } else if (errorData?.error) {
+                    updateErrorMessage = errorData.error;
+                } else if (errorData?.errors && Array.isArray(errorData.errors)) {
+                    // Joi validation errors
+                    updateErrorMessage = errorData.errors.map((e: any) => e.message || e).join(', ');
+                }
+            } 
+            // Check for serialized error (RTK Query format)
+            else if (updateError?.status === 'FETCH_ERROR' || updateError?.status === 'PARSING_ERROR' || updateError?.status === 'CUSTOM_ERROR') {
+                updateErrorMessage = updateError.error || updateError.message || "Network error. Please check your connection.";
+            }
+            // Check for standard error properties
+            else if (updateError?.message) {
+                updateErrorMessage = updateError.message;
+            } else if (updateError?.error) {
+                updateErrorMessage = updateError.error;
+            } else if (typeof updateError === 'string') {
+                updateErrorMessage = updateError;
+            }
+            
+            console.error('Error updating room - extracted message:', updateErrorMessage);
+            throw new Error(updateErrorMessage);
+        }
+    }, [roomState.roomId, urls, getRoomByRoomId, updateRoom, dispatch, updatePlaylist]);
+
+    // Use enhanced useUrlManagement hook with API callback
+    const {
+        sourceUrlInput: urlInput,
+        setSourceUrlInput: setUrlInput,
+        isAdding: isAddingUrls,
+        urlError,
+        setUrlError,
+        handleAddUrl: handleAddMoreUrls,
+    } = useUrlManagement({
+        onUrlAdded: handleUrlAdded,
+        persistToLocalStorage: false, // Don't persist when using API flow
+    });
+
     // Use custom hooks
     const { isUrlLoading } = usePlaylistMetadata(urls, isFileStreaming);
-    const { isAddingUrls, urlError, setUrlError, handleAddMoreUrls: addUrlsToRoom } = usePlaylistUrlManagement();
 
     // Find the platform being streamed
     const getStreamingPlatform = () => {
@@ -209,35 +322,41 @@ const PlaylistTab = () => {
         setShowAddUrlModal(true);
         setUrlInput("");
         setUrlError("");
-    }, [isHost, isSyncMode, roomState.roomId, setUrlError]);
+    }, [isHost, isSyncMode, roomState.roomId, setUrlInput, setUrlError]);
 
     // Handle closing add URL modal
     const handleCloseAddUrlModal = useCallback(() => {
         setShowAddUrlModal(false);
         setUrlInput("");
         setUrlError("");
-    }, [setUrlError]);
+    }, [setUrlInput, setUrlError]);
 
     // Handle URL input change
     const handleUrlInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setUrlInput(value);
+        setUrlInput(e.target.value);
         setUrlError(""); // Clear error on input change
-    }, [setUrlError]);
+    }, [setUrlInput, setUrlError]);
 
-    // Handle add more URLs (for sync mode)
-    const handleAddMoreUrls = useCallback(async () => {
-        await addUrlsToRoom(urlInput, urls, handleCloseAddUrlModal);
-    }, [urlInput, urls, addUrlsToRoom, handleCloseAddUrlModal]);
+    // Handle add more URLs (for sync mode) - wraps handleAddUrl to close modal on success
+    const handleAddMoreUrlsWithClose = useCallback(async () => {
+        try {
+            await handleAddMoreUrls();
+            // Close modal on success
+            handleCloseAddUrlModal();
+        } catch (error) {
+            // Error is already handled by useUrlManagement
+            console.error("Error adding URLs:", error);
+        }
+    }, [handleAddMoreUrls, handleCloseAddUrlModal]);
 
     // Handle URL input keydown
     const handleUrlInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter" && !urlError && urlInput.trim()) {
-            handleAddMoreUrls();
+            handleAddMoreUrlsWithClose();
         } else if (e.key === "Escape") {
             handleCloseAddUrlModal();
         }
-    }, [urlInput, urlError, handleAddMoreUrls, handleCloseAddUrlModal]);
+    }, [urlInput, urlError, handleAddMoreUrlsWithClose, handleCloseAddUrlModal]);
 
     // Get playlist items
     const getPlaylistItems = () => {
@@ -421,7 +540,7 @@ const PlaylistTab = () => {
                 onClose={handleCloseAddUrlModal}
                 onUrlInputChange={handleUrlInputChange}
                 onUrlInputKeyDown={handleUrlInputKeyDown}
-                onAddUrl={handleAddMoreUrls}
+                onAddUrl={handleAddMoreUrlsWithClose}
             />
         </>
     );
