@@ -99,7 +99,7 @@ const Panel = () => {
       <FeedbackModal 
         isOpen={isFeedbackOpen} 
         onClose={() => setIsFeedbackOpen(false)} 
-        roomId={roomId} 
+        roomId={roomId || undefined}
       />
 
       {/* Background Effects */}
