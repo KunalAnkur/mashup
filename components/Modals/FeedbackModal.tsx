@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { useSelector } from "react-redux"; // Added for Redux access
-import { RootState } from "@/lib/store"; // Adjust path if necessary
-import { LuX, LuSend, LuTriangleAlert } from "react-icons/lu";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { LuX, LuSend, LuSparkles, LuMessageSquare } from "react-icons/lu";
 import { submitFeedback } from "@/lib/store/api/feedbackApi";
 import { showSuccess, showError } from "@/utils/toast";
 
@@ -14,10 +14,7 @@ interface FeedbackModalProps {
 
 const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
   const [loading, setLoading] = useState(false);
-  
-  // Get full room state from Redux to send as diagnostic details
   const roomState = useSelector((state: RootState) => state.room);
-
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -28,107 +25,95 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    // Validate Title (Backend requires min 3)
-    if (formData.title.length < 3) {
-      showError("Title too short", "Please provide a title with at least 3 characters.");
+    if (formData.title.length < 3 || formData.description.length < 10) {
+      showError("Invalid Input", "Please fill in all fields correctly.");
       return;
     }
-  
-    // Validate Description (Backend requires min 10)
-    if (formData.description.length < 10) {
-      showError("Description too short", "Please provide more detail (min 10 chars).");
-      return;
-    }
-  
+
     setLoading(true);
     try {
-      // Capture a snapshot of the current room status from Redux
       const roomDetailsSnapshot = {
         type: roomState.type,
         source: roomState.source,
-        urls: roomState.urls,
-        filesCount: roomState.files?.length || 0,
-        selectedFileIndex: roomState.selectedFileIndex,
         isHost: roomState.host,
-        isRefer: roomState.refer,
         focused: roomState.focused,
       };
 
-      const payload = {
+      await submitFeedback({
         ...formData,
         room_id: roomId || undefined,
-        room_details: roomDetailsSnapshot // Sends the Redux state snapshot
-      };
+        room_details: roomDetailsSnapshot
+      });
       
-      await submitFeedback(payload);
-      showSuccess("Thank you for helping us improve Movmash.");
+      showSuccess("Feedback Sent! 🎉\nThank you for helping us grow!");
       onClose();
-      
-      // Reset form
       setFormData({ title: "", description: "", category: "bug" });
     } catch (err: any) {
-      // Handle Joi validation errors or server errors
-      const serverMessage = err.response?.data?.errors?.[0]?.message || err.response?.data?.message;
-      showError("Failed to send", serverMessage || "Something went wrong. Please try again later.");
+      showError("Error", "Could not send feedback. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-      <div className="bg-gradient-to-br from-[#1a1a1d] to-[#151518] border border-white/10 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+
+      <div className="relative w-full max-w-md bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518]  rounded-[2rem] shadow-2xl overflow-hidden animate-slide-up">
+        
+        {/* Dynamic Background Glows (Matching Panel Style) */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[60px]" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-[60px]" />
+
         {/* Header */}
-        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-          <h3 className="text-white font-bold flex items-center gap-2 font-parkinsans">
-            <LuTriangleAlert className="text-amber-400" /> Report an Issue
-          </h3>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+        <div className="relative px-6 pt-6 pb-2 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 ">
+              <LuMessageSquare className="text-rose-400" size={20} />
+            </div>
+            <div>
+              <h3 className="text-white text-lg font-bold font-parkinsans">Feedback</h3>
+              <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">Help us improve</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all">
             <LuX size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider font-semibold">Category</label>
-            <div className="flex gap-2">
-              {["bug", "feature", "other"].map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, category: cat as any })}
-                  className={`flex-1 py-2 rounded-lg text-xs capitalize transition-all border font-medium ${
-                    formData.category === cat 
-                      ? "bg-amber-500/20 border-amber-500/50 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.1)]" 
-                      : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+        <form onSubmit={handleSubmit} className="relative p-6 space-y-5">
+          {/* Category Chips - Matching Tab Style */}
+          <div className="flex p-1 bg-zinc-900/50 rounded-2xl ">
+            {["bug", "feature", "other"].map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setFormData({ ...formData, category: cat as any })}
+                className={`flex-1 py-2 text-[11px] font-bold capitalize transition-all duration-300 rounded-xl ${
+                  formData.category === cat 
+                    ? "bg-gradient-to-r from-rose-500/20 to-fuchsia-500/20 text-white " 
+                    : "text-white/40 hover:text-white/60"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs text-white/50 block ml-1">Title</label>
+          <div className="space-y-4">
             <input
               type="text"
-              placeholder="What's the issue?"
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 transition-all text-sm"
+              placeholder="Topic"
+              className="w-full bg-zinc-800/20  rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all font-medium"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             />
-          </div>
 
-          <div className="space-y-1">
-            <label className="text-xs text-white/50 block ml-1">Description</label>
             <textarea
-              placeholder="Tell us more details... (Min 10 characters)"
+              placeholder="Tell us what's on your mind..."
               rows={4}
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 transition-all resize-none text-sm"
+              className="w-full bg-zinc-800/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all resize-none font-medium"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
@@ -137,19 +122,20 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/20 active:scale-[0.98]"
+            className="group relative w-full py-4 bg-gradient-to-r from-rose-600 to-fuchsia-600 hover:from-rose-500 hover:to-fuchsia-500 text-white font-bold text-sm rounded-2xl transition-all duration-300 shadow-lg shadow-rose-500/20 overflow-hidden active:scale-95 disabled:opacity-50"
           >
-            {loading ? (
-               <div className="flex items-center gap-2">
-                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                 <span>Sending...</span>
-               </div>
-            ) : (
-              <>
-                <LuSend size={18} />
-                <span>Submit Report</span>
-              </>
-            )}
+            <div className="relative z-10 flex items-center justify-center gap-2">
+              {loading ? (
+                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <LuSend size={18} />
+                  <span>Send Feedback</span>
+                </>
+              )}
+            </div>
+            {/* Glossy light effect from chat bubbles */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           </button>
         </form>
       </div>

@@ -109,7 +109,7 @@ const Panel = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#7c3aed]/8 rounded-full blur-[140px] opacity-50" />
       </div>
       
-      <div className="relative z-10 flex flex-col h-full w-full">
+      <div className="relative z-30 flex flex-col h-full w-full">
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
@@ -193,35 +193,40 @@ const Panel = () => {
       </div>
 
       {/* Beta Message Box */}
-      <div className="relative z-10 mb-3 mt-2">
-        <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-yellow-500/10 backdrop-blur-xl border border-amber-500/20 rounded-xl p-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-1">
-              <span className="px-2 py-0.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold rounded-md">
-                BETA
-              </span>
-              <p className="text-white/80 text-xs sm:text-sm">
-                Actively Improving
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsFeedbackOpen(true)}
-                className="text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors duration-200 underline decoration-amber-400/50 hover:decoration-amber-300/70"
-              >
-                Feedback
-              </button>
-              <span className="text-white/30">•</span>
-              <button
-                onClick={() => setIsFeedbackOpen(true)}
-                className="text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors duration-200 underline decoration-amber-400/50 hover:decoration-amber-300/70"
-              >
-                Report Bug
-              </button>
-            </div>
-          </div>
+<div className="relative z-10 mb-4 mt-2 group">
+  <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-yellow-500/5 blur-xl group-hover:opacity-100 opacity-50 transition-opacity duration-500" />
+  
+  <div className="relative bg-[#1a1a1d]/40 backdrop-blur-2xl border border-white/5 rounded-2xl p-3.5 shadow-2xl overflow-hidden">
+    {/* Decorative corner glow */}
+    <div className="absolute -top-10 -right-10 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl" />
+    
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inset-0 bg-amber-500/20 blur-md animate-pulse" />
+          <span className="relative px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[10px] font-black tracking-widest rounded-md uppercase">
+            Beta
+          </span>
+        </div>
+        <div className="flex flex-col">
+          <p className="text-white/90 text-xs font-semibold tracking-tight">
+            Actively Improving
+          </p>
+          <p className="text-white/40 text-[10px] leading-none mt-0.5">
+            Help us shape Movmash
+          </p>
         </div>
       </div>
+
+      <button
+        onClick={() => setIsFeedbackOpen(true)}
+        className="px-4 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 text-amber-400 text-[11px] font-bold rounded-lg transition-all duration-300 active:scale-95 shadow-lg shadow-amber-900/5"
+      >
+        Feedback
+      </button>
+    </div>
+  </div>
+</div>
       
         {/* Tabs */}
         <div className="flex items-center w-full justify-between pt-2 pb-1">
