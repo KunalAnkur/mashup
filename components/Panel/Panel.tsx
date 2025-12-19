@@ -17,11 +17,16 @@ import * as constants from "../../constants";
 import { LuCheck, LuLink, LuLogOut } from "react-icons/lu";
 import { useRoomContext } from "@/context/RoomContext";
 import { showError } from "@/utils/toast";
+// New Import
+import FeedbackModal from "../Modals/FeedbackModal";
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
-  const { leaveRoom, roomId } = useRoomContext(); // Use centralized room management
+  // New State for Feedback Modal
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  
+  const { leaveRoom, roomId } = useRoomContext();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const router = useRouter();
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
@@ -29,20 +34,13 @@ const Panel = () => {
   const host = roomState.host;
   const dispatch = useDispatch();
 
-  // Generate room URL dynamically
   const roomUrl = roomId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/room/${roomId}` : '';
 
-  // Determine which tabs to show based on source type and host status
-  // - For stream with file source: Playlist tab only visible to host (since files are local)
-  // - For stream with stream source (screen): Playlist tab visible to all (shows platform being streamed)
-  // - For sync: Playlist tab visible to all (everyone can see the URLs)
   const visibleTabs = useMemo(() => {
     const isStreaming = roomState.type === "stream";
 
     return Object.values(Tabs).filter((tab) => {
       if (tab === Tabs.PLAYLIST) {
-        // For file streaming: only show to host (files are local, non-hosts can't see them)
-        // For screen streaming or sync: always show (everyone can see)
         return isStreaming ? host : true;
       }
       return true;
@@ -72,25 +70,15 @@ const Panel = () => {
 
   const handleLeaveParty = async () => {
     try {
-      // 1. Call the API to inactivate the room (if host)
       if (host) {
         const response = await inactiveMyRoomApi();
         console.log("Room inactivated:", response);
       }
-
-      // 2. Leave the room via RoomContext (handles socket disconnect and cleanup)
       leaveRoom();
       setShowLeaveConfirm(false);
       router.push("/");
-      // 3. Navigate to home page
-      // setTimeout(() => {
-      //   router.push("/");
-      //   setShowLeaveConfirm(false);
-      // }, 100);
     } catch (error) {
-      // console.error("Error leaving party:", error);
       showError("Failed to leave room", "There was an error leaving the room. You have been removed locally.");
-      // Still navigate even if there's an error
       dispatch(exitRoom());
       router.push("/");
       setShowLeaveConfirm(false);
@@ -107,16 +95,21 @@ const Panel = () => {
 
   return (
     <div className="relative flex flex-col h-full w-full bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] px-4 py-4 overflow-hidden">
-      {/* Background Effects - Lighter gradient glows */}
+      {/* New Feedback Modal Component */}
+      <FeedbackModal 
+        isOpen={isFeedbackOpen} 
+        onClose={() => setIsFeedbackOpen(false)} 
+        roomId={roomId || undefined}
+      />
+
+      {/* Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-0 right-0 w-80 h-80 bg-[#c026d3]/12 rounded-full blur-[120px] opacity-70" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#e11d48]/12 rounded-full blur-[120px] opacity-70" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#7c3aed]/8 rounded-full blur-[140px] opacity-50" />
       </div>
       
-      {/* Content - Above Background */}
-      <div className="relative z-10 flex flex-col h-full w-full">
-      {/* Leave Confirmation Modal */}
+      <div className="relative z-30 flex flex-col h-full w-full">
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
@@ -153,11 +146,7 @@ const Panel = () => {
         {/* Header */}
         <div className="flex flex-col gap-4 mb-2">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <button
-            className="flex items-center gap-2 group"
-            /* onClick={() => router.push("/")} landing page direciton*/
-          >
+          <button className="flex items-center gap-2 group">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50 group-hover:opacity-70 transition-opacity"></div>
               <Image
@@ -173,23 +162,15 @@ const Panel = () => {
             </h2>
           </button>
 
-          {/* Right Side Actions */}
           <div className="flex items-center gap-2">
-            {/* Copy Link Button */}
             <button
               onClick={handleCopyLink}
               className="relative p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group"
             >
               {copied ? (
-                <LuCheck
-                  size={18}
-                  className="text-green-400 transition-colors"
-                />
+                <LuCheck size={18} className="text-green-400 transition-colors" />
               ) : (
-                <LuLink
-                  size={18}
-                  className="text-white/70 group-hover:text-white transition-colors"
-                />
+                <LuLink size={18} className="text-white/70 group-hover:text-white transition-colors" />
               )}
               {copied && (
                 <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl animate-fade-in">
@@ -199,7 +180,6 @@ const Panel = () => {
               )}
             </button>
 
-            {/* Leave Party Button */}
             <button
               onClick={handleLeaveClick}
               className="p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:border-red-500/30 border border-zinc-600/15 text-white/70 hover:text-red-400 transition-all duration-200"
@@ -207,84 +187,67 @@ const Panel = () => {
               <LuLogOut size={18} />
             </button>
 
-            {/* Avatar Dropdown */}
             <AvatarDropdown size={36} />
           </div>
         </div>
       </div>
 
       {/* Beta Message Box */}
-      <div className="relative z-10 mb-3 mt-2">
-        <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-yellow-500/10 backdrop-blur-xl border border-amber-500/20 rounded-xl p-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-1">
-              <span className="px-2 py-0.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold rounded-md">
-                BETA
-              </span>
-              <p className="text-white/80 text-xs sm:text-sm">
-                Actively Improving
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  // Add your feedback link here
-                  window.open('https://github.com/Movmash/support/issues/new?template=bug_report.yml', '_blank');
-                }}
-                className="text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors duration-200 underline decoration-amber-400/50 hover:decoration-amber-300/70"
-              >
-                Feedback
-              </a>
-              <span className="text-white/30">•</span>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  // Add your bug report link here
-                  window.open('https://github.com/Movmash/support/issues/new?template=bug_report.yml', '_blank');
-                }}
-                className="text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors duration-200 underline decoration-amber-400/50 hover:decoration-amber-300/70"
-              >
-                Report Bug
-              </a>
-            </div>
-          </div>
+<div className="relative z-10 mb-4 mt-2 group">
+  <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-yellow-500/5 blur-xl group-hover:opacity-100 opacity-50 transition-opacity duration-500" />
+  
+  <div className="relative bg-[#1a1a1d]/40 backdrop-blur-2xl border border-white/5 rounded-2xl p-3.5 shadow-2xl overflow-hidden">
+    {/* Decorative corner glow */}
+    <div className="absolute -top-10 -right-10 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl" />
+    
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inset-0 bg-amber-500/20 blur-md animate-pulse" />
+          <span className="relative px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[10px] font-black tracking-widest rounded-md uppercase">
+            Beta
+          </span>
+        </div>
+        <div className="flex flex-col">
+          <p className="text-white/90 text-xs font-semibold tracking-tight">
+            Actively Improving
+          </p>
+          <p className="text-white/40 text-[10px] leading-none mt-0.5">
+            Help us shape Movmash
+          </p>
         </div>
       </div>
+
+      <button
+        onClick={() => setIsFeedbackOpen(true)}
+        className="px-4 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 text-amber-400 text-[11px] font-bold rounded-lg transition-all duration-300 active:scale-95 shadow-lg shadow-amber-900/5"
+      >
+        Feedback
+      </button>
+    </div>
+  </div>
+</div>
       
         {/* Tabs */}
         <div className="flex items-center w-full justify-between pt-2 pb-1">
   {visibleTabs.map((tab) => {
-    // Different gradient colors for each tab type
     const getTabGradient = (tabName: string) => {
       switch (tabName) {
-        case Tabs.CHAT:
-          return "from-purple-500/20 via-pink-500/20 to-fuchsia-500/20";
-        case Tabs.PEOPLE:
-          return "from-blue-500/20 via-cyan-500/20 to-teal-500/20";
-        case Tabs.SETTINGS:
-          return "from-amber-500/20 via-orange-500/20 to-red-500/20";
-        case Tabs.PLAYLIST:
-          return "from-emerald-500/20 via-green-500/20 to-lime-500/20";
-        default:
-          return "from-zinc-800/20 via-zinc-700/20 to-zinc-800/20";
+        case Tabs.CHAT: return "from-purple-500/20 via-pink-500/20 to-fuchsia-500/20";
+        case Tabs.PEOPLE: return "from-blue-500/20 via-cyan-500/20 to-teal-500/20";
+        case Tabs.SETTINGS: return "from-amber-500/20 via-orange-500/20 to-red-500/20";
+        case Tabs.PLAYLIST: return "from-emerald-500/20 via-green-500/20 to-lime-500/20";
+        default: return "from-zinc-800/20 via-zinc-700/20 to-zinc-800/20";
       }
     };
 
     const getTabBorderGradient = (tabName: string) => {
       switch (tabName) {
-        case Tabs.CHAT:
-          return "from-purple-600 via-pink-600 to-fuchsia-600";
-        case Tabs.PEOPLE:
-          return "from-blue-600 via-cyan-600 to-teal-600";
-        case Tabs.SETTINGS:
-          return "from-amber-600 via-orange-600 to-red-600";
-        case Tabs.PLAYLIST:
-          return "from-emerald-600 via-green-600 to-lime-600";
-        default:
-          return "from-rose-600 via-pink-600 to-fuchsia-600";
+        case Tabs.CHAT: return "from-purple-600 via-pink-600 to-fuchsia-600";
+        case Tabs.PEOPLE: return "from-blue-600 via-cyan-600 to-teal-600";
+        case Tabs.SETTINGS: return "from-amber-600 via-orange-600 to-red-600";
+        case Tabs.PLAYLIST: return "from-emerald-600 via-green-600 to-lime-600";
+        default: return "from-rose-600 via-pink-600 to-fuchsia-600";
       }
     };
 
@@ -293,11 +256,7 @@ const Panel = () => {
         key={tab}
         onClick={() => setActiveTab(tab)}
         className={`px-3 py-2 font-medium text-xs sm:text-sm transition-all duration-200 relative rounded-t-xl z-10
-                    ${
-                      activeTab === tab
-                        ? "text-white"
-                        : "text-white/60 hover:text-white/80"
-                    }`}
+                    ${activeTab === tab ? "text-white" : "text-white/60 hover:text-white/80"}`}
       >
         <span className="relative z-20">{tab}</span>
         {activeTab === tab && (
@@ -311,7 +270,6 @@ const Panel = () => {
   })}
 </div>
 
-        {/* Tab Content */}
         <div className="flex-1 overflow-hidden pt-4">
           {renderTabContent(activeTab)}
         </div>
