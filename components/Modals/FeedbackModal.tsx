@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { LuX, LuSend, LuSparkles, LuMessageSquare } from "react-icons/lu";
-import { submitFeedback } from "@/lib/store/api/feedbackApi";
+import { useSubmitFeedbackMutation } from "@/lib/store/api/feedbackApi";
 import { showSuccess, showError } from "@/utils/toast";
 
 interface FeedbackModalProps {
@@ -15,6 +15,8 @@ interface FeedbackModalProps {
 const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
   const [loading, setLoading] = useState(false);
   const roomState = useSelector((state: RootState) => state.room);
+  const authState = useSelector((state: RootState) => state.auth);
+  const [submitFeedback] =useSubmitFeedbackMutation();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -33,16 +35,19 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
     setLoading(true);
     try {
       const roomDetailsSnapshot = roomState;
-
-      await submitFeedback({
-        ...formData,
-        room_id: roomId || undefined,
-        room_details: roomDetailsSnapshot
-      });
+      if (authState.isAuthenticated) {
+        await submitFeedback({
+          ...formData,
+          room_id: roomId || undefined,
+          room_details: roomDetailsSnapshot
+        });
       
-      showSuccess("Feedback Sent! 🎉\nThank you for helping us grow!");
-      onClose();
-      setFormData({ title: "", description: "", category: "bug" });
+        showSuccess("Feedback Sent! 🎉\nThank you for helping us grow!");
+        onClose();
+        setFormData({ title: "", description: "", category: "bug" });
+      } else {
+        showError("Error", "Please login to send feedback.");
+      }
     } catch (err: any) {
       showError("Error", "Could not send feedback. Try again.");
     } finally {
