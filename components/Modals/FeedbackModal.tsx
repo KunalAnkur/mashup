@@ -32,12 +32,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
 
     setLoading(true);
     try {
-      const roomDetailsSnapshot = {
-        type: roomState.type,
-        source: roomState.source,
-        isHost: roomState.host,
-        focused: roomState.focused,
-      };
+      const roomDetailsSnapshot = roomState;
 
       await submitFeedback({
         ...formData,
