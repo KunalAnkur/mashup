@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s | Movmash",
   },
   description: constants.seo.BRAND_DESCRIPTION,
-  keywords: constants.seo.extendedKeywords.join(", "),
+  keywords: constants.seo.extendedKeywords?.join(", ") || "",
   authors: [{ name: "Movmash" }],
   creator: "Movmash",
   publisher: "Movmash",
@@ -64,9 +64,12 @@ export const metadata: Metadata = {
     canonical: baseUrl,
   },
   icons: {
-    icon: constants.seo.FAVICON_URL,
-    shortcut: constants.seo.FAVICON_URL,
-    apple: constants.seo.FAVICON_URL,
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/assets/logo.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/assets/logo.svg',
   },
 };
 

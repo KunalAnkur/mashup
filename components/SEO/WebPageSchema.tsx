@@ -1,4 +1,4 @@
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.movmash.com';
+const baseUrl = 'https://app.movmash.com';
 
 interface WebPageSchemaProps {
   title?: string;

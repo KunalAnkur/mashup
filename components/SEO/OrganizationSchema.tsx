@@ -1,4 +1,4 @@
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.movmash.com';
+const baseUrl = 'https://app.movmash.com';
 
 export default function OrganizationSchema() {
   const schema = {
@@ -6,7 +6,18 @@ export default function OrganizationSchema() {
     "@type": "Organization",
     name: "Movmash",
     url: baseUrl,
-    logo: `${baseUrl}/favicon.ico`,
+    logo: {
+      "@type": "ImageObject",
+      url: `${baseUrl}/assets/logo.svg`,
+      width: 512,
+      height: 512,
+    },
+    image: {
+      "@type": "ImageObject",
+      url: `${baseUrl}/assets/logo.svg`,
+      width: 512,
+      height: 512,
+    },
     description: "Watch videos together with friends in perfect sync. Chat, react, and share the moment — no matter the distance.",
     sameAs: [
       // Add your social media links here when available
