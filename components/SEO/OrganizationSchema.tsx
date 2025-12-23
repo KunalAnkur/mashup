@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const baseUrl = 'https://app.movmash.com';
+=======
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.movmash.com';
+>>>>>>> dev
 
 export default function OrganizationSchema() {
   const schema = {
