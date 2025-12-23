@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s | Movmash",
   },
   description: constants.seo.BRAND_DESCRIPTION,
-  keywords: constants.seo.extendedKeywords?.join(", ") || "",
+  keywords: (constants.seo.extendedKeywords || constants.seo.baseKeywords || []).join(", "),
   authors: [{ name: "Movmash" }],
   creator: "Movmash",
   publisher: "Movmash",
