@@ -1,30 +1,31 @@
 "use client";
 import { Button } from "../UI";
 import { useDispatch, useSelector } from "react-redux";
-import { setRefers } from "@/lib/store/slices/roomSlice";
+import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
 import type { RootState } from "@/lib/store";
 import { FaYoutube, FaVimeo, FaTwitch, FaFileVideo } from "react-icons/fa";
 import { MdOndemandVideo } from "react-icons/md";
 import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { useRouter } from "next/navigation";
+import { Playlist } from "@/types/storeTypes";
 const UrlSelection = () => {
   const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
   const roomState = useSelector((state: RootState) => state.room);
-  const selectedFileIndex = useSelector(
-    (state: RootState) => state.room.selectedFileIndex
-  );
-  const [sourceUrl, setSourceUrl] = useState<string[]>([]);
+  
+  const playlist = roomState.playlist || [];
+  const activeContent = playlist.find((item) => item.selected) as Playlist;
+  // const [sourceUrl, setSourceUrl] = useState<string[]>([]);
   const [sourceUrlInput, setSourceUrlInput] = useState<string>("");
-  useEffect(() => {
-    if (roomState.urls) {
-      setSourceUrl(roomState.urls);
-    }
-  }, [roomState.urls]);
+  // useEffect(() => {
+  //   if (activeContent.link) {
+  //     setSourceUrl([activeContent.link]);
+  //   }
+  // }, [activeContent.link]);
 
   const [isEnterDisabled, setEnterDisabled] = useState<boolean>(
-    !ReactPlayer.canPlay(sourceUrl[selectedFileIndex] || "")
+    !ReactPlayer.canPlay(activeContent.link)
   );
   const dispatch = useDispatch();
 
@@ -35,13 +36,12 @@ const UrlSelection = () => {
   };
 
   const handleOnEnterRoom = async () => {
-    setSourceUrl([sourceUrlInput]);
+    // setSourceUrl([sourceUrlInput]);
+    
+    dispatch(setPlaylist(playlist));
     dispatch(
       setRefers({
         refer: true,
-        type: "sync",
-        source: "url",
-        urls: [sourceUrlInput],
       })
     );
     if (!authState.isAuthenticated) {

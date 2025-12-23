@@ -4,7 +4,6 @@ import HomeContent from "./HomeContent";
 import AvatarContainer from "./AvatarContainer";
 import LoginContainer from "./LoginContainer";
 import SignupContainer from "./SignupContainer";
-import PlayerContainer from "./PlayerContainer";
 import Skeleton from "./Skeleton";
 import PlayerWrapper from "./PlayerWrapper";
 export {
@@ -14,7 +13,6 @@ export {
   AvatarContainer,
   LoginContainer,
   SignupContainer,
-  PlayerContainer,
   Skeleton,
   PlayerWrapper,
 };

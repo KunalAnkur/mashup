@@ -1,3 +1,5 @@
+import { Playlist } from "./storeTypes";
+
 export type UserLoginResp = {
   data: {
     user: {
@@ -23,11 +25,8 @@ export interface RoomCreateResponse {
   data: {
     id: string;
     user_id: string;
-    type: "stream" | "sync";
-    source: "file" | "url" | "stream";
+    playlist: Playlist[];
     room_id: string;
-    url: string;
-    urls: string[];
     is_active: boolean;
     createdAt: string;
     updatedAt: string;

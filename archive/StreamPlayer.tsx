@@ -13,7 +13,6 @@ import { useStream } from "@/hooks";
 import { useRoomContext, RoomType } from "@/context/RoomContext";
 import { helper } from "@/utils";
 import { showError } from "@/utils/toast";
-import { Playlist } from "@/types/storeTypes";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -21,7 +20,6 @@ type Props = {
 
 const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
-    const activeContent = useSelector((state: RootState) => state.room.playlist.find((item) => item.selected)) as Playlist;
     const authState = useSelector((state: RootState) => state.auth);
     const { files } = useFileContext();
     const { stream: screenStream } = useMediaStreamContext();
@@ -48,8 +46,8 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         lastRoomTypeRef.current = roomType;
     }, [roomType]);
 
-    const isScreenSharing = activeContent.type === "stream" && activeContent.source === "screen" && screenStream !== null;
-    const isFileStreaming = activeContent.type === "stream" && activeContent.source === "file";
+    const isScreenSharing = roomState.type === "stream" && roomState.source === "stream" && screenStream !== null;
+    const isFileStreaming = roomState.type === "stream" && roomState.source === "file";
 
     // Get stream from player
     const getStream = useCallback((): MediaStream | null => {
@@ -132,13 +130,13 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     useEffect(() => {
         if (!isHost || !isFileStreaming) return;
 
-        const file = files.find((f) => f.id === activeContent.id);
+        const file = files[roomState.selectedFileIndex];
         if (!file) return;
 
-        const url = URL.createObjectURL(file.file);
+        const url = URL.createObjectURL(file);
         setCurrentFileUrl(url);
         return () => URL.revokeObjectURL(url);
-    }, [files, activeContent.id, isHost, isFileStreaming]);
+    }, [files, roomState.selectedFileIndex, isHost, isFileStreaming]);
 
     // Handle screen stream changes (when user shares a different screen)
     useEffect(() => {
@@ -163,7 +161,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
 
     // Handle video ready
     const handleVideoReady = useCallback(() => {
-        const currentIndex = activeContent.id;
+        const currentIndex = roomState.selectedFileIndex;
 
         if (isHost && playerRef.current) {
             const video = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
@@ -171,12 +169,17 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         }
 
         if (isHost && isInitialized) {
+            if (lastVideoIndexRef.current === -1) {
+                lastVideoIndexRef.current = currentIndex;
+            } else if (lastVideoIndexRef.current !== currentIndex) {
+                lastVideoIndexRef.current = currentIndex;
                 setTimeout(async () => {
                     const stream = getStream();
                     if (stream) await replaceProducerTracks(stream);
                 }, 500);
+            }
         }
-    }, [isHost, isInitialized, activeContent.id, getStream, replaceProducerTracks]);
+    }, [isHost, isInitialized, roomState.selectedFileIndex, getStream, replaceProducerTracks]);
 
     const handleVideoEnded = useCallback(() => {
         if (!roomState.host) return;
@@ -225,7 +228,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     return (
         <div className="relative w-full h-full">
             <Player
-                key={activeContent.id}
+                key={isHost ? `host-${roomState.selectedFileIndex}` : `consumer-${remoteStream?.id}`}
                 playerRef={playerRef}
                 playing={helper.getInitialPlayerState({ url: source, roomType: roomType || "stream", host: isHost, focused: roomState.focused, screenSharing: isScreenSharing, hostLeft: hostLeft, paused: isPaused }).playing}
                 onReady={handleVideoReady}

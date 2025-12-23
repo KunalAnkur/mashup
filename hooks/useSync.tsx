@@ -3,8 +3,9 @@ import type ReactPlayer from "react-player";
 import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useDispatch } from "react-redux";
-import { setSelectedFileIndex } from "@/lib/store/slices/roomSlice";
+import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { store } from "@/lib/store";
+import type { RootState } from "@/lib/store";
 
 interface UseSyncParams {
     playerRef: React.RefObject<ReactPlayer | null>;
@@ -14,10 +15,27 @@ interface UseSyncParams {
     initialPlaying: boolean;
 }
 
-type VideoState = {
+// Video sync state indexed into playlist
+interface VideoState {
     selectedIndex: number;
     playing: boolean;
     currentTime: number;
+}
+
+// Helpers to work with playlist in Redux
+const getSelectedPlaylistIndex = (state: RootState): number => {
+    const playlist = state.room.playlist || [];
+    if (!playlist.length) return 0;
+    const idx = playlist.findIndex((item) => item.selected);
+    return idx === -1 ? 0 : idx;
+};
+
+const buildPlaylistWithSelectedIndex = (state: RootState, index: number) => {
+    const playlist = state.room.playlist || [];
+    return playlist.map((item, idx) => ({
+        ...item,
+        selected: idx === index,
+    }));
 };
 
 export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = true }: UseSyncParams) => {
@@ -31,7 +49,10 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
     const seekTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const initialSyncDoneRef = useRef(false);
     const isApplyingRemoteStateRef = useRef(false);
-    useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+    }, [isPlaying]);
 
     // Reset sync state when roomId changes
     useEffect(() => {
@@ -39,39 +60,51 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         pendingSyncRef.current = null;
     }, [roomId]);
 
-    const getHostState = useCallback((): VideoState => ({
-        selectedIndex: store.getState().room.selectedFileIndex,
-        playing: isPlayingRef.current,
-        currentTime: playerRef.current?.getCurrentTime?.() || 0,
-    }), [playerRef]);
+    // Build host state from Redux + player
+    const getHostState = useCallback((): VideoState => {
+        const state = store.getState() as RootState;
+        const currentTime = playerRef.current?.getCurrentTime?.() || 0;
+        return {
+            selectedIndex: getSelectedPlaylistIndex(state),
+            playing: isPlayingRef.current,
+            currentTime,
+        };
+    }, [playerRef]);
 
-    const applySyncState = useCallback((syncState: VideoState, forceSeek = false) => {
-        if (!playerRef.current || isHost || !enabled) return;
+    // Apply sync state to non-host player
+    const applySyncState = useCallback(
+        (syncState: VideoState, forceSeek = false) => {
+            if (!playerRef.current || isHost || !enabled) return;
 
-        const currentIndex = store.getState().room.selectedFileIndex;
+            const state = store.getState() as RootState;
+            const currentIndex = getSelectedPlaylistIndex(state);
 
-        // Mark initial sync as done when we receive any sync state
-        initialSyncDoneRef.current = true;
+            // Mark initial sync as done when we receive any sync state
+            initialSyncDoneRef.current = true;
 
-        // Need to change video first
-        if (syncState.selectedIndex !== currentIndex) {
-            pendingSyncRef.current = syncState;
-            dispatch(setSelectedFileIndex(syncState.selectedIndex));
-            return;
-        }
+            // Need to change video first
+            if (syncState.selectedIndex !== currentIndex) {
+                pendingSyncRef.current = syncState;
+                const nextPlaylist = buildPlaylistWithSelectedIndex(state, syncState.selectedIndex);
+                dispatch(updateRoomInfo({ playlist: nextPlaylist }));
+                return;
+            }
 
-        // Same video - apply time and play state
-        const currentTime = playerRef.current.getCurrentTime?.() || 0;
-        const drift = Math.abs(currentTime - syncState.currentTime);
-        isApplyingRemoteStateRef.current = true;
-        // Tighter drift threshold (0.5s) for better sync
-        if (drift > 0.5 || forceSeek) {
-            playerRef.current.seekTo(syncState.currentTime, "seconds");
-        }
+            // Same video - apply time and play state
+            const currentTime = playerRef.current.getCurrentTime?.() || 0;
+            const drift = Math.abs(currentTime - syncState.currentTime);
+            isApplyingRemoteStateRef.current = true;
 
-        setIsPlaying(syncState.playing);
-        pendingSyncRef.current = null;
-    }, [playerRef, isHost, dispatch, enabled]);
+            // Tighter drift threshold (0.5s) for better sync
+            if (drift > 0.5 || forceSeek) {
+                playerRef.current.seekTo(syncState.currentTime, "seconds");
+            }
+
+            setIsPlaying(syncState.playing);
+            pendingSyncRef.current = null;
+        },
+        [playerRef, isHost, dispatch, enabled]
+    );
 
     // Video ready handler - apply pending sync or request state
     const onReady = useCallback(() => {
@@ -92,18 +125,14 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             }, 800);
         } else if (!isHost && roomId && !initialSyncDoneRef.current) {
             // No pending sync - request current state from host
-            // This handles cases where we missed the initial sync
             socket?.emit(SocketEvent.REQUEST_CURRENT_VIDEO, { roomId });
         }
     }, [playerRef, isHost, roomId, socket, enabled]);
 
-    // Request initial sync when joining (non-host only)
-    // This is a safety net - always fires 1 second after enabled becomes true
+    // Safety net: request initial sync when joining (non-host only)
     useEffect(() => {
         if (!isHost && roomId && enabled && socket) {
             const timeout = setTimeout(() => {
-                // Always request regardless of previous attempts
-                // The host will respond and we'll sync
                 socket.emit(SocketEvent.REQUEST_CURRENT_VIDEO, { roomId });
             }, 1000);
 
@@ -111,27 +140,33 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         }
     }, [isHost, roomId, enabled, socket]);
 
-    const onPlay = useCallback((event: string) => {
-        if (event === 'seekend' || !enabled) return;
-        if (isApplyingRemoteStateRef.current && !isHost) return;
-        setIsPlaying(true);
-        isPlayingRef.current = true;
+    const onPlay = useCallback(
+        (event: string) => {
+            if (event === "seekend" || !enabled) return;
+            if (isApplyingRemoteStateRef.current && !isHost) return;
+            setIsPlaying(true);
+            isPlayingRef.current = true;
 
-        if (socket && roomId && isHost) {
-            socket.emit(SocketEvent.ONPLAY, { roomId, videoState: getHostState() });
-        }
-    }, [isHost, roomId, socket, getHostState, enabled]);
+            if (socket && roomId && isHost) {
+                socket.emit(SocketEvent.ONPLAY, { roomId, videoState: getHostState() });
+            }
+        },
+        [isHost, roomId, socket, getHostState, enabled]
+    );
 
-    const onPause = useCallback((event: string) => {
-        if (event === "seekend" || !enabled) return;
-        if (isApplyingRemoteStateRef.current && !isHost) return;
-        setIsPlaying(false);
-        isPlayingRef.current = false;
+    const onPause = useCallback(
+        (event: string) => {
+            if (event === "seekend" || !enabled) return;
+            if (isApplyingRemoteStateRef.current && !isHost) return;
+            setIsPlaying(false);
+            isPlayingRef.current = false;
 
-        if (socket && roomId && isHost) {
-            socket.emit(SocketEvent.ONPAUSE, { roomId, videoState: getHostState() });
-        }
-    }, [isHost, roomId, socket, getHostState, enabled]);
+            if (socket && roomId && isHost) {
+                socket.emit(SocketEvent.ONPAUSE, { roomId, videoState: getHostState() });
+            }
+        },
+        [isHost, roomId, socket, getHostState, enabled]
+    );
 
     const onSeeked = useCallback(() => {
         if (!socket || !roomId || !isHost || !enabled) {
@@ -139,7 +174,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
                 socket: !!socket,
                 roomId,
                 isHost,
-                enabled
+                enabled,
             });
             return;
         }
@@ -150,16 +185,20 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         const checkTime = (attempt: number, max = 10) => {
             const state = getHostState();
             const currentTime = state?.currentTime;
-            const isValidTime = typeof currentTime === "number" && !isNaN(currentTime) && isFinite(currentTime) && currentTime >= 0;
-            
+            const isValidTime =
+                typeof currentTime === "number" &&
+                !isNaN(currentTime) &&
+                isFinite(currentTime) &&
+                currentTime >= 0;
+
             console.log(`[useSync] checkTime attempt ${attempt}/${max}:`, {
                 currentTime,
                 isValidTime,
                 state,
                 playerRefExists: !!playerRef.current,
-                playerCurrentTime: playerRef.current?.getCurrentTime?.()
+                playerCurrentTime: playerRef.current?.getCurrentTime?.(),
             });
-            
+
             // Always send if we have a valid number (including 0) or max attempts reached
             if (isValidTime || attempt >= max) {
                 socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: state });
@@ -175,12 +214,18 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         seekTimeoutRef.current = setTimeout(() => checkTime(1), 200);
     }, [isHost, roomId, socket, getHostState, playerRef, enabled]);
 
-    const selectVideo = useCallback((index: number) => {
-        if (!isHost || !socket || !roomId || !enabled) return;
+    // Host: select video (by playlist index)
+    const selectVideo = useCallback(
+        (index: number) => {
+            if (!isHost || !socket || !roomId || !enabled) return;
 
-        dispatch(setSelectedFileIndex(index));
-        socket.emit(SocketEvent.SELECT_VIDEO, { roomId, selectedIndex: index });
-    }, [isHost, socket, roomId, dispatch, enabled]);
+            const state = store.getState() as RootState;
+            const nextPlaylist = buildPlaylistWithSelectedIndex(state, index);
+            dispatch(updateRoomInfo({ playlist: nextPlaylist }));
+            socket.emit(SocketEvent.SELECT_VIDEO, { roomId, selectedIndex: index });
+        },
+        [isHost, socket, roomId, dispatch, enabled]
+    );
 
     // Socket event handlers
     useEffect(() => {
@@ -214,19 +259,38 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
 
         // Video selection from host
         const handleVideoSelected = ({ selectedIndex }: { selectedIndex: number }) => {
-            if (!isHost && selectedIndex !== store.getState().room.selectedFileIndex) {
-                pendingSyncRef.current = { selectedIndex, playing: false, currentTime: 0 };
-                dispatch(setSelectedFileIndex(selectedIndex));
+            if (!isHost) {
+                const state = store.getState() as RootState;
+                const playlist = state.room.playlist || [];
+                const currentIndex = getSelectedPlaylistIndex(state);
+                console.log("[useSync] VIDEO_SELECTED received:", { selectedIndex, currentIndex, playlistLength: playlist.length });
+                
+                // Validate selectedIndex is within bounds
+                if (selectedIndex < 0 || selectedIndex >= playlist.length) {
+                    console.warn("[useSync] Invalid selectedIndex:", selectedIndex, "playlist length:", playlist.length);
+                    return;
+                }
+                
+                // Always update if index is different, or if current selection doesn't match
+                if (selectedIndex !== currentIndex || !playlist[selectedIndex]?.selected) {
+                    pendingSyncRef.current = { selectedIndex, playing: false, currentTime: 0 };
+                    const nextPlaylist = buildPlaylistWithSelectedIndex(state, selectedIndex);
+                    console.log("[useSync] Updating playlist with selectedIndex:", selectedIndex, "new playlist:", nextPlaylist.map((p, i) => ({ index: i, id: p.id, link: p.link, selected: p.selected })));
+                    dispatch(updateRoomInfo({ playlist: nextPlaylist }));
+                } else {
+                    console.log("[useSync] Selected index matches current and is already selected, skipping update");
+                }
             }
         };
 
-        // Host responds to video state request
+        // Host responds to current video request
         const handleRequestCurrentVideo = (data?: { requesterId?: string }) => {
             if (!isHost || !playerRef.current) return;
 
+            const state = getHostState();
             socket.emit(SocketEvent.CURRENT_VIDEO_STATE, {
                 roomId: roomId ?? "room",
-                ...getHostState(),
+                ...state,
                 requesterId: data?.requesterId,
             });
         };
@@ -244,6 +308,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         socket.on(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
         socket.on(SocketEvent.REQUEST_CURRENT_VIDEO, handleRequestCurrentVideo);
         socket.on(SocketEvent.CURRENT_VIDEO_STATE, handleCurrentVideoState);
+
         return () => {
             socket.off(SocketEvent.ONPAUSE, handlePlayPause);
             socket.off(SocketEvent.ONPLAY, handlePlayPause);

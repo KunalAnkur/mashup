@@ -342,7 +342,13 @@ export const useStream = ({
                 username,
                 email,
                 profile,
-                playlist: roomState.playlist,
+                room: {
+                    type: "stream",
+                    source: roomState.source || "stream",
+                    urls: roomState.urls || [],
+                    files: roomState.files || [],
+                    selectedFileIndex: roomState.selectedFileIndex || 0,
+                },
             });
 
             if (!response?.success || !response.rtpCapabilities || !response.recvTransportOptions) {

@@ -1,4 +1,5 @@
 import { RoomCreateResponse } from "@/types/responseTypes";
+import { Playlist } from "@/types/storeTypes";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -16,18 +17,13 @@ export const roomApi = createApi({
   }),
   endpoints: (builder) => ({
     // POST /api/v1/room/
-    createRoom: builder.mutation<
-      RoomCreateResponse,
-      { urls?: string[]; type: "stream" | "sync"; source: "file" | "url" | "stream" }
-    >({
-      query: (body: { urls?: string[]; type: "stream" | "sync"; source: "file" | "url" | "stream" }) => {
+    createRoom: builder.mutation<RoomCreateResponse, { playlist: Playlist[] }>({
+      query: (body: { playlist: Playlist[] }) => {
         return {
           url: `/`,
           method: "POST",
           body: {
-            urls: body.urls,
-            type: body.type,
-            source: body.source,
+            playlist: body.playlist,
           },
         };
       },
@@ -101,5 +97,5 @@ export const {
   useUpdateRoomMutation,
   useInactiveRoomMutation,
   useDeleteRoomMutation,
-  useInactiveMyRoomMutation
+  useInactiveMyRoomMutation,
 } = roomApi;

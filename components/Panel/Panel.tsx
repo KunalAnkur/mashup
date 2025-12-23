@@ -37,7 +37,7 @@ const Panel = () => {
   // - For stream with stream source (screen): Playlist tab visible to all (shows platform being streamed)
   // - For sync: Playlist tab visible to all (everyone can see the URLs)
   const visibleTabs = useMemo(() => {
-    const isStreaming = roomState.type === "stream";
+    const isStreaming = roomState.playlist.some((item) => item.type === "stream");
 
     return Object.values(Tabs).filter((tab) => {
       if (tab === Tabs.PLAYLIST) {
@@ -47,7 +47,7 @@ const Panel = () => {
       }
       return true;
     });
-  }, [roomState.type, roomState.source, host]);
+  }, [roomState.playlist, host]);
 
   const renderTabContent = (tab: Tabs) => {
     switch (tab) {
