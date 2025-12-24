@@ -109,6 +109,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const currentRoomRef = useRef<string | null>(null);
 
     const joinRoom = useCallback(async () => {
+        console.log("flow test - joinRoom called", { socket, roomId, username, playlist: roomState.playlist });
         if (!socket || !roomId || !username) return;
         if (joinAttemptedRef.current && currentRoomRef.current === roomId) return;
         if (isJoined && currentRoomRef.current === roomId) return;
@@ -265,12 +266,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         // Handle room info update when host joins with new videos or different room type
         const handleRoomInfoUpdated = (data: { 
             roomId: string; 
-            room: {
-                type?: "stream" | "sync";
-            };
+            playlist: Playlist[];
         }) => {
             // ! Need to do something here to update the playlist in the redux store
             if (data.roomId === roomId && !isHost) {
+                dispatch(updateRoomInfo({ playlist: data.playlist }));
                 // const newRoomType = data.room.type;
                 // const currentRoomType = roomType;
                 

@@ -249,7 +249,7 @@ const PlaylistScreenShareCard = ({
 );
 
 // File card -------------------------------------------------------------------
-const PlaylistFileCard = ({
+const PlaylistFileCard = async ({
   name,
   size,
   index,
@@ -705,7 +705,7 @@ const PlaylistTab = () => {
         await setFiles(combined);
 
         // Add to playlist
-        const newPlaylistItems: Playlist[] = newFiles.map((extFile) => ({
+        const newPlaylistItems: Playlist[] = await Promise.all(newFiles.map(async (extFile) => ({
           id: extFile.id,
           type: "stream",
           source: "file",
@@ -715,10 +715,10 @@ const PlaylistTab = () => {
           metadata: {
             title: extFile.file.name,
             description: extFile.file.name,
-            thumbnail: getThumbnail(extFile.file) || null,
+            thumbnail: await getThumbnail(extFile.file) || null,
             author: extFile.file.name,
           },
-        }));
+        })));
 
         const updatedPlaylist = [...playlist, ...newPlaylistItems];
 

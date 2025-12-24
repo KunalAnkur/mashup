@@ -129,6 +129,7 @@ const FileSelection = () => {
       }  as Playlist))];
       playlist[0].selected = true;
       dispatch(setPlaylist(playlist));
+      console.log("flow test - handleOnStartWatching called", { playlist });
       if (!authState.isAuthenticated) {
         router.push("/login");
       }

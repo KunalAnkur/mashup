@@ -6,6 +6,8 @@ import SyncPlayer from "./SyncPlayer";
 import StreamPlayer from "./StreamPlayer7";
 import { Playlist } from "@/types/storeTypes";
 import { useEffect, useState, useRef } from "react";
+import StreamPlayerEmptyState from "./StreamPlayerEmptyState";
+import { RoomType } from "@/context/RoomContext";
 
 type PlayerWrapperProps = {
   fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -52,7 +54,13 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   //   }
   // }, [content?.onlyAudio]);
  // TODO: Need to fix this later. related to replace producer tracks from audio to audio and screen to file.
-  if (!content) return null;
+  if (!content) return <StreamPlayerEmptyState
+    isHost={host}
+    roomType={currentType as RoomType}
+    hostLeft={roomState.host}
+    remoteStream={null}
+    isInitialized={false}
+  />;
   if (currentType === "stream") {
     return (
       <StreamPlayer

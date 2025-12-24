@@ -207,7 +207,8 @@ const ScreenSharePage = () => {
         // User cancelled or capture failed - silently handle
         return;
       }
-
+      setMediaStream(mediaStream);
+      setScreenType(screenType);
       setStream(mediaStream);
       const screenItem: Playlist = {
         id: mediaStream.id,
@@ -225,8 +226,7 @@ const ScreenSharePage = () => {
       };
       dispatch(setScreenSharing(screenItem));
       // Store in MediaStreamContext for use in room (MediaStream cannot be in Redux)
-      setMediaStream(mediaStream);
-      setScreenType(screenType);
+      
     } catch (err: any) {
       // Only show alert for unexpected errors, not user cancellations
       if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
@@ -250,7 +250,7 @@ const ScreenSharePage = () => {
     try {
       // Build a playlist entry for screen sharing
       const screenItem: Playlist = {
-        id: crypto.randomUUID(),
+        id: stream.id,
         type: "stream",
         source: "screen",
         link: "Screen Share",
@@ -263,7 +263,7 @@ const ScreenSharePage = () => {
           author: authState.user?.name || authState.user?.username || "You",
         },
       };
-
+      
       // Save playlist and mark refer so AuthGuard can create the room
       dispatch(setScreenSharing(screenItem));
       dispatch(

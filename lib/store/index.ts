@@ -17,6 +17,7 @@ import storage from "redux-persist/lib/storage"; // defaults to localStorage for
 import { authApi } from "./api/authApi";
 import { roomApi } from "./api/roomApi";
 import { userApi } from "./api/userApi";
+import { urlApi } from "./api/urlApi";
 
 // 1. Combine reducers
 const rootReducer = combineReducers({
@@ -26,6 +27,7 @@ const rootReducer = combineReducers({
   [authApi.reducerPath]: authApi.reducer,
   [roomApi.reducerPath]: roomApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
+  [urlApi.reducerPath]: urlApi.reducer,
 });
 
 // 2. Persist config
@@ -46,7 +48,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(authApi.middleware, roomApi.middleware, userApi.middleware),
+    }).concat(authApi.middleware, roomApi.middleware, userApi.middleware, urlApi.middleware),
   devTools: process.env.NODE_ENV !== "production",
 });
 

@@ -94,6 +94,7 @@ export function useStreamSource({
     const sourceRef = useRef<StreamSource | null>(null);
     const [isSourceReady, setIsSourceReady] = useState(false);
     const [fileUrl, setFileUrl] = useState<string | null>(null);
+    const lastFileIdRef = useRef<string | null>(null);
     // const [hasVideoTrack, setHasVideoTrack] = useState(true); // Default to true (assume video exists)
 
     // Redux state
@@ -176,11 +177,15 @@ export function useStreamSource({
             setFileUrl(null);
             return;
         }
-
+        // * here we are keeping the last file id in the ref to avoid creating new blob url which is unecessary. this reload the running video and disturbs the streaming
+        if (lastFileIdRef.current === activeItem.id) {  
+            return;
+        }
+        lastFileIdRef.current = activeItem.id;
         const url = URL.createObjectURL(file.file);
         setFileUrl(url);
-
         return () => {
+            if (lastFileIdRef.current === activeItem.id) return
             URL.revokeObjectURL(url);
             setFileUrl(null);
         };
@@ -200,6 +205,7 @@ export function useStreamSource({
                 screenStream,
             });
             setIsSourceReady(true);
+            lastFileIdRef.current = activeItem.id;
             return;
         }
 
@@ -215,6 +221,7 @@ export function useStreamSource({
         return () => {
             sourceRef.current?.cleanup();
             sourceRef.current = null;
+            lastFileIdRef.current = null;
         };
     }, [activeItem?.id]);
 

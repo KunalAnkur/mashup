@@ -137,16 +137,6 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         initializeFromJoinResponse();
     }, [isHost, isJoined, initializeFromJoinResponse]);
     
-    // Reset tracking when active item changes
-    useEffect(() => {
-        if (!isHost) return;
-        const currentItemId = activeItem?.id || null;
-        if (currentItemId !== lastInitializedItemIdRef.current) {
-            console.log("[StreamPlayer] Active item changed, will reinitialize on next video ready");
-            // Don't reset isInitialSetupRef here - let handleVideoReady handle it
-        }
-    }, [activeItem?.id, isHost]);
-    
     // ============================================================================
     // Player Event Handlers
     // ============================================================================
@@ -206,11 +196,12 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
             }
         }
         
-        const stream = getStream();
-        console.log("[StreamPlayer] Stream tracks:", {
-            audio: stream?.getAudioTracks().map(t => ({ id: t.id, readyState: t.readyState, enabled: t.enabled })),
-            video: stream?.getVideoTracks().map(t => ({ id: t.id, readyState: t.readyState, enabled: t.enabled }))
-        });
+        // * commenting this below because this was causing the issue while reshairng the screen becuase it was calling two time the getstream
+        // const stream = getStream();
+        // console.log("[StreamPlayer] Stream tracks:", {
+        //     audio: stream?.getAudioTracks().map(t => ({ id: t.id, readyState: t.readyState, enabled: t.enabled })),
+        //     video: stream?.getVideoTracks().map(t => ({ id: t.id, readyState: t.readyState, enabled: t.enabled }))
+        // });
         // Here I can intiate the mediasoup stream productions
         initializeFromJoinResponse();
         pendingInitializationRef.current = false;
@@ -221,7 +212,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         
         // console.log({ activeItem, stream: getStream(), playableSource });
         // hasVideoTrack is now managed by useStreamSource based on actual stream tracks
-    }, [activeItem, getStream, playableSource, onVideoReady, initializeFromJoinResponse, isHost, isJoined]);
+    }, [activeItem, playableSource, onVideoReady, initializeFromJoinResponse, isHost, isJoined]);
     
     // ============================================================================
     // Initialization Effects
@@ -296,12 +287,12 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 setTimeout(async () => {
                     const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
                     if (video && !video.paused) {
-                        const stream = getStream();
-                        if (stream) {
+                        // const stream = getStream();
+                        // if (stream) {
                             console.log("[StreamPlayer] Handling pending video ready after item change");
                             initializeFromJoinResponse();
                             lastInitializedItemIdRef.current = currentItemId;
-                        }
+                        // }
                     }
                 }, 300);
             } else {
@@ -309,7 +300,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 pendingVideoReadyRef.current = false;
             }
         }
-    }, [streamOnPlay, isHost, getStream, initializeFromJoinResponse, activeItem]);
+    }, [streamOnPlay, isHost, initializeFromJoinResponse, activeItem]);
 
 
     useEffect(() => {
@@ -340,7 +331,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
             />
         );
     }
-
+    
     return (
         <div className="relative w-full h-full">
             <Player
@@ -380,12 +371,12 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                                 if (video && !video.paused) {
                                     pendingVideoReadyRef.current = false;
                                     setTimeout(async () => {
-                                        const stream = getStream();
-                                        if (stream) {
+                                        // const stream = getStream();
+                                        // if (stream) {
                                             console.log("[StreamPlayer] Handling pending video ready after item change");
                                             initializeFromJoinResponse();
                                             lastInitializedItemIdRef.current = currentItemId;
-                                        }
+                                        // }
                                     }, 300);
                                 }
                             } else {

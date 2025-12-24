@@ -64,6 +64,13 @@ export const roomApi = createApi({
         body,
       }),
     }),
+    updateRoomByRoomId: builder.mutation<any, { roomId: string; body: any }>({
+      query: ({ roomId, body }) => ({
+        url: `/room-info/${roomId}`,
+        method: "PUT",
+        body,
+      }),
+    }),
     // PUT /api/v1/room/:id/inactive
     inactiveRoom: builder.mutation<any, string>({
       query: (id) => ({
@@ -98,4 +105,5 @@ export const {
   useInactiveRoomMutation,
   useDeleteRoomMutation,
   useInactiveMyRoomMutation,
+  useUpdateRoomByRoomIdMutation,
 } = roomApi;
