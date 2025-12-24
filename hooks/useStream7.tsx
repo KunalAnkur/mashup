@@ -439,7 +439,7 @@ export const useStream = ({
         });
         console.log("GET_TRANSPORT_INFO called", { joinResponse, success });
         if (!success) {
-            console.error("[STREAM] Get transport info failed:", joinResponse);
+            console.warn("[STREAM] Get transport info failed:", joinResponse);
             return;
         }
         // Validate joinResponse
