@@ -49,9 +49,6 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
     dispatch(
       setRefers({
         refer: true,
-        type: "sync",
-        source: "url",
-        urls: addedUrls.map((item) => item.url),
       })
     );
     onClose();

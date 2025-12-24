@@ -496,3 +496,78 @@ export function getPlayerControlsConfig(url: string | string[] | SourceProps[] |
     };
     
 }
+
+const createSilentAudioTrack = (): MediaStreamTrack => {
+  const ctx = new AudioContext();
+  const dst = ctx.createMediaStreamDestination();
+
+  // Create a gain node set to 0 for complete silence
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0; // Zero gain = no sound output
+  gainNode.connect(dst);
+
+  // Create a silent buffer (filled with zeros by default)
+  // Use a small buffer to minimize memory usage
+  const buffer = ctx.createBuffer(1, 128, ctx.sampleRate);
+
+  // Create a buffer source with the silent buffer
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true; // Loop the silent buffer to keep the track "live"
+  source.connect(gainNode);
+  source.start();
+
+  const track = dst.stream.getAudioTracks()[0];
+  track.enabled = true; // Track is enabled but produces silence (gain is 0)
+
+  return track;
+};
+const createVideoTrack = (): MediaStreamTrack => {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1; // Tiny resolution
+  canvas.height = 1;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("No context");
+
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, 1, 1);
+
+  // Very low frame rate - only 1 frame per second
+  const stream = canvas.captureStream(1);
+  return stream.getVideoTracks()[0];
+};
+
+export function getStreamTracks(stream: MediaStream) {
+    const tracks: MediaStreamTrack[] = [];
+    const videoTracks = stream.getVideoTracks()[0];
+    const audioTracks = stream.getAudioTracks()[0];
+    const hasVideoTrack = videoTracks && videoTracks.readyState === 'live';
+    const hasAudioTrack = audioTracks && audioTracks.readyState === 'live';
+
+    if (hasVideoTrack && hasAudioTrack) {
+        tracks.push(videoTracks);
+        tracks.push(audioTracks);
+        return tracks;
+    }
+
+    if (hasVideoTrack && !hasAudioTrack) {
+        tracks.push(videoTracks);
+        tracks.push(createSilentAudioTrack());
+        return tracks;
+    }
+
+    if (hasAudioTrack && !hasVideoTrack) {
+        tracks.push(audioTracks);
+        // tracks.push(createVideoTrack());
+        return tracks;
+    }
+
+    if (!hasVideoTrack && !hasAudioTrack) {
+        tracks.push(createSilentAudioTrack());
+        // tracks.push(createVideoTrack());
+        return tracks;
+    }
+
+    return tracks;
+}

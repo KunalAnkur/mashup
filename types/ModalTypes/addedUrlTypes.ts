@@ -4,7 +4,7 @@ export interface AddedUrl {
   metadata?: {
     title?: string;
     description?: string;
-    thumbnail?: string;
+    thumbnail?: string | null;
     author?: string;
   };
 }

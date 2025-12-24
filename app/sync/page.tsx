@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { setRefers } from "@/lib/store/slices/roomSlice";
+import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
 import { useRouter } from "next/navigation";
 import {
   SupportedPlatformsGrid,
@@ -12,6 +12,7 @@ import {
   getUrlDisplayName,
 } from "@/components/Modals/UrlModalComponents";
 import { PageHeader } from "@/components/UI";
+import { Playlist } from "@/types/storeTypes";
 
 const SyncPage = () => {
   const dispatch = useDispatch();
@@ -47,14 +48,27 @@ const SyncPage = () => {
     
     setIsEntering(true);
     try {
+      // Convert addedUrls to Playlist format
+      const playlist: Playlist[] = addedUrls.map((addedUrl, index) => ({
+        id: crypto.randomUUID(),
+        type: "sync",
+        source: "url",
+        link: addedUrl.url,
+        selected: index === 0, // First item is selected
+        onlyAudio: false,
+        metadata: addedUrl.metadata || {},
+      }));
+
+      // Store playlist in roomSlice
+      dispatch(setPlaylist(playlist));
+      
+      // Set refer flag so AuthGuard can create the room
       dispatch(
         setRefers({
           refer: true,
-          type: "sync",
-          source: "url",
-          urls: addedUrls.map((item) => item.url),
         })
       );
+      
       if (!authState.isAuthenticated) {
         router.push("/login");
       }

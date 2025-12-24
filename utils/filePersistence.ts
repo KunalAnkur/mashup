@@ -6,7 +6,12 @@ interface FileSystemFileHandle extends FileSystemHandle {
     getFile(): Promise<File>;
     createWritable(options?: FileSystemCreateWritableOptions): Promise<FileSystemWritableFileStream>;
 }
-
+export type ExtendedFile = File & {
+    id: string;
+    selected: boolean;
+    onlyAudio: boolean;
+    file: File;
+};
 interface FileSystemHandlePermissionDescriptor {
     mode?: 'read' | 'readwrite';
 }
@@ -95,7 +100,7 @@ async function getDB(): Promise<IDBPDatabase<FilePersistenceDB> | null> {
     // Open new database connection
     dbOpeningPromise = (async () => {
     try {
-        dbInstance = await openDB<FilePersistenceDB>('video-files-db', 3, {
+        dbInstance = await openDB<FilePersistenceDB>('video-files-db', 4, {
             upgrade(db, oldVersion) {
                 if (!db.objectStoreNames.contains('files')) {
                     const store = db.createObjectStore('files', { keyPath: 'id' });
@@ -174,7 +179,7 @@ export async function saveFileHandles(files: File[]): Promise<boolean> {
 
 // Save file handle from showOpenFilePicker
 export async function saveFileHandle(
-    handle: FileSystemFileHandle
+    handle: FileSystemFileHandle, idx: string | null = null
 ): Promise<boolean> {
     if (!isFileSystemAccessSupported()) {
         return false;
@@ -200,7 +205,7 @@ export async function saveFileHandle(
         }
 
         const file = await handle.getFile();
-        const id = `${file.name}-${file.lastModified}-${crypto.randomUUID()}`;
+        const id = idx || crypto.randomUUID();
         
         await db.put('files', {
             id,
@@ -221,7 +226,7 @@ export async function saveFileHandle(
                 const db = await getDB();
                 if (db) {
                     const file = await handle.getFile();
-                    const id = `${file.name}-${file.lastModified}-${crypto.randomUUID()}`;
+                    const id = crypto.randomUUID();
                     await db.put('files', {
                         id,
                         handle,
@@ -243,7 +248,7 @@ export async function saveFileHandle(
 }
 
 // Load all saved file handles
-export async function loadFileHandles(): Promise<File[]> {
+export async function loadFileHandles(): Promise<ExtendedFile[]> {
     if (!isFileSystemAccessSupported()) {
         return [];
     }
@@ -268,7 +273,7 @@ export async function loadFileHandles(): Promise<File[]> {
 
         const saved = await db.getAll('files');
         console.log(`loadFileHandles: Found ${saved.length} file handle(s) in IndexedDB`);
-        const files: File[] = [];
+        const files: ExtendedFile[] = [];
 
         const permissionDeniedFiles: string[] = [];
         
@@ -288,7 +293,12 @@ export async function loadFileHandles(): Promise<File[]> {
                 // Only load if permission is granted
                 if (permission === 'granted') {
                     const file = await item.handle.getFile();
-                    files.push(file);
+                    files.push({
+                        id: item.id,
+                        selected: false,
+                        onlyAudio: file.type.startsWith('audio/'),
+                        file: file,
+                    } as ExtendedFile);
                     console.log(`loadFileHandles: ✓ Successfully loaded file: ${file.name}`);
                 } else {
                     // Permission denied even after request
@@ -334,13 +344,18 @@ export async function loadFileHandles(): Promise<File[]> {
                 const db = await getDB();
                 if (db) {
                     const saved = await db.getAll('files');
-                    const files: File[] = [];
+                    const files: ExtendedFile[] = [];
                     for (const item of saved) {
                         try {
                             const permission = await item.handle.queryPermission({ mode: 'read' });
                             if (permission === 'granted') {
                                 const file = await item.handle.getFile();
-                                files.push(file);
+                                files.push({
+                                    id: item.id,
+                                    selected: false,
+                                    onlyAudio: file.type.startsWith('audio/'),
+                                    file: file,
+                                } as ExtendedFile);
                             }
                         } catch (error) {
                             console.error(`Error loading file ${item.name}:`, error);
@@ -360,9 +375,7 @@ export async function loadFileHandles(): Promise<File[]> {
 
 // Remove a file handle from storage by matching file properties
 export async function removeFileHandle(
-    fileName: string,
-    fileSize: number,
-    lastModified?: number
+    id: string
 ): Promise<boolean> {
     if (!isFileSystemAccessSupported()) {
         return false;
@@ -377,14 +390,11 @@ export async function removeFileHandle(
         const allFiles = await db.getAll('files');
         // Match by name and size (and lastModified if provided for better accuracy)
         const toDelete = allFiles.find((item) => {
-            const nameMatch = item.name === fileName;
-            const sizeMatch = item.size === fileSize;
-            const timeMatch = lastModified ? item.lastModified === lastModified : true;
-            return nameMatch && sizeMatch && timeMatch;
+            return item.id === id;
         });
 
         if (toDelete) {
-            await db.delete('files', toDelete.id);
+            await db.delete('files', id);
             return true;
         }
 
@@ -660,7 +670,7 @@ export async function appendFileHandles(newHandles: FileSystemFileHandle[]): Pro
         for (const handle of newHandles) {
             try {
                 const file = await handle.getFile();
-                const id = `${file.name}-${file.lastModified}-${crypto.randomUUID()}`;
+                const id = crypto.randomUUID();
                 
                 await db.put('files', {
                     id,

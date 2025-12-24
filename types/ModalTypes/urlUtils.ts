@@ -65,3 +65,6 @@ export const getUrlDisplayName = (url: string): string => {
 
 export const getPlatformById = (id: string): Platform | undefined =>
   platforms.find((p) => p.id === id);
+
+export const getPlatformByLink = (link: string): Platform | null =>
+  platforms.find((p) => p.urlPatterns.some((pattern) => pattern.test(link))) || null;

@@ -4,8 +4,9 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef, Re
 import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "@/lib/store";
+import { RootState, store } from "@/lib/store";
 import { exitRoom, updateRoomInfo } from "@/lib/store/slices/roomSlice";
+import type { Playlist } from "@/types/storeTypes";
 import { showError } from "@/utils/toast";
 
 export type RoomType = "stream" | "sync";
@@ -21,11 +22,12 @@ export interface UserInfo {
     joinedAt: number;
 }
 export interface RoomInformation {
-    type: "stream" | "sync";
-    source: "file" | "url" | "stream";
-    urls: string[];
-    files: string[];
-    selectedFileIndex: number;
+    // Legacy fields kept for socket compatibility
+    type?: "stream" | "sync";
+    source?: "file" | "url" | "stream";
+    urls?: string[];
+    files?: string[];
+    selectedFileIndex?: number;
 }
 interface JoinResponse {
     success: boolean;
@@ -36,6 +38,7 @@ interface JoinResponse {
     sendTransportOptions?: any;
     recvTransportOptions?: any;
     room: RoomInformation;
+    playlist?: Playlist[];
     users?: UserInfo[];
     existingProducers?: Record<string, any[]>;
     error?: string;
@@ -53,6 +56,7 @@ interface RoomContextType {
     username: string;
     leaveRoom: () => void;
     updatePlaylist: (urls: string[]) => void;
+    broadcastPlaylist: (playlist: Playlist[]) => void;
     updateUserName: (username: string, name: string, profile: string) => void;
     participants: UserInfo[];
 }
@@ -68,7 +72,12 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const roomId = roomState.roomId;
     const isHost = roomState.host;
-    const roomTypeFromRedux = roomState.type as RoomType;
+    // Derive room type from selected playlist item (or first item)
+    const roomTypeFromState: RoomType | undefined = (() => {
+        const playlist = roomState.playlist || [];
+        const selected = playlist.find((p) => p.selected) || playlist[0];
+        return selected?.type as RoomType | undefined;
+    })();
     const username = authState.user?.username || authState.user?.name || "User";
     const email = authState.user?.email;
     const profile = authState.user?.profile;
@@ -82,16 +91,25 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const [participants, setParticipants] = useState<UserInfo[]>([]);
     // Sync roomType from Redux when it changes (e.g., from room info update)
     useEffect(() => {
-        if (roomTypeFromRedux && roomTypeFromRedux !== roomType) {
-            console.log(`[RoomContext] Room type synced from Redux: ${roomType} -> ${roomTypeFromRedux}`);
-            setRoomType(roomTypeFromRedux);
+        if (roomTypeFromState && roomTypeFromState !== roomType) {
+            console.log(`[RoomContext] Room type synced from playlist state: ${roomType} -> ${roomTypeFromState}`);
+            if (roomType === "stream" && roomTypeFromState === "sync") {
+                console.log("[RoomContext] Room type changed from stream to sync - cleaning up stream resources");
+                // Send event to the backend to cleanup MediaSoup resources
+                // if (socket && roomId) {
+                    
+                //     console.log("[RoomContext] Emitted CLEANUP_STREAM_ROOM event");
+                // }
+            }
+            setRoomType(roomTypeFromState);
         }
-    }, [roomTypeFromRedux, roomType]);
+    }, [roomTypeFromState, roomType]);
 
     const joinAttemptedRef = useRef(false);
     const currentRoomRef = useRef<string | null>(null);
 
     const joinRoom = useCallback(async () => {
+        console.log("flow test - joinRoom called", { socket, roomId, username, playlist: roomState.playlist });
         if (!socket || !roomId || !username) return;
         if (joinAttemptedRef.current && currentRoomRef.current === roomId) return;
         if (isJoined && currentRoomRef.current === roomId) return;
@@ -101,26 +119,38 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             console.log("room state while joining", roomState);
+
+            // Derive minimal room info for socket payload from playlist
+            const playlist = roomState.playlist || [];
+            const selected: Playlist | undefined =
+                playlist.find((p) => p.selected) || playlist[0];
+            const derivedRoomType: RoomType =
+                (selected?.type as RoomType) || roomTypeFromState || "sync";
+
+            const roomPayload: RoomInformation = {
+                type: derivedRoomType,
+                // Map our playlist `source` to legacy `source` expected by backend
+                // - "screen" => "stream" (screen sharing)
+                // - "file" or "url" pass through
+                source:
+                    selected?.source === "screen"
+                        ? "stream"
+                        : selected?.source ?? (derivedRoomType === "sync" ? "url" : "file"),
+            };
+
             const response = await socket.emitWithAck(SocketEvent.JOIN_ROOM, {
                 roomId,
                 host: isHost,
                 username,
                 email,
                 profile,
-                room: {
-                    type: roomTypeFromRedux,
-                    source: roomState.source,
-                    urls: roomState.urls,
-                    files: roomState.files,
-                    selectedFileIndex: roomState.selectedFileIndex,
-                } as RoomInformation,
-                // roomType: roomTypeFromRedux,
+                // room: roomPayload,
+                playlist: roomState.playlist,
             }) as JoinResponse;
-
-            if (response?.success) {
+            if (response?.success) {                
                 setIsJoined(true);
                 currentRoomRef.current = roomId;
-                setRoomType(response.roomType || roomTypeFromRedux);
+                setRoomType(response.roomType || derivedRoomType);
                 setJoinResponse(response);
                 setParticipants(response.users || []);
                 setHostLeft(false);
@@ -141,18 +171,34 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [socket, roomId, isHost, username, email, profile, roomState, roomTypeFromRedux, isJoined]);
+    }, [socket, roomId, isHost, username, email, profile, roomState.playlist, roomTypeFromState, isJoined]);
 
-    const updatePlaylist = useCallback(async (urls: string[]) => {
-        if (!socket || !roomId) return;
-        await socket.emit(SocketEvent.UPDATE_PLAYLIST, {
-            roomId,
-            room: {
-                ...roomState,
+    const updatePlaylist = useCallback(
+        async (urls: string[]) => {
+            if (!socket || !roomId) return;
+            // Emit legacy UPDATE_PLAYLIST with only URL list; backend will broadcast ROOM_INFO_UPDATED
+            const roomPayload: RoomInformation = {
                 urls,
-            },
-        });
-    }, [socket, roomId, roomState]);
+            };
+            await socket.emit(SocketEvent.UPDATE_PLAYLIST, {
+                roomId,
+                room: roomPayload,
+            });
+        },
+        [socket, roomId]
+    );
+
+    const broadcastPlaylist = useCallback(
+        (playlist: Playlist[]) => {
+            if (!socket || !roomId || !isHost) return;
+            // Broadcast full playlist to all users in the room
+            socket.emit(SocketEvent.PLAYLIST_UPDATED, {
+                roomId,
+                playlist,
+            });
+        },
+        [socket, roomId, isHost]
+    );
 
     const updateUserName = useCallback(async (username: string, name: string, profile: string) => {
         if (!socket || !roomId) return;
@@ -167,7 +213,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         if (!socket || !roomId) return;
 
         socket.emit(SocketEvent.LEAVE_ROOM, { roomId, room: roomState });
-        // dispatch(exitRoom());
         setIsJoined(false);
         setRoomType(null);
         setHostLeft(false);
@@ -175,8 +220,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         setJoinResponse(null);
         joinAttemptedRef.current = false;
         currentRoomRef.current = null;
-        dispatch(exitRoom());
-    }, [socket, roomId, roomState, dispatch]);
+        // dispatch(exitRoom());
+    }, [socket, roomId, roomState]);
 
     // Auto-join
     useEffect(() => {
@@ -221,73 +266,75 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         // Handle room info update when host joins with new videos or different room type
         const handleRoomInfoUpdated = (data: { 
             roomId: string; 
-            room: {
-                urls?: string[];
-                files?: string[];
-                selectedFileIndex?: number;
-                source?: "file" | "url" | "stream";
-                type?: "stream" | "sync";
-            };
+            playlist: Playlist[];
         }) => {
+            // ! Need to do something here to update the playlist in the redux store
             if (data.roomId === roomId && !isHost) {
-                // Validate selectedFileIndex is within bounds
-                const urls = data.room.urls || [];
-                const files = data.room.files || [];
-                const maxIndex = Math.max(urls.length, files.length) - 1;
-                const selectedIndex = data.room.selectedFileIndex !== undefined 
-                    ? Math.min(Math.max(0, data.room.selectedFileIndex), maxIndex)
-                    : 0;
+                dispatch(updateRoomInfo({ playlist: data.playlist }));
+                // const newRoomType = data.room.type;
+                // const currentRoomType = roomType;
                 
-                const newRoomType = data.room.type;
-                const currentRoomType = roomType;
-                
-                console.log("[RoomContext] Room info updated from host:", {
-                    ...data.room,
-                    selectedFileIndex: selectedIndex,
-                    newRoomType,
-                    currentRoomType,
-                });
+                // console.log("[RoomContext] Room info updated from host:", {
+                //     ...data.room,
+                //     newRoomType,
+                //     currentRoomType,
+                // });
                 
                 // Check if room type is changing
-                if (newRoomType && newRoomType !== currentRoomType) {
-                    console.log(`[RoomContext] Room type changed from ${currentRoomType} to ${newRoomType}`);
+                // if (newRoomType && newRoomType !== currentRoomType) {
+                //     console.log(`[RoomContext] Room type changed from ${currentRoomType} to ${newRoomType}`);
                     
-                    // If switching room types, we need to rejoin to get proper setup
-                    // Stream rooms need MediaSoup setup, sync rooms need different initialization
-                    if (newRoomType === "stream" && currentRoomType === "sync") {
-                        console.log("[RoomContext] Room type changed to stream - triggering rejoin for MediaSoup setup");
-                        // Reset join state to allow rejoin
-                        setIsJoined(false);
-                        joinAttemptedRef.current = false;
-                        // Clear join response to force fresh initialization
-                        setJoinResponse(null);
-                        // Update room type first
-                        setRoomType(newRoomType);
-                        // Rejoin will happen automatically via the auto-join effect
-                    } else if (newRoomType === "sync" && currentRoomType === "stream") {
-                        console.log("[RoomContext] Room type changed to sync - triggering rejoin");
-                        // Reset join state to allow rejoin
-                        setIsJoined(false);
-                        joinAttemptedRef.current = false;
-                        // Clear join response
-                        setJoinResponse(null);
-                        // Update room type
-                        setRoomType(newRoomType);
-                        // Rejoin will happen automatically via the auto-join effect
-                    } else {
-                        // For other cases, just update the type
-                        setRoomType(newRoomType);
-                    }
-                }
-                
-                // Update Redux state with new room information (including type)
-                dispatch(updateRoomInfo({
-                    urls,
-                    files,
-                    selectedFileIndex: selectedIndex,
-                    source: data.room.source,
-                    type: newRoomType,
-                }));
+                //     // If switching room types, we need to rejoin to get proper setup
+                //     // Stream rooms need MediaSoup setup, sync rooms need different initialization
+                //     if (newRoomType === "stream" && currentRoomType === "sync") {
+                //         console.log("[RoomContext] Room type changed to stream - triggering rejoin for MediaSoup setup");
+                //         // Reset join state to allow rejoin
+                //         setIsJoined(false);
+                //         joinAttemptedRef.current = false;
+                //         // Clear join response to force fresh initialization
+                //         setJoinResponse(null);
+                //         // Update room type first
+                //         setRoomType(newRoomType);
+                //         // Rejoin will happen automatically via the auto-join effect
+                //     } else if (newRoomType === "sync" && currentRoomType === "stream") {
+                //         console.log("[RoomContext] Room type changed to sync - triggering rejoin");
+                //         // Reset join state to allow rejoin
+                //         setIsJoined(false);
+                //         joinAttemptedRef.current = false;
+                //         // Clear join response
+                //         setJoinResponse(null);
+                //         // Update room type
+                //         setRoomType(newRoomType);
+                //         // Rejoin will happen automatically via the auto-join effect
+                //     } else {
+                //         // For other cases, just update the type
+                //         setRoomType(newRoomType);
+                //     }
+                // }
+            }
+        };
+
+        // Keep playlist selection in sync across host/consumers
+        const handleVideoSelected = ({ selectedIndex }: { selectedIndex: number }) => {
+            if (isHost) return;
+
+            const state = store.getState() as RootState;
+            const playlist = state.room.playlist || [];
+            if (!playlist.length) return;
+
+            const updated = playlist.map((item, idx) => ({
+                ...item,
+                selected: idx === selectedIndex,
+            }));
+
+            dispatch(updateRoomInfo({ playlist: updated }));
+        };
+
+        // Handle full playlist updates from host
+        const handlePlaylistUpdated = (data: { roomId: string; playlist: Playlist[] }) => {
+            if (data.roomId === roomId && !isHost && Array.isArray(data.playlist)) {
+                console.log("[RoomContext] Received playlist update from host:", data.playlist);
+                dispatch(updateRoomInfo({ playlist: data.playlist }));
             }
         };
 
@@ -295,13 +342,17 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         socket.on(SocketEvent.LEAVE_ROOM, handleRoomClosed);
         socket.on(SocketEvent.HOST_JOINED, handleHostJoined);
         socket.on(SocketEvent.ROOM_INFO_UPDATED, handleRoomInfoUpdated);
+        socket.on(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
+        socket.on(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
         return () => {
             socket.off(SocketEvent.HOST_LEFT, handleHostLeft);
             socket.off(SocketEvent.LEAVE_ROOM, handleRoomClosed);
             socket.off(SocketEvent.HOST_JOINED, handleHostJoined);
             socket.off(SocketEvent.ROOM_INFO_UPDATED, handleRoomInfoUpdated);
+            socket.off(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
+            socket.off(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
         };
-    }, [socket, roomId, isHost, dispatch]);
+    }, [socket, roomId, isHost, roomType, dispatch]);
     
     useEffect(() => {
         if (!socket || !roomId) return;
@@ -340,6 +391,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             username,
             leaveRoom,
             updatePlaylist,
+            broadcastPlaylist,
             updateUserName,
             participants,
         }}>

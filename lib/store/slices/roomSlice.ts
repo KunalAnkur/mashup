@@ -1,15 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RoomSetting, RoomState, UrlMetadata } from "@/types/storeTypes";
+import { Playlist, RoomSetting, RoomState, UrlMetadata } from "@/types/storeTypes";
 import { RoomCreateResponse } from "@/types/responseTypes";
 
 const initialState: RoomState = {
   haveRoom: false,
-  type: 'sync',
-  source: 'url',
   roomId: null,
-  urls: [],
-  files: [],
-  selectedFileIndex: 0,
+  playlist: [],
   host: false,
   refer: false,
   settings: {
@@ -17,10 +13,9 @@ const initialState: RoomState = {
   },
   loading: false,
   focused: false,
-  urlMetadataCache: {},
 };
 
-const authSlice = createSlice({
+const roomSlice = createSlice({
   name: "room",
   initialState,
   reducers: {
@@ -29,57 +24,43 @@ const authSlice = createSlice({
       state.haveRoom = true;
       state.loading = false;
       state.roomId = data.room_id;
-      state.urls = data.urls || [];
+      state.playlist = data.playlist || [];
       state.host = action.payload.authId === action.payload.data.user_id;
       // Backend now uses type and source directly
-      state.type = data.type as "stream" | "sync";
-      state.source = data.source as "file" | "url" | "stream";
       state.refer = false;
-    },
-    setFile: (state, action: PayloadAction<string[]>) => {
-      state.files = action.payload;
+      // state.selectedIndex = data.playlist.findIndex((item) => item.selected) || 0;
     },
     exitRoom: (state) => {
       state.haveRoom = false;
       state.loading = false;
       state.roomId = null;
-      state.type = 'sync';
-      state.source = 'url';
       // state.event = action.payload;
     },
-    setSelectedFileIndex: (state, action: PayloadAction<number>) => {
-      state.selectedFileIndex = action.payload;
+    setPlaylist: (state, action: PayloadAction<Playlist[]>) => {
+      state.playlist = action.payload;
+      // state.selectedIndex = action.payload.findIndex((item) => item.selected) || 0;
+    },
+    setScreenSharing: (state, action: PayloadAction<Playlist>) => {
+      // Remove any existing screen sharing items to avoid duplicates
+      const otherItems = state.playlist
+        .filter(item => item.source !== "screen")
+        .map(item => ({ ...item, selected: false }));
+      
+      // Add the new screen sharing item at the top and mark as selected
+      state.playlist = [action.payload, ...otherItems];
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    setUrls: (state, action: PayloadAction<string[]>) => {
-      state.urls = action.payload;
-    },
     updateRoomInfo: (
       state,
       action: PayloadAction<{
-        urls?: string[];
-        files?: string[];
-        selectedFileIndex?: number;
-        source?: "file" | "url" | "stream";
-        type?: "stream" | "sync";
+        playlist?: Playlist[];
       }>
     ) => {
-      if (action.payload.urls !== undefined) {
-        state.urls = action.payload.urls;
-      }
-      if (action.payload.files !== undefined) {
-        state.files = action.payload.files;
-      }
-      if (action.payload.selectedFileIndex !== undefined) {
-        state.selectedFileIndex = action.payload.selectedFileIndex;
-      }
-      if (action.payload.source !== undefined) {
-        state.source = action.payload.source;
-      }
-      if (action.payload.type !== undefined) {
-        state.type = action.payload.type;
+      if (action.payload.playlist !== undefined) {
+        state.playlist = action.payload.playlist;
+        // state.selectedIndex = action.payload.playlist.findIndex((item) => item.selected) || 0;
       }
     },
     setPanelCollapsed: (state, action: PayloadAction<Partial<RoomSetting>>) => {
@@ -93,41 +74,9 @@ const authSlice = createSlice({
       state,
       action: PayloadAction<{
         refer: boolean;
-        type: "stream" | "sync";
-        source: "file" | "url" | "stream";
-        urls?: string[];
-        files?: string[];
       }>
     ) => {
       state.refer = action.payload.refer;
-      state.type = action.payload.type;
-      state.source = action.payload.source;
-      state.urls = action.payload.urls || [];
-      state.files = action.payload.files || [];
-    },
-    
-    /** Cache metadata for a single URL */
-    setUrlMetadata: (
-      state,
-      action: PayloadAction<{ url: string; metadata: UrlMetadata }>
-    ) => {
-      state.urlMetadataCache[action.payload.url] = action.payload.metadata;
-    },
-    
-    /** Cache metadata for multiple URLs at once */
-    setUrlMetadataBatch: (
-      state,
-      action: PayloadAction<Record<string, UrlMetadata>>
-    ) => {
-      state.urlMetadataCache = {
-        ...state.urlMetadataCache,
-        ...action.payload,
-      };
-    },
-    
-    /** Clear URL metadata cache */
-    clearUrlMetadataCache: (state) => {
-      state.urlMetadataCache = {};
     },
     setFocused: (state, action: PayloadAction<boolean>) => {
       state.focused = action.payload;
@@ -140,15 +89,11 @@ export const {
   setRoom,
   exitRoom,
   setLoading,
-  setFile,
-  setSelectedFileIndex,
   setPanelCollapsed,
   setRefers,
-  setUrls,
   updateRoomInfo,
-  setUrlMetadata,
-  setUrlMetadataBatch,
-  clearUrlMetadataCache,
   setFocused,
-} = authSlice.actions;
-export default authSlice;
+  setPlaylist,
+  setScreenSharing,
+} = roomSlice.actions;
+export default roomSlice;

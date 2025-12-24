@@ -20,25 +20,46 @@ export type User = {
 export interface UrlMetadata {
   title?: string;
   description?: string;
-  thumbnail?: string;
+  thumbnail?: string | null;
   author?: string;
 }
 
+// export interface RoomState {
+//   haveRoom: boolean;
+//   loading: boolean;
+//   type: "stream" | "sync";
+//   source: "file" | "url" | "stream"; // "file" for file upload, "stream" for screen sharing, "url" for sync
+//   roomId: string | null;
+//   urls: string[];
+//   files: string[];
+//   host: boolean;
+//   settings: RoomSetting;
+//   selectedFileIndex: number;
+//   refer: boolean;
+//   focused: boolean;
+//   /** Cached metadata for URLs (keyed by URL string) */
+//   urlMetadataCache: Record<string, UrlMetadata>;
+// }
+
 export interface RoomState {
   haveRoom: boolean;
+  playlist: Playlist[];
   loading: boolean;
-  type: "stream" | "sync";
-  source: "file" | "url" | "stream"; // "file" for file upload, "stream" for screen sharing, "url" for sync
-  roomId: string | null;
-  urls: string[];
-  files: string[];
-  host: boolean;
-  settings: RoomSetting;
-  selectedFileIndex: number;
-  refer: boolean;
   focused: boolean;
-  /** Cached metadata for URLs (keyed by URL string) */
-  urlMetadataCache: Record<string, UrlMetadata>;
+  roomId: string | null;
+  host: boolean;
+  // selectedIndex: number;
+  refer: boolean;
+  settings: RoomSetting;
+}
+export type Playlist = {
+  id: string;
+  type: "stream" | "sync";
+  source: "file" | "url" | "screen";
+  onlyAudio: boolean;
+  link: string;
+  selected: boolean;
+  metadata: UrlMetadata;
 }
 
 export type RoomSetting = {

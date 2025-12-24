@@ -13,6 +13,7 @@ export enum SocketEvent {
   NOTIFY = "notify",
   ROOM_INFO_UPDATED = "roomInfoUpdated",
   UPDATE_PLAYLIST = "updatePlaylist",
+  PLAYLIST_UPDATED = "playlistUpdated",
   // Video selection events
   SELECT_VIDEO = "selectVideo",
   VIDEO_SELECTED = "videoSelected",
@@ -23,6 +24,7 @@ export enum SocketEvent {
   STREAM_PAUSED = "streamPaused",
   STREAM_RESUMED = "streamResumed",
   STREAM_STOPPED = "streamStopped",
+  STREAM_HAS_VIDEO = "streamHasVideo", // Host notifies consumers about video track status
 
   // Chat-specific events
   JOIN_CHAT_ROOM = "joinChatRoom",
@@ -38,10 +40,12 @@ export enum SocketEvent {
   RECEIVE_REACTION = "receiveReaction",
 
   // Mediasoup / streaming
+  GET_TRANSPORT_INFO = "getTransportInfo",
   CONNECT_TRANSPORT = "connectTransport",
   PRODUCE = "produce",
   CONSUME = "consume",
   LEAVE_ROOM = "leaveRoom",
+  CLEANUP_STREAM_ROOM = "cleanupStreamRoom",
   UNPAUSE_CONSUMERS = "unpauseConsumers",
   INCOMING_PRODUCER = "incomingProducer",
   HOST_LEFT = "hostLeft",

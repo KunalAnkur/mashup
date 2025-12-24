@@ -9,102 +9,120 @@ import PlayerOverlay from "@/components/Container/PlayerOverlay";
 import { useSync } from "@/hooks";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
+import type { Playlist } from "@/types/storeTypes";
 
 type Props = {
-    fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
+  fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
 };
 
 const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
-    const roomState = useSelector((state: RootState) => state.room);
-    const playerRef = useRef<ReactPlayer>(null);
+  const roomState = useSelector((state: RootState) => state.room);
+  const activeContent = useSelector((state: RootState) => state.room.playlist.find((item) => item.selected)) as Playlist;
+  const playerRef = useRef<ReactPlayer>(null);
 
-    const [videoUrl, setVideoUrl] = useState("");
-    const [hasVideoTrack, setHasVideoTrack] = useState<boolean | undefined>(true);
-    const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [hasVideoTrack, setHasVideoTrack] = useState<boolean | undefined>(true);
+  const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const { isJoined, roomType, isHost, hostLeft } = useRoomContext();
-    const initialPlayerState = helper.getInitialPlayerState({
-        url: roomState.urls[roomState.selectedFileIndex],
-        roomType: roomType || "sync",
-        host: isHost,
-        focused: true,
-        screenSharing: false,
-        hostLeft,
-        paused: false,
-    });
-    const {
-        onPlay,
-        onPause,
-        onSeeked,
-        onReady: originalOnReady,
-        isPlaying,
-    } = useSync({
-        playerRef,
-        isHost,
-        roomId: roomState.roomId,
-        initialPlaying: initialPlayerState.playing,
-        enabled: isJoined && roomType === "sync",
-    });
+  const { isJoined, roomType, isHost, hostLeft } = useRoomContext();
 
-    const handleReady = useCallback(() => {
-        originalOnReady();
+  const currentUrl = activeContent?.link ?? "";
 
-        if (typeof videoUrl === 'string' && helper.needsVideoCheck(videoUrl) && playerRef.current) {
-            const video = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
-            if (video) {
-                const hasVideo = video.videoWidth > 0 && video.videoHeight > 0;
+  const initialPlayerState = helper.getInitialPlayerState({
+    url: currentUrl,
+    roomType: roomType || "sync",
+    host: isHost,
+    focused: roomState.focused,
+    screenSharing: false,
+    hostLeft: hostLeft ?? false,
+    paused: false,
+  });
 
-                if (delayTimerRef.current) clearTimeout(delayTimerRef.current);
+  const {
+    onPlay,
+    onPause,
+    onSeeked,
+    onReady: originalOnReady,
+    isPlaying,
+  } = useSync({
+    playerRef,
+    isHost,
+    roomId: roomState.roomId,
+    initialPlaying: initialPlayerState.playing,
+    enabled: isJoined && roomType === "sync",
+  });
 
-                if (hasVideo) {
-                    setHasVideoTrack(true);
-                } 
-                // else {
-                //     delayTimerRef.current = setTimeout(() => setHasVideoTrack(false), 100);
-                // }
-            }
-        } else if (typeof videoUrl === 'string' && helper.isVideoPlatform(videoUrl)) {
-            setHasVideoTrack(true);
-        }
-    }, [originalOnReady, videoUrl]);
+  const handleReady = useCallback(() => {
+    originalOnReady();
 
-    useEffect(() => {
-        const url = roomState.urls[roomState.selectedFileIndex];
+    if (typeof videoUrl === "string" && helper.needsVideoCheck(videoUrl) && playerRef.current) {
+      const video = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
+      if (video) {
+        const hasVideo = video.videoWidth > 0 && video.videoHeight > 0;
 
         if (delayTimerRef.current) clearTimeout(delayTimerRef.current);
-        setHasVideoTrack(true);
 
-        if (url) {
-            setVideoUrl(url);
-            if (typeof url === 'string' && helper.isVideoPlatform(url)) {
-                setHasVideoTrack(true);
-            }
+        if (hasVideo) {
+          setHasVideoTrack(true);
         }
+        // else {
+        //   delayTimerRef.current = setTimeout(() => setHasVideoTrack(false), 100);
+        // }
+      }
+    } else if (typeof videoUrl === "string" && helper.isVideoPlatform(videoUrl)) {
+      setHasVideoTrack(true);
+    }
+  }, [originalOnReady, videoUrl]);
 
-        return () => {
-            if (delayTimerRef.current) clearTimeout(delayTimerRef.current);
-        };
-    }, [roomState.urls, roomState.selectedFileIndex]);
+  useEffect(() => {
+    const url = currentUrl;
 
-    return (
-        <Player
-            playerRef={playerRef}
-            playing={isPlaying}
-            onPlay={onPlay}
-            onPause={onPause}
-            onSeekEnd={onSeeked}
-            onReady={handleReady}
-            hasVideoTrack={hasVideoTrack}
-            fullscreenTargetRef={fullscreenTargetRef}
-            url={videoUrl}
-            muted={initialPlayerState.muted}
-            disableControls={helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft).disableControls}
-            hideControls={helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft).hideControls}
-            disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
-        >
-            <PlayerOverlay />
-        </Player>
-    );
+    if (delayTimerRef.current) clearTimeout(delayTimerRef.current);
+    setHasVideoTrack(true);
+
+    if (url) {
+      setVideoUrl(url);
+      if (typeof url === "string" && helper.isVideoPlatform(url)) {
+        setHasVideoTrack(true);
+      }
+    }
+
+    return () => {
+      if (delayTimerRef.current) clearTimeout(delayTimerRef.current);
+    };
+  }, [currentUrl]);
+
+  const initialStateForRender = helper.getInitialPlayerState({
+    url: videoUrl,
+    roomType: roomType || "sync",
+    host: isHost,
+    focused: roomState.focused,
+    screenSharing: false,
+    hostLeft: hostLeft ?? false,
+    paused: false,
+  });
+
+  const controlsConfig = helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft ?? false);
+
+  return (
+    <Player
+      playerRef={playerRef}
+      playing={isPlaying}
+      onPlay={onPlay}
+      onPause={onPause}
+      onSeekEnd={onSeeked}
+      onReady={handleReady}
+      hasVideoTrack={hasVideoTrack}
+      fullscreenTargetRef={fullscreenTargetRef}
+      url={videoUrl}
+      muted={initialStateForRender.muted}
+      disableControls={controlsConfig.disableControls}
+      hideControls={controlsConfig.hideControls}
+      disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
+    >
+      <PlayerOverlay />
+    </Player>
+  );
 };
 
 export default SyncPlayer;

@@ -9,28 +9,32 @@ import {
     clearFileHandles,
     getAllFileHandles,
     appendFileHandles,
+    ExtendedFile,
 } from "@/utils/filePersistence";
 import { showInfo } from "@/utils/toast";
+import { nanoid } from "@reduxjs/toolkit";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+
+
 
 type FileContextType = {
-    files: File[];
-    selectedFile: File | null;
+    files: ExtendedFile[];
+    
     thumbnails: Record<string, string>; // Map of file name to thumbnail data URL
-    setFiles: (files: File[]) => Promise<void>;
-    setSelectedFile: (file: File | null) => void;
-    removeFile: (index: number) => void;
+    setFiles: (files: ExtendedFile[]) => Promise<void>;
+    
+    removeFile: (id: string) => void;
     getThumbnail: (file: File) => string | null;
     isPersistenceSupported: boolean;
-    requestFilePicker: (append?: boolean) => Promise<File[]>;
+    requestFilePicker: (append?: boolean) => Promise<ExtendedFile[]>;
     showPermissionPrompt: () => void;
 };
 
 const FileContext = createContext<FileContextType>({
     files: [],
-    selectedFile: null,
     thumbnails: {},
     setFiles: async () => { },
-    setSelectedFile: () => { },
     removeFile: () => { },
     getThumbnail: () => null,
     isPersistenceSupported: false,
@@ -39,14 +43,13 @@ const FileContext = createContext<FileContextType>({
 });
 
 export const FileProvider = ({ children }: { children: ReactNode }) => {
-    const [files, setFiles] = useState<File[]>([]);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [files, setFiles] = useState<ExtendedFile[]>([]);
     const [thumbnails, setThumbnails] = useState<Record<string, string>>({}); // Store blob URLs
     const thumbnailBlobsRef = useRef<Record<string, Blob>>({}); // Track Blobs for cleanup
     const processingRef = useRef<Set<string>>(new Set());
     const [isPersistenceSupported, setIsPersistenceSupported] = useState(false);
     const permissionPromptShownRef = useRef(false);
-
+    const playlist = useSelector((state: RootState) => state.room.playlist);
     // Check if File System Access API is supported
     useEffect(() => {
         setIsPersistenceSupported(isFileSystemAccessSupported());
@@ -55,6 +58,15 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     // Track if files have been loaded initially
     const filesLoadedRef = useRef(false);
 
+    useEffect(() => {
+        if (!playlist.length) return;
+        const selectedFile = playlist.find(file => file.selected);
+        if (selectedFile?.source !== 'file') return;
+        const file = files.find(file => file.id === selectedFile.id);
+        if (!file) return;
+        file.selected = true;
+        setFiles(files);
+    }, [playlist]);
     // Load persisted files on mount - always try to load on mount
     useEffect(() => {
         const loadPersistedFiles = async () => {
@@ -72,10 +84,10 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
                 
                 if (persistedFiles.length > 0) {
                     // Always set persisted files on mount (they're the source of truth)
+                    persistedFiles[0].selected = true;
+                    console.log('FileContext: Selected file:', persistedFiles);
                     setFiles(persistedFiles);
-                    if (persistedFiles.length > 0) {
-                        setSelectedFile(persistedFiles[0]);
-                    }
+                    // * maybe in rudux also need to updated here
                     console.log(`FileContext: ✓ Loaded ${persistedFiles.length} persisted file(s)`);
                     // Thumbnails will be generated automatically in the useEffect below
                 } else {
@@ -124,12 +136,8 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
                         });
                         
                         // Update selected file if needed
-                        setSelectedFile((currentSelected) => {
-                            if (!currentSelected && persistedFiles.length > 0) {
-                                return persistedFiles[0];
-                            }
-                            return currentSelected;
-                        });
+                        persistedFiles[0].selected = true;
+                        setFiles(persistedFiles);
                         
                         console.log(`Reloaded ${persistedFiles.length} persisted file(s) on visibility change`);
                         // Thumbnails will be generated automatically in the useEffect below
@@ -148,7 +156,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     }, [isPersistenceSupported]);
 
     // Request file picker using File System Access API
-    const requestFilePicker = async (append: boolean = false): Promise<File[]> => {
+    const requestFilePicker = async (append: boolean = false): Promise<ExtendedFile[]> => {
         if (!isFileSystemAccessSupported()) {
             throw new Error('File System Access API is not supported');
         }
@@ -173,19 +181,24 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
                 }
             }
 
-            const newFiles: File[] = [];
+            const newFiles: ExtendedFile[] = [];
             for (let i = 0; i < handles.length; i++) {
                 const handle = handles[i];
                 try {
                     const file = await handle.getFile();
-                    newFiles.push(file);
+                    const idx = crypto.randomUUID();
+                    newFiles.push({
+                        id: idx,
+                        selected: false,
+                        file: file,
+                    } as ExtendedFile);
                     // Save handle for persistence
                     if (append) {
                         // Append mode: just save the new handle
-                        await saveFileHandle(handle);
+                        await saveFileHandle(handle, idx);
                     } else {
                         // Replace mode: save handle (already cleared above)
-                        await saveFileHandle(handle);
+                        await saveFileHandle(handle, idx);
                     }
                     console.log(`requestFilePicker: ✓ Saved file ${i + 1}/${handles.length}: ${file.name}`);
                 } catch (error) {
@@ -227,46 +240,40 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         }, 5000);
     };
 
-    const removeFile = async (index: number) => {
-        const newFiles = [...files];
-        const removedFile = newFiles.splice(index, 1)[0];
-
-        setFiles(newFiles);
-
-        // Remove thumbnail and processing flag
-        if (removedFile) {
-            // Revoke blob URL if it exists
-            const thumbnailUrl = thumbnails[removedFile.name];
-            if (thumbnailUrl && thumbnailUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(thumbnailUrl);
-            }
-            
-            // Remove from thumbnails state and blob ref
-            setThumbnails((prev) => {
-                const newThumbnails = { ...prev };
-                delete newThumbnails[removedFile.name];
-                return newThumbnails;
-            });
-            delete thumbnailBlobsRef.current[removedFile.name];
-            processingRef.current.delete(removedFile.name);
-
-            // Remove from persistence if supported
-            if (isFileSystemAccessSupported()) {
-                try {
-                    await removeFileHandle(
-                        removedFile.name,
-                        removedFile.size,
-                        removedFile.lastModified
-                    );
-                } catch (error) {
-                    console.error('Error removing file from persistence:', error);
-                }
-            }
+    const removeFile = async (id: string) => {
+        // Find the file to remove by id
+        const removedFile = files.find((file) => file.id === id);
+        if (!removedFile) {
+            return;
         }
 
-        // If we're removing the selected file, update selection
-        if (selectedFile === removedFile) {
-            setSelectedFile(newFiles.length > 0 ? newFiles[0] : null);
+        // Update local files state (remove the file)
+        const updatedFiles = files.filter((file) => file.id !== id);
+        setFiles(updatedFiles);
+
+        const fileName = removedFile.file.name;
+
+        // Revoke and remove thumbnail + processing refs, keyed by file name
+        const thumbnailUrl = thumbnails[fileName];
+        if (thumbnailUrl && thumbnailUrl.startsWith("blob:")) {
+            URL.revokeObjectURL(thumbnailUrl);
+        }
+
+        setThumbnails((prev) => {
+            const next = { ...prev };
+            delete next[fileName];
+            return next;
+        });
+        delete thumbnailBlobsRef.current[fileName];
+        processingRef.current.delete(fileName);
+
+        // Remove from persistence if supported
+        if (isFileSystemAccessSupported()) {
+            try {
+                await removeFileHandle(removedFile.id);
+            } catch (error) {
+                console.error("Error removing file from persistence:", error);
+            }
         }
     };
 
@@ -287,7 +294,8 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         const generateThumbnailsForNewFiles = async () => {
             const newThumbnails: Record<string, string> = {};
             
-            for (const file of files) {
+            for (const extendedFile of files) {
+                const file = extendedFile.file;
                 // Only generate thumbnail for video files that don't have one yet and aren't being processed
                 if (
                     isVideoFile(file) && 
@@ -336,7 +344,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const filesFromAPIRef = useRef(false);
 
     // Enhanced setFiles that handles both persisted and non-persisted files
-    const setFilesWithPersistence = async (newFiles: File[]) => {
+    const setFilesWithPersistence = async (newFiles: ExtendedFile[]) => {
         // Clear all previously stored files when new files are selected
         // This ensures we only keep the latest selection
         // Note: If files come from File System Access API, they're already cleared in requestFilePicker
@@ -369,25 +377,16 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         // Note: For files added via traditional input or drag-and-drop, we can't persist them
         // They need to be added via showOpenFilePicker to get handles
         // This is handled in the stream page component
-        setFiles(newFiles);
+        setFiles(newFiles as ExtendedFile[]);
         
-        // If new files are empty and we had files before, clear selected file
-        if (newFiles.length === 0) {
-            setSelectedFile(null);
-        } else if (newFiles.length > 0 && !newFiles.includes(selectedFile!)) {
-            // If selected file is not in new files, select first one
-            setSelectedFile(newFiles[0]);
-        }
     };
 
     return (
         <FileContext.Provider
             value={{
                 files,
-                selectedFile,
                 thumbnails,
                 setFiles: setFilesWithPersistence,
-                setSelectedFile,
                 removeFile,
                 getThumbnail,
                 isPersistenceSupported,

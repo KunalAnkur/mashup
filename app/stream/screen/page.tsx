@@ -6,11 +6,11 @@ import { PageHeader } from "@/components/UI";
 import { FaCheckCircle, FaShare, FaDesktop, FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { RootState } from "@/lib/store";
-import { useCreateRoomMutation } from "@/lib/store/api/roomApi";
-import { setRefers } from "@/lib/store/slices/roomSlice";
+import { setPlaylist, setRefers, setScreenSharing } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { helper } from "@/utils";
 import { showError } from "@/utils/toast";
+import type { Playlist } from "@/types/storeTypes";
 
 // Generic screen share styling
 const SCREEN_SHARE_STYLE = {
@@ -23,7 +23,6 @@ const ScreenSharePage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const authState = useSelector((state: RootState) => state.auth);
-  const [createRoom] = useCreateRoomMutation();
   const { setStream: setMediaStream, setScreenType } = useMediaStreamContext();
 
   // State management
@@ -208,11 +207,26 @@ const ScreenSharePage = () => {
         // User cancelled or capture failed - silently handle
         return;
       }
-
-      setStream(mediaStream);
-      // Store in MediaStreamContext for use in room (MediaStream cannot be in Redux)
       setMediaStream(mediaStream);
       setScreenType(screenType);
+      setStream(mediaStream);
+      const screenItem: Playlist = {
+        id: mediaStream.id,
+        type: "stream",
+        source: "screen",
+        link: "Screen Share",
+        selected: true, 
+        onlyAudio: currentAudioOnly,
+        metadata: {
+          title: "Screen Share",
+          description: "Live screen sharing session",
+          thumbnail: undefined,
+          author: authState.user?.name || authState.user?.username || "You",
+        },
+      };
+      dispatch(setScreenSharing(screenItem));
+      // Store in MediaStreamContext for use in room (MediaStream cannot be in Redux)
+      
     } catch (err: any) {
       // Only show alert for unexpected errors, not user cancellations
       if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
@@ -230,52 +244,48 @@ const ScreenSharePage = () => {
     }
   }, [audioOnly, setMediaStream, stream]);
 
-  const handleStartStreaming = async () => {
+  const handleStartStreaming = useCallback(async () => {
     if (!isStreamReady || !stream) return;
 
-    // Check authentication
-    if (!authState.isAuthenticated) {
-      router.push(`/login?redirect=${encodeURIComponent(`/stream/screen`)}`);
-      return;
-    }
-
-    setIsCreatingRoom(true);
-
     try {
-      // Create room with screen sharing stream type
-      const response = await createRoom({
+      // Build a playlist entry for screen sharing
+      const screenItem: Playlist = {
+        id: stream.id,
         type: "stream",
-        source: "stream",
-        urls: [], // Screen share doesn't need URLs
-      }).unwrap();
+        source: "screen",
+        link: "Screen Share",
+        selected: true,
+        onlyAudio: audioOnly,
+        metadata: {
+          title: "Screen Share",
+          description: "Live screen sharing session",
+          thumbnail: undefined,
+          author: authState.user?.name || authState.user?.username || "You",
+        },
+      };
+      
+      // Save playlist and mark refer so AuthGuard can create the room
+      dispatch(setScreenSharing(screenItem));
+      dispatch(
+        setRefers({
+          refer: true,
+        })
+      );
 
-      if (response.success && response.data?.room_id) {
-        // Set refer data for AuthGuard to handle
-        dispatch(
-          setRefers({
-            refer: true,
-            type: "stream",
-            source: "stream",
-            urls: [],
-          })
-        );
-
-        // Store stream in context or pass it somehow
-        // For now, we'll need to handle this in the room page
-        // The stream will need to be passed to MediaSoup hook
-        
-        // Redirect to room
-        router.push(`/room/${response.data.room_id}`);
-      } else {
-        showError("Failed to create room", "Please check your connection and try again.");
-        setIsCreatingRoom(false);
+      // If not authenticated, go to login; AuthGuard will create room after login
+      if (!authState.isAuthenticated) {
+        router.push(`/login?redirect=${encodeURIComponent(`/stream/screen`)}`);
+        return;
       }
+
+      // If authenticated, AuthGuard (on /stream/screen) will see refer+playlist and create room
+      setIsCreatingRoom(true);
     } catch (error) {
       console.error("Error creating room:", error);
       showError("Failed to create room", "Please check your connection and try again.");
       setIsCreatingRoom(false);
     }
-  };
+  }, [isStreamReady, stream, audioOnly, setMediaStream, dispatch, router, authState.isAuthenticated]);
 
 
   return (

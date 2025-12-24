@@ -37,7 +37,7 @@ const Panel = () => {
   const roomUrl = roomId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/room/${roomId}` : '';
 
   const visibleTabs = useMemo(() => {
-    const isStreaming = roomState.type === "stream";
+    const isStreaming = roomState.playlist.some((item) => item.type === "stream");
 
     return Object.values(Tabs).filter((tab) => {
       if (tab === Tabs.PLAYLIST) {
@@ -45,7 +45,7 @@ const Panel = () => {
       }
       return true;
     });
-  }, [roomState.type, roomState.source, host]);
+  }, [roomState.playlist, host]);
 
   const renderTabContent = (tab: Tabs) => {
     switch (tab) {
