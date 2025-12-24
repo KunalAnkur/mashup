@@ -5,7 +5,7 @@ import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
 import SettingTab from "./SettingTab";
-import PlaylistTab from "./PlaylistTab2";
+import PlaylistTab from "./PlaylistTab";
 import { useDispatch, useSelector } from "react-redux";
 import { useInactiveMyRoomMutation } from "@/lib/store/api/roomApi";
 import { exitRoom } from "@/lib/store/slices/roomSlice";
