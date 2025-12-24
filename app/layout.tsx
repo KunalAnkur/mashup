@@ -13,7 +13,7 @@ const baseUrl = constants.seo.SITE_URL;
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Movmash - Watch Together, Anywhere",
+    default: "Create Party | Movmash",
     template: "%s | Movmash",
   },
   description: constants.seo.BRAND_DESCRIPTION,
@@ -89,7 +89,7 @@ export default function RootLayout({
         <OrganizationSchema />
         <WebsiteSchema />
         <WebPageSchema
-          title="Movmash - Watch Together, Anywhere"
+          title="Create Party | Movmash"
           description={constants.seo.BRAND_DESCRIPTION}
           url={baseUrl}
         />
