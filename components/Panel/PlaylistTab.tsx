@@ -17,7 +17,7 @@ const PlaylistTab = () => {
     const [updateRoomByRoomId] = useUpdateRoomByRoomIdMutation();
     const { broadcastPlaylist } = useRoomContext();
     const isHost = roomState.host;
-    
+
     useEffect(() => {
         setPlaylist(playlistState);
     }, [playlistState]);
@@ -54,9 +54,9 @@ const PlaylistTab = () => {
     const handleScreenShareStopped = (id: string, source: "file" | "url" | "screen" = "screen") => {
         console.log("handleScreenShareStopped", id);
         const filteredItems = playlistState.filter((item) => item.id !== id);
-        const playlistItems = filteredItems.map((item, index) => ({ 
-            ...item, 
-            selected: index === 0 
+        const playlistItems = filteredItems.map((item, index) => ({
+            ...item,
+            selected: index === 0
         }));
         dispatch(updateRoomInfo({ playlist: playlistItems }));
         updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
@@ -80,16 +80,16 @@ const PlaylistTab = () => {
                 )}
             </div>
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                {playlist.map((content, index) => 
-                    <PlaylistCard 
-                        key={content.id} 
-                        content={content} 
-                        host={isHost} 
+                {playlist.map((content, index) =>
+                    <PlaylistCard
+                        key={content.id}
+                        content={content}
+                        host={isHost}
                         index={index}
-                        onSelect={handleSelect} 
-                        onStop={handleScreenShareStopped} 
-                        isLoading={false}  />
-                    )}
+                        onSelect={handleSelect}
+                        onStop={handleScreenShareStopped}
+                        isLoading={false} />
+                )}
 
             </div>
 

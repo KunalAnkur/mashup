@@ -18,6 +18,7 @@ import { authApi } from "./api/authApi";
 import { roomApi } from "./api/roomApi";
 import { userApi } from "./api/userApi";
 import { urlApi } from "./api/urlApi";
+import { feedbackApi } from "./api/feedbackApi";
 
 // 1. Combine reducers
 const rootReducer = combineReducers({
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   [roomApi.reducerPath]: roomApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
   [urlApi.reducerPath]: urlApi.reducer,
+  [feedbackApi.reducerPath]: feedbackApi.reducer,
 });
 
 // 2. Persist config
@@ -48,7 +50,13 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(authApi.middleware, roomApi.middleware, userApi.middleware, urlApi.middleware),
+    }).concat(
+      authApi.middleware,
+      roomApi.middleware,
+      userApi.middleware,
+      urlApi.middleware,
+      feedbackApi.middleware
+    ),
   devTools: process.env.NODE_ENV !== "production",
 });
 

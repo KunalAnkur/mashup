@@ -279,6 +279,25 @@ const ChatTab = () => {
     return currentUserName === messageName && currentUserName !== "";
   };
 
+  // Check if two messages are from the same user
+  const isSameUser = (msg1: ChatMessage, msg2: ChatMessage): boolean => {
+    if (!msg1 || !msg2) return false;
+
+    // System messages are never grouped with regular messages
+    if (msg1.type === "system" || msg2.type === "system") return false;
+
+    // Compare by email (most reliable)
+    if (msg1.userEmail && msg2.userEmail) {
+      return msg1.userEmail.toLowerCase() === msg2.userEmail.toLowerCase();
+    }
+
+    // Compare by userName
+    const userName1 = (msg1.userName || "").toLowerCase();
+    const userName2 = (msg2.userName || "").toLowerCase();
+    
+    return userName1 === userName2 && userName1 !== "";
+  };
+
   return (
     <div className="flex flex-col h-full w-full gap-3 overflow-visible">
       {/* Connection Status - Modern Design */}
@@ -328,6 +347,10 @@ const ChatTab = () => {
           const userName = msg.userName || "Unknown User";
           const isCurrentUser = isCurrentUserMessage(msg);
           const isSystemMessage = msg.type === "system";
+          
+          // Check if previous message is from the same user (for grouping)
+          const prevMessage = i > 0 ? messages[i - 1] : null;
+          const isGroupedMessage = prevMessage && isSameUser(msg, prevMessage) && !isSystemMessage;
 
             // System messages (user joined/left) - Modern Design
             if (isSystemMessage) {
@@ -520,68 +543,72 @@ const ChatTab = () => {
           return (
             <div
               key={msg.id || i}
-              className="flex items-start gap-3 group animate-fade-in"
+              className={`flex items-start gap-3 group animate-fade-in ${isGroupedMessage ? "mt-0" : "mt-1"}`}
               style={{ animationDelay: `${i * 0.03}s` }}
             >
-              {/* Avatar - Modern Design */}
-              <div className="relative flex-shrink-0">
-                <div className="relative">
-                  {/* Glow effect on hover */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300`}></div>
-                  
-                  {msg.userProfile ? (
-                    <>
-                      <img
-                        src={msg.userProfile}
-                        alt={displayUserName}
-                        className="relative w-10 h-10 rounded-full object-cover shadow-xl border-2 border-white/20 ring-2 ring-white/5"
-                        onError={(e) => {
-                          // Hide image and show fallback if image fails to load
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = "none";
-                          const fallback =
-                            target.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = "flex";
-                        }}
-                      />
+              {/* Avatar - Modern Design (only show if not grouped) */}
+              <div className={`relative flex-shrink-0 ${isGroupedMessage ? "w-10" : ""}`}>
+                {!isGroupedMessage && (
+                  <div className="relative">
+                    {/* Glow effect on hover */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300`}></div>
+                    
+                    {msg.userProfile ? (
+                      <>
+                        <img
+                          src={msg.userProfile}
+                          alt={displayUserName}
+                          className="relative w-10 h-10 rounded-full object-cover shadow-xl border-2 border-white/20 ring-2 ring-white/5"
+                          onError={(e) => {
+                            // Hide image and show fallback if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                            const fallback =
+                              target.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = "flex";
+                          }}
+                        />
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 hidden`}
+                        >
+                          {displayUserName.charAt(0).toUpperCase()}
+                        </div>
+                      </>
+                    ) : (
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 hidden`}
+                        className={`relative w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 ring-2 ring-white/5`}
                       >
                         {displayUserName.charAt(0).toUpperCase()}
                       </div>
-                    </>
-                  ) : (
-                    <div
-                      className={`relative w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 ring-2 ring-white/5`}
-                    >
-                      {displayUserName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  
-                  {/* Online status indicator */}
-                  {!isCurrentUser && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#18181b] rounded-full shadow-lg">
-                      <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                    
+                    {/* Online status indicator */}
+                    {!isCurrentUser && (
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#18181b] rounded-full shadow-lg">
+                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Message Content */}
               <div className="flex-1 min-w-0 flex flex-col gap-1.5 items-start">
-                {/* Show username */}
-                <div className="flex items-baseline gap-2 min-w-0 w-full">
-                  <span
-                    className={`font-semibold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient} tracking-tight truncate max-w-[180px]`}
-                    title={displayUserName}
-                  >
-                    {displayUserName}
-                  </span>
-                </div>
+                {/* Show username (only if not grouped) */}
+                {!isGroupedMessage && (
+                  <div className="flex items-baseline gap-2 min-w-0 w-full">
+                    <span
+                      className={`font-semibold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient} tracking-tight truncate max-w-[180px]`}
+                      title={displayUserName}
+                    >
+                      {displayUserName}
+                    </span>
+                  </div>
+                )}
 
                 {/* Emoji-only messages: No bubble, larger size with glow */}
                 {onlyEmojis ? (
-                  <div className="relative group/emoji p-0.5">
+                  <div className={`relative group/emoji ${isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"}`}>
                     <div className="relative inline-block">
                       <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
                       <p className={`relative ${emojiSize} leading-tight filter`}>
@@ -601,7 +628,13 @@ const ChatTab = () => {
                     
                     {/* Message bubble */}
                     <div
-                      className={`relative rounded-2xl px-3 py-2.5 transition-all duration-200  backdrop-blur-xl rounded-tl-sm ${
+                      className={`relative px-3 py-2.5 transition-all duration-200 backdrop-blur-xl ${
+                        isGroupedMessage
+                          ? "rounded-xl mt-0"
+                          : isCurrentUser
+                          ? "rounded-2xl rounded-tl-sm"
+                          : "rounded-2xl rounded-tl-sm"
+                      } ${
                         isCurrentUser
                           ? `bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 `
                           : "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 "

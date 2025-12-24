@@ -1,15 +1,75 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import * as constants from "../constants";
+import OrganizationSchema from "@/components/SEO/OrganizationSchema";
+import WebsiteSchema from "@/components/SEO/WebsiteSchema";
+import WebPageSchema from "@/components/SEO/WebPageSchema";
+import BreadcrumbSchema from "@/components/SEO/BreadcrumbSchema";
 import "./globals.css";
 import ClientRoot from "./ClientRoot";
 
+const baseUrl = constants.seo.SITE_URL;
+
 export const metadata: Metadata = {
-  title: constants.seo.BRAND_NAME,
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "Create Party | Movmash",
+    template: "%s | Movmash",
+  },
   description: constants.seo.BRAND_DESCRIPTION,
+  keywords: (constants.seo.extendedKeywords || constants.seo.baseKeywords || []).join(", "),
+  authors: [{ name: "Movmash" }],
+  creator: "Movmash",
+  publisher: "Movmash",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: baseUrl,
+    siteName: "Movmash",
+    title: "Movmash - Watch Together, Anywhere",
+    description: constants.seo.BRAND_DESCRIPTION,
+    images: [
+      {
+        url: `${baseUrl}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: "Movmash - Watch Together, Anywhere",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Movmash - Watch Together, Anywhere",
+    description: constants.seo.BRAND_DESCRIPTION,
+    creator: "@movmash",
+    images: [`${baseUrl}/og-image.png`],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: baseUrl,
+  },
   icons: {
-    icon: constants.seo.FAVICON_URL,
-    shortcut: constants.seo.FAVICON_URL,
-    apple: constants.seo.FAVICON_URL,
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/assets/logo.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/assets/logo.svg',
   },
 };
 
@@ -18,13 +78,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || 'G-KJN3WCKBHG';
+
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body
         className="font-parkinsans antialiased text-smoothWhite bg-primaryDark "
         suppressHydrationWarning
       >
+        <OrganizationSchema />
+        <WebsiteSchema />
+        <WebPageSchema
+          title="Create Party | Movmash"
+          description={constants.seo.BRAND_DESCRIPTION}
+          url={baseUrl}
+        />
+        <BreadcrumbSchema
+          items={[
+            { name: "Home", url: baseUrl },
+          ]}
+        />
         <ClientRoot>{children}</ClientRoot>
+        {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
   );
