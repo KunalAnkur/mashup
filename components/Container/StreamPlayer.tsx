@@ -3,17 +3,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { useFileContext } from "@/context/FileContext";
-import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Player } from "@/components/VideoPlayer";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
 import StreamPlayerEmptyState from "@/components/Container/StreamPlayerEmptyState";
 import type ReactPlayer from "react-player";
-import { useStream } from "@/hooks";
-import { useRoomContext, RoomType } from "@/context/RoomContext";
+import { useStream } from "@/hooks/useStream";
+import { useStreamSource } from "@/hooks/useStreamSource";
+import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
-import { showError } from "@/utils/toast";
-import { Playlist } from "@/types/storeTypes";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -21,50 +18,38 @@ type Props = {
 
 const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
-    const activeContent = useSelector((state: RootState) => state.room.playlist.find((item) => item.selected)) as Playlist;
     const authState = useSelector((state: RootState) => state.auth);
-    const { files } = useFileContext();
-    const { stream: screenStream } = useMediaStreamContext();
     const playerRef = useRef<ReactPlayer>(null);
-
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-    const [currentFileUrl, setCurrentFileUrl] = useState("");
-    const [hasVideoTrack, setHasVideoTrack] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
     const [pauseFrameUrl, setPauseFrameUrl] = useState<string | null>(null);
+    const isSeekingRef = useRef(false);
+    const pendingVideoReadyRef = useRef(false);
+    const lastInitializedItemIdRef = useRef<string | null>(null);
+    const isInitialSetupRef = useRef(true);
+    const pendingInitializationRef = useRef(false);
+    
+    const { isJoined, roomType, isHost, hostLeft } = useRoomContext();
+    
+    // ============================================================================
+    // Layer 1: Source Layer
+    // ============================================================================
 
-    const hasInitializedRef = useRef(false);
-    const lastVideoIndexRef = useRef(-1);
-    const videoEndedRef = useRef(false);
-    const lastRoomTypeRef = useRef<RoomType | null>(null);
-    const { isJoined, roomType, joinResponse, isHost, hostLeft } = useRoomContext();
-
-    // Reset initialization when room type changes
-    useEffect(() => {
-        if (lastRoomTypeRef.current !== null && lastRoomTypeRef.current !== roomType) {
-            console.log(`[StreamPlayer] Room type changed from ${lastRoomTypeRef.current} to ${roomType} - resetting initialization`);
-            hasInitializedRef.current = false;
-        }
-        lastRoomTypeRef.current = roomType;
-    }, [roomType]);
-
-    const isScreenSharing = activeContent.type === "stream" && activeContent.source === "screen" && screenStream !== null;
-    const isFileStreaming = activeContent.type === "stream" && activeContent.source === "file";
-
-    // Get stream from player
-    const getStream = useCallback((): MediaStream | null => {
-        if (isScreenSharing && screenStream) return screenStream;
-        if (!playerRef.current) return null;
-
-        const video = playerRef.current.getInternalPlayer() as HTMLVideoElement & {
-            captureStream?: () => MediaStream;
-            mozCaptureStream?: () => MediaStream;
-        };
-
-        return video ? helper.captureStreamFromVideo(video) : null;
-    }, [isScreenSharing, screenStream]);
-
-    // Capture frame for pause overlay
+    // Get source-agnostic stream getter and playable source
+    const {
+        getStream,
+        playableSource,
+        activeItem,
+        isScreenSharing,
+        onVideoReady,
+        // onStreamHasVideo
+    } = useStreamSource({
+        playerRef,
+        isHost,
+        // remoteStream, // Pass remoteStream so useStreamSource can check video tracks for consumers
+    });
+    
+    
     const captureFrame = useCallback(() => {
         const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
         if (!video) return null;
@@ -82,133 +67,258 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
 
     // Stream callbacks
     const handleStreamReceived = useCallback((stream: MediaStream) => {
+       
         setRemoteStream(stream);
+        console.log("[StreamPlayer] Remote stream received", stream.getAudioTracks(), stream.getVideoTracks());
         setIsPaused(false);
+        console.log("[StreamPlayer] Stream has video tracks:", stream.getVideoTracks().length > 0);
         setPauseFrameUrl(null);
-        setHasVideoTrack(stream.getVideoTracks().length > 0);
-    }, []);
+    }, [remoteStream]);
+
+    
 
     const handleStreamPaused = useCallback(() => {
-        setPauseFrameUrl(captureFrame());
+        // Clear previous pause frame (data URL, no need to revoke)
+        setPauseFrameUrl(null);
+        
+        const frameUrl = captureFrame();
+        setPauseFrameUrl(frameUrl);
         setIsPaused(true);
     }, [captureFrame]);
 
     const handleStreamResumed = useCallback(() => {
         setIsPaused(false);
-        setTimeout(() => setPauseFrameUrl(null), 500);
+        // Clear pause frame after a delay (data URL, no need to revoke)
+        setTimeout(() => {
+            setPauseFrameUrl(null);
+        }, 500);
     }, []);
+
     const handleStreamStopped = useCallback(() => {
-        console.log("[StreamPlayer] Stream stopped", remoteStream);
         setRemoteStream(null);
-    }, [captureFrame]);
-    const { isInitialized, initializeFromJoinResponse, replaceProducerTracks, onSeekStart, onSeekEnd, onPlay: streamOnPlay, onPause } = useStream({
+        console.log("[StreamPlayer] Stream stopped");
+    }, [remoteStream]);
+
+    // const handleStreamHasVideo = useCallback((hasVideoTrack: boolean) => {
+    //     onStreamHasVideo(hasVideoTrack);
+    //     console.log("[StreamPlayer] Stream has video track: ==", {videoTrack: remoteStream?.getVideoTracks(), audioTrack: remoteStream?.getAudioTracks()});
+    // }, [onStreamHasVideo, remoteStream]);
+    // Initialize MediaSoup transport (completely source-agnostic)
+    const {
+        isInitialized,
+        initializeFromJoinResponse,
+        onSeekStart,
+        onSeekEnd,
+        onPlay: streamOnPlay,
+        onPause,
+    } = useStream({
         roomId: roomState.roomId,
-        getStream,
+        getStream, // Source-agnostic! useStream doesn't care where this comes from
+        isHost,
+        enabled: isJoined,
+        username: authState.user?.username || authState.user?.name || "User",
+        email: authState.user?.email,
+        profile: authState.user?.profile,
         onStreamReceived: handleStreamReceived,
         onStreamPaused: handleStreamPaused,
         onStreamResumed: handleStreamResumed,
         onStreamStopped: handleStreamStopped,
-        isHost,
-        enabled: isJoined && roomType === "stream",
-        username: authState.user?.username || authState.user?.name || "User",
-        email: authState.user?.email,
-        profile: authState.user?.profile,
+        // onStreamHasVideo: handleStreamHasVideo,
     });
 
-    // useEffect(() => {
-    //     if (!roomType) return;
-    //     const playerMessage = getPlayerMessage(isHost, roomType, hostLeft, remoteStream);
-    //     console.log("playerMessage", playerMessage);    
-    // }, [isHost, roomType, hostLeft, remoteStream]);
+    
+    // ============================================================================
+    // Initialization Effects
+    // ============================================================================
 
-    // Initialize when joined
     useEffect(() => {
-        if (!joinResponse || roomType !== "stream" || !isJoined || hasInitializedRef.current) return;
-        hasInitializedRef.current = true;
-        initializeFromJoinResponse(joinResponse);
-    }, [joinResponse, roomType, isJoined, initializeFromJoinResponse]);
-
-    // Create file URL for host
-    useEffect(() => {
-        if (!isHost || !isFileStreaming) return;
-
-        const file = files.find((f) => f.id === activeContent.id);
-        if (!file) return;
-
-        const url = URL.createObjectURL(file.file);
-        setCurrentFileUrl(url);
-        return () => URL.revokeObjectURL(url);
-    }, [files, activeContent.id, isHost, isFileStreaming]);
-
-    // Handle screen stream changes (when user shares a different screen)
-    useEffect(() => {
-        if (!isHost || !isScreenSharing || !screenStream || !isInitialized) return;
-
-        // Small delay to ensure the stream is ready
-        const timeoutId = setTimeout(async () => {
-            const stream = getStream();
-            if (stream) {
-                console.log("[StreamPlayer] Screen stream changed, updating producer tracks");
-                try {
-                    await replaceProducerTracks(stream);
-                    console.log("[StreamPlayer] Producer tracks updated successfully");
-                } catch (error) {
-                    console.error("[StreamPlayer] Error updating producer tracks:", error);
-                }
+        if (isHost) return;
+        if (!isJoined) return;
+        initializeFromJoinResponse();
+    }, [isHost, isJoined, initializeFromJoinResponse]);
+    
+    // ============================================================================
+    // Player Event Handlers
+    // ============================================================================
+    // const isVideoReadyRef = useRef(false);
+    const handleVideoReady = useCallback(async () => {
+        console.log("============================================================ [StreamPlayer] Video ready ========================================================================", { isHost, isJoined });
+        if (!isHost) return;
+        
+        // RACE CONDITION FIX: Check if we're joined before proceeding
+        if (!isJoined) {
+            console.log("[StreamPlayer] Video ready but not joined yet - deferring initialization until join completes");
+            pendingInitializationRef.current = true;
+            // Still call onVideoReady to setup the source, but don't initialize MediaSoup yet
+            onVideoReady();
+            return;
+        }
+        
+        onVideoReady();
+        console.log("============================================================ [StreamPlayer] Video ready (after onVideoReady) ========================================================================");
+        
+        const currentItemId = activeItem?.id || null;
+        const itemChanged = lastInitializedItemIdRef.current !== currentItemId;
+        
+        // Only initialize/replace tracks if:
+        // 1. This is the initial setup (first time)
+        // 2. The active item actually changed (different file/URL)
+        // 3. NOT if we're just seeking (same item, just different position)
+        if (!isInitialSetupRef.current && !itemChanged) {
+            console.log("[StreamPlayer] Video ready but item hasn't changed - skipping track replacement (likely from seek)");
+            return;
+        }
+        
+        // If we're currently seeking and this is not initial setup, defer
+        if (isSeekingRef.current && !isInitialSetupRef.current) {
+            console.log("[StreamPlayer] Video ready during seek - deferring track replacement");
+            pendingVideoReadyRef.current = true;
+            return;
+        }
+        
+        // * Making here a small delay to ensure the video is ready with the stream
+        await new Promise(r => setTimeout(r, 800));
+        
+        // Double-check isJoined after delay (in case it changed)
+        if (!isJoined) {
+            console.log("[StreamPlayer] Not joined after delay - aborting initialization");
+            pendingInitializationRef.current = true;
+            return;
+        }
+        
+        // Check if video is playing before replacing tracks (only for non-initial setup)
+        if (!isInitialSetupRef.current) {
+            const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
+            if (video && video.paused) {
+                console.log("[StreamPlayer] Video is paused - deferring track replacement until play");
+                pendingVideoReadyRef.current = true;
+                return;
             }
-        }, 300);
-
-        return () => clearTimeout(timeoutId);
-    }, [screenStream, isHost, isScreenSharing, isInitialized, getStream, replaceProducerTracks]);
-
-    // Handle video ready
-    const handleVideoReady = useCallback(() => {
-        const currentIndex = activeContent.id;
-
-        if (isHost && playerRef.current) {
-            const video = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
-            setHasVideoTrack(video ? video.videoWidth > 0 && video.videoHeight > 0 : true);
         }
+        
+        // * commenting this below because this was causing the issue while reshairng the screen becuase it was calling two time the getstream
+        // const stream = getStream();
+        // console.log("[StreamPlayer] Stream tracks:", {
+        //     audio: stream?.getAudioTracks().map(t => ({ id: t.id, readyState: t.readyState, enabled: t.enabled })),
+        //     video: stream?.getVideoTracks().map(t => ({ id: t.id, readyState: t.readyState, enabled: t.enabled }))
+        // });
+        // Here I can intiate the mediasoup stream productions
+        initializeFromJoinResponse();
+        pendingInitializationRef.current = false;
+        
+        // Mark that we've initialized for this item
+        lastInitializedItemIdRef.current = currentItemId;
+        isInitialSetupRef.current = false;
+        
+        // console.log({ activeItem, stream: getStream(), playableSource });
+        // hasVideoTrack is now managed by useStreamSource based on actual stream tracks
+    }, [activeItem, playableSource, onVideoReady, initializeFromJoinResponse, isHost, isJoined]);
+    
+    // ============================================================================
+    // Initialization Effects
+    // ============================================================================
 
-        if (isHost && isInitialized) {
-                setTimeout(async () => {
-                    const stream = getStream();
-                    if (stream) await replaceProducerTracks(stream);
-                }, 500);
+    useEffect(() => {
+        if (isHost) return;
+        if (!isJoined) return;
+        initializeFromJoinResponse();
+    }, [isHost, isJoined, initializeFromJoinResponse]);
+    
+    // Reset tracking when active item changes
+    useEffect(() => {
+        if (!isHost) return;
+        const currentItemId = activeItem?.id || null;
+        if (currentItemId !== lastInitializedItemIdRef.current) {
+            console.log("[StreamPlayer] Active item changed, will reinitialize on next video ready");
+            // Don't reset isInitialSetupRef here - let handleVideoReady handle it
         }
-    }, [isHost, isInitialized, activeContent.id, getStream, replaceProducerTracks]);
-
+    }, [activeItem?.id, isHost]);
+    
+    // Handle pending initialization when isJoined becomes true
+    useEffect(() => {
+        if (!isHost || !isJoined || !pendingInitializationRef.current) return;
+        
+        console.log("[StreamPlayer] isJoined is now true, retrying pending initialization");
+        // Trigger initialization by calling handleVideoReady logic
+        // We'll manually trigger the video ready handler
+        const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
+        if (video) {
+            // Call the handler again now that we're joined
+            handleVideoReady();
+        } else {
+            // If video isn't ready yet, it will be called when video becomes ready
+            console.log("[StreamPlayer] Video element not ready yet, will initialize when ready");
+        }
+    }, [isHost, isJoined, handleVideoReady]);
+    
+    // Handle pending initialization when isJoined becomes true
+    useEffect(() => {
+        if (!isHost || !isJoined || !pendingInitializationRef.current) return;
+        
+        console.log("[StreamPlayer] isJoined is now true, retrying pending initialization");
+        // Trigger initialization by calling handleVideoReady logic
+        // We'll manually trigger the video ready handler
+        const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
+        if (video) {
+            // Call the handler again now that we're joined
+            handleVideoReady();
+        } else {
+            // If video isn't ready yet, it will be called when video becomes ready
+            console.log("[StreamPlayer] Video element not ready yet, will initialize when ready");
+        }
+    }, [isHost, isJoined, handleVideoReady]);
+    
     const handleVideoEnded = useCallback(() => {
-        if (!roomState.host) return;
-        console.log("Video ended - marking for track refresh on next play");
-        videoEndedRef.current = true;
-    }, [roomState.host]);
+    
+    }, [isHost]);
 
     const onPlay = useCallback((event: string) => {
         streamOnPlay(event);
-
-        if (isHost && isInitialized && videoEndedRef.current) {
-            console.log("Video playing after end - refreshing producer tracks");
-            videoEndedRef.current = false;
-
-            setTimeout(async () => {
-                const newStream = getStream();
-                if (newStream) {
-                    try {
-                        await replaceProducerTracks(newStream);
-                        console.log("Producer tracks refreshed after video restart");
-                    } catch (error) {
-                        console.error("Error refreshing producer tracks:", error);
-                        showError("Stream update failed", "Unable to update video stream. The video may continue playing.");
+        
+        // If we have a pending video ready (from item change, not seek), handle it now that video is playing
+        if (pendingVideoReadyRef.current && isHost && !isSeekingRef.current) {
+            const currentItemId = activeItem?.id || null;
+            const itemChanged = lastInitializedItemIdRef.current !== currentItemId;
+            
+            // Only handle pending if item actually changed
+            if (itemChanged) {
+                pendingVideoReadyRef.current = false;
+                // Wait a bit for the video to start playing and tracks to become active
+                setTimeout(async () => {
+                    const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
+                    if (video && !video.paused) {
+                        // const stream = getStream();
+                        // if (stream) {
+                            console.log("[StreamPlayer] Handling pending video ready after item change");
+                            initializeFromJoinResponse();
+                            lastInitializedItemIdRef.current = currentItemId;
+                        // }
                     }
-                }
-            }, 500);
+                }, 300);
+            } else {
+                // If item didn't change, just clear the pending flag (was likely from seek)
+                pendingVideoReadyRef.current = false;
+            }
         }
-    }, [streamOnPlay, isInitialized, isHost, getStream, replaceProducerTracks]);
+    }, [streamOnPlay, isHost, initializeFromJoinResponse, activeItem]);
 
-    const source = isHost ? (isScreenSharing ? screenStream : currentFileUrl) : remoteStream;
-    console.log("source", source, remoteStream);
 
+    useEffect(() => {
+        if (isHost) return;
+        if (!isInitialized || hostLeft) {
+            setRemoteStream(null);
+        }
+    }, [isInitialized, hostLeft, remoteStream]);
+
+    // ============================================================================
+    // Render
+    // ============================================================================
+
+    // Determine what to play
+    // Host: uses playableSource from useStreamSource (file URL, link, or screen stream)
+    // Consumer: uses remoteStream from useStream
+    const source = isHost ? playableSource : remoteStream;
+    console.log("[StreamPlayer] Source:", source);
     // Show empty state when: no source available OR host has left
     if (!source || hostLeft) {
         return (
@@ -221,29 +331,82 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
             />
         );
     }
-
+    
     return (
         <div className="relative w-full h-full">
             <Player
-                key={activeContent.id}
+                key={activeItem?.id}
                 playerRef={playerRef}
-                playing={helper.getInitialPlayerState({ url: source, roomType: roomType || "stream", host: isHost, focused: roomState.focused, screenSharing: isScreenSharing, hostLeft: hostLeft, paused: isPaused }).playing}
+                playing={helper.getInitialPlayerState({
+                    url: source,
+                    roomType: roomType || "stream",
+                    host: isHost,
+                    focused: roomState.focused,
+                    screenSharing: isScreenSharing,
+                    hostLeft: hostLeft,
+                    paused: isPaused
+                }).playing}
                 onReady={handleVideoReady}
                 onEnded={handleVideoEnded}
-                onSeekStart={onSeekStart}
-                onSeekEnd={onSeekEnd}
+                onSeekStart={() => {
+                    isSeekingRef.current = true;
+                    onSeekStart();
+                }}
+                onSeekEnd={() => {
+                    onSeekEnd();
+                    // Reset seeking flag after a delay to allow video to resume
+                    setTimeout(() => {
+                        isSeekingRef.current = false;
+                        
+                        // Note: Producers should resume automatically when onPlay('seekend') is called
+                        // after the video resumes, now that we allow resume after seek completes
+                        
+                        // Only handle pending if item actually changed (not from seek)
+                        if (pendingVideoReadyRef.current && isHost) {
+                            const currentItemId = activeItem?.id || null;
+                            const itemChanged = lastInitializedItemIdRef.current !== currentItemId;
+                            
+                            if (itemChanged) {
+                                const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
+                                if (video && !video.paused) {
+                                    pendingVideoReadyRef.current = false;
+                                    setTimeout(async () => {
+                                        // const stream = getStream();
+                                        // if (stream) {
+                                            console.log("[StreamPlayer] Handling pending video ready after item change");
+                                            initializeFromJoinResponse();
+                                            lastInitializedItemIdRef.current = currentItemId;
+                                        // }
+                                    }, 300);
+                                }
+                            } else {
+                                // Item didn't change, just clear pending (was from seek)
+                                pendingVideoReadyRef.current = false;
+                            }
+                        }
+                    }, 500);
+                }}
                 fullscreenTargetRef={fullscreenTargetRef}
                 url={source}
-                muted={helper.getInitialPlayerState({ url: source, roomType: roomType || "stream", host: isHost, focused: roomState.focused, screenSharing: isScreenSharing, hostLeft: hostLeft, paused: isPaused }).muted}
+                muted={helper.getInitialPlayerState({
+                    url: source,
+                    roomType: roomType || "stream",
+                    host: isHost,
+                    focused: roomState.focused,
+                    screenSharing: isScreenSharing,
+                    hostLeft: hostLeft,
+                    paused: isPaused
+                }).muted}
                 onPlay={onPlay}
                 onPause={onPause}
-                hasVideoTrack={hasVideoTrack}
+                hasVideoTrack={!activeItem?.onlyAudio}
                 disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
                 hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
             >
                 <PlayerOverlay />
             </Player>
 
+            {/* Pause frame overlay for consumers */}
             {!isHost && pauseFrameUrl && (
                 <div className="absolute inset-0 z-0 pointer-events-none">
                     <img src={pauseFrameUrl} alt="Paused" className="w-full h-full object-contain bg-black" />

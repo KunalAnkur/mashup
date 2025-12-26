@@ -3,7 +3,7 @@ import type React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import SyncPlayer from "./SyncPlayer";
-import StreamPlayer from "./StreamPlayer7";
+import StreamPlayer from "./StreamPlayer";
 import { Playlist } from "@/types/storeTypes";
 import { useEffect, useState, useRef } from "react";
 import StreamPlayerEmptyState from "./StreamPlayerEmptyState";
