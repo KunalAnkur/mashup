@@ -117,8 +117,8 @@ export const UrlCard: React.FC<UrlCardProps> = ({
     <div className="group relative flex gap-3 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 rounded-xl p-3 transition-all duration-200 h-[72px] shrink-0 overflow-hidden">
       <UrlCardThumbnail
         isLoading={isLoading}
-        thumbnail={url.metadata?.thumbnail}
-        title={url.metadata?.title}
+        thumbnail={url.metadata?.thumbnail || undefined}
+        title={url.metadata?.title || undefined}
         platform={platform}
         showPlayIcon={hasMetadata}
       />
