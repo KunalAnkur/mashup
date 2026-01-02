@@ -43,15 +43,15 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
   isAdding = false,
   isEntering = false,
 }) => (
-  <div className="w-full lg:w-1/2 flex flex-col">
+  <div className="w-full flex flex-col h-full min-h-0">
     <SectionTitle
       gradientFrom="from-fuchsia-500"
       gradientTo="to-purple-500"
       title="Paste Your URLs"
     />
 
-    <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-2xl p-5 flex flex-col flex-1">
-      <div className="flex flex-col h-full gap-3">
+    <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-lg md:rounded-xl lg:rounded-2xl p-3 sm:p-4 md:p-5 flex flex-col flex-1 min-h-0">
+      <div className="flex flex-col h-full gap-2.5 sm:gap-3 md:gap-4 min-h-0">
         {/* URL Input Field */}
         <UrlInputField
           value={sourceUrlInput}
@@ -63,12 +63,10 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
           isAdding={isAdding}
         />
 
-      
-
         {/* Added URLs List or Empty State */}
         <div className="flex-1 min-h-0 max-h-full overflow-hidden">
           {addedUrls.length > 0 ? (
-            <div className="flex flex-col gap-2 pr-1 overflow-y-auto max-h-[215px]">
+            <div className="flex flex-col gap-1.5 sm:gap-2 pr-1 overflow-y-auto max-h-[140px] xs:max-h-[160px] sm:max-h-[180px] md:max-h-[200px] lg:max-h-[215px]">
               {addedUrls.map((item, index) => (
                 <UrlCard
                   key={`${item.url}-${index}`}
@@ -87,16 +85,16 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div className="flex  gap-2 sm:gap-3 shrink-0">
           <Button
             onClick={onCancel}
-            className="flex-1 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-sm px-4 py-3 transition-all duration-200 font-medium"
+            className="flex-1 rounded-lg md:rounded-xl flex items-center justify-center gap-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 transition-all duration-200 font-medium"
             name="Cancel"
           />
           <Button
             onClick={onEnterRoom}
             icon={isEntering ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className="flex-1 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:bg-zinc-700/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:bg-zinc-700/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
             name={isEntering ? "Entering..." : "Enter"}
             disabled={addedUrls.length === 0 || isEntering}
           />
