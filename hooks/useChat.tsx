@@ -129,7 +129,12 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
 
         const handleUserTyping = (data: TypingUser) => {
             if (data.userId === socket.id) return;
-            setTypingUsers(prev => prev.some(u => u.userId === data.userId) ? prev : [...prev, data]);
+            // Ensure userName is set, fallback to "User" if missing
+            const typingUser: TypingUser = {
+                ...data,
+                userName: data.userName || "User",
+            };
+            setTypingUsers(prev => prev.some(u => u.userId === data.userId) ? prev : [...prev, typingUser]);
         };
 
         const handleUserStoppedTyping = (data: TypingUser) => {
