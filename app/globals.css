@@ -53,6 +53,15 @@
   scrollbar-width: none; /* Hides scrollbar for Firefox */
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none; /* Hides scrollbar for Internet Explorer */
+  scrollbar-width: none; /* Hides scrollbar for Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Hides scrollbar for Chrome, Safari, and Edge */
+}
+
 /* YouTube-style Custom Scrollbar - Global */
 /* Webkit browsers (Chrome, Safari, Edge) */
 *::-webkit-scrollbar {

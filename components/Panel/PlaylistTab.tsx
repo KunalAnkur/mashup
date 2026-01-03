@@ -65,21 +65,21 @@ const PlaylistTab = () => {
     }
     return (
         <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between mb-4 px-1">
-                <div className="flex items-center gap-2">
-                    <h3 className="text-white font-semibold text-sm">Playlist</h3>
-                    <span className="text-gray-500 text-xs">
+            <div className="flex items-center justify-between mb-3 md:mb-4 px-1">
+                <div className="flex items-center gap-1.5 md:gap-2">
+                    <h3 className="text-white font-semibold text-xs md:text-sm">Playlist</h3>
+                    <span className="text-gray-500 text-[10px] md:text-xs">
                         ({playlist.length} {playlist.length === 1 ? "item" : "items"})
                     </span>
                 </div>
                 {!isHost && (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                        <LuLock size={12} />
-                        <span>Host controls</span>
+                    <div className="flex items-center gap-1 md:gap-1.5 text-[10px] md:text-xs text-gray-500">
+                        <LuLock size={10} />
+                        <span className="hidden sm:inline">Host controls</span>
                     </div>
                 )}
             </div>
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto space-y-1.5 md:space-y-2 pr-1 custom-scrollbar">
                 {playlist.map((content, index) =>
                     <PlaylistCard
                         key={content.id}

@@ -253,23 +253,23 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
 
     return (
         <>
-        <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
+        <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/5">
             {isHost && (
-                <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
+                <div className="flex flex-row md:flex-col gap-2 md:space-y-2">
                     <button
                         onClick={handleOpenAddUrlModal}
                         disabled={isAddingUrls}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 md:w-full flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-lg md:rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isAddingUrls ? (
                             <>
-                                <div className="w-4 h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
-                                <span className="text-sm font-medium">Adding...</span>
+                                <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
+                                <span className="text-[10px] md:text-sm font-medium">Adding...</span>
                             </>
                         ) : (
                             <>
-                                <LuPlus size={16} />
-                                <span className="text-sm font-medium">Add URL</span>
+                                <LuPlus size={12} className="md:w-4 md:h-4" />
+                                <span className="text-[10px] md:text-sm font-medium">Add URL</span>
                             </>
                         )}
                     </button>
@@ -277,17 +277,17 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                     <button
                         onClick={handleAddFiles}
                         disabled={isAddingFiles}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 md:w-full flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-lg md:rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isAddingFiles ? (
                             <>
-                                <div className="w-4 h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
-                                <span className="text-sm font-medium">Adding...</span>
+                                <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
+                                <span className="text-[10px] md:text-sm font-medium">Adding...</span>
                             </>
                         ) : (
                             <>
-                                <LuPlus size={16} />
-                                <span className="text-sm font-medium">Add Files</span>
+                                <LuPlus size={12} className="md:w-4 md:h-4" />
+                                <span className="text-[10px] md:text-sm font-medium">Add Files</span>
                             </>
                         )}
                     </button>
@@ -295,17 +295,17 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                     <button
                         onClick={handleShareScreen}
                         disabled={isSharingScreen}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 md:w-full flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-lg md:rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSharingScreen ? (
                             <>
-                                <div className="w-4 h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
-                                <span className="text-sm font-medium">Sharing...</span>
+                                <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
+                                <span className="text-[10px] md:text-sm font-medium">Sharing...</span>
                             </>
                         ) : (
                             <>
-                                <LuShare2 size={16} />
-                                <span className="text-sm font-medium">Share Screen</span>
+                                <LuShare2 size={12} className="md:w-4 md:h-4" />
+                                <span className="text-[10px] md:text-sm font-medium">Share Screen</span>
                             </>
                         )}
                     </button>

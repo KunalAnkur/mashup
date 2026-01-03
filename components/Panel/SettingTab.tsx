@@ -163,46 +163,46 @@ const SettingTab = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full gap-4">
+    <div className="flex flex-col h-full w-full gap-3 md:gap-4">
     
 
       {/* Room Settings */}
-      <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className="flex-1 flex flex-col gap-3 md:gap-4 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {/* Profile Update Section */}
-        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-4 space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
-              <LuUser className="text-purple-400" size={16} />
+        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-3 md:space-y-4">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
+              <LuUser className="text-purple-400" size={14} />
             </div>
-            <h3 className="text-white font-semibold text-sm font-parkinsans">
+            <h3 className="text-white font-semibold text-xs md:text-sm font-parkinsans">
               Profile Settings
             </h3>
           </div>
 
           {/* Profile Fields */}
-          <div className="space-y-3">
+          <div className="space-y-2.5 md:space-y-3">
             {/* Name Field */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-white/70 font-medium">Name</label>
+            <div className="space-y-1 md:space-y-1.5">
+              <label className="text-[10px] md:text-xs text-white/70 font-medium">Name</label>
               {isEditingProfile ? (
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-colors"
+                  className="w-full px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg text-white text-xs md:text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-colors"
                   placeholder="Enter your name"
                   disabled={isUpdatingProfile}
                 />
               ) : (
-                <div className="px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
-                  <p className="text-white text-sm">{name || "Not set"}</p>
+                <div className="px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
+                  <p className="text-white text-xs md:text-sm">{name || "Not set"}</p>
                 </div>
               )}
             </div>
 
             {/* Username Field */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-white/70 font-medium">Username</label>
+            <div className="space-y-1 md:space-y-1.5">
+              <label className="text-[10px] md:text-xs text-white/70 font-medium">Username</label>
               {isEditingProfile ? (
                 <div className="space-y-1">
                   <input
@@ -224,7 +224,7 @@ const SettingTab = () => {
                         setUsernameError("");
                       }
                     }}
-                    className={`w-full px-3 py-2 bg-black/10 backdrop-blur-xl border rounded-lg text-white text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 transition-colors ${
+                    className={`w-full px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border rounded-lg text-white text-xs md:text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 transition-colors ${
                       usernameError 
                         ? "focus:ring-red-500/50 border-red-500/30" 
                         : "focus:ring-purple-500/50 border-zinc-600/15"
@@ -233,30 +233,30 @@ const SettingTab = () => {
                     disabled={isUpdatingProfile}
                   />
                   {usernameError && (
-                    <p className="text-red-400 text-xs font-medium px-1">{usernameError}</p>
+                    <p className="text-red-400 text-[10px] md:text-xs font-medium px-1">{usernameError}</p>
                   )}
                   {!usernameError && username.trim() && (
-                    <p className="text-white/50 text-xs px-1">Username can only contain letters, numbers, and underscores</p>
+                    <p className="text-white/50 text-[10px] md:text-xs px-1">Username can only contain letters, numbers, and underscores</p>
                   )}
                 </div>
               ) : (
-                <div className="px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
-                  <p className="text-white text-sm">{username || "Not set"}</p>
+                <div className="px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
+                  <p className="text-white text-xs md:text-sm">{username || "Not set"}</p>
                 </div>
               )}
             </div>
 
             {/* Email Field - Read Only */}
-            <div className="space-y-1.5">
-              <label className="text-xs text-white/70 font-medium flex items-center gap-1">
-                <LuMail size={12} />
+            <div className="space-y-1 md:space-y-1.5">
+              <label className="text-[10px] md:text-xs text-white/70 font-medium flex items-center gap-1">
+                <LuMail size={10} />
                 Email Address
               </label>
-              <div className="px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg min-w-0">
-                <p className="text-white text-sm truncate" title={email || "Not set"}>
+              <div className="px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg min-w-0">
+                <p className="text-white text-xs md:text-sm truncate" title={email || "Not set"}>
                   {email || "Not set"}
                 </p>
-                <p className="text-white/50 text-xs mt-1">Email cannot be changed</p>
+                <p className="text-white/50 text-[10px] md:text-xs mt-1">Email cannot be changed</p>
               </div>
             </div>
           </div>
@@ -273,7 +273,7 @@ const SettingTab = () => {
                   setEmail(authState.user?.email || "");
                   setUsernameError("");
                 }}
-                className="flex-1 px-4 py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-sm font-medium rounded-lg transition-all duration-200"
+                className="flex-1 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs md:text-sm font-medium rounded-lg transition-all duration-200"
                 disabled={isUpdatingProfile}
               >
                 Cancel
@@ -281,7 +281,7 @@ const SettingTab = () => {
               <button
                 onClick={handleUpdateProfile}
                 disabled={isUpdatingProfile || !name.trim() || !username.trim() || !!usernameError}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-xs md:text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isUpdatingProfile ? "Saving..." : "Save Changes"}
               </button>
@@ -289,9 +289,9 @@ const SettingTab = () => {
           ) : (
             <button
               onClick={() => setIsEditingProfile(true)}
-              className="w-full px-4 py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-purple-400 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-purple-400 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 md:gap-2"
             >
-              <LuPencil size={14} />
+              <LuPencil size={12} />
               Edit Profile
             </button>
           )}
@@ -300,25 +300,25 @@ const SettingTab = () => {
        
 
         {/* Copy Room Link */}
-        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
-              <LuLink className="text-purple-400" size={16} />
+        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-2.5 md:space-y-3">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
+              <LuLink className="text-purple-400" size={14} />
             </div>
-            <h3 className="text-white font-semibold text-sm font-parkinsans">
+            <h3 className="text-white font-semibold text-xs md:text-sm font-parkinsans">
               Room Link
             </h3>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
-              <p className="text-white/70 text-xs truncate">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="flex-1 px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
+              <p className="text-white/70 text-[10px] md:text-xs truncate">
                 {roomUrl || "No room link available"}
               </p>
             </div>
             <button
               onClick={handleCopyLink}
-              className="relative p-2 rounded-lg bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group"
+              className="relative p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group"
             >
               {copied ? (
                 <LuCheck
@@ -342,17 +342,17 @@ const SettingTab = () => {
         </div>
 
         {/* Leave Party */}
-        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
-              <LuLogOut className="text-red-400" size={16} />
+        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-2.5 md:space-y-3">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
+              <LuLogOut className="text-red-400" size={14} />
             </div>
-            <h3 className="text-white font-semibold text-sm font-parkinsans">
+            <h3 className="text-white font-semibold text-xs md:text-sm font-parkinsans">
               Leave Party
             </h3>
           </div>
 
-          <p className="text-white/70 text-xs leading-relaxed">
+          <p className="text-white/70 text-[10px] md:text-xs leading-relaxed">
             {host
               ? "Leaving will end the party for everyone. You'll need the room ID to rejoin."
               : "You'll need the room ID to rejoin this party."}
@@ -360,7 +360,7 @@ const SettingTab = () => {
 
           <button
             onClick={() => setShowLeaveConfirm(true)}
-            className="w-full px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
+            className="w-full px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
           >
             Leave Party
           </button>
