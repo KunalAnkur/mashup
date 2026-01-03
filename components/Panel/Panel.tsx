@@ -165,7 +165,7 @@ const Panel = () => {
           <div className="flex items-center gap-1.5 md:gap-2">
             <button
               onClick={handleCopyLink}
-              className="relative p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group"
+              className="relative p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group z-40"
             >
               {copied ? (
                 <LuCheck size={16} className="text-green-400 transition-colors md:w-[18px] md:h-[18px]" />
@@ -173,7 +173,7 @@ const Panel = () => {
                 <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors md:w-[18px] md:h-[18px]" />
               )}
               {copied && (
-                <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl animate-fade-in">
+                <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl animate-fade-in">
                   Link copied!
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
                 </div>

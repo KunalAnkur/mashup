@@ -163,13 +163,13 @@ const SettingTab = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full gap-3 md:gap-4">
+    <div className="flex flex-col h-full w-full gap-3 md:gap-4 overflow-x-hidden">
     
 
       {/* Room Settings */}
-      <div className="flex-1 flex flex-col gap-3 md:gap-4 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className="flex-1 flex flex-col gap-3 md:gap-4 overflow-y-auto overflow-x-hidden pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {/* Profile Update Section */}
-        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-3 md:space-y-4">
+        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-3 md:space-y-4 min-w-0">
           <div className="flex items-center gap-1.5 md:gap-2">
             <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
               <LuUser className="text-purple-400" size={14} />
@@ -300,7 +300,7 @@ const SettingTab = () => {
        
 
         {/* Copy Room Link */}
-        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-2.5 md:space-y-3">
+        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-2.5 md:space-y-3 min-w-0">
           <div className="flex items-center gap-1.5 md:gap-2">
             <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
               <LuLink className="text-purple-400" size={14} />
@@ -318,7 +318,7 @@ const SettingTab = () => {
             </div>
             <button
               onClick={handleCopyLink}
-              className="relative p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group"
+              className="relative p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group z-40"
             >
               {copied ? (
                 <LuCheck
@@ -332,7 +332,7 @@ const SettingTab = () => {
                 />
               )}
               {copied && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl animate-fade-in">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl animate-fade-in">
                   Link copied!
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
                 </div>
@@ -342,7 +342,7 @@ const SettingTab = () => {
         </div>
 
         {/* Leave Party */}
-        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-2.5 md:space-y-3">
+        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-2.5 md:space-y-3 min-w-0">
           <div className="flex items-center gap-1.5 md:gap-2">
             <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
               <LuLogOut className="text-red-400" size={14} />
