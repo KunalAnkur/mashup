@@ -75,8 +75,8 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                 <div
                     className={`absolute inset-0 flex items-center justify-center ${platform?.iconBg || "bg-gradient-to-br from-pink-500 to-fuchsia-600"}`}
                 >
-                    <span className="text-white text-lg">
-                        {platform?.smallIcon || <LuFilm className="text-white text-sm" />}
+                    <span className="text-white text-base md:text-lg">
+                        {platform?.smallIcon || <LuFilm className="text-white text-xs md:text-sm" />}
                     </span>
                 </div>
             );
@@ -89,8 +89,8 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                     className="w-full h-full flex items-center justify-center"
                     style={defaultPlatform?.bgStyle || {}}
                 >
-                    <div className="text-white text-2xl">
-                        {defaultPlatform?.logo || <FaBroadcastTower />}
+                    <div className="text-white text-lg md:text-2xl">
+                        {defaultPlatform?.logo || <FaBroadcastTower size={16} className="md:w-6 md:h-6" />}
                     </div>
                 </div>
             );
@@ -116,7 +116,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             }
             return (
                 <div className="w-full h-full flex items-center justify-center">
-                    <LuFilm className="text-gray-500" size={20} />
+                    <LuFilm className="text-gray-500" size={16} />
                 </div>
             );
         }
@@ -129,9 +129,9 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
         if (source === "screen") {
             return (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-1">
-                        <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
-                            <FaBroadcastTower className="text-white" size={10} />
+                    <div className="flex flex-col items-center gap-0.5 md:gap-1">
+                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-pink-500 flex items-center justify-center">
+                            <FaBroadcastTower className="text-white" size={8} />
                         </div>
                         <div className="w-1 h-1 rounded-full bg-pink-500 animate-pulse" />
                     </div>
@@ -141,8 +141,8 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
 
         return (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
-                    <LuPlay className="text-white ml-0.5" size={12} />
+                <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-pink-500 flex items-center justify-center">
+                    <LuPlay className="text-white ml-0.5" size={10} />
                 </div>
             </div>
         );
@@ -157,9 +157,9 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
 
             if (isLoading) {
                 return (
-                    <div className="space-y-1.5">
-                        <div className="h-3.5 bg-white/10 rounded animate-pulse w-3/4" />
-                        <div className="h-2.5 bg-white/5 rounded w-1/2 animate-pulse" />
+                    <div className="space-y-1 md:space-y-1.5">
+                        <div className="h-3 md:h-3.5 bg-white/10 rounded animate-pulse w-3/4" />
+                        <div className="h-2 md:h-2.5 bg-white/5 rounded w-1/2 animate-pulse" />
                     </div>
                 );
             }
@@ -167,27 +167,27 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             if (hasMetadata && metadata) {
                 return (
                     <>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 md:gap-2">
                             <p
-                                className={`text-xs font-semibold line-clamp-1 leading-tight ${isPlaying ? "text-pink-400" : "text-gray-200"
+                                className={`text-[11px] md:text-xs font-semibold line-clamp-1 leading-tight ${isPlaying ? "text-pink-400" : "text-gray-200"
                                     }`}
                             >
                                 {metadata.title || getUrlDisplayName(link)}
                             </p>
                             {isPlaying && (
-                                <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                                <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
                                     Playing
                                 </span>
                             )}
                         </div>
                         {metadata.description && (
-                            <p className="text-gray-500 text-[10px] line-clamp-1 leading-tight">
+                            <p className="text-gray-500 text-[9px] md:text-[10px] line-clamp-1 leading-tight">
                                 {metadata.description}
                             </p>
                         )}
-                        <div className="flex items-center gap-1.5 text-[10px] text-gray-500 mt-0.5">
+                        <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-gray-500 mt-0.5">
                             {metadata.author && (
-                                <span className="truncate max-w-[80px]">{metadata.author}</span>
+                                <span className="truncate max-w-[60px] md:max-w-[80px]">{metadata.author}</span>
                             )}
                             {metadata.author && platform && <span>•</span>}
                             {platform && <span className="truncate">{platform.name}</span>}
@@ -198,21 +198,21 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
 
             return (
                 <>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 md:gap-2">
                         <p
-                            className={`text-xs font-medium truncate ${isPlaying ? "text-pink-400" : "text-gray-200"
+                            className={`text-[11px] md:text-xs font-medium truncate ${isPlaying ? "text-pink-400" : "text-gray-200"
                                 }`}
                         >
                             {getUrlDisplayName(link)}
                         </p>
                         {isPlaying && (
-                            <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                            <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
                                 Playing
                             </span>
                         )}
                     </div>
                     {platform && (
-                        <p className="text-gray-500 text-[10px] truncate">{platform.name}</p>
+                        <p className="text-gray-500 text-[9px] md:text-[10px] truncate">{platform.name}</p>
                     )}
                 </>
             );
@@ -222,20 +222,20 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             const platformName = metadata?.title || "Screen Share";
             return (
                 <>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 md:gap-2">
                         <p
-                            className={`text-xs font-semibold line-clamp-1 leading-tight ${isPlaying ? "text-pink-400" : "text-gray-200"
+                            className={`text-[11px] md:text-xs font-semibold line-clamp-1 leading-tight ${isPlaying ? "text-pink-400" : "text-gray-200"
                                 }`}
                         >
                             {platformName}
                         </p>
                         {isPlaying && (
-                            <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                            <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
                                 Streaming
                             </span>
                         )}
                     </div>
-                    <p className="text-gray-500 text-[10px] truncate">Screen sharing active</p>
+                    <p className="text-gray-500 text-[9px] md:text-[10px] truncate">Screen sharing active</p>
                 </>
             );
         }
@@ -246,20 +246,20 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             const file = ext.file;
             return (
                 <>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 md:gap-2">
                         <p
-                            className={`text-xs font-semibold line-clamp-1 leading-tight ${isPlaying ? "text-pink-400" : "text-gray-200"
+                            className={`text-[11px] md:text-xs font-semibold line-clamp-1 leading-tight ${isPlaying ? "text-pink-400" : "text-gray-200"
                                 }`}
                         >
                             {metadata?.title || link}
                         </p>
                         {isPlaying && (
-                            <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                            <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
                                 Playing
                             </span>
                         )}
                     </div>
-                    <p className="text-gray-500 text-[10px] truncate">
+                    <p className="text-gray-500 text-[9px] md:text-[10px] truncate">
                         {file.size ? `${formatFileSize(file.size)} • ` : ""}Local file
                     </p>
                 </>
@@ -280,10 +280,10 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             return (
                 <button
                     onClick={() => handleStop(content.id, source)}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 group-hover:scale-110"
+                    className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 group-hover:scale-110"
                     title="Stop screen sharing"
                 >
-                    <LuX size={12} />
+                    <LuX size={10} className="md:w-3 md:h-3" />
                 </button>
             );
         }
@@ -292,11 +292,11 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             return (
                 <div
                     className={`
-            w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+            w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
             ${isPlaying ? "bg-pink-500/20 text-pink-400" : "bg-white/5 text-gray-500"}
           `}
                 >
-                    <FaBroadcastTower size={12} />
+                    <FaBroadcastTower size={10} className="md:w-3 md:h-3" />
                 </div>
             );
         }
@@ -304,7 +304,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
         return (
             <div
                 className={`
-          w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+          w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] md:text-xs font-medium flex-shrink-0 self-center
           ${isPlaying ? "bg-pink-500/20 text-pink-400" : "bg-white/5 text-gray-500 group-hover:bg-white/10"}
         `}
             >
@@ -320,7 +320,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             onClick={handleClick}
             disabled={isClickable && !host}
             className={`
-        group w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0
+        group w-full flex gap-2 md:gap-3 rounded-lg md:rounded-xl p-1.5 md:p-2 transition-all duration-200 h-[64px] md:h-[72px] shrink-0
         ${isPlaying
                     ? "bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30"
                     : "bg-white/5 border border-transparent hover:bg-white/10 hover:border-white/10"}
@@ -331,7 +331,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             {/* Thumbnail */}
             <div
                 className={`
-          relative w-20 h-13 rounded-lg overflow-hidden shrink-0
+          relative w-16 h-11 md:w-20 md:h-13 rounded-md md:rounded-lg overflow-hidden shrink-0 self-center
           ${isPlaying ? "ring-2 ring-pink-500/50" : ""}
           ${source === "url" ? "bg-gradient-to-br from-[#1f1f23] to-[#27272a]" : ""}
           ${source === "file" ? "bg-gradient-to-br from-zinc-700 to-zinc-800" : ""}
@@ -342,7 +342,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             </div>
 
             {/* Metadata */}
-            <div className="flex flex-col gap-0.5 min-w-0 flex-1 justify-center overflow-hidden text-left">
+            <div className="flex flex-col gap-0.5 md:gap-0.5 min-w-0 flex-1 justify-center overflow-hidden text-left">
                 {renderMetadata()}
             </div>
 

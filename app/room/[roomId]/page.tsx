@@ -96,11 +96,12 @@ const Page = () => {
         roomUrl={roomUrl}
         onJoinRoom={handleJoinRoom}
       />
-      <div ref={containerRef} className="flex h-screen bg-[#030712] relative">
+      <div ref={containerRef} className="flex flex-col md:flex-row h-screen bg-[#030712] relative overflow-hidden">
         <div
           className={`
             bg-black flex-1 transition-all duration-300 h-full w-full relative
-            ${roomState.settings.panelCollapsed ? "w-full" : ""}
+            ${roomState.settings.panelCollapsed ? "w-full h-full" : ""}
+            md:${roomState.settings.panelCollapsed ? "w-full" : ""}
           `}
         >
           <PlayerWrapper fullscreenTargetRef={containerRef} />
@@ -109,9 +110,11 @@ const Page = () => {
         </div>
         <div
           className={`
-            relative bg-zinc-800 overflow-hidden transition-all duration-300
-            w-[25%] min-w-[320px] max-w-[420px]
-            ${roomState.settings.panelCollapsed ? "hidden" : "visible"}
+            relative bg-zinc-800 overflow-hidden transition-all duration-300 ease-in-out
+            ${roomState.settings.panelCollapsed 
+              ? "hidden" 
+              : "flex flex-col h-[60vh] md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full fixed md:relative bottom-0 left-0 right-0 md:bottom-auto md:left-auto md:right-auto z-40 md:z-auto shadow-2xl md:shadow-none"
+            }
           `}
         >
           <Panel />

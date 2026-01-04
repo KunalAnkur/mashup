@@ -6,7 +6,7 @@ import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useChatContext } from "@/context/ChatContext";
 import { BsFillChatSquareFill } from "react-icons/bs";
-import { FiChevronsLeft, FiX } from "react-icons/fi";
+import { FiChevronsLeft, FiX, FiChevronDown } from "react-icons/fi";
 import { FiChevronsRight } from "react-icons/fi";
 import { FaPaperPlane } from "react-icons/fa";
 import { RootState } from "@/lib/store";
@@ -263,25 +263,42 @@ const PlayerOverlay = () => {
 
   const handleToggleChat = () => {};
 
+  // Check if mobile screen
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <>
       {/* Top Controls */}
-      <div className="z-20 flex justify-end absolute top-0 left-0 w-full h-20 p-4">
-        <div className="flex gap-3">
+      <div className="z-20 flex justify-end absolute top-0 left-0 w-full h-16 md:h-20 p-3 md:p-4">
+        <div className="flex gap-2 md:gap-3">
+         
           <button
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 rounded-full transition-all font-medium text-white text-sm cursor-pointer"
-            onClick={handleToggleChat}
-          >
-            <BsFillChatSquareFill className="w-4 h-4" />
-          </button>
-          <button
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 rounded-full transition-all font-medium text-white text-sm cursor-pointer"
+            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 rounded-full transition-all font-medium text-white text-xs md:text-sm cursor-pointer"
             onClick={handleTogglePanelExpand}
           >
-            {panelCollapsed ? (
-              <FiChevronsLeft size={20} />
+            {isMobile ? (
+              // On mobile: show up arrow when panel is collapsed (to open it), down arrow when open (to close it)
+              panelCollapsed ? (
+                <FiChevronDown size={18} className="md:w-5 md:h-5 rotate-180" />
+              ) : (
+                <FiChevronDown size={18} className="md:w-5 md:h-5" />
+              )
             ) : (
-              <FiChevronsRight size={20} />
+              // On desktop: show left/right arrows
+              panelCollapsed ? (
+                <FiChevronsLeft size={20} />
+              ) : (
+                <FiChevronsRight size={20} />
+              )
             )}
           </button>
         </div>

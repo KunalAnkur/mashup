@@ -94,7 +94,7 @@ const Panel = () => {
   };
 
   return (
-    <div className="relative flex flex-col h-full w-full bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] px-4 py-4 overflow-hidden">
+    <div className="relative flex flex-col h-full w-full bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] px-3 py-3 md:px-4 md:py-4 overflow-hidden">
       {/* New Feedback Modal Component */}
       <FeedbackModal 
         isOpen={isFeedbackOpen} 
@@ -112,29 +112,29 @@ const Panel = () => {
       <div className="relative z-30 flex flex-col h-full w-full">
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
-                <LuLogOut className="text-red-400" size={20} />
+          <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-xl md:rounded-2xl p-4 md:p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+              <div className="p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
+                <LuLogOut className="text-red-400" size={18} />
               </div>
-              <h3 className="text-white text-lg font-bold font-parkinsans">
+              <h3 className="text-white text-base md:text-lg font-bold font-parkinsans">
                 Leave Party?
               </h3>
             </div>
-            <p className="text-white/70 text-sm mb-6 leading-relaxed">
+            <p className="text-white/70 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
               Are you sure you want to leave this party? You&apos;ll need the
               room ID to rejoin.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3">
               <button
                 onClick={handleStay}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-sm font-medium rounded-xl transition-all duration-200"
+                className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200"
               >
                 Stay
               </button>
               <button
                 onClick={handleLeaveParty}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
+                className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
               >
                 Leave
               </button>
@@ -144,36 +144,36 @@ const Panel = () => {
       )}
 
         {/* Header */}
-        <div className="flex flex-col gap-4 mb-2">
+        <div className="flex flex-col gap-3 md:gap-4 mb-2">
         <div className="flex items-center justify-between">
-          <button className="flex items-center gap-2 group">
+          <button className="flex items-center gap-1.5 md:gap-2 group">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50 group-hover:opacity-70 transition-opacity"></div>
               <Image
                 src={constants.assets.logo}
                 alt="Logo"
-                width={28}
-                height={28}
-                className="relative"
+                width={24}
+                height={24}
+                className="relative md:w-7 md:h-7"
               />
             </div>
-            <h2 className="text-base font-bold text-white font-parkinsans group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-rose-400 group-hover:via-pink-400 group-hover:to-fuchsia-400 transition-all duration-300">
+            <h2 className="text-sm md:text-base font-bold text-white font-parkinsans group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-rose-400 group-hover:via-pink-400 group-hover:to-fuchsia-400 transition-all duration-300">
               Movmash
             </h2>
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 md:gap-2">
             <button
               onClick={handleCopyLink}
-              className="relative p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group"
+              className="relative p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group z-40"
             >
               {copied ? (
-                <LuCheck size={18} className="text-green-400 transition-colors" />
+                <LuCheck size={16} className="text-green-400 transition-colors md:w-[18px] md:h-[18px]" />
               ) : (
-                <LuLink size={18} className="text-white/70 group-hover:text-white transition-colors" />
+                <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors md:w-[18px] md:h-[18px]" />
               )}
               {copied && (
-                <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-10 shadow-xl animate-fade-in">
+                <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl animate-fade-in">
                   Link copied!
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
                 </div>
@@ -182,37 +182,37 @@ const Panel = () => {
 
             <button
               onClick={handleLeaveClick}
-              className="p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:border-red-500/30 border border-zinc-600/15 text-white/70 hover:text-red-400 transition-all duration-200"
+              className="p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:border-red-500/30 border border-zinc-600/15 text-white/70 hover:text-red-400 transition-all duration-200"
             >
-              <LuLogOut size={18} />
+              <LuLogOut size={16} className="md:w-[18px] md:h-[18px]" />
             </button>
 
-            <AvatarDropdown size={36} />
+            <AvatarDropdown size={32} className="md:w-9 md:h-9" />
           </div>
         </div>
       </div>
 
       {/* Beta Message Box */}
-<div className="relative z-10 mb-4 mt-2 group">
+<div className="relative z-10 mb-3 md:mb-4 mt-2 group">
   <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-yellow-500/5 blur-xl group-hover:opacity-100 opacity-50 transition-opacity duration-500" />
   
-  <div className="relative bg-[#1a1a1d]/40 backdrop-blur-2xl border border-white/5 rounded-2xl p-3.5 shadow-2xl overflow-hidden">
+  <div className="relative bg-[#1a1a1d]/40 backdrop-blur-2xl border border-white/5 rounded-xl md:rounded-2xl p-2.5 md:p-3.5 shadow-2xl overflow-hidden">
     {/* Decorative corner glow */}
     <div className="absolute -top-10 -right-10 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl" />
     
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between gap-2 md:gap-4">
+      <div className="flex items-center gap-2 md:gap-3">
         <div className="relative flex items-center justify-center">
           <div className="absolute inset-0 bg-amber-500/20 blur-md animate-pulse" />
-          <span className="relative px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[10px] font-black tracking-widest rounded-md uppercase">
+          <span className="relative px-1.5 md:px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[9px] md:text-[10px] font-black tracking-widest rounded-md uppercase">
             Beta
           </span>
         </div>
         <div className="flex flex-col">
-          <p className="text-white/90 text-xs font-semibold tracking-tight">
+          <p className="text-white/90 text-[11px] md:text-xs font-semibold tracking-tight">
             Actively Improving
           </p>
-          <p className="text-white/40 text-[10px] leading-none mt-0.5">
+          <p className="text-white/40 text-[9px] md:text-[10px] leading-none mt-0.5">
             Help us shape Movmash
           </p>
         </div>
@@ -220,7 +220,7 @@ const Panel = () => {
 
       <button
         onClick={() => setIsFeedbackOpen(true)}
-        className="px-4 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 text-amber-400 text-[11px] font-bold rounded-lg transition-all duration-300 active:scale-95 shadow-lg shadow-amber-900/5"
+        className="px-3 md:px-4 py-1 md:py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 text-amber-400 text-[10px] md:text-[11px] font-bold rounded-lg transition-all duration-300 active:scale-95 shadow-lg shadow-amber-900/5"
       >
         Feedback
       </button>
@@ -229,7 +229,7 @@ const Panel = () => {
 </div>
       
         {/* Tabs */}
-        <div className="flex items-center w-full justify-between pt-2 pb-1">
+        <div className="flex items-center w-full justify-between pt-2 pb-1 overflow-x-auto scrollbar-hide">
   {visibleTabs.map((tab) => {
     const getTabGradient = (tabName: string) => {
       switch (tabName) {
@@ -255,10 +255,10 @@ const Panel = () => {
       <button
         key={tab}
         onClick={() => setActiveTab(tab)}
-        className={`px-3 py-2 font-medium text-xs sm:text-sm transition-all duration-200 relative rounded-t-xl z-10
+        className={`px-2.5 md:px-3 py-1.5 md:py-2 font-medium text-[11px] md:text-xs lg:text-sm transition-all duration-200 relative rounded-t-xl z-10 flex-shrink-0
                     ${activeTab === tab ? "text-white" : "text-white/60 hover:text-white/80"}`}
       >
-        <span className="relative z-20">{tab}</span>
+        <span className="relative z-20 whitespace-nowrap">{tab}</span>
         {activeTab === tab && (
           <>
             <div className={`absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r ${getTabBorderGradient(tab)} rounded-full z-10`}></div>
@@ -270,7 +270,7 @@ const Panel = () => {
   })}
 </div>
 
-        <div className="flex-1 overflow-hidden pt-4">
+        <div className="flex-1 overflow-hidden pt-2 md:pt-4">
           {renderTabContent(activeTab)}
         </div>
       </div>

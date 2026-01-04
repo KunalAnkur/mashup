@@ -299,41 +299,41 @@ const ChatTab = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full gap-3 overflow-visible">
+    <div className="flex flex-col h-full w-full gap-2 md:gap-3 overflow-visible">
       {/* Connection Status - Modern Design */}
       {!isConnected && (
-        <div className="relative px-4 py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-yellow-500/20 rounded-xl overflow-hidden">
-          <div className="relative flex items-center gap-2">
+        <div className="relative px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-yellow-500/20 rounded-lg md:rounded-xl overflow-hidden">
+          <div className="relative flex items-center gap-1.5 md:gap-2">
             <div className="relative">
               <div className="absolute inset-0 bg-yellow-400/20 rounded-full animate-ping"></div>
-              <div className="relative w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <div className="relative w-1.5 h-1.5 md:w-2 md:h-2 bg-yellow-400 rounded-full"></div>
             </div>
-            <p className="text-yellow-300 text-xs font-medium">Connecting to chat...</p>
+            <p className="text-yellow-300 text-[10px] md:text-xs font-medium">Connecting to chat...</p>
           </div>
         </div>
       )}
 
       {isLoading && (
-        <div className="relative px-4 py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-blue-500/20 rounded-xl overflow-hidden">
-          <div className="relative flex items-center gap-2">
+        <div className="relative px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-blue-500/20 rounded-lg md:rounded-xl overflow-hidden">
+          <div className="relative flex items-center gap-1.5 md:gap-2">
             <div className="relative">
               <div className="absolute inset-0 bg-blue-400/20 rounded-full animate-pulse"></div>
-              <div className="relative w-2 h-2 bg-blue-400 rounded-full"></div>
+              <div className="relative w-1.5 h-1.5 md:w-2 md:h-2 bg-blue-400 rounded-full"></div>
             </div>
-            <p className="text-blue-300 text-xs font-medium">Joining chat room...</p>
+            <p className="text-blue-300 text-[10px] md:text-xs font-medium">Joining chat room...</p>
           </div>
         </div>
       )}
 
       {/* Chat Messages Area */}
-      <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {messages.length === 0 && isJoined && !isLoading && (
-          <div className="flex flex-col items-center justify-center h-full gap-3">
+          <div className="flex flex-col items-center justify-center h-full gap-2 md:gap-3">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-2xl"></div>
-              <div className="relative text-6xl opacity-50">💬</div>
+              <div className="relative text-4xl md:text-6xl opacity-50">💬</div>
             </div>
-            <p className="text-white/60 text-sm font-medium">
+            <p className="text-white/60 text-xs md:text-sm font-medium text-center px-4">
               No messages yet. Start the conversation!
             </p>
           </div>
@@ -543,11 +543,11 @@ const ChatTab = () => {
           return (
             <div
               key={msg.id || i}
-              className={`flex items-start gap-3 group animate-fade-in ${isGroupedMessage ? "mt-0" : "mt-1"}`}
+              className={`flex items-start gap-2 md:gap-3 group animate-fade-in ${isGroupedMessage ? "mt-0" : "mt-1"}`}
               style={{ animationDelay: `${i * 0.03}s` }}
             >
               {/* Avatar - Modern Design (only show if not grouped) */}
-              <div className={`relative flex-shrink-0 ${isGroupedMessage ? "w-10" : ""}`}>
+              <div className={`relative flex-shrink-0 ${isGroupedMessage ? "w-8 md:w-10" : ""}`}>
                 {!isGroupedMessage && (
                   <div className="relative">
                     {/* Glow effect on hover */}
@@ -558,7 +558,7 @@ const ChatTab = () => {
                         <img
                           src={msg.userProfile}
                           alt={displayUserName}
-                          className="relative w-10 h-10 rounded-full object-cover shadow-xl border-2 border-white/20 ring-2 ring-white/5"
+                          className="relative w-8 h-8 md:w-10 md:h-10 rounded-full object-cover shadow-xl border-2 border-white/20 ring-2 ring-white/5"
                           onError={(e) => {
                             // Hide image and show fallback if image fails to load
                             const target = e.target as HTMLImageElement;
@@ -569,14 +569,14 @@ const ChatTab = () => {
                           }}
                         />
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 hidden`}
+                          className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white text-xs md:text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 hidden`}
                         >
                           {displayUserName.charAt(0).toUpperCase()}
                         </div>
                       </>
                     ) : (
                       <div
-                        className={`relative w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 ring-2 ring-white/5`}
+                        className={`relative w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white text-xs md:text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 ring-2 ring-white/5`}
                       >
                         {displayUserName.charAt(0).toUpperCase()}
                       </div>
@@ -584,7 +584,7 @@ const ChatTab = () => {
                     
                     {/* Online status indicator */}
                     {!isCurrentUser && (
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#18181b] rounded-full shadow-lg">
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-3.5 md:h-3.5 bg-green-500 border-2 border-[#18181b] rounded-full shadow-lg">
                         <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
                       </div>
                     )}
@@ -593,12 +593,12 @@ const ChatTab = () => {
               </div>
 
               {/* Message Content */}
-              <div className="flex-1 min-w-0 flex flex-col gap-1.5 items-start">
+              <div className="flex-1 min-w-0 flex flex-col gap-1 md:gap-1.5 items-start">
                 {/* Show username (only if not grouped) */}
                 {!isGroupedMessage && (
-                  <div className="flex items-baseline gap-2 min-w-0 w-full">
+                  <div className="flex items-baseline gap-1.5 md:gap-2 min-w-0 w-full">
                     <span
-                      className={`font-semibold text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient} tracking-tight truncate max-w-[180px]`}
+                      className={`font-semibold text-xs md:text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient} tracking-tight truncate max-w-[120px] md:max-w-[180px]`}
                       title={displayUserName}
                     >
                       {displayUserName}
@@ -611,12 +611,12 @@ const ChatTab = () => {
                   <div className={`relative group/emoji ${isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"}`}>
                     <div className="relative inline-block">
                       <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
-                      <p className={`relative ${emojiSize} leading-tight filter`}>
+                      <p className={`relative text-3xl md:text-4xl leading-tight filter`}>
                         {msg.message}
                       </p>
                     </div>
                     {/* Timestamp for emoji messages - bottom right */}
-                    <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[10px] font-medium opacity-0 group-hover/emoji:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                    <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-0 group-hover/emoji:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                       {formatChatTime(msg.timestamp)}
                     </span>
                   </div>
@@ -624,26 +624,26 @@ const ChatTab = () => {
                   /* Regular messages: Modern bubble with glassmorphism */
                   <div className="relative group/message w-full">
                     {/* Glow effect */}
-                    <div className={`absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
+                    <div className={`absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-xl md:rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
                     
                     {/* Message bubble */}
                     <div
-                      className={`relative px-3 py-2.5 transition-all duration-200 backdrop-blur-xl ${
+                      className={`relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl ${
                         isGroupedMessage
-                          ? "rounded-xl mt-0"
+                          ? "rounded-lg md:rounded-xl mt-0"
                           : isCurrentUser
-                          ? "rounded-2xl rounded-tl-sm"
-                          : "rounded-2xl rounded-tl-sm"
+                          ? "rounded-xl md:rounded-2xl rounded-tl-sm"
+                          : "rounded-xl md:rounded-2xl rounded-tl-sm"
                       } ${
                         isCurrentUser
                           ? `bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 `
                           : "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 "
                       }`}
                     >
-                      <p className="text-white/95 text-sm leading-relaxed break-words whitespace-pre-wrap font-medium">
+                      <p className="text-white/95 text-xs md:text-sm leading-relaxed break-words whitespace-pre-wrap font-medium">
                         {msg.message}
                       </p>
-                      <div className="w-full text-right text-white/50 text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                      <div className="w-full text-right text-white/50 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
                         {formatChatTime(msg.timestamp)}
                       </div>
                     </div>
@@ -655,27 +655,27 @@ const ChatTab = () => {
         })}
         {/* Typing Indicator - Different Design from Message Bubbles */}
         {typingUsers.length > 0 && (
-          <div className="flex items-center gap-2.5 px-3 py-2">
-            <div className="relative flex items-center gap-1">
+          <div className="flex items-center gap-2 md:gap-2.5 px-2 md:px-3 py-1.5 md:py-2">
+            <div className="relative flex items-center gap-0.5 md:gap-1">
               <div
-                className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"
+                className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce"
                 style={{ animationDelay: "0s" }}
               ></div>
               <div
-                className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"
+                className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce"
                 style={{ animationDelay: "0.2s" }}
               ></div>
               <div
-                className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"
+                className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce"
                 style={{ animationDelay: "0.4s" }}
               ></div>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-cyan-500/20 rounded-lg">
-              <span className="text-cyan-300 text-xs font-medium">
+            <div className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-cyan-500/20 rounded-lg">
+              <span className="text-cyan-300 text-[10px] md:text-xs font-medium">
                 <span className="font-semibold">
                   {typingUsers.map((u) => u.userName).join(", ")}
                 </span>
-                <span className="text-cyan-400/70 ml-1.5">
+                <span className="text-cyan-400/70 ml-1 md:ml-1.5">
                   {typingUsers.length === 1 ? "is" : "are"} typing...
                 </span>
               </span>
@@ -688,7 +688,7 @@ const ChatTab = () => {
       </div>
 
       {/* Reaction Buttons - Modern Design */}
-      <div className="relative flex items-center justify-center gap-3 ">
+      <div className="relative flex items-center justify-center gap-2 md:gap-3">
         {/* Pinned Reactions - Centered */}
         {pinnedReactions.map((emoji) => (
           <AnimatedReaction
@@ -710,7 +710,7 @@ const ChatTab = () => {
         ))}
 
         {/* Divider */}
-        <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+        <div className="w-px h-6 md:h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
 
         {/* Reaction Picker Button - Positioned for proper alignment */}
         <div className="relative">
@@ -722,13 +722,13 @@ const ChatTab = () => {
       </div>
 
       {/* Input Area - Modern Design */} 
-      <div className="relative flex items-center gap-1 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-2xl px-3 py-1.5 shadow-2xl overflow-visible">
+      <div className="relative flex items-center gap-1 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl md:rounded-2xl px-2.5 md:px-3 py-1 md:py-1.5 shadow-2xl overflow-visible">
         {/* Emoji Picker */}
         {showEmojis && (
           <div
             ref={emojiPickerRef}
-            className="absolute bottom-full left-0 right-0 mb-2 rounded-2xl animate-slide-up z-[100] overflow-hidden emoji-picker-container"
-            style={{ minWidth: "280px" }}
+            className="absolute bottom-full left-0 right-0 mb-2 rounded-xl md:rounded-2xl animate-slide-up z-[100] overflow-hidden emoji-picker-container"
+            style={{ minWidth: "100%" }}
           >
             <EmojiPicker
               onEmojiClick={handleEmojiClick}
@@ -780,41 +780,41 @@ const ChatTab = () => {
           onKeyDown={handleKeyDown}
           disabled={!isJoined || isLoading}
           rows={1}
-          className="flex-1 bg-transparent outline-none text-white/95 text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
+          className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
           style={{
-            minHeight: "24px",
+            minHeight: "20px",
             maxHeight: "240px", // ~10 lines (24px per line)
           }}
           onInput={(e) => {
             // Auto-resize textarea based on content
             const target = e.target as HTMLTextAreaElement;
-            target.style.height = "24px";
+            target.style.height = "20px";
             target.style.height = Math.min(target.scrollHeight, 240) + "px";
           }}
         />
         <button
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || !isJoined || isLoading}
-          className="relative p-2 rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+          className="relative p-1.5 md:p-2 rounded-lg md:rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <FaArrowCircleUp size={20} className="relative" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-lg md:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <FaArrowCircleUp size={18} className="relative md:w-5 md:h-5" />
         </button>
         <button
           data-emoji-button
           onClick={() => setShowEmojis(!showEmojis)}
-          className={`relative p-2 rounded-xl transition-all duration-200 group ${
+          className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${
             showEmojis
               ? "text-pink-400"
               : "text-white/70 hover:text-pink-400"
           }`}
         >
-          <div className={`absolute inset-0 rounded-xl transition-all duration-200 ${
+          <div className={`absolute inset-0 rounded-lg md:rounded-xl transition-all duration-200 ${
             showEmojis
               ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
               : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
           }`}></div>
-          <FaSmile size={20} className="relative" />
+          <FaSmile size={18} className="relative md:w-5 md:h-5" />
         </button>
       </div>
 
@@ -871,10 +871,11 @@ const ChatTab = () => {
         }
 
         /* Responsive emoji picker styles */
-        /* Small screens (sm: 640px) */
+        /* Small screens (mobile: < 640px) */
         @media (max-width: 639px) {
           .emoji-picker-container {
-            min-width: 260px !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
           }
           .emoji-picker-container .epr-emoji-size {
             --epr-emoji-size: 20px !important;
