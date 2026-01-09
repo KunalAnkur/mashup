@@ -13,7 +13,7 @@ import {
   FaUpload,
 } from "react-icons/fa";
 import { Button } from "../UI";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { useFileContext } from "@/context/FileContext";
 import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
@@ -23,11 +23,14 @@ import { ACCEPTED_FILE_TYPES } from "@/types/ModalTypes/acceptedFileTypes";
 import { showError } from "@/utils/toast";
 import { ExtendedFile } from "@/utils/filePersistence";
 import { Playlist } from "@/types/storeTypes";
+import { useIsMobile } from "@/hooks";
+import MobileWarningModal from "@/components/Modals/MobileWarningModal";
 
 const FileSelection = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
+  const isMobile = useIsMobile();
 
   const {
     files,
@@ -43,6 +46,7 @@ const FileSelection = () => {
   const selectedFile = files.find((f) => f.selected) ?? null;
   const [isStarting, setIsStarting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showMobileWarning, setShowMobileWarning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Ensure one file is selected by default when files are loaded
@@ -100,7 +104,8 @@ const FileSelection = () => {
     removeFile(id);
   };
 
-  const handleOnStartWatching = async () => {
+  // Core room creation logic
+  const proceedToStartWatching = useCallback(async () => {
     if (isStarting) return;
     if (!selectedFile) return;
 
@@ -138,7 +143,24 @@ const FileSelection = () => {
       // Keep loading state for a bit to show feedback, then reset if navigation doesn't happen
       setTimeout(() => setIsStarting(false), 1000);
     }
-  };
+  }, [isStarting, selectedFile, files, dispatch, getThumbnail, authState.isAuthenticated, router]);
+
+  // Handler that shows warning on mobile, or proceeds directly on desktop
+  const handleOnStartWatching = useCallback(() => {
+    if (isStarting || !selectedFile) return;
+    
+    if (isMobile) {
+      setShowMobileWarning(true);
+    } else {
+      proceedToStartWatching();
+    }
+  }, [isStarting, selectedFile, isMobile, proceedToStartWatching]);
+
+  // Handle continuing after mobile warning
+  const handleMobileWarningContinue = useCallback(() => {
+    setShowMobileWarning(false);
+    proceedToStartWatching();
+  }, [proceedToStartWatching]);
 
   const handleAddFileClick = async () => {
     if (isPersistenceSupported) {
@@ -196,8 +218,16 @@ const FileSelection = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-transparent w-full max-w-full overflow-hidden">
-      <div className="flex items-center justify-between mb-4">
+    <>
+      {/* Mobile Warning Modal */}
+      <MobileWarningModal
+        isOpen={showMobileWarning}
+        onClose={() => setShowMobileWarning(false)}
+        onContinue={handleMobileWarningContinue}
+      />
+      
+      <div className="flex flex-col h-full bg-transparent w-full max-w-full overflow-hidden">
+        <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <span className="w-1 h-6 bg-gradient-to-b from-purple-500 to-fuchsia-500 rounded-full"></span>
           <h3 className="text-lg md:text-xl font-bold text-white font-parkinsans">
@@ -447,6 +477,7 @@ const FileSelection = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

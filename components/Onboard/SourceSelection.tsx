@@ -2,28 +2,55 @@
 
 import { FaBroadcastTower, FaSync } from "react-icons/fa";
 import { Button } from "../UI";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import { ImSpinner2 } from "react-icons/im";
 
 import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
+import { useIsMobile } from "@/hooks";
+import MobileWarningModal from "@/components/Modals/MobileWarningModal";
 
 const SourceSelection = () => {
   const [isJoinDisabled, setIsJoinDisabled] = useState<boolean>(true);
   const [roomId, setRoomId] = useState<string>("");
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [joinError, setJoinError] = useState<string>("");
+  const [showMobileWarning, setShowMobileWarning] = useState(false);
   const router = useRouter();
   const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
+  const isMobile = useIsMobile();
 
-  const handleOnUploadSelection = () => {
+  // State for tracking which action triggered the warning
+  const [pendingAction, setPendingAction] = useState<"stream" | "sync" | "join" | null>(null);
+
+  // Core navigation for stream/sync
+  const proceedToStream = useCallback(() => {
     router.push("/stream");
-  };
+  }, [router]);
 
-  const handleOnURLSelection = () => {
+  const proceedToSync = useCallback(() => {
     router.push("/sync");
-  };
+  }, [router]);
+
+  // Handlers that show warning on mobile
+  const handleOnUploadSelection = useCallback(() => {
+    if (isMobile) {
+      setPendingAction("stream");
+      setShowMobileWarning(true);
+    } else {
+      proceedToStream();
+    }
+  }, [isMobile, proceedToStream]);
+
+  const handleOnURLSelection = useCallback(() => {
+    if (isMobile) {
+      setPendingAction("sync");
+      setShowMobileWarning(true);
+    } else {
+      proceedToSync();
+    }
+  }, [isMobile, proceedToSync]);
 
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -32,7 +59,8 @@ const SourceSelection = () => {
     setJoinError(""); // Clear error when user types
   };
 
-  const handleJoinRoom = async () => {
+  // Core room join logic
+  const proceedToJoinRoom = useCallback(async () => {
     const trimmedRoomId = roomId.trim();
     if (trimmedRoomId.length === 0 || isJoining) return;
 
@@ -67,7 +95,44 @@ const SourceSelection = () => {
     } finally {
       setIsJoining(false);
     }
-  };
+  }, [roomId, isJoining, getRoomByRoomId, router]);
+
+  // Handler that shows warning on mobile, or proceeds directly on desktop
+  const handleJoinRoom = useCallback(() => {
+    const trimmedRoomId = roomId.trim();
+    if (trimmedRoomId.length === 0 || isJoining) return;
+    
+    if (isMobile) {
+      setPendingAction("join");
+      setShowMobileWarning(true);
+    } else {
+      proceedToJoinRoom();
+    }
+  }, [roomId, isJoining, isMobile, proceedToJoinRoom]);
+
+  // Handle continuing after mobile warning - routes based on pending action
+  const handleMobileWarningContinue = useCallback(() => {
+    setShowMobileWarning(false);
+    
+    switch (pendingAction) {
+      case "stream":
+        proceedToStream();
+        break;
+      case "sync":
+        proceedToSync();
+        break;
+      case "join":
+        proceedToJoinRoom();
+        break;
+    }
+    setPendingAction(null);
+  }, [pendingAction, proceedToStream, proceedToSync, proceedToJoinRoom]);
+
+  // Close mobile warning handler
+  const handleMobileWarningClose = useCallback(() => {
+    setShowMobileWarning(false);
+    setPendingAction(null);
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !isJoinDisabled && !isJoining) {
@@ -77,6 +142,13 @@ const SourceSelection = () => {
 
   return (
     <>
+      {/* Mobile Warning Modal */}
+      <MobileWarningModal
+        isOpen={showMobileWarning}
+        onClose={handleMobileWarningClose}
+        onContinue={handleMobileWarningContinue}
+      />
+      
       <div className="w-full h-full flex flex-col items-center justify-center bg-transparent px-4 py-6 overflow-y-auto overflow-x-hidden">
         <div className="w-full max-w-lg flex flex-col items-center gap-3 sm:gap-4 md:gap-5 my-auto">
           {/* LOGO & BRAND */}

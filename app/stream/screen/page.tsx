@@ -11,6 +11,8 @@ import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { helper } from "@/utils";
 import { showError } from "@/utils/toast";
 import type { Playlist } from "@/types/storeTypes";
+import { useIsMobile } from "@/hooks";
+import MobileWarningModal from "@/components/Modals/MobileWarningModal";
 
 // Generic screen share styling
 const SCREEN_SHARE_STYLE = {
@@ -24,6 +26,7 @@ const ScreenSharePage = () => {
   const dispatch = useDispatch();
   const authState = useSelector((state: RootState) => state.auth);
   const { setStream: setMediaStream, setScreenType } = useMediaStreamContext();
+  const isMobile = useIsMobile();
 
   // State management
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -32,6 +35,7 @@ const ScreenSharePage = () => {
   const [isTabSelected, setIsTabSelected] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [showMobileWarning, setShowMobileWarning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleBack = () => {
@@ -244,7 +248,8 @@ const ScreenSharePage = () => {
     }
   }, [audioOnly, setMediaStream, stream]);
 
-  const handleStartStreaming = useCallback(async () => {
+  // Core room creation logic
+  const proceedToStartStreaming = useCallback(async () => {
     if (!isStreamReady || !stream) return;
 
     try {
@@ -285,16 +290,41 @@ const ScreenSharePage = () => {
       showError("Failed to create room", "Please check your connection and try again.");
       setIsCreatingRoom(false);
     }
-  }, [isStreamReady, stream, audioOnly, setMediaStream, dispatch, router, authState.isAuthenticated]);
+  }, [isStreamReady, stream, audioOnly, dispatch, router, authState.isAuthenticated, authState.user]);
+
+  // Handler that shows warning on mobile, or proceeds directly on desktop
+  const handleStartStreaming = useCallback(() => {
+    if (!isStreamReady || !stream) return;
+    
+    if (isMobile) {
+      setShowMobileWarning(true);
+    } else {
+      proceedToStartStreaming();
+    }
+  }, [isStreamReady, stream, isMobile, proceedToStartStreaming]);
+
+  // Handle continuing after mobile warning
+  const handleMobileWarningContinue = useCallback(() => {
+    setShowMobileWarning(false);
+    proceedToStartStreaming();
+  }, [proceedToStartStreaming]);
 
 
   return (
-    <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
-      {/* Background Effects - Matching CTASection */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#e11d48]/20 rounded-full blur-[128px] animate-pulse-glow" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#c026d3]/20 rounded-full blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
-      </div>
+    <>
+      {/* Mobile Warning Modal */}
+      <MobileWarningModal
+        isOpen={showMobileWarning}
+        onClose={() => setShowMobileWarning(false)}
+        onContinue={handleMobileWarningContinue}
+      />
+      
+      <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
+        {/* Background Effects - Matching CTASection */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#e11d48]/20 rounded-full blur-[128px] animate-pulse-glow" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#c026d3]/20 rounded-full blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
+        </div>
 
       {/* Floating Emojis - Behind All Components */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
@@ -610,7 +640,7 @@ const ScreenSharePage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
