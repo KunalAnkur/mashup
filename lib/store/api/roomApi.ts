@@ -85,6 +85,14 @@ export const roomApi = createApi({
         method: "PUT",
       }),
     }),
+    // POST /api/v1/room/:roomId/track-playtime
+    trackPlaytime: builder.mutation<any, { roomId: string; seconds: number }>({
+      query: ({ roomId, seconds }) => ({
+        url: `/${roomId}/track-playtime`,
+        method: "POST",
+        body: { seconds },
+      }),
+    }),
     // DELETE /api/v1/room/:id
     deleteRoom: builder.mutation<any, string>({
       query: (id) => ({
@@ -106,4 +114,5 @@ export const {
   useDeleteRoomMutation,
   useInactiveMyRoomMutation,
   useUpdateRoomByRoomIdMutation,
+  useTrackPlaytimeMutation,
 } = roomApi;

@@ -10,6 +10,8 @@ import ModalOnRoomCreate from "@/components/Modals/ModalOnRoomCreate";
 import { useDispatch } from "react-redux";
 import { setFocused } from "@/lib/store/slices/roomSlice";
 import { useInactiveMyRoomMutation } from "@/lib/store/api/roomApi";
+import { usePlaytimeTracking } from "@/hooks/usePlaytimeTracking";
+
 const Page = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
@@ -19,6 +21,13 @@ const Page = () => {
   const hostUsername = joinResponse?.users?.find((user: UserInfo) => user.host)?.username as string | null;
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const hasCalledInactiveRef = useRef(false);
+  
+  // Playtime tracking - get sendPlaytime function to call when leaving
+  const { sendPlaytime } = usePlaytimeTracking({
+    roomId: roomState.roomId || roomId || null,
+    isHost: isHost || false,
+    enabled: isJoined && isHost,
+  });
   // Welcome/invite modal state
   const [showModal, setShowModal] = useState(false);
   const modalShownRef = useRef(false);
@@ -69,26 +78,33 @@ const Page = () => {
     modalShownRef.current = true;
   };
 
-  // Call inactive API when host navigates away (component unmounts)
+  // Call inactive API and send playtime when host navigates away (component unmounts)
   useEffect(() => {
     return () => {
       // Cleanup: when component unmounts (user navigates away)
-      // For navigation, we can use RTK Query mutation since there's time for it to complete
       if (isHost && isJoined && !hasCalledInactiveRef.current) {
-        hasCalledInactiveRef.current = true;
-        inactiveMyRoomApi().catch(() => {
-          // Silently fail if API call doesn't complete
-        });
+        // !commenting this down anymore we will not going to inactive the old room id because we will now create a new room id
+        // hasCalledInactiveRef.current = true;
+        // // Send accumulated playtime first
+        // sendPlaytime().then(() => {
+        //   // Then inactivate room
+        //   inactiveMyRoomApi().catch(() => {
+        //     // Silently fail if API call doesn't complete
+        //   });
+        // }).catch(() => {
+        //   // If playtime send fails, still try to inactivate room
+        //   inactiveMyRoomApi().catch(() => {});
+        // });
       }
     };
-  }, [isHost, isJoined, inactiveMyRoomApi]);
+  }, [isHost, isJoined, inactiveMyRoomApi, sendPlaytime]);
 
   // Warn user before closing tab/window when in room and call inactive API for host
   useEffect(() => {
     if (!isJoined) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Call inactive API when host closes tab/window
+      // Send playtime and call inactive API when host closes tab/window
       // NOTE: We MUST use fetch with keepalive: true here because:
       // 1. RTK Query mutations are async and may be cancelled when page unloads
       // 2. keepalive: true tells the browser to complete the request even after page closes
@@ -97,20 +113,28 @@ const Page = () => {
         hasCalledInactiveRef.current = true;
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         const token = authState?.token;
+        const currentRoomId = roomState.roomId || roomId;
         
-        if (baseUrl && token) {
-          const url = `${baseUrl}/api/v1/room/inactive-my-room`;
-          fetch(url, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            keepalive: true, // Critical: ensures request completes even after page unloads
-            body: JSON.stringify({}),
-          }).catch(() => {
-            // Silently fail if fetch doesn't complete
-          });
+        if (baseUrl && token && currentRoomId) {
+          // Try to get accumulated seconds and send playtime
+          // We'll need to use fetch here since RTK Query won't work during beforeunload
+          // Note: We can't access the ref from the hook here, so we'll send a placeholder
+          // The actual tracking happens in StreamPlayer/SyncPlayer, so this is a fallback
+
+          // Send inactive room request
+          // !commenting this down anymore we will not going to inactive the old room id because we will now create a new room id
+          // const inactiveUrl = `${baseUrl}/api/v1/room/inactive-my-room`;
+          // fetch(inactiveUrl, {
+          //   method: 'PUT',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //     'Authorization': `Bearer ${token}`,
+          //   },
+          //   keepalive: true,
+          //   body: JSON.stringify({}),
+          // }).catch(() => {
+          //   // Silently fail
+          // });
         }
       }
       

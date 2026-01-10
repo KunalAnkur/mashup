@@ -6,7 +6,7 @@ import { RootState } from "@/lib/store";
 import type ReactPlayer from "react-player";
 import { Player } from "@/components/VideoPlayer";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
-import { useSync } from "@/hooks";
+import { useSync, usePlaytimeTracking } from "@/hooks";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
 import type { Playlist } from "@/types/storeTypes";
@@ -24,7 +24,14 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
   const [hasVideoTrack, setHasVideoTrack] = useState<boolean | undefined>(true);
   const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { isJoined, roomType, isHost, hostLeft } = useRoomContext();
+  const { isJoined, roomType, isHost, hostLeft, roomId } = useRoomContext();
+
+  // Playtime tracking (host only)
+  const { handlePlaytimeUpdate } = usePlaytimeTracking({
+    roomId: roomState.roomId || roomId || null,
+    isHost: isHost || false,
+    enabled: isJoined && isHost,
+  });
 
   const currentUrl = activeContent?.link ?? "";
 
@@ -119,6 +126,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
       disableControls={controlsConfig.disableControls}
       hideControls={controlsConfig.hideControls}
       disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
+      onPlaytimeUpdate={isHost ? handlePlaytimeUpdate : undefined}
     >
       <PlayerOverlay />
     </Player>
