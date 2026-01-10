@@ -6,6 +6,7 @@ import { RootState } from "@/lib/store";
 import { useAuthProviderMutation } from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { showError, showSuccess } from "@/utils/toast";
+import { trackLogin } from "@/components/PostHogProvider";
 
 const GoogleOneTap = () => {
   const dispatch = useDispatch();
@@ -59,6 +60,7 @@ const GoogleOneTap = () => {
         })
       );
 
+      trackLogin("google_one_tap");
       showSuccess("Login successful");
     } catch (error: any) {
       console.error("❌ Google One Tap authentication failed:", error);

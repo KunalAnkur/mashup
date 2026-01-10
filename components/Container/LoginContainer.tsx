@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ImSpinner2 } from "react-icons/im";
 import { showError, showSuccess } from "@/utils/toast";
+import { trackLogin, trackSignup } from "@/components/PostHogProvider";
 import Image from "next/image";
 
 
@@ -52,6 +53,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
           email: userInfo.email,
         })
       );
+      trackLogin("google");
     } catch (error) {
       console.error("Google authentication failed", error);
       showError("Google authentication failed", "Please try again or use email and password to login.");
@@ -65,6 +67,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
     try {
       const response = await continueAsGuest().unwrap();
       dispatch(setUser(response));
+      trackSignup("guest");
       showSuccess("Welcome! You're now signed in as a guest");
     } catch (error: any) {
       console.error("Guest signup failed:", error);

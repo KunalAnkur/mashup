@@ -11,35 +11,38 @@ import { FileProvider } from "@/context/FileContext";
 import { MediaStreamProvider } from "@/context/MediaStreamContext";
 import GoogleAuthProvider from "@/components/GoogleAuth/GoogleOAuthProvider";
 import GoogleOneTap from "@/components/GoogleAuth/GoogleOneTap";
+import { PostHogProvider } from "@/components/PostHogProvider";
 import { Toaster } from 'react-hot-toast';
 
 export default function ClientRoot({ children }: { children: ReactNode }) {
     return (
         <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
-                <GoogleAuthProvider>
-                          <GoogleOneTap />
-                    <AuthGuard>
-                        <FileProvider>
-                            <MediaStreamProvider>
-                                {/* <SocketProvider> */}
-                                {children}
-                                {/* </SocketProvider> */}
-                            </MediaStreamProvider>
-                        </FileProvider>
-                    </AuthGuard>
-                </GoogleAuthProvider>
-                <Toaster 
-                    position="top-right"
-                    toastOptions={{
-                        className: '',
-                        style: {
-                            background: '#1f1f23',
-                            color: '#fff',
-                            borderRadius: '12px',
-                        },
-                    }}
-                />
+                <PostHogProvider>
+                    <GoogleAuthProvider>
+                        <GoogleOneTap />
+                        <AuthGuard>
+                            <FileProvider>
+                                <MediaStreamProvider>
+                                    {/* <SocketProvider> */}
+                                    {children}
+                                    {/* </SocketProvider> */}
+                                </MediaStreamProvider>
+                            </FileProvider>
+                        </AuthGuard>
+                    </GoogleAuthProvider>
+                    <Toaster 
+                        position="top-right"
+                        toastOptions={{
+                            className: '',
+                            style: {
+                                background: '#1f1f23',
+                                color: '#fff',
+                                borderRadius: '12px',
+                            },
+                        }}
+                    />
+                </PostHogProvider>
             </PersistGate>
         </Provider>
     );
