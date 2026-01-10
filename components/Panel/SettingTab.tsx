@@ -14,6 +14,7 @@ import { LuCheck, LuLink, LuLogOut, LuPencil, LuUser, LuMail } from "react-icons
 import { showError, showSuccess } from "@/utils/toast";
 import { useRoomContext } from "@/context/RoomContext";
 import { validateUsername } from "@/utils/validation";
+import { trackRoomLinkCopied } from "@/lib/analytics";
 
 const SettingTab = () => {
   const host = useSelector((state: RootState) => state.room.host);
@@ -57,9 +58,10 @@ const SettingTab = () => {
 
   // Handle copy room link
   const handleCopyLink = () => {
-    if (roomUrl) {
+    if (roomUrl && roomId) {
       navigator.clipboard.writeText(roomUrl);
       setCopied(true);
+      trackRoomLinkCopied(roomId);
       setTimeout(() => setCopied(false), 1500);
     }
   };

@@ -12,7 +12,7 @@ import { useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ImSpinner2 } from "react-icons/im";
 import { showError, showSuccess } from "@/utils/toast";
-import { trackLogin, trackSignup } from "@/components/PostHogProvider";
+import { trackLogin, trackSignup } from "@/lib/analytics";
 import Image from "next/image";
 
 

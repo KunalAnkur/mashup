@@ -7,7 +7,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 
-// Initialize PostHog
+// ============ INITIALIZE POSTHOG ============
+
 if (typeof window !== "undefined") {
   const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
@@ -15,12 +16,19 @@ if (typeof window !== "undefined") {
   if (posthogKey) {
     posthog.init(posthogKey, {
       api_host: posthogHost,
-      capture_pageview: false, // We capture manually for SPA navigation
+      capture_pageview: false, // Manual capture for SPA
       capture_pageleave: true,
       persistence: "localStorage",
-      loaded: (posthog) => {
+      loaded: (ph) => {
+        // Register global properties on every event
+        ph.register({
+          app: "movmash",
+          platform: "web",
+          env: process.env.NODE_ENV,
+        });
+        
         if (process.env.NODE_ENV === "development") {
-          console.log("✅ PostHog loaded successfully!");
+          console.log("✅ PostHog initialized with global properties");
         }
       },
     });
@@ -29,52 +37,77 @@ if (typeof window !== "undefined") {
   }
 }
 
-// Page view tracker component
+// ============ PAGE VIEW TRACKER ============
+
 function PostHogPageView() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const posthogClient = usePostHog();
+  const ph = usePostHog();
 
   useEffect(() => {
-    if (pathname && posthogClient) {
+    if (pathname && ph) {
       let url = window.origin + pathname;
       if (searchParams?.toString()) {
         url = url + `?${searchParams.toString()}`;
       }
-      posthogClient.capture("$pageview", { $current_url: url });
+      
+      // Determine page name from pathname
+      const pageName = getPageName(pathname);
+      
+      ph.capture("$pageview", { 
+        $current_url: url,
+        page: pageName,
+      });
       
       if (process.env.NODE_ENV === "development") {
-        console.log("📊 PostHog pageview:", pathname);
+        console.log("📊 [Analytics] $pageview", { page: pageName, url });
       }
     }
-  }, [pathname, searchParams, posthogClient]);
+  }, [pathname, searchParams, ph]);
 
   return null;
 }
 
-// User identification component
+// Helper to get page name from pathname
+function getPageName(pathname: string): string {
+  if (pathname === "/") return "home";
+  if (pathname.startsWith("/room/")) return "room";
+  if (pathname.startsWith("/stream")) return "stream";
+  if (pathname.startsWith("/sync")) return "sync";
+  if (pathname === "/login") return "login";
+  if (pathname === "/signup") return "signup";
+  return pathname.slice(1) || "unknown";
+}
+
+// ============ USER IDENTIFICATION ============
+
 function PostHogUserIdentify() {
-  const posthogClient = usePostHog();
+  const ph = usePostHog();
   const user = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
-    if (user?.id && posthogClient) {
-      posthogClient.identify(user.id, {
+    if (user?.id && ph) {
+      ph.identify(user.id, {
         email: user.email,
         name: user.name,
       });
-    } else if (!user && posthogClient) {
-      posthogClient.reset();
+      
+      if (process.env.NODE_ENV === "development") {
+        console.log("📊 [Analytics] User identified:", user.id);
+      }
+    } else if (!user && ph) {
+      ph.reset();
     }
-  }, [user, posthogClient]);
+  }, [user, ph]);
 
   return null;
 }
+
+// ============ PROVIDER COMPONENT ============
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 
-  // If no key, just render children without PostHog
   if (!posthogKey) {
     return <>{children}</>;
   }
@@ -90,52 +123,5 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Export posthog instance for manual event tracking
+// Export posthog instance for direct access if needed
 export { posthog };
-
-// ============ TRACKING HELPERS ============
-
-type AuthMethod = "google" | "google_one_tap" | "guest" | "email";
-
-/** Track when a user signs up */
-export const trackSignup = (method: AuthMethod, additionalProps?: Record<string, any>) => {
-  posthog.capture("user_signed_up", {
-    method,
-    ...additionalProps,
-  });
-  if (process.env.NODE_ENV === "development") {
-    console.log("📊 PostHog: user_signed_up", { method, ...additionalProps });
-  }
-};
-
-/** Track when a user logs in */
-export const trackLogin = (method: AuthMethod, additionalProps?: Record<string, any>) => {
-  posthog.capture("user_logged_in", {
-    method,
-    ...additionalProps,
-  });
-  if (process.env.NODE_ENV === "development") {
-    console.log("📊 PostHog: user_logged_in", { method, ...additionalProps });
-  }
-};
-
-/** Track room creation */
-export const trackRoomCreated = (roomType: "stream" | "sync", source: "file" | "url" | "screen") => {
-  posthog.capture("room_created", {
-    room_type: roomType,
-    source,
-  });
-  if (process.env.NODE_ENV === "development") {
-    console.log("📊 PostHog: room_created", { roomType, source });
-  }
-};
-
-/** Track room joined */
-export const trackRoomJoined = (isHost: boolean) => {
-  posthog.capture("room_joined", {
-    is_host: isHost,
-  });
-  if (process.env.NODE_ENV === "development") {
-    console.log("📊 PostHog: room_joined", { isHost });
-  }
-};

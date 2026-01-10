@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { isMobile } from "react-device-detect";
 import MobileWarningModal from "@/components/Modals/MobileWarningModal";
+import { trackCTAClicked } from "@/lib/analytics";
 
 const SourceSelection = () => {
   const [isJoinDisabled, setIsJoinDisabled] = useState<boolean>(true);
@@ -22,6 +23,7 @@ const SourceSelection = () => {
 
   // Navigate to stream - shows warning on mobile
   const handleOnUploadSelection = useCallback(() => {
+    trackCTAClicked("stream");
     if (isMobile) {
       setShowMobileWarning(true);
     } else {
@@ -31,6 +33,7 @@ const SourceSelection = () => {
 
   // Navigate to sync - no warning needed (works on mobile)
   const handleOnURLSelection = useCallback(() => {
+    trackCTAClicked("sync");
     router.push("/sync");
   }, [router]);
 
@@ -63,6 +66,7 @@ const SourceSelection = () => {
         (response?.success && response?.data)
       ) {
         // Room exists and is active, navigate to it
+        trackCTAClicked("join_room", { room_id: trimmedRoomId });
         router.push(`/room/${trimmedRoomId}`);
       } else {
         setJoinError("Room not found. Please check the Room ID.");

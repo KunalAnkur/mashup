@@ -10,6 +10,7 @@ import { useCreateRoomMutation, useGetMyRoomMutation, useGetRoomByRoomIdMutation
 import { Skeleton } from "@/components";
 import { showError } from "@/utils/toast";
 import { Playlist } from "@/types/storeTypes";
+import { trackRoomCreated, trackRoomJoined } from "@/lib/analytics";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
@@ -73,6 +74,18 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       if (response.success) {
         const roomWithAuth = { ...response, authId: authState.user!.id };
         dispatch(setRoom(roomWithAuth));
+        
+        // Track room creation
+        const firstItem = playlist[0];
+        if (firstItem && response.data?.room_id) {
+          trackRoomCreated(
+            response.data.room_id,
+            firstItem.type as "stream" | "sync",
+            firstItem.source as "file" | "url" | "screen",
+            "home"
+          );
+        }
+        
         return roomWithAuth;
       } else {
         return null;
@@ -90,6 +103,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       // console.log("Room details fetched successfully:", response.data);
       const roomWithAuth = { ...response, authId: authState.user!.id };
       dispatch(setRoom(roomWithAuth));
+      
+      // Track room joined (as guest if not host)
+      const isHost = response.data?.user_id === authState.user!.id;
+      trackRoomJoined(roomId!, isHost ? "host" : "guest");
       // if (roomWithAuth.data.user_id === authState.user!.id) {
       //     // User is the host of the room
       //     // dispatch(setRoom(roomWithAuth));

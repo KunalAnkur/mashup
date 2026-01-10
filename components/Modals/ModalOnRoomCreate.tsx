@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
+import { trackRoomLinkCopied, trackInviteSent } from "@/lib/analytics";
 
 interface ModalOnRoomCreateProps {
   isHost: boolean;
@@ -21,12 +22,16 @@ const ModalOnRoomCreate = ({
   onJoinRoom,
 }: ModalOnRoomCreateProps) => {
   const [copied, setCopied] = useState(false);
+  
+  // Extract roomId from roomUrl (e.g., /room/abc123 -> abc123)
+  const roomId = roomUrl?.split('/room/')[1] || '';
 
   // Handle copying invite link
   const handleCopyLink = () => {
     if (roomUrl) {
       navigator.clipboard.writeText(roomUrl);
       setCopied(true);
+      if (roomId) trackRoomLinkCopied(roomId);
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -35,6 +40,7 @@ const ModalOnRoomCreate = ({
   const handleShareWhatsApp = () => {
     const text = `Join my watch party! ${roomUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    if (roomId) trackInviteSent(roomId, "whatsapp");
   };
 
   // Handle sharing via Telegram
@@ -44,6 +50,7 @@ const ModalOnRoomCreate = ({
       `https://t.me/share/url?url=${encodeURIComponent(roomUrl)}&text=${encodeURIComponent('Join my watch party!')}`,
       '_blank'
     );
+    if (roomId) trackInviteSent(roomId, "telegram");
   };
 
   // Handle sharing via Instagram (copy link and open Instagram)
@@ -51,6 +58,7 @@ const ModalOnRoomCreate = ({
     if (roomUrl) {
       navigator.clipboard.writeText(roomUrl);
       setCopied(true);
+      if (roomId) trackInviteSent(roomId, "copy_link");
       setTimeout(() => setCopied(false), 2000);
       // Try to open Instagram website
       window.open('https://www.instagram.com/', '_blank');
@@ -62,6 +70,7 @@ const ModalOnRoomCreate = ({
     if (roomUrl) {
       navigator.clipboard.writeText(roomUrl);
       setCopied(true);
+      if (roomId) trackInviteSent(roomId, "copy_link");
       setTimeout(() => setCopied(false), 2000);
       // Try to open Discord website
       window.open('https://discord.com/app', '_blank');
@@ -72,6 +81,7 @@ const ModalOnRoomCreate = ({
   const handleShareTwitter = () => {
     const text = `Join my watch party on Movmash! ${roomUrl}`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+    if (roomId) trackInviteSent(roomId, "share_api");
   };
 
   // Share buttons component

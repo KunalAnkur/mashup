@@ -10,7 +10,7 @@ import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { ImSpinner2 } from "react-icons/im";
 import { showError, showSuccess } from "@/utils/toast";
-import { trackLogin, trackSignup } from "@/components/PostHogProvider";
+import { trackLogin, trackSignup } from "@/lib/analytics";
 
 type LoginDropdownProps = {
   onClose?: () => void;

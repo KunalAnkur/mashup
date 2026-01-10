@@ -13,7 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { ImSpinner2 } from "react-icons/im";
 import { showError } from "@/utils/toast";
-import { trackSignup } from "@/components/PostHogProvider";
+import { trackSignup } from "@/lib/analytics";
 
 type Prop = {
   setContainer?: (container: "login" | "signup") => void;

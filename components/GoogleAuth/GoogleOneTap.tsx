@@ -6,7 +6,7 @@ import { RootState } from "@/lib/store";
 import { useAuthProviderMutation } from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { showError, showSuccess } from "@/utils/toast";
-import { trackLogin } from "@/components/PostHogProvider";
+import { trackLogin } from "@/lib/analytics";
 
 const GoogleOneTap = () => {
   const dispatch = useDispatch();
