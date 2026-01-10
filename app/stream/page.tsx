@@ -11,6 +11,7 @@ import {
 import { FileSelection } from "@/components";
 import { PageHeader } from "@/components/UI";
 import { ScreenShareBox } from "@/components/ScreenShare/ScreenShareBox";
+import { isMobile } from "react-device-detect";
 
 const StreamFilesPage = () => {
   const router = useRouter();
@@ -83,19 +84,21 @@ const StreamFilesPage = () => {
       <div className="relative z-20 w-full h-screen flex flex-col overflow-hidden">
         <PageHeader title="Stream Options" onBack={handleBack} />
 
-        {/* Content - Centered Vertically and Horizontally */}
-        <div className="flex-1 flex items-center justify-center w-full min-h-0 overflow-y-auto overflow-x-hidden">
+        {/* Content - Top aligned on mobile, centered on desktop */}
+        <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">
           <div className="w-full max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-8">
             <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 w-full">
-              {/* Left Side - Screen Share Section */}
-              <div className="w-full lg:w-1/3 flex flex-col">
-                <ScreenShareBox handleScreenShareClick={handleScreenShareClick} />
-              </div>
+              {/* Left Side - Screen Share Section - Hidden on mobile */}
+              {!isMobile && (
+                <div className="w-full lg:w-1/3 flex flex-col">
+                  <ScreenShareBox handleScreenShareClick={handleScreenShareClick} />
+                </div>
+              )}
           
-              <ContentDivider />
+              {!isMobile && <ContentDivider />}
 
-              {/* Right Side - File Selection */}
-              <div className="w-full lg:w-2/3 flex flex-col min-w-0">
+              {/* Right Side - File Selection - Full width on mobile */}
+              <div className={`flex flex-col min-w-0 ${isMobile ? 'w-full' : 'w-full lg:w-2/3'}`}>
                 <FileSelection />
               </div>
             </div>
