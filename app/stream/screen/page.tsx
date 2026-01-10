@@ -314,9 +314,9 @@ const ScreenSharePage = () => {
         <PageHeader title="Screen Share" onBack={handleBack} logoGap="gap-8" />
 
         {/* Content - Scrollable area */}
-        <div className="flex-1 flex items-start md:items-center justify-center w-full min-h-0 overflow-y-auto overflow-x-hidden">
-          <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-8 lg:py-12">
-            <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 lg:gap-8 w-full">
+        <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden">
+          <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-8">
+            <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 w-full">
           {!stream ? (
             <>
               {/* Initial State - Before Preview */}

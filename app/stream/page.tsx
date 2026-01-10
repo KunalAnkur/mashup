@@ -84,8 +84,8 @@ const StreamFilesPage = () => {
         <PageHeader title="Stream Options" onBack={handleBack} />
 
         {/* Content - Centered Vertically and Horizontally */}
-        <div className="flex-1 flex items-start md:items-center justify-center w-full min-h-0 overflow-y-auto overflow-x-hidden">
-          <div className="w-full max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-3 sm:py-4 md:py-6">
+        <div className="flex-1 flex items-center justify-center w-full min-h-0 overflow-y-auto overflow-x-hidden">
+          <div className="w-full max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-8">
             <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 w-full">
               {/* Left Side - Screen Share Section */}
               <div className="w-full lg:w-1/3 flex flex-col">
