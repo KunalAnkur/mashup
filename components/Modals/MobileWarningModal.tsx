@@ -103,6 +103,10 @@ const MobileWarningModal = ({
                     </li>
                     <li className="flex items-center gap-1.5 text-[10px] text-white/50">
                       <span className="text-green-400">✓</span>
+                      Better stream quality
+                    </li>
+                    <li className="flex items-center gap-1.5 text-[10px] text-white/50">
+                      <span className="text-green-400">✓</span>
                       Full-screen viewing
                     </li>
                     <li className="flex items-center gap-1.5 text-[10px] text-white/50">

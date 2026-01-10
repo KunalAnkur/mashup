@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useFileContext } from "@/context/FileContext";
 import { useRouter } from "next/navigation";
 import {
@@ -12,11 +12,21 @@ import { FileSelection } from "@/components";
 import { PageHeader } from "@/components/UI";
 import { ScreenShareBox } from "@/components/ScreenShare/ScreenShareBox";
 import { isMobile } from "react-device-detect";
+import { ExtendedFile } from "@/utils/filePersistence";
 
 const StreamFilesPage = () => {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { files, setFiles } = useFileContext();
+  const [showSpeedTip, setShowSpeedTip] = useState(true);
+
+  // Auto-hide speed tip after 8 seconds
+  useEffect(() => {
+    if (!isMobile && showSpeedTip) {
+      const timer = setTimeout(() => setShowSpeedTip(false), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSpeedTip]);
 
   // Handle file drop - append to existing files
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,8 +34,17 @@ const StreamFilesPage = () => {
     if (newFiles && newFiles.length > 0 && fileInputRef.current) {
       // For traditional file input, files won't persist (no handles)
       // Append new files to existing files instead of replacing
-      const filesArray = Array.from(newFiles);
-      setFiles([...files, ...filesArray]);
+      const filesArray = Array.from(newFiles).map((f) => ({
+        id: `${f.name}-${f.lastModified}-${crypto.randomUUID()}`,
+        selected: false,
+        onlyAudio: false,
+        file: f as File,
+      } as ExtendedFile));
+      const next = [...files, ...filesArray];
+      if (!next.some((f) => f.selected) && next.length > 0) {
+        next[0].selected = true;
+      }
+      setFiles(next);
       fileInputRef.current.value = "";
     }
   };
@@ -87,6 +106,15 @@ const StreamFilesPage = () => {
         {/* Content - Top aligned on mobile, centered on desktop */}
         <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">
           <div className="w-full max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-8">
+            {/* Desktop-only: Internet Speed Tip - Auto disappears */}
+            {!isMobile && showSpeedTip && (
+              <div className={`hidden sm:flex items-center justify-center gap-2 mb-4 md:mb-5 transition-all duration-500 ${showSpeedTip ? 'opacity-100' : 'opacity-0'}`}>
+                <p className="text-white/40 text-[11px] md:text-xs tracking-wide">
+                  ⚡ Min <span className="text-white/60 font-medium">5 Mbps</span> internet speed recommended for all users
+                </p>
+              </div>
+            )}
+
             <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 w-full">
               {/* Left Side - Screen Share Section - Hidden on mobile */}
               {!isMobile && (

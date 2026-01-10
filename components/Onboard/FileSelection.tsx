@@ -378,7 +378,7 @@ const FileSelection = () => {
             ) : null}
           </div>
 
-          {/* Info Section - Hidden on very small screens, stacked on mobile */}
+          {/* Info Section - Hidden on mobile, shown on desktop */}
           <div className="hidden sm:flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-2xl border border-zinc-600/10 rounded-lg sm:rounded-xl hover:border-purple-500/20 hover:bg-gradient-to-br hover:from-purple-600/8 hover:via-pink-600/8 hover:to-fuchsia-600/8 transition-all duration-300">
             <div className="flex items-start gap-1.5 sm:gap-2">
               <div className="shrink-0 mt-0.5">
@@ -454,6 +454,16 @@ const FileSelection = () => {
             }`}
             name={isStarting ? "Starting..." : "Start Watching"}
           />
+
+          {/* Mobile-only Tip - Bottom */}
+          {isMobile && (
+            <div className="flex items-center justify-center gap-1.5 py-2 text-center">
+              <span className="text-amber-400 text-[10px]">💡</span>
+              <p className="text-white/50 text-[10px] leading-relaxed">
+                Use desktop or laptop for better stream quality
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
