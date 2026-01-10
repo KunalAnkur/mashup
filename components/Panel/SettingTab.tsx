@@ -341,30 +341,7 @@ const SettingTab = () => {
           </div>
         </div>
 
-        {/* Leave Party */}
-        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-2.5 md:space-y-3 min-w-0">
-          <div className="flex items-center gap-1.5 md:gap-2">
-            <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
-              <LuLogOut className="text-red-400" size={14} />
-            </div>
-            <h3 className="text-white font-semibold text-xs md:text-sm font-parkinsans">
-              Leave Party
-            </h3>
-          </div>
-
-          <p className="text-white/70 text-[10px] md:text-xs leading-relaxed">
-            {host
-              ? "Leaving will end the party for everyone. You'll need the room ID to rejoin."
-              : "You'll need the room ID to rejoin this party."}
-          </p>
-
-          <button
-            onClick={() => setShowLeaveConfirm(true)}
-            className="w-full px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
-          >
-            Leave Party
-          </button>
-        </div>
+       
       </div>
 
 

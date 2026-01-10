@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
@@ -13,14 +13,11 @@ import {
 } from "@/components/Modals/UrlModalComponents";
 import { PageHeader } from "@/components/UI";
 import { Playlist } from "@/types/storeTypes";
-import { useIsMobile } from "@/hooks";
-import MobileWarningModal from "@/components/Modals/MobileWarningModal";
 
 const SyncPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
-  const isMobile = useIsMobile();
 
   const {
     sourceUrlInput,
@@ -35,7 +32,6 @@ const SyncPage = () => {
   } = useUrlManagement();
   
   const [isEntering, setIsEntering] = useState(false);
-  const [showMobileWarning, setShowMobileWarning] = useState(false);
 
   const handleOnSourceUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSourceUrlInput(e.target.value);
@@ -47,8 +43,7 @@ const SyncPage = () => {
     }
   };
 
-  // Core room entry logic
-  const proceedToEnterRoom = useCallback(async () => {
+  const handleOnEnterRoom = async () => {
     if (addedUrls.length === 0 || isEntering) return;
     
     setIsEntering(true);
@@ -82,41 +77,16 @@ const SyncPage = () => {
       // Keep loading state for a bit to show feedback, then reset if navigation doesn't happen
       setTimeout(() => setIsEntering(false), 1000);
     }
-  }, [addedUrls, isEntering, dispatch, authState.isAuthenticated, router]);
-
-  // Handler that shows warning on mobile, or proceeds directly on desktop
-  const handleOnEnterRoom = useCallback(() => {
-    if (addedUrls.length === 0 || isEntering) return;
-    
-    if (isMobile) {
-      setShowMobileWarning(true);
-    } else {
-      proceedToEnterRoom();
-    }
-  }, [addedUrls.length, isEntering, isMobile, proceedToEnterRoom]);
-
-  // Handle continuing after mobile warning
-  const handleMobileWarningContinue = useCallback(() => {
-    setShowMobileWarning(false);
-    proceedToEnterRoom();
-  }, [proceedToEnterRoom]);
+  };
 
   const handleBack = () => {
     router.push("/");
   };
 
   return (
-    <>
-      {/* Mobile Warning Modal */}
-      <MobileWarningModal
-        isOpen={showMobileWarning}
-        onClose={() => setShowMobileWarning(false)}
-        onContinue={handleMobileWarningContinue}
-      />
-      
-      <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
-        {/* Background Effects - Matching CTASection - Responsive sizing */}
-        <div className="absolute inset-0 z-0">
+    <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
+      {/* Background Effects - Matching CTASection - Responsive sizing */}
+      <div className="absolute inset-0 z-0">
         <div className="absolute top-0 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-[#e11d48]/20 rounded-full blur-[48px] sm:blur-[64px] md:blur-[96px] lg:blur-[128px] animate-pulse-glow" />
         <div className="absolute bottom-0 right-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-[#c026d3]/20 rounded-full blur-[48px] sm:blur-[64px] md:blur-[96px] lg:blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
       </div>
@@ -138,41 +108,40 @@ const SyncPage = () => {
       <div className="relative z-20 w-full h-screen flex flex-col">
         <PageHeader title="Enter Source URL" onBack={handleBack} />
 
-      {/* Content - Centered Vertically and Horizontally */}
-      <div className="flex-1 flex items-center justify-center w-full min-h-0">
-        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-3 sm:py-4 md:py-6 lg:py-8 xl:py-10 overflow-y-auto overflow-x-hidden">
-          <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 2xl:gap-16 w-full">
-            {/* Left Side - Supported Platforms - Hidden on SM, XS, shown on MD+ but only on XL+ as side-by-side */}
-            <div className="hidden lg:block lg:w-1/2">
-              <SupportedPlatformsGrid />
-            </div>
+        {/* Content - Centered Vertically and Horizontally */}
+        <div className="flex-1 flex items-center justify-center w-full min-h-0">
+          <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-3 sm:py-4 md:py-6 lg:py-8 xl:py-10 overflow-y-auto overflow-x-hidden">
+            <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 2xl:gap-16 w-full">
+              {/* Left Side - Supported Platforms - Hidden on SM, XS, shown on MD+ but only on XL+ as side-by-side */}
+              <div className="hidden lg:block lg:w-1/2">
+                <SupportedPlatformsGrid />
+              </div>
 
-            {/* Right Side - URL Input - Full width on mobile/tablet, half on LG+ */}
-            <div className="w-full lg:w-1/2 flex flex-col min-h-0">
-              <UrlInputSection
-                sourceUrlInput={sourceUrlInput}
-                onSourceUrlChange={handleOnSourceUrlChange}
-                onKeyDown={handleKeyDown}
-                onAddUrl={handleAddUrl}
-                isAddDisabled={isAddDisabled}
-                tooltipMessage={tooltipMessage}
-                addedUrls={addedUrls}
-                loadingMetadata={loadingMetadata}
-                onRemoveUrl={handleRemoveUrl}
-                onCancel={handleBack}
-                onEnterRoom={handleOnEnterRoom}
-                getPlatformById={getPlatformById}
-                getUrlDisplayName={getUrlDisplayName}
-                isAdding={isAdding}
-                isEntering={isEntering}
-              />
+              {/* Right Side - URL Input - Full width on mobile/tablet, half on LG+ */}
+              <div className="w-full lg:w-1/2 flex flex-col min-h-0">
+                <UrlInputSection
+                  sourceUrlInput={sourceUrlInput}
+                  onSourceUrlChange={handleOnSourceUrlChange}
+                  onKeyDown={handleKeyDown}
+                  onAddUrl={handleAddUrl}
+                  isAddDisabled={isAddDisabled}
+                  tooltipMessage={tooltipMessage}
+                  addedUrls={addedUrls}
+                  loadingMetadata={loadingMetadata}
+                  onRemoveUrl={handleRemoveUrl}
+                  onCancel={handleBack}
+                  onEnterRoom={handleOnEnterRoom}
+                  getPlatformById={getPlatformById}
+                  getUrlDisplayName={getUrlDisplayName}
+                  isAdding={isAdding}
+                  isEntering={isEntering}
+                />
+              </div>
             </div>
           </div>
         </div>
-        </div>
-        </div>
       </div>
-    </>
+    </div>
   );
 };
 
