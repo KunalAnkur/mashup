@@ -14,7 +14,7 @@ import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import OverlayMessageBubble from "./OverlayMessageBubble";
 import AnimatedReaction from "../Panel/AnimatedReaction";
 import { showError } from "@/utils/toast";
-import { useIsMobile } from "@/hooks";
+import { isMobile } from "react-device-detect";
 
 const PlayerOverlay = () => {
   const dispatch = useDispatch();
@@ -264,8 +264,6 @@ const PlayerOverlay = () => {
 
   const handleToggleChat = () => {};
 
-  // Check if actual mobile device (uses user agent, not screen size)
-  const isMobile = useIsMobile();
 
   return (
     <>

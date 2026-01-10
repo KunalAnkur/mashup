@@ -8,7 +8,7 @@ import { ImSpinner2 } from "react-icons/im";
 
 import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
-import { useIsMobile } from "@/hooks";
+import { isMobile } from "react-device-detect";
 import MobileWarningModal from "@/components/Modals/MobileWarningModal";
 
 const SourceSelection = () => {
@@ -19,7 +19,6 @@ const SourceSelection = () => {
   const [showMobileWarning, setShowMobileWarning] = useState(false);
   const router = useRouter();
   const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
-  const isMobile = useIsMobile();
 
   // Navigate to stream - shows warning on mobile
   const handleOnUploadSelection = useCallback(() => {
