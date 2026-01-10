@@ -2,5 +2,5 @@ export { useStream } from "./useStream";
 export { useStreamSource } from "./useStreamSource";
 export { useSync } from "./useSync";
 export { useChat } from "./useChat";
-export { useIsMobile } from "./useIsMobile";
+export { useIsMobile, useDeviceInfo, getDeviceInfo } from "./useIsMobile";
 

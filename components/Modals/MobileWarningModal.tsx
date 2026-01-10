@@ -11,10 +11,6 @@ interface MobileWarningModalProps {
   onContinue: () => void;
 }
 
-/**
- * Modal component that warns users about suboptimal mobile experience
- * Shown when users try to create/join a room on mobile devices
- */
 const MobileWarningModal = ({
   isOpen,
   onClose,
@@ -41,18 +37,9 @@ const MobileWarningModal = ({
             className="relative w-full max-w-sm bg-gradient-to-br from-zinc-900/95 via-zinc-800/95 to-zinc-900/95 backdrop-blur-2xl border border-zinc-700/50 rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Decorative gradient background */}
+          
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-yellow-500/5 pointer-events-none" />
-            
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 p-1.5 rounded-lg bg-zinc-800/50 hover:bg-zinc-700/50 text-white/60 hover:text-white transition-all duration-200 z-10"
-              aria-label="Close modal"
-            >
-              <IoClose className="w-4 h-4" />
-            </button>
-
+ 
             {/* Content */}
             <div className="relative z-10 p-5">
               {/* Icon Section */}
