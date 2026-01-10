@@ -74,7 +74,11 @@ const MobileWarningModal = ({
                     <FaMobileAlt className="text-amber-400 text-sm" />
                     <span className="text-xs font-medium text-white/80">Mobile</span>
                   </div>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1.5">
+                    <li className="flex items-center gap-1.5 text-[10px] text-white/50">
+                      <span className="text-red-400">✗</span>
+                      Screen share not available
+                    </li>
                     <li className="flex items-center gap-1.5 text-[10px] text-white/50">
                       <span className="text-amber-400">•</span>
                       Limited screen space
@@ -92,7 +96,11 @@ const MobileWarningModal = ({
                     <FaDesktop className="text-green-400 text-sm" />
                     <span className="text-xs font-medium text-white/80">Desktop</span>
                   </div>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1.5">
+                    <li className="flex items-center gap-1.5 text-[10px] text-white/50">
+                      <span className="text-green-400">✓</span>
+                      Screen share works
+                    </li>
                     <li className="flex items-center gap-1.5 text-[10px] text-white/50">
                       <span className="text-green-400">✓</span>
                       Full-screen viewing

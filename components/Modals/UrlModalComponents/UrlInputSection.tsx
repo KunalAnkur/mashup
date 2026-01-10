@@ -43,15 +43,22 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
   isAdding = false,
   isEntering = false,
 }) => (
-  <div className="w-full flex flex-col h-full min-h-0">
+  <div className="w-full flex flex-col sm:h-full sm:min-h-0">
     <SectionTitle
       gradientFrom="from-fuchsia-500"
       gradientTo="to-purple-500"
       title="Paste Your URLs"
     />
 
-    <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-lg md:rounded-xl lg:rounded-2xl p-3 sm:p-4 md:p-5 flex flex-col flex-1 min-h-0">
-      <div className="flex flex-col h-full gap-2.5 sm:gap-3 md:gap-4 min-h-0">
+    <div className={`bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-lg md:rounded-xl lg:rounded-2xl p-3 sm:p-4 md:p-5 flex flex-col sm:flex-1 sm:min-h-0 transition-all duration-300
+      ${addedUrls.length === 0 ? 'min-h-[200px]' : 
+        addedUrls.length <= 1 ? 'min-h-[220px]' : 
+        addedUrls.length <= 2 ? 'min-h-[290px]' : 
+        addedUrls.length <= 3 ? 'min-h-[360px]' : 
+        addedUrls.length <= 4 ? 'min-h-[430px]' : 'min-h-[500px]'}
+      sm:min-h-0
+    `}>
+      <div className="flex flex-col gap-2.5 sm:gap-3 md:gap-4 sm:h-full sm:min-h-0">
         {/* URL Input Field */}
         <UrlInputField
           value={sourceUrlInput}
@@ -63,10 +70,18 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
           isAdding={isAdding}
         />
 
-        {/* Added URLs List or Empty State */}
-        <div className="flex-1 min-h-0 max-h-full overflow-hidden">
+        {/* Added URLs List or Empty State - Mobile grows based on URL count */}
+        <div className="flex-1 min-h-0 overflow-hidden">
           {addedUrls.length > 0 ? (
-            <div className="flex flex-col gap-1.5 sm:gap-2 pr-1 overflow-y-auto max-h-[140px] xs:max-h-[160px] sm:max-h-[180px] md:max-h-[200px] lg:max-h-[215px]">
+            <div 
+              className={`flex flex-col gap-1.5 sm:gap-2 pr-1 overflow-y-auto
+                ${addedUrls.length <= 1 ? 'max-h-[70px]' : 
+                  addedUrls.length <= 2 ? 'max-h-[140px]' : 
+                  addedUrls.length <= 3 ? 'max-h-[210px]' : 
+                  addedUrls.length <= 4 ? 'max-h-[280px]' : 'max-h-[350px]'}
+                sm:max-h-[180px] md:max-h-[200px] lg:max-h-[215px]
+              `}
+            >
               {addedUrls.map((item, index) => (
                 <UrlCard
                   key={`${item.url}-${index}`}
