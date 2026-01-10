@@ -350,8 +350,8 @@ export const useStream = ({
                 consumersRef.current.push(consumer);
                 tracks.push(consumer.track);
             } catch (error) {
-                console.error("[STREAM] Consume error:", error);
-                showError("Stream connection failed", "Unable to receive video stream. Please try refreshing the page.");
+                // console.error("[STREAM] Consume error:", error);
+                // showError("Stream connection failed", "Unable to receive video stream. Please try refreshing the page.");
             }
         }
 

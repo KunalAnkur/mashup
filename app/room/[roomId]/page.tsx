@@ -9,12 +9,16 @@ import { UserInfo, useRoomContext } from "@/context/RoomContext";
 import ModalOnRoomCreate from "@/components/Modals/ModalOnRoomCreate";
 import { useDispatch } from "react-redux";
 import { setFocused } from "@/lib/store/slices/roomSlice";
+import { useInactiveMyRoomMutation } from "@/lib/store/api/roomApi";
 const Page = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
+  const authState = useSelector((state: RootState) => state.auth);
   const containerRef = useRef<HTMLDivElement>(null);
   const { isJoined, roomId, isHost, joinResponse } = useRoomContext();
   const hostUsername = joinResponse?.users?.find((user: UserInfo) => user.host)?.username as string | null;
+  const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
+  const hasCalledInactiveRef = useRef(false);
   // Welcome/invite modal state
   const [showModal, setShowModal] = useState(false);
   const modalShownRef = useRef(false);
@@ -65,11 +69,51 @@ const Page = () => {
     modalShownRef.current = true;
   };
 
-  // Warn user before closing tab/window when in  room
+  // Call inactive API when host navigates away (component unmounts)
+  useEffect(() => {
+    return () => {
+      // Cleanup: when component unmounts (user navigates away)
+      // For navigation, we can use RTK Query mutation since there's time for it to complete
+      if (isHost && isJoined && !hasCalledInactiveRef.current) {
+        hasCalledInactiveRef.current = true;
+        inactiveMyRoomApi().catch(() => {
+          // Silently fail if API call doesn't complete
+        });
+      }
+    };
+  }, [isHost, isJoined, inactiveMyRoomApi]);
+
+  // Warn user before closing tab/window when in room and call inactive API for host
   useEffect(() => {
     if (!isJoined) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Call inactive API when host closes tab/window
+      // NOTE: We MUST use fetch with keepalive: true here because:
+      // 1. RTK Query mutations are async and may be cancelled when page unloads
+      // 2. keepalive: true tells the browser to complete the request even after page closes
+      // 3. This is the only reliable way to send requests during beforeunload
+      if (isHost && !hasCalledInactiveRef.current) {
+        hasCalledInactiveRef.current = true;
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const token = authState?.token;
+        
+        if (baseUrl && token) {
+          const url = `${baseUrl}/api/v1/room/inactive-my-room`;
+          fetch(url, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            keepalive: true, // Critical: ensures request completes even after page unloads
+            body: JSON.stringify({}),
+          }).catch(() => {
+            // Silently fail if fetch doesn't complete
+          });
+        }
+      }
+      
       // Modern browsers ignore custom messages and show their own generic warning
       // But we still need to set returnValue or return a string to trigger the dialog
       e.preventDefault();
@@ -82,7 +126,7 @@ const Page = () => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isJoined]);
+  }, [isJoined, isHost, authState?.token]);
 
 
   return (
