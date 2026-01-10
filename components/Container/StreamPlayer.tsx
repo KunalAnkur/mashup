@@ -11,6 +11,7 @@ import { useStream } from "@/hooks/useStream";
 import { useStreamSource } from "@/hooks/useStreamSource";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
+import { usePlaytimeTracking } from "@/hooks/usePlaytimeTracking";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -29,7 +30,14 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const isInitialSetupRef = useRef(true);
     const pendingInitializationRef = useRef(false);
     
-    const { isJoined, roomType, isHost, hostLeft } = useRoomContext();
+    const { isJoined, roomType, isHost, hostLeft, roomId } = useRoomContext();
+    
+    // Playtime tracking (host only) - use hook directly here since we're tracking
+    const { handlePlaytimeUpdate } = usePlaytimeTracking({
+        roomId: roomState.roomId || roomId || null,
+        isHost: isHost || false,
+        enabled: isJoined && isHost,
+    });
     
     // ============================================================================
     // Layer 1: Source Layer
@@ -402,6 +410,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 hasVideoTrack={!activeItem?.onlyAudio}
                 disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
                 hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
+                onPlaytimeUpdate={isHost ? handlePlaytimeUpdate : undefined}
             >
                 <PlayerOverlay />
             </Player>
