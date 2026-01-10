@@ -86,7 +86,7 @@ const Page = () => {
         // !commenting this down anymore we will not going to inactive the old room id because we will now create a new room id
         // hasCalledInactiveRef.current = true;
         // // Send accumulated playtime first
-        // sendPlaytime().then(() => {
+        sendPlaytime();
         //   // Then inactivate room
         //   inactiveMyRoomApi().catch(() => {
         //     // Silently fail if API call doesn't complete
@@ -116,6 +116,7 @@ const Page = () => {
         const currentRoomId = roomState.roomId || roomId;
         
         if (baseUrl && token && currentRoomId) {
+          sendPlaytime();
           // Try to get accumulated seconds and send playtime
           // We'll need to use fetch here since RTK Query won't work during beforeunload
           // Note: We can't access the ref from the hook here, so we'll send a placeholder
@@ -150,7 +151,7 @@ const Page = () => {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isJoined, isHost, authState?.token]);
+  }, [isJoined, isHost, authState?.token, sendPlaytime]);
 
 
   return (
