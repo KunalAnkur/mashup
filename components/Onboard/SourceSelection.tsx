@@ -21,36 +21,25 @@ const SourceSelection = () => {
   const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
   const isMobile = useIsMobile();
 
-  // State for tracking which action triggered the warning
-  const [pendingAction, setPendingAction] = useState<"stream" | "sync" | "join" | null>(null);
+  // Navigate to stream - shows warning on mobile
+  const handleOnUploadSelection = useCallback(() => {
+    if (isMobile) {
+      setShowMobileWarning(true);
+    } else {
+      router.push("/stream");
+    }
+  }, [isMobile, router]);
 
-  // Core navigation for stream/sync
-  const proceedToStream = useCallback(() => {
-    router.push("/stream");
-  }, [router]);
-
-  const proceedToSync = useCallback(() => {
+  // Navigate to sync - no warning needed (works on mobile)
+  const handleOnURLSelection = useCallback(() => {
     router.push("/sync");
   }, [router]);
 
-  // Handlers that show warning on mobile
-  const handleOnUploadSelection = useCallback(() => {
-    if (isMobile) {
-      setPendingAction("stream");
-      setShowMobileWarning(true);
-    } else {
-      proceedToStream();
-    }
-  }, [isMobile, proceedToStream]);
-
-  const handleOnURLSelection = useCallback(() => {
-    if (isMobile) {
-      setPendingAction("sync");
-      setShowMobileWarning(true);
-    } else {
-      proceedToSync();
-    }
-  }, [isMobile, proceedToSync]);
+  // Handle continuing after mobile warning (only for stream)
+  const handleMobileWarningContinue = useCallback(() => {
+    setShowMobileWarning(false);
+    router.push("/stream");
+  }, [router]);
 
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -59,8 +48,8 @@ const SourceSelection = () => {
     setJoinError(""); // Clear error when user types
   };
 
-  // Core room join logic
-  const proceedToJoinRoom = useCallback(async () => {
+  // Join room - no warning needed (can join any room type)
+  const handleJoinRoom = useCallback(async () => {
     const trimmedRoomId = roomId.trim();
     if (trimmedRoomId.length === 0 || isJoining) return;
 
@@ -97,43 +86,6 @@ const SourceSelection = () => {
     }
   }, [roomId, isJoining, getRoomByRoomId, router]);
 
-  // Handler that shows warning on mobile, or proceeds directly on desktop
-  const handleJoinRoom = useCallback(() => {
-    const trimmedRoomId = roomId.trim();
-    if (trimmedRoomId.length === 0 || isJoining) return;
-    
-    if (isMobile) {
-      setPendingAction("join");
-      setShowMobileWarning(true);
-    } else {
-      proceedToJoinRoom();
-    }
-  }, [roomId, isJoining, isMobile, proceedToJoinRoom]);
-
-  // Handle continuing after mobile warning - routes based on pending action
-  const handleMobileWarningContinue = useCallback(() => {
-    setShowMobileWarning(false);
-    
-    switch (pendingAction) {
-      case "stream":
-        proceedToStream();
-        break;
-      case "sync":
-        proceedToSync();
-        break;
-      case "join":
-        proceedToJoinRoom();
-        break;
-    }
-    setPendingAction(null);
-  }, [pendingAction, proceedToStream, proceedToSync, proceedToJoinRoom]);
-
-  // Close mobile warning handler
-  const handleMobileWarningClose = useCallback(() => {
-    setShowMobileWarning(false);
-    setPendingAction(null);
-  }, []);
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !isJoinDisabled && !isJoining) {
       handleJoinRoom();
@@ -142,10 +94,10 @@ const SourceSelection = () => {
 
   return (
     <>
-      {/* Mobile Warning Modal */}
+      {/* Mobile Warning Modal - Only for Stream */}
       <MobileWarningModal
         isOpen={showMobileWarning}
-        onClose={handleMobileWarningClose}
+        onClose={() => setShowMobileWarning(false)}
         onContinue={handleMobileWarningContinue}
       />
       
@@ -274,12 +226,6 @@ const SourceSelection = () => {
                                       disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:shadow-none"
                       disabled={isJoinDisabled || isJoining}
                     />
-                    {/*  {isJoinDisabled && !isJoining && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#2a2a2e] text-gray-200 text-xs md:text-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10 max-w-[calc(100vw-2rem)] shadow-xl border border-white/10">
-                        Room ID must be 4 characters
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#2a2a2e]"></div>
-                      </div>
-                    )} */}
                   </div>
                 </div>
               </div>
