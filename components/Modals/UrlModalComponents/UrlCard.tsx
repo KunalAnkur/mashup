@@ -122,8 +122,8 @@ export const UrlCard: React.FC<UrlCardProps> = ({
 
       <UrlCardThumbnail
         isLoading={isLoading}
-        thumbnail={url.metadata?.thumbnail}
-        title={url.metadata?.title}
+        thumbnail={url.metadata?.thumbnail || undefined}
+        title={url.metadata?.title || undefined}
         platform={platform}
         showPlayIcon={hasMetadata}
       />

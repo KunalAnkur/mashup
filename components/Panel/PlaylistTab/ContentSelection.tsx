@@ -5,7 +5,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useEffect, useRef, useState } from "react";
 import { LuPlus } from "react-icons/lu";
-import { useGetUrlMetadataMutation } from "@/lib/store/api/urlApi";
 import { validateUrl } from "@/components/Modals/UrlModalComponents";
 import { useFileContext } from "@/context/FileContext";
 import { ExtendedFile } from "@/utils/filePersistence";
@@ -206,15 +205,14 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
         }
     }
 
-    const [getUrlMetadata] = useGetUrlMetadataMutation();
     const handleAddUrl = async () => {
         if (!isHost || !roomState.roomId) return;
-        const url = urlInput.trim();
-        if (!url) {
+        const rawUrl = urlInput.trim();
+        if (!rawUrl) {
             setUrlError("Please enter a URL");
             return;
         }
-        const validation = validateUrl(url);
+        const validation = validateUrl(rawUrl);
         if (!validation.valid) {
             setUrlError(validation.tooltip || "Invalid URL. Please enter a supported video URL.");
             return;
@@ -222,33 +220,111 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
         setIsAddingUrls(true);
         setUrlError("");
         try {
-            const response = await getUrlMetadata(url).unwrap();
-            console.log("response", response);
-            const data = response.data as Metadata;
-            const playList: Playlist = {
-                id: crypto.randomUUID(),
-                type: "sync",
-                source: "url",
-                link: data.link || url,
-                selected: false,
-                onlyAudio: false,
-                metadata: {
-                    ...(data.title && { title: data.title }),
-                    ...(data.description && { description: data.description }),
-                    ...(data.thumbnail && { thumbnail: data.thumbnail }),
-                    ...(data.author && { author: data.author }),
-                    ...(data.siteName && { siteName: data.siteName }),
-                } as UrlMetadata,
+            // Check if it's a YouTube Mix playlist (RD) - these should only add the first video
+            let isMixPlaylist = false;
+            try {
+                const urlObj = new URL(rawUrl);
+                const playlistId = urlObj.searchParams.get("list");
+                if (playlistId && playlistId.startsWith("RD")) {
+                    isMixPlaylist = true;
+                }
+            } catch {
+                // Ignore URL parsing errors
             }
-            // call the function here
-            onAddContent([playList], "url");
-        } catch (error) {
+
+            // Fetch metadata (and possible playlist) from backend
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+            const token = authState.token;
+
+            const response = await fetch(`${baseUrl}/api/v1/url/metadata`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+                body: JSON.stringify({ url: rawUrl }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const message =
+                    data?.message ||
+                    data?.error ||
+                    `Failed to fetch metadata: ${response.statusText}`;
+                setUrlError(message);
+                return;
+            }
+
+            const serverData = data.data || {};
+            const playlistItems = serverData.playlistItems as
+                | {
+                    url: string;
+                    title?: string;
+                    description?: string;
+                    thumbnail?: string;
+                    author?: string;
+                }[]
+                | undefined;
+
+            // Determine URLs to add
+            let urlsToAdd: string[] = [];
+            
+            if (playlistItems && playlistItems.length > 0 && !isMixPlaylist) {
+                // If backend returned a playlist (and it's not a Mix), add all playlist video URLs
+                urlsToAdd = playlistItems.map((item) => item.url);
+            } else {
+                // Normal single URL behavior (including Mix playlists which only add the first video)
+                urlsToAdd = [rawUrl];
+            }
+
+            // Create Playlist items for all URLs
+            const playlistEntries: Playlist[] = urlsToAdd.map((url, index) => {
+                // For playlist items, use metadata from playlistItems if available
+                let metadata: UrlMetadata = {};
+                if (playlistItems && playlistItems.length > 0 && !isMixPlaylist && playlistItems[index]) {
+                    const item = playlistItems[index];
+                    metadata = {
+                        ...(item.title && { title: item.title }),
+                        ...(item.description && { description: item.description }),
+                        thumbnail: item.thumbnail || null,
+                        ...(item.author && { author: item.author }),
+                    };
+                } else {
+                    // For single URL or Mix, use main metadata
+                    metadata = {
+                        ...(serverData.title && { title: serverData.title }),
+                        ...(serverData.description && { description: serverData.description }),
+                        thumbnail: serverData.thumbnail || null,
+                        ...(serverData.author && { author: serverData.author }),
+                        ...(serverData.siteName && !serverData.author && { author: serverData.siteName }),
+                    };
+                }
+
+                return {
+                    id: crypto.randomUUID(),
+                    type: "sync",
+                    source: "url",
+                    link: url,
+                    selected: false,
+                    onlyAudio: false,
+                    metadata,
+                };
+            });
+
+            // call the function here with all playlist items
+            onAddContent(playlistEntries, "url");
+            handleCloseAddUrlModal();
+        } catch (error: any) {
             console.error("error", error);
+            const errorMessage = 
+                error?.message || 
+                error?.error ||
+                "Failed to add URL. Please try again.";
+            setUrlError(errorMessage);
         } finally {
             setIsAddingUrls(false);
-            handleCloseAddUrlModal();
         }
-        console.log("handleAddUrl");
     }
 
     return (
