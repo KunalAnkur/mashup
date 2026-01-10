@@ -2,28 +2,43 @@
 
 import { FaBroadcastTower, FaSync } from "react-icons/fa";
 import { Button } from "../UI";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import { ImSpinner2 } from "react-icons/im";
 
 import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
+import { isMobile } from "react-device-detect";
+import MobileWarningModal from "@/components/Modals/MobileWarningModal";
 
 const SourceSelection = () => {
   const [isJoinDisabled, setIsJoinDisabled] = useState<boolean>(true);
   const [roomId, setRoomId] = useState<string>("");
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [joinError, setJoinError] = useState<string>("");
+  const [showMobileWarning, setShowMobileWarning] = useState(false);
   const router = useRouter();
   const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
 
-  const handleOnUploadSelection = () => {
-    router.push("/stream");
-  };
+  // Navigate to stream - shows warning on mobile
+  const handleOnUploadSelection = useCallback(() => {
+    if (isMobile) {
+      setShowMobileWarning(true);
+    } else {
+      router.push("/stream");
+    }
+  }, [isMobile, router]);
 
-  const handleOnURLSelection = () => {
+  // Navigate to sync - no warning needed (works on mobile)
+  const handleOnURLSelection = useCallback(() => {
     router.push("/sync");
-  };
+  }, [router]);
+
+  // Handle continuing after mobile warning (only for stream)
+  const handleMobileWarningContinue = useCallback(() => {
+    setShowMobileWarning(false);
+    router.push("/stream");
+  }, [router]);
 
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -32,7 +47,8 @@ const SourceSelection = () => {
     setJoinError(""); // Clear error when user types
   };
 
-  const handleJoinRoom = async () => {
+  // Join room - no warning needed (can join any room type)
+  const handleJoinRoom = useCallback(async () => {
     const trimmedRoomId = roomId.trim();
     if (trimmedRoomId.length === 0 || isJoining) return;
 
@@ -67,7 +83,7 @@ const SourceSelection = () => {
     } finally {
       setIsJoining(false);
     }
-  };
+  }, [roomId, isJoining, getRoomByRoomId, router]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !isJoinDisabled && !isJoining) {
@@ -77,6 +93,13 @@ const SourceSelection = () => {
 
   return (
     <>
+      {/* Mobile Warning Modal - Only for Stream */}
+      <MobileWarningModal
+        isOpen={showMobileWarning}
+        onClose={() => setShowMobileWarning(false)}
+        onContinue={handleMobileWarningContinue}
+      />
+      
       <div className="w-full h-full flex flex-col items-center justify-center bg-transparent px-4 py-6 overflow-y-auto overflow-x-hidden">
         <div className="w-full max-w-lg flex flex-col items-center gap-3 sm:gap-4 md:gap-5 my-auto">
           {/* LOGO & BRAND */}
@@ -202,12 +225,6 @@ const SourceSelection = () => {
                                       disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:shadow-none"
                       disabled={isJoinDisabled || isJoining}
                     />
-                    {/*  {isJoinDisabled && !isJoining && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#2a2a2e] text-gray-200 text-xs md:text-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10 max-w-[calc(100vw-2rem)] shadow-xl border border-white/10">
-                        Room ID must be 4 characters
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#2a2a2e]"></div>
-                      </div>
-                    )} */}
                   </div>
                 </div>
               </div>

@@ -78,12 +78,12 @@ const ProfileHeader = ({ onLoginClick }: ProfileHeaderProps) => {
   return (
     <>
       {isAuthenticated ? (
-        <AvatarDropdown size={40} />
+        <AvatarDropdown size={32} className="sm:scale-110" />
       ) : (
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={handleLoginClick}
-            className="text-white text-sm font-medium hover:text-pink-400 transition-colors duration-200"
+            className="text-white text-xs sm:text-sm font-medium hover:text-pink-400 transition-colors duration-200 px-2 py-1"
           >
             Login
           </button>
