@@ -23,6 +23,7 @@ import { ACCEPTED_FILE_TYPES } from "@/types/ModalTypes/acceptedFileTypes";
 import { showError } from "@/utils/toast";
 import { ExtendedFile } from "@/utils/filePersistence";
 import { Playlist } from "@/types/storeTypes";
+import { isMobile } from "react-device-detect";
 
 const FileSelection = () => {
   const dispatch = useDispatch();
@@ -232,10 +233,19 @@ const FileSelection = () => {
         className="hidden"
       />
 
-      <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-sm border border-zinc-600/15 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 w-full">
+      <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-sm border border-zinc-600/15 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 w-full flex flex-col">
         <div className="flex-1 flex flex-col gap-3 sm:gap-4 w-full max-w-full overflow-hidden">
           {/* Files List with Preview Placeholders */}
-          <div className="space-y-2 sm:space-y-3 pr-1 sm:pr-2 overflow-y-auto max-h-[140px] sm:max-h-[160px] w-full">
+          <div 
+            className="space-y-2 sm:space-y-3 pr-1 sm:pr-2 overflow-y-auto w-full sm:max-h-[160px]"
+            style={isMobile ? {
+              maxHeight: files.length === 0 ? '140px' : 
+                         files.length <= 1 ? '140px' :  // Shows 1 file + add more placeholder
+                         files.length <= 2 ? '150px' : 
+                         files.length <= 3 ? '220px' : 
+                         files.length <= 4 ? '290px' : '360px'
+            } : undefined}
+          >
             {/* Show actual files */}
             {files.map((extFile) => {
               const file = extFile.file;
@@ -329,7 +339,7 @@ const FileSelection = () => {
               <button
                 onClick={handleAddFileClick}
                 disabled={isLoading}
-                className="relative flex flex-col items-center justify-center p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 border-dashed border-zinc-600/15 hover:border-purple-500/40 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 w-full h-[120px] sm:h-[140px] md:h-[160px] transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                className="relative flex flex-col items-center justify-center p-3 sm:p-6 rounded-lg sm:rounded-xl border-2 border-dashed border-zinc-600/15 hover:border-purple-500/40 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 w-full h-[130px] sm:h-[140px] md:h-[160px] transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-fuchsia-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg sm:rounded-xl" />
                 <div className="relative z-10 flex p-3 sm:p-4 items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-zinc-700/10 to-zinc-600/10 backdrop-blur-md border border-zinc-500/20 group-hover:from-purple-500/25 group-hover:to-fuchsia-500/25 group-hover:border-purple-400/35 transition-all duration-300 mb-2 sm:mb-3">
