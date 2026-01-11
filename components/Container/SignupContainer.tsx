@@ -44,7 +44,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
         name: username, // Include name field (using username as name)
       }).unwrap();
       dispatch(setUser(data));
-      trackSignup("email");
+      trackSignup("email", "direct"); // Email signup from signup page
       console.log(data, signupState);
     } catch (error: any) {
       // console.error("Signup failed:", error);
@@ -90,7 +90,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
           email: userInfo.email,
         })
       );
-      trackSignup("google");
+      trackSignup("google", "direct"); // Google signup from signup page
     } catch (error) {
       console.error("Google authentication failed", error);
       showError("Google authentication failed", "Please try again or use email and password to sign up.");

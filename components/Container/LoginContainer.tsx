@@ -67,7 +67,9 @@ const LoginContainer = ({ setContainer }: Prop) => {
     try {
       const response = await continueAsGuest().unwrap();
       dispatch(setUser(response));
-      trackSignup("guest");
+      // Determine signup source: if redirectParam contains room, it's room_join
+      const signupSource = redirectParam?.includes("/room/") ? "room_join" : "direct";
+      trackSignup("guest", signupSource);
       showSuccess("Welcome! You're now signed in as a guest");
     } catch (error: any) {
       console.error("Guest signup failed:", error);

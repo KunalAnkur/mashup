@@ -20,6 +20,29 @@ type InviteMethod = "copy_link" | "whatsapp" | "telegram" | "share_api";
 type ErrorArea = "room" | "video_sync" | "upload" | "network" | "auth";
 type AuthMethod = "google" | "google_one_tap" | "guest" | "email";
 
+// In-app sources (where in the app they signed up)
+type InAppSource = "landing" | "home" | "room_join" | "stream" | "sync" | "direct" | "invite_link";
+
+// External traffic sources (where they came from)
+type ExternalSource = 
+  | "reddit" 
+  | "tiktok" 
+  | "instagram" 
+  | "twitter" 
+  | "facebook" 
+  | "youtube" 
+  | "linkedin"
+  | "discord"
+  | "producthunt"
+  | "hackernews"
+  | "google_ads"
+  | "google_organic"
+  | "referral"
+  | "email_campaign"
+  | "blog";
+
+export type SignupSource = InAppSource | ExternalSource | "unknown";
+
 // ============ SAFETY CHECK ============
 
 /** Check if PostHog is initialized and ready */
@@ -80,10 +103,152 @@ export const registerGlobalProperties = () => {
 
 // ============ AUTH EVENTS ============
 
-/** Track when a user signs up */
-export const trackSignup = (method: AuthMethod) => {
-  safeCapture("user_signed_up", { method });
-  logEvent("user_signed_up", { method });
+/** 
+ * Get UTM parameters from URL
+ * These are automatically captured but we can also grab them manually
+ */
+const getUTMParams = () => {
+  if (typeof window === "undefined") return {};
+  
+  const params = new URLSearchParams(window.location.search);
+  const utm: Record<string, string> = {};
+  
+  const utmKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+  utmKeys.forEach(key => {
+    const value = params.get(key);
+    if (value) utm[key] = value;
+  });
+  
+  return utm;
+};
+
+/**
+ * Automatically detect signup source from UTM params or referrer
+ * Use this when you want to auto-detect external traffic source
+ * 
+ * @example
+ * trackSignup("google", detectSignupSource() || "direct")
+ */
+export const detectSignupSource = (): SignupSource | null => {
+  if (typeof window === "undefined") return null;
+  
+  const params = new URLSearchParams(window.location.search);
+  const utmSource = params.get("utm_source")?.toLowerCase();
+  const referrer = document.referrer?.toLowerCase() || "";
+  
+  // Check UTM source first (most reliable)
+  if (utmSource) {
+    const sourceMap: Record<string, SignupSource> = {
+      "reddit": "reddit",
+      "tiktok": "tiktok",
+      "instagram": "instagram",
+      "twitter": "twitter",
+      "x": "twitter", // X is Twitter
+      "facebook": "facebook",
+      "fb": "facebook",
+      "youtube": "youtube",
+      "yt": "youtube",
+      "linkedin": "linkedin",
+      "discord": "discord",
+      "producthunt": "producthunt",
+      "product_hunt": "producthunt",
+      "hackernews": "hackernews",
+      "hn": "hackernews",
+      "google": "google_ads",
+      "email": "email_campaign",
+      "newsletter": "email_campaign",
+      "blog": "blog",
+      "referral": "referral",
+    };
+    
+    const detected = sourceMap[utmSource];
+    if (detected) return detected;
+  }
+  
+  // Fallback: check referrer URL
+  if (referrer) {
+    if (referrer.includes("reddit.com")) return "reddit";
+    if (referrer.includes("tiktok.com")) return "tiktok";
+    if (referrer.includes("instagram.com")) return "instagram";
+    if (referrer.includes("twitter.com") || referrer.includes("x.com")) return "twitter";
+    if (referrer.includes("facebook.com") || referrer.includes("fb.com")) return "facebook";
+    if (referrer.includes("youtube.com") || referrer.includes("youtu.be")) return "youtube";
+    if (referrer.includes("linkedin.com")) return "linkedin";
+    if (referrer.includes("discord.com") || referrer.includes("discord.gg")) return "discord";
+    if (referrer.includes("producthunt.com")) return "producthunt";
+    if (referrer.includes("news.ycombinator.com")) return "hackernews";
+    if (referrer.includes("google.com")) return "google_organic";
+  }
+  
+  return null; // Could not detect
+};
+
+/** 
+ * Track when a user signs up
+ * @param method - Authentication method used (google, email, guest, etc.)
+ * @param inAppSource - Where in the app they signed up (home, direct, room_join, etc.)
+ * 
+ * SMART DETECTION:
+ * - First checks UTM params and referrer for external source (reddit, tiktok, etc.)
+ * - If external source found → uses that as signup_source
+ * - If no external source → uses inAppSource as signup_source
+ * 
+ * PROPERTIES SENT:
+ * - signup_source: Final source (external > in-app)
+ * - in_app_location: Where in the app they signed up (always sent)
+ * - utm_* params: All UTM parameters from URL
+ * 
+ * @example
+ * // User comes from Reddit → signup_source: "reddit", in_app_location: "home"
+ * trackSignup("google", "home")
+ * 
+ * // Direct visit → signup_source: "home", in_app_location: "home"  
+ * trackSignup("google", "home")
+ * 
+ * // Joining a room → signup_source: "room_join", in_app_location: "room_join"
+ * trackSignup("guest", "room_join")
+ */
+export const trackSignup = (
+  method: AuthMethod, 
+  inAppSource: SignupSource = "unknown"
+) => {
+  const utmParams = getUTMParams();
+  
+  // Priority: External source (UTM/referrer) > In-app source > "unknown"
+  // This way if user comes from Reddit but signs up on home page,
+  // we capture "reddit" not "home"
+  const externalSource = detectSignupSource();
+  const finalSource = externalSource || inAppSource;
+  
+  safeCapture("user_signed_up", { 
+    method,
+    signup_source: finalSource,
+    in_app_location: inAppSource, // Also track where in app they signed up
+    ...utmParams, // Include UTM params for attribution
+  });
+  logEvent("user_signed_up", { 
+    method, 
+    signup_source: finalSource, 
+    in_app_location: inAppSource, 
+    ...utmParams 
+  });
+  
+  // Debug info in development
+  if (isDev) {
+    console.group("🔍 [Analytics] Signup Tracking");
+    console.log("Method:", method);
+    console.log("Signup Source (final):", finalSource);
+    console.log("In-App Location:", inAppSource);
+    console.log("External Source Detected:", detectSignupSource() || "none");
+    console.log("UTM Params:", utmParams);
+    console.log("Full Event Data:", {
+      method,
+      signup_source: finalSource,
+      in_app_location: inAppSource,
+      ...utmParams
+    });
+    console.groupEnd();
+  }
 };
 
 /** Track when a user logs in */
@@ -263,6 +428,98 @@ export const resetUser = () => {
   }
 };
 
+// ============ TEST UTILITIES ============
+
+/**
+ * Test signup tracking with different sources
+ * Use this in browser console to test
+ * 
+ * @example
+ * // In browser console:
+ * window.testSignup() // Shows current state
+ * window.testSignup('reddit') // Shows test URL for reddit
+ */
+export const testSignupTracking = (source?: string) => {
+  if (typeof window === "undefined") {
+    console.warn("Test utilities only work in browser");
+    return;
+  }
+  
+  console.group("🧪 Testing Signup Tracking");
+  
+  // Test current URL detection
+  const currentSource = detectSignupSource();
+  const utmParams = getUTMParams();
+  
+  console.log("📍 Current URL:", window.location.href);
+  console.log("🔍 Detected Source:", currentSource || "none (no UTM/referrer)");
+  console.log("📊 UTM Params:", Object.keys(utmParams).length > 0 ? utmParams : "none");
+  console.log("🔗 Referrer:", document.referrer || "none");
+  
+  // Show all test URLs
+  const testSources = ["reddit", "tiktok", "instagram", "twitter", "facebook", "youtube"];
+  console.log("\n📝 Test URLs (copy & open in new tab, then signup):");
+  testSources.forEach(s => {
+    const testUrl = `${window.location.origin}${window.location.pathname}?utm_source=${s}`;
+    console.log(`  ${s.padEnd(10)} → ${testUrl}`);
+  });
+  
+  if (source) {
+    const testUrl = `${window.location.origin}${window.location.pathname}?utm_source=${source}`;
+    console.log(`\n✅ Test URL for "${source}":`);
+    console.log(`   ${testUrl}`);
+    console.log(`\n👉 Copy above URL, open in new tab, then signup!`);
+    console.log(`   After signup, check PostHog Live Events for signup_source: "${source}"`);
+  } else {
+    console.log("\n💡 Tip: Call testSignup('reddit') to get a specific test URL");
+  }
+  
+  console.groupEnd();
+  
+  return {
+    currentSource,
+    utmParams,
+    referrer: document.referrer,
+    testUrls: testSources.reduce((acc, s) => {
+      acc[s] = `${window.location.origin}${window.location.pathname}?utm_source=${s}`;
+      return acc;
+    }, {} as Record<string, string>)
+  };
+};
+
+/**
+ * Simulate signup event (for testing only)
+ * WARNING: This creates a test event in PostHog
+ * 
+ * @example
+ * // In browser console:
+ * window.simulateSignup('guest', 'reddit')
+ */
+export const simulateSignup = (method: AuthMethod = "guest", source?: SignupSource) => {
+  if (process.env.NODE_ENV === "production") {
+    console.warn("⚠️ simulateSignup should not be used in production!");
+    return;
+  }
+  
+  console.group("🧪 Simulating Signup Event");
+  console.log("Method:", method);
+  console.log("Source:", source || "direct");
+  
+  trackSignup(method, source || "direct");
+  
+  console.log("✅ Test event sent to PostHog!");
+  console.log("\n📊 How to check in PostHog:");
+  console.log("1. Go to: https://app.posthog.com/events");
+  console.log("2. Look for 'user_signed_up' event");
+  console.log("3. Click on the event → Check Properties");
+  console.log("4. You should see: signup_source =", source || "direct");
+  console.log("\n💡 Or create a Breakdown:");
+  console.log("   Insights → New Insight → Trends");
+  console.log("   Event: user_signed_up");
+  console.log("   Breakdown → Event properties → signup_source");
+  console.groupEnd();
+};
+
 // ============ EXPORT ALL ============
 
 export const analytics = {
@@ -300,6 +557,11 @@ export const analytics = {
   // User
   identifyUser,
   resetUser,
+  
+  // Test utilities (dev only)
+  testSignupTracking,
+  simulateSignup,
+  detectSignupSource,
 };
 
 export default analytics;

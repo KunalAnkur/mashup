@@ -55,7 +55,7 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
     try {
       const response = await continueAsGuest().unwrap();
       dispatch(setUser(response));
-      trackSignup("guest");
+      trackSignup("guest", "home"); // Auto-detects external source (reddit, tiktok, etc.) or falls back to "home"
       showSuccess("Welcome! You're now signed in as a guest");
       if (onClose) onClose();
     } catch (error: any) {
