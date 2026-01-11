@@ -318,6 +318,41 @@ export const trackRoomLeft = (roomId: string, durationSec: number) => {
   logEvent("room_left", { room_id: roomId, duration_sec: durationSec });
 };
 
+/** Track active room (heartbeat) - sent periodically to track active rooms */
+export const trackRoomActive = (
+  roomId: string,
+  roomType: RoomType,
+  role: UserRole,
+  participantsCount: number,
+  durationSec: number
+) => {
+  const eventData = {
+    room_id: roomId,
+    room_type: roomType,
+    role,
+    participants_count: participantsCount,
+    duration_sec: durationSec,
+  };
+
+  safeCapture("room_active", eventData);
+  logEvent("room_active", eventData);
+
+  // Enhanced console log for debugging
+  if (isDev) {
+    console.log("🔄 [Analytics] room_active heartbeat", {
+      room_id: roomId,
+      room_type: roomType,
+      role,
+      participants_count: participantsCount,
+      duration_sec: durationSec,
+      duration_formatted: `${Math.floor(durationSec / 60)}m ${durationSec % 60}s`,
+    });
+  } else {
+    // Also log in production for debugging
+    console.log("🔄 [Analytics] room_active", eventData);
+  }
+};
+
 // ============ VIDEO FLOW EVENTS ============
 
 /** Track video source selection */
