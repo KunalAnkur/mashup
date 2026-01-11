@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/store";
+import { RootState, store } from "@/lib/store";
 import { Player } from "@/components/VideoPlayer";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
 import StreamPlayerEmptyState from "@/components/Container/StreamPlayerEmptyState";
@@ -12,6 +12,7 @@ import { useStreamSource } from "@/hooks/useStreamSource";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
 import { usePlaytimeTracking } from "@/hooks/usePlaytimeTracking";
+import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -28,6 +29,8 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const pendingVideoReadyRef = useRef(false);
     const lastInitializedItemIdRef = useRef<string | null>(null);
     const isInitialSetupRef = useRef(true);
+    const videoStartedTrackedRef = useRef(false); // Track if video_started was already tracked
+    const syncStartedTrackedRef = useRef(false); // Track if sync_started was already tracked
     const pendingInitializationRef = useRef(false);
     
     const { isJoined, roomType, isHost, hostLeft, roomId } = useRoomContext();
@@ -81,7 +84,17 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         setIsPaused(false);
         console.log("[StreamPlayer] Stream has video tracks:", stream.getVideoTracks().length > 0);
         setPauseFrameUrl(null);
-    }, [remoteStream]);
+        
+        // Track sync started when consumer receives stream
+        if (!isHost && !syncStartedTrackedRef.current && roomId) {
+            const state = store.getState() as RootState;
+            const playlist = state.room.playlist || [];
+            const selected = playlist.find((p) => p.selected) || playlist[0];
+           
+            trackSyncStarted(roomId);
+            syncStartedTrackedRef.current = true;
+        }
+    }, [remoteStream, isHost, roomId]);
 
     
 
@@ -283,6 +296,22 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const onPlay = useCallback((event: string) => {
         streamOnPlay(event);
         
+        // Track video started (first time only)
+        if (!videoStartedTrackedRef.current && roomId) {
+            const state = store.getState() as RootState;
+            const playlist = state.room.playlist || [];
+            const selected = playlist.find((p) => p.selected) || playlist[0];
+            const source = (selected?.source || "screen") as "file" | "url" | "screen";
+            trackVideoStarted(roomId, source, isHost);
+            videoStartedTrackedRef.current = true;
+            
+            // Track sync started for host (when host starts playing)
+            if (isHost && !syncStartedTrackedRef.current) {
+                trackSyncStarted(roomId);
+                syncStartedTrackedRef.current = true;
+            }
+        }
+        
         // If we have a pending video ready (from item change, not seek), handle it now that video is playing
         if (pendingVideoReadyRef.current && isHost && !isSeekingRef.current) {
             const currentItemId = activeItem?.id || null;
@@ -308,7 +337,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 pendingVideoReadyRef.current = false;
             }
         }
-    }, [streamOnPlay, isHost, initializeFromJoinResponse, activeItem]);
+    }, [streamOnPlay, isHost, initializeFromJoinResponse, activeItem, roomId]);
 
 
     useEffect(() => {

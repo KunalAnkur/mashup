@@ -17,6 +17,7 @@ import * as constants from "../../constants";
 import { LuCheck, LuLink, LuLogOut } from "react-icons/lu";
 import { useRoomContext } from "@/context/RoomContext";
 import { showError } from "@/utils/toast";
+import { trackRoomLinkCopied } from "@/lib/analytics";
 // New Import
 import FeedbackModal from "../Modals/FeedbackModal";
 import { usePlaytimeTracking } from "@/hooks/usePlaytimeTracking";
@@ -70,9 +71,10 @@ const Panel = () => {
   };
 
   const handleCopyLink = () => {
-    if (roomUrl) {
+    if (roomUrl && roomId) {
       navigator.clipboard.writeText(roomUrl);
       setCopied(true);
+      trackRoomLinkCopied(roomId);
       setTimeout(() => setCopied(false), 1500);
     }
   };

@@ -10,6 +10,7 @@ import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { ImSpinner2 } from "react-icons/im";
 import { showError, showSuccess } from "@/utils/toast";
+import { trackLogin, trackSignup } from "@/lib/analytics";
 
 type LoginDropdownProps = {
   onClose?: () => void;
@@ -39,6 +40,7 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
           email: userInfo.email,
         })
       );
+      trackLogin("google");
       if (onClose) onClose();
     } catch (error) {
       console.error("Google authentication failed", error);
@@ -53,6 +55,7 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
     try {
       const response = await continueAsGuest().unwrap();
       dispatch(setUser(response));
+      trackSignup("guest", "home"); // Auto-detects external source (reddit, tiktok, etc.) or falls back to "home"
       showSuccess("Welcome! You're now signed in as a guest");
       if (onClose) onClose();
     } catch (error: any) {

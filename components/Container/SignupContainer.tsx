@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { ImSpinner2 } from "react-icons/im";
 import { showError } from "@/utils/toast";
+import { trackSignup } from "@/lib/analytics";
 
 type Prop = {
   setContainer?: (container: "login" | "signup") => void;
@@ -43,6 +44,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
         name: username, // Include name field (using username as name)
       }).unwrap();
       dispatch(setUser(data));
+      trackSignup("email", "direct"); // Email signup from signup page
       console.log(data, signupState);
     } catch (error: any) {
       // console.error("Signup failed:", error);
@@ -88,6 +90,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
           email: userInfo.email,
         })
       );
+      trackSignup("google", "direct"); // Google signup from signup page
     } catch (error) {
       console.error("Google authentication failed", error);
       showError("Google authentication failed", "Please try again or use email and password to sign up.");
