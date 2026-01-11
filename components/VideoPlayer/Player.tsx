@@ -298,6 +298,7 @@ const VideoPlayer = ({
                     playing={playing}
                     loop={loop}
                     muted={muted}
+                    playsinline={true}
                     volume={volume}
                     onProgress={handleProgress}
                     onDuration={handleDuration}
