@@ -111,16 +111,21 @@ export async function captureTabStream(options: {
 
         // Build constraints based on browser capabilities
         const constraints: MediaStreamConstraints = {
-            video: audioOnly ? false : {
+          video: audioOnly
+            ? false
+            : {
                 width: { ideal: 854, max: 854 },
                 height: { ideal: 480, max: 480 },
                 frameRate: { ideal: 30, max: 30 },
-            },
-            audio: {
-                echoCancellation: false,
-                noiseSuppression: false,
-                autoGainControl: false,
-            }
+              },
+          audio: {
+            autoGainControl: false,
+            channelCount: 2,
+            echoCancellation: false,
+            noiseSuppression: false,
+            sampleRate: 48000,
+            sampleSize: 16,
+          },
         };
 
         // Browser-specific constraint adjustments

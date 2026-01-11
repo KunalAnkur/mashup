@@ -109,9 +109,9 @@ const StreamFilesPage = () => {
             {/* Desktop-only: Internet Speed Tip - Auto disappears */}
             {!isMobile && showSpeedTip && (
               <div className={`hidden sm:flex items-center justify-center gap-2 mb-4 md:mb-5 transition-all duration-500 ${showSpeedTip ? 'opacity-100' : 'opacity-0'}`}>
-                <p className="text-white/40 text-[11px] md:text-xs tracking-wide">
+                {/* <p className="text-white/40 text-[11px] md:text-xs tracking-wide">
                   ⚡ Min <span className="text-white/60 font-medium">5 Mbps</span> internet speed recommended for all users
-                </p>
+                </p> */}
               </div>
             )}
 

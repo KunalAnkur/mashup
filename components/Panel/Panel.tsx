@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
@@ -20,6 +20,7 @@ import { showError } from "@/utils/toast";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 // New Import
 import FeedbackModal from "../Modals/FeedbackModal";
+import { usePlaytimeTracking } from "@/hooks/usePlaytimeTracking";
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
@@ -27,13 +28,21 @@ const Panel = () => {
   // New State for Feedback Modal
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   
-  const { leaveRoom, roomId } = useRoomContext();
+  const { leaveRoom, roomId, isHost, isJoined } = useRoomContext();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const router = useRouter();
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const roomState = useSelector((state: RootState) => state.room);
   const host = roomState.host;
   const dispatch = useDispatch();
+  
+  // Get sendPlaytime function to send accumulated playtime when leaving
+  // Note: Tracking happens in StreamPlayer/SyncPlayer, this instance just provides sendPlaytime
+  const { sendPlaytime } = usePlaytimeTracking({
+    roomId: roomState.roomId || roomId || null,
+    isHost: (isHost || host) || false,
+    enabled: false, // Don't track here, tracking happens in StreamPlayer/SyncPlayer
+  });
 
   const roomUrl = roomId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/room/${roomId}` : '';
 
@@ -73,8 +82,12 @@ const Panel = () => {
   const handleLeaveParty = async () => {
     try {
       if (host) {
-        const response = await inactiveMyRoomApi();
-        console.log("Room inactivated:", response);
+        // Send accumulated playtime first
+        await sendPlaytime();
+        // Then inactivate room
+        //! commenting this down anymore we will not going to inactive the old room id because we will now create a new room id
+        // const response = await inactiveMyRoomApi();
+        // console.log("Room inactivated:", response);
       }
       leaveRoom();
       setShowLeaveConfirm(false);
