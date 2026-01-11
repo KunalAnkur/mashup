@@ -218,10 +218,15 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const leaveRoom = useCallback(() => {
         if (!socket || !roomId) return;
 
-        // Track room left with duration
+        // Get current source from playlist before leaving
+        const playlist = roomState.playlist || [];
+        const selected = playlist.find((p) => p.selected) || playlist[0];
+        const currentSource = selected?.source as "file" | "url" | "screen" | undefined;
+
+        // Track room left with duration and source
         if (joinTimeRef.current) {
             const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
-            trackRoomLeft(roomId, durationSec);
+            trackRoomLeft(roomId, durationSec, currentSource);
             joinTimeRef.current = null;
         }
 
@@ -387,6 +392,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         if (!isJoined || !roomId || !roomType) return;
 
+        // Get current source from playlist
+        const playlist = roomState.playlist || [];
+        const selected = playlist.find((p) => p.selected) || playlist[0];
+        const currentSource = selected?.source as "file" | "url" | "screen" | undefined;
+
         // Send initial heartbeat immediately when joined
         if (joinTimeRef.current) {
             const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
@@ -395,7 +405,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 roomType,
                 isHost ? "host" : "guest",
                 participants.length,
-                durationSec
+                durationSec,
+                currentSource
             );
         }
 
@@ -403,32 +414,43 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         const interval = setInterval(() => {
             if (joinTimeRef.current) {
                 const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
+                // Get current source (might have changed)
+                const playlist = roomState.playlist || [];
+                const selected = playlist.find((p) => p.selected) || playlist[0];
+                const currentSource = selected?.source as "file" | "url" | "screen" | undefined;
+                
                 trackRoomActive(
                     roomId,
                     roomType,
                     isHost ? "host" : "guest",
                     participants.length,
-                    durationSec
+                    durationSec,
+                    currentSource
                 );
             }
         }, 120000); // Every 2 minutes (120 seconds)
 
         return () => clearInterval(interval);
-    }, [isJoined, roomId, roomType, isHost, participants.length]);
+    }, [isJoined, roomId, roomType, isHost, participants.length, roomState.playlist]);
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (isJoined && socket && roomId) {
-                // Track room left with duration
+                // Get current source from playlist before leaving
+                const playlist = roomState.playlist || [];
+                const selected = playlist.find((p) => p.selected) || playlist[0];
+                const currentSource = selected?.source as "file" | "url" | "screen" | undefined;
+
+                // Track room left with duration and source
                 if (joinTimeRef.current) {
                     const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
-                    trackRoomLeft(roomId, durationSec);
+                    trackRoomLeft(roomId, durationSec, currentSource);
                 }
                 socket.emit(SocketEvent.LEAVE_ROOM, { roomId });
             }
         };
-    }, [isJoined, socket, roomId]);
+    }, [isJoined, socket, roomId, roomState.playlist]);
 
     return (
         <RoomContext.Provider value={{

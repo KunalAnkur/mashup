@@ -310,12 +310,13 @@ export const trackRoomJoined = (
 };
 
 /** Track room left */
-export const trackRoomLeft = (roomId: string, durationSec: number) => {
+export const trackRoomLeft = (roomId: string, durationSec: number, source?: VideoSource) => {
   safeCapture("room_left", {
     room_id: roomId,
     duration_sec: durationSec,
+    source: source || "unknown", // Track which source was used before leaving
   });
-  logEvent("room_left", { room_id: roomId, duration_sec: durationSec });
+  logEvent("room_left", { room_id: roomId, duration_sec: durationSec, source: source || "unknown" });
 };
 
 /** Track active room (heartbeat) - sent periodically to track active rooms */
@@ -324,7 +325,8 @@ export const trackRoomActive = (
   roomType: RoomType,
   role: UserRole,
   participantsCount: number,
-  durationSec: number
+  durationSec: number,
+  source?: VideoSource
 ) => {
   const eventData = {
     room_id: roomId,
@@ -332,6 +334,7 @@ export const trackRoomActive = (
     role,
     participants_count: participantsCount,
     duration_sec: durationSec,
+    source: source || "unknown", // Track which source is being used: file, url, or screen
   };
 
   safeCapture("room_active", eventData);
