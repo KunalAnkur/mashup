@@ -8,6 +8,7 @@ import { RootState, store } from "@/lib/store";
 import { exitRoom, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
 import { showError } from "@/utils/toast";
+import { trackRoomJoined, trackRoomLeft } from "@/lib/analytics";
 
 export type RoomType = "stream" | "sync";
 export interface UserInfo {
@@ -89,6 +90,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const [roomClosed, setRoomClosed] = useState(false);
     const [joinResponse, setJoinResponse] = useState<JoinResponse | null>(null);
     const [participants, setParticipants] = useState<UserInfo[]>([]);
+    const joinTimeRef = useRef<number | null>(null); // Track when user joined for duration calculation
     // Sync roomType from Redux when it changes (e.g., from room info update)
     useEffect(() => {
         if (roomTypeFromState && roomTypeFromState !== roomType) {
@@ -155,6 +157,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setParticipants(response.users || []);
                 setHostLeft(false);
                 setRoomClosed(false);
+                
+                // Track room joined
+                joinTimeRef.current = Date.now();
+                trackRoomJoined(roomId, isHost ? "host" : "guest", response.users?.length);
             } else {
                 setIsJoined(false);
                 setJoinResponse(null);
@@ -211,6 +217,13 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const leaveRoom = useCallback(() => {
         if (!socket || !roomId) return;
+
+        // Track room left with duration
+        if (joinTimeRef.current) {
+            const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
+            trackRoomLeft(roomId, durationSec);
+            joinTimeRef.current = null;
+        }
 
         socket.emit(SocketEvent.LEAVE_ROOM, { roomId, room: roomState });
         setIsJoined(false);
@@ -373,10 +386,15 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         return () => {
             if (isJoined && socket && roomId) {
+                // Track room left with duration
+                if (joinTimeRef.current) {
+                    const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
+                    trackRoomLeft(roomId, durationSec);
+                }
                 socket.emit(SocketEvent.LEAVE_ROOM, { roomId });
             }
         };
-    }, []);
+    }, [isJoined, socket, roomId]);
 
     return (
         <RoomContext.Provider value={{

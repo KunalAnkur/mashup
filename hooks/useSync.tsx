@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { store } from "@/lib/store";
 import type { RootState } from "@/lib/store";
+import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
 
 interface UseSyncParams {
     playerRef: React.RefObject<ReactPlayer | null>;
@@ -49,6 +50,8 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
     const seekTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const initialSyncDoneRef = useRef(false);
     const isApplyingRemoteStateRef = useRef(false);
+    const videoStartedTrackedRef = useRef(false); // Track if video_started was already tracked
+    const syncStartedTrackedRef = useRef(false); // Track if sync_started was already tracked
 
     useEffect(() => {
         isPlayingRef.current = isPlaying;
@@ -58,6 +61,8 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
     useEffect(() => {
         initialSyncDoneRef.current = false;
         pendingSyncRef.current = null;
+        videoStartedTrackedRef.current = false;
+        syncStartedTrackedRef.current = false;
     }, [roomId]);
 
     // Build host state from Redux + player
@@ -102,6 +107,17 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
 
             setIsPlaying(syncState.playing);
             pendingSyncRef.current = null;
+            
+            // Track sync started (first time sync is applied successfully)
+            if (!syncStartedTrackedRef.current && roomId) {
+                const state = store.getState() as RootState;
+                const playlist = state.room.playlist || [];
+                const selected = playlist.find((p) => p.selected) || playlist[0];
+               
+                const latencyMs = drift > 0.5 ? Math.round(drift * 1000) : undefined;
+                trackSyncStarted(roomId, latencyMs);
+                syncStartedTrackedRef.current = true;
+            }
         },
         [playerRef, isHost, dispatch, enabled]
     );
@@ -146,6 +162,22 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             if (isApplyingRemoteStateRef.current && !isHost) return;
             setIsPlaying(true);
             isPlayingRef.current = true;
+
+            // Track video started (first time only)
+            if (!videoStartedTrackedRef.current && roomId) {
+                const state = store.getState() as RootState;
+                const playlist = state.room.playlist || [];
+                const selected = playlist.find((p) => p.selected) || playlist[0];
+                const source = (selected?.source || "url") as "file" | "url" | "screen";
+                trackVideoStarted(roomId, source, isHost);
+                videoStartedTrackedRef.current = true;
+                
+                // Track sync started for host (when host starts playing)
+                if (isHost && !syncStartedTrackedRef.current) {
+                    trackSyncStarted(roomId);
+                    syncStartedTrackedRef.current = true;
+                }
+            }
 
             if (socket && roomId && isHost) {
                 socket.emit(SocketEvent.ONPLAY, { roomId, videoState: getHostState() });
