@@ -142,6 +142,7 @@ const FileSelection = () => {
   };
 
   const handleAddFileClick = async () => {
+    console.log("flow test - handleAddFileClick called", { isPersistenceSupported });
     if (isPersistenceSupported) {
       try {
         setIsLoading(true);
@@ -180,8 +181,9 @@ const FileSelection = () => {
     const newFiles = e.target.files;
     if (newFiles && newFiles.length > 0 && fileInputRef.current) {
       const filesArray = Array.from(newFiles).map((f) => ({
-        id: `${f.name}-${f.lastModified}-${crypto.randomUUID()}`,
+        id: crypto.randomUUID(),
         selected: false,
+        onlyAudio: f.type.startsWith('audio/'),
         file: f as File,
       } as ExtendedFile));
 

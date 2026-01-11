@@ -190,6 +190,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
                     newFiles.push({
                         id: idx,
                         selected: false,
+                        onlyAudio: file.type.startsWith('audio/'),
                         file: file,
                     } as ExtendedFile);
                     // Save handle for persistence

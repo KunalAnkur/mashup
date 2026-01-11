@@ -35,7 +35,7 @@ const StreamFilesPage = () => {
       // For traditional file input, files won't persist (no handles)
       // Append new files to existing files instead of replacing
       const filesArray = Array.from(newFiles).map((f) => ({
-        id: `${f.name}-${f.lastModified}-${crypto.randomUUID()}`,
+        id: crypto.randomUUID(),
         selected: false,
         onlyAudio: false,
         file: f as File,

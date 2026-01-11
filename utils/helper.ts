@@ -272,7 +272,10 @@ interface ExtendedVideoElement extends HTMLVideoElement {
 export function captureStreamFromVideo(videoElement: HTMLVideoElement): MediaStream | null {
     // Cast to extended type to access browser-specific methods
     const extendedVideo = videoElement as ExtendedVideoElement;
-    
+    console.log(
+      "captureStreamFromVideo: Using canvas fallback",
+      {captureStream: extendedVideo.captureStream}
+    );
     // Try native captureStream first (Chrome/Edge/Safari)
     if (extendedVideo.captureStream) {
         try {
@@ -283,8 +286,11 @@ export function captureStreamFromVideo(videoElement: HTMLVideoElement): MediaStr
             console.warn("captureStreamFromVideo: captureStream() failed:", error);
         }
     }
-    
-    // Fallback for Firefox: use mozCaptureStream (older Firefox)
+    console.log(
+      "captureStreamFromVideo: Using canvas fallback",
+      {mozCaptureStream: extendedVideo.mozCaptureStream}
+    );
+    // // Fallback for Firefox: use mozCaptureStream (older Firefox)
     if (extendedVideo.mozCaptureStream) {
         try {
             const stream = extendedVideo.mozCaptureStream();
@@ -354,7 +360,9 @@ export function captureStreamFromVideo(videoElement: HTMLVideoElement): MediaStr
             }
         };
         (canvasStream as any)._canvas = canvas; // Keep canvas reference to prevent GC
-        
+        console.log("captureStreamFromVideo: Using canvas fallback", {
+          canvasStream,
+        });
         return canvasStream;
     } catch (error) {
         console.error("captureStreamFromVideo: Canvas fallback failed:", error);

@@ -679,6 +679,7 @@ const PlaylistTab = () => {
                 newFiles = fileList.map((f) => ({
                   id: crypto.randomUUID(),
                   selected: false,
+                  onlyAudio: f.type.startsWith('audio/'),
                   file: f,
                 })) as ExtendedFile[];
               }
