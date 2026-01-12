@@ -24,6 +24,7 @@ type AuthMethod = "google" | "google_one_tap" | "guest" | "email";
 type InAppSource = "landing" | "home" | "room_join" | "stream" | "sync" | "direct" | "invite_link";
 
 // External traffic sources (where they came from)
+// These are common sources, but we also support ANY dynamic source from UTM params
 type ExternalSource = 
   | "reddit" 
   | "tiktok" 
@@ -39,7 +40,8 @@ type ExternalSource =
   | "google_organic"
   | "referral"
   | "email_campaign"
-  | "blog";
+  | "blog"
+  | string; // Allow any dynamic source from UTM params
 
 export type SignupSource = InAppSource | ExternalSource | "unknown";
 
@@ -124,20 +126,31 @@ const getUTMParams = () => {
 
 /**
  * Automatically detect signup source from UTM params or referrer
- * Use this when you want to auto-detect external traffic source
+ * DYNAMIC: Supports ANY utm_source value, not just predefined ones
+ * 
+ * Priority:
+ * 1. UTM source (utm_source param) - most reliable
+ * 2. Referrer domain detection
+ * 3. Returns null if nothing found
  * 
  * @example
+ * // URL: ?utm_source=chatgpt → returns "chatgpt"
+ * // URL: ?utm_source=reddit → returns "reddit"  
+ * // URL: ?utm_source=my_custom_source → returns "my_custom_source"
  * trackSignup("google", detectSignupSource() || "direct")
  */
 export const detectSignupSource = (): SignupSource | null => {
   if (typeof window === "undefined") return null;
   
   const params = new URLSearchParams(window.location.search);
-  const utmSource = params.get("utm_source")?.toLowerCase();
+  const utmSource = params.get("utm_source");
   const referrer = document.referrer?.toLowerCase() || "";
   
-  // Check UTM source first (most reliable)
+  // PRIORITY 1: UTM source (most reliable - supports ANY value dynamically)
   if (utmSource) {
+    const normalizedSource = utmSource.toLowerCase().trim();
+    
+    // Map common variations to standardized names
     const sourceMap: Record<string, SignupSource> = {
       "reddit": "reddit",
       "tiktok": "tiktok",
@@ -159,25 +172,59 @@ export const detectSignupSource = (): SignupSource | null => {
       "newsletter": "email_campaign",
       "blog": "blog",
       "referral": "referral",
+      "chatgpt": "chatgpt",
+      "chat_gpt": "chatgpt",
+      "openai": "chatgpt",
     };
     
-    const detected = sourceMap[utmSource];
-    if (detected) return detected;
+    // If mapped, return standardized name
+    if (sourceMap[normalizedSource]) {
+      return sourceMap[normalizedSource];
+    }
+    
+    // DYNAMIC: If not in map, return the UTM source value as-is (normalized)
+    // This allows tracking ANY source dynamically (chatgpt, custom_source, etc.)
+    return normalizedSource;
   }
   
-  // Fallback: check referrer URL
+  // PRIORITY 2: Fallback to referrer domain detection
   if (referrer) {
-    if (referrer.includes("reddit.com")) return "reddit";
-    if (referrer.includes("tiktok.com")) return "tiktok";
-    if (referrer.includes("instagram.com")) return "instagram";
-    if (referrer.includes("twitter.com") || referrer.includes("x.com")) return "twitter";
-    if (referrer.includes("facebook.com") || referrer.includes("fb.com")) return "facebook";
-    if (referrer.includes("youtube.com") || referrer.includes("youtu.be")) return "youtube";
-    if (referrer.includes("linkedin.com")) return "linkedin";
-    if (referrer.includes("discord.com") || referrer.includes("discord.gg")) return "discord";
-    if (referrer.includes("producthunt.com")) return "producthunt";
-    if (referrer.includes("news.ycombinator.com")) return "hackernews";
-    if (referrer.includes("google.com")) return "google_organic";
+    // Extract domain from referrer
+    try {
+      const referrerUrl = new URL(referrer);
+      const domain = referrerUrl.hostname.replace("www.", "");
+      
+      // Map common domains
+      const domainMap: Record<string, SignupSource> = {
+        "reddit.com": "reddit",
+        "tiktok.com": "tiktok",
+        "instagram.com": "instagram",
+        "twitter.com": "twitter",
+        "x.com": "twitter",
+        "facebook.com": "facebook",
+        "fb.com": "facebook",
+        "youtube.com": "youtube",
+        "youtu.be": "youtube",
+        "linkedin.com": "linkedin",
+        "discord.com": "discord",
+        "discord.gg": "discord",
+        "producthunt.com": "producthunt",
+        "news.ycombinator.com": "hackernews",
+        "google.com": "google_organic",
+        "chat.openai.com": "chatgpt",
+        "openai.com": "chatgpt",
+      };
+      
+      if (domainMap[domain]) {
+        return domainMap[domain];
+      }
+      
+      // DYNAMIC: If domain not in map, return domain name as source
+      // This allows tracking ANY referrer domain dynamically
+      return domain.replace(/\./g, "_"); // Replace dots with underscores for cleaner tracking
+    } catch {
+      // Invalid referrer URL, skip
+    }
   }
   
   return null; // Could not detect
@@ -558,6 +605,57 @@ export const simulateSignup = (method: AuthMethod = "guest", source?: SignupSour
   console.groupEnd();
 };
 
+/**
+ * 🧪 TEST UTILITY: Generate test URLs with different sources
+ * Use this to test dynamic source tracking
+ * 
+ * @example
+ * // In browser console:
+ * window.generateTestUrls()
+ */
+export const generateTestUrls = () => {
+  const baseUrl = typeof window !== "undefined" 
+    ? window.location.origin 
+    : "http://localhost:3000";
+  
+  const testUrls = {
+    // Common sources
+    reddit: `${baseUrl}/?utm_source=reddit`,
+    tiktok: `${baseUrl}/?utm_source=tiktok`,
+    instagram: `${baseUrl}/?utm_source=instagram`,
+    twitter: `${baseUrl}/?utm_source=twitter`,
+    
+    // Dynamic sources (any value works!)
+    chatgpt: `${baseUrl}/?utm_source=chatgpt`,
+    custom_source: `${baseUrl}/?utm_source=my_custom_source`,
+    partner: `${baseUrl}/?utm_source=partner_name`,
+    
+    // With full UTM params
+    full_utm: `${baseUrl}/?utm_source=reddit&utm_medium=social&utm_campaign=launch`,
+    
+    // Multiple sources (first one wins)
+    multiple: `${baseUrl}/?utm_source=chatgpt&utm_medium=referral`,
+  };
+  
+  console.group("🔗 Test URLs for Dynamic Source Tracking");
+  console.log("\n📋 Copy these URLs and open in new tab to test:\n");
+  
+  Object.entries(testUrls).forEach(([name, url]) => {
+    console.log(`%c${name}:`, "font-weight: bold; color: #10b981", url);
+  });
+  
+  console.log("\n✅ How to test:");
+  console.log("1. Copy any URL above");
+  console.log("2. Open in new tab");
+  console.log("3. Sign up (or use simulateSignup in console)");
+  console.log("4. Check PostHog → signup_source should match utm_source");
+  console.log("\n💡 Dynamic sources (chatgpt, custom_source, etc.) will be tracked as-is!");
+  console.log("   No need to add them to code - they work automatically!");
+  console.groupEnd();
+  
+  return testUrls;
+};
+
 // ============ EXPORT ALL ============
 
 export const analytics = {
@@ -600,6 +698,7 @@ export const analytics = {
   testSignupTracking,
   simulateSignup,
   detectSignupSource,
+  generateTestUrls,
 };
 
 export default analytics;
