@@ -119,7 +119,7 @@ const ChatTab = () => {
   const [showReactions, setShowReactions] = useState(true);
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.auth.user);
@@ -202,7 +202,7 @@ const ChatTab = () => {
     if (result.success) {
       setMessageInput("");
       stopTyping();
-      if (inputRef.current) {
+      if (inputRef.current && inputRef.current instanceof HTMLTextAreaElement) {
         inputRef.current.style.height = "20px";
       }
     } else {
@@ -211,19 +211,24 @@ const ChatTab = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (!isMobile && e.key === "Enter" && !e.shiftKey) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    // When Send button is pressed, send message
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      e.stopPropagation();
       handleSendMessage();
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const value = e.target.value;
-    const lines = value.split("\n");
-
-    if (lines.length > 10) {
-      return;
+    
+    // For textarea (desktop), limit to 10 lines
+    if (!isMobile) {
+      const lines = value.split("\n");
+      if (lines.length > 10) {
+        return;
+      }
     }
 
     setMessageInput(value);
@@ -643,26 +648,39 @@ const ChatTab = () => {
             />
           </div>
         )}
-        <textarea
-          ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-          placeholder={isJoined ? "Send a message..." : "Connecting..."}
-          value={messageInput}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          disabled={!isJoined || isLoading}
-          rows={1}
-          enterKeyHint="send"
-          className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
-          style={{
-            minHeight: "20px",
-            maxHeight: "240px",
-          }}
-          onInput={(e) => {
-            const target = e.target as HTMLTextAreaElement;
-            target.style.height = "20px";
-            target.style.height = Math.min(target.scrollHeight, 240) + "px";
-          }}
-        />
+        {isMobile ? (
+          <input
+            ref={inputRef as React.RefObject<HTMLInputElement>}
+            type="text"
+            placeholder={isJoined ? "Send a message..." : "Connecting..."}
+            value={messageInput}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            disabled={!isJoined || isLoading}
+            enterKeyHint="send"
+            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          />
+        ) : (
+          <textarea
+            ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+            placeholder={isJoined ? "Send a message..." : "Connecting..."}
+            value={messageInput}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            disabled={!isJoined || isLoading}
+            rows={1}
+            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
+            style={{
+              minHeight: "20px",
+              maxHeight: "240px",
+            }}
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = "20px";
+              target.style.height = Math.min(target.scrollHeight, 240) + "px";
+            }}
+          />
+        )}
 
         {/* Reaction Toggle Button - Show only when input is empty */}
         {!messageInput.trim() && (
