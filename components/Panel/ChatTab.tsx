@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
+import { FaArrowCircleUp, FaSmile, FaHeart, FaRegHeart } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import { useChatContext } from "@/context/ChatContext";
 import { useSelector } from "react-redux";
@@ -24,7 +24,6 @@ const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
 
 // Generate consistent color for a username
 const getUserColor = (username: string | undefined | null) => {
-  // Default color if username is not provided
   const defaultColor = {
     gradient: "from-rose-400 via-pink-400 to-fuchsia-400",
     bg: "from-rose-500 via-pink-500 to-fuchsia-500",
@@ -34,7 +33,6 @@ const getUserColor = (username: string | undefined | null) => {
     return defaultColor;
   }
 
-  // Expanded color palette with more distinct colors for better user differentiation
   const colors = [
     {
       gradient: "from-rose-400 via-pink-400 to-fuchsia-400",
@@ -98,44 +96,32 @@ const getUserColor = (username: string | undefined | null) => {
     },
   ];
 
-  // Robust hash function to get consistent color for same username
-  // Normalize username to lowercase for consistency across all screens
   const normalizedUsername = username.toLowerCase().trim();
   let hash = 0;
   for (let i = 0; i < normalizedUsername.length; i++) {
     const char = normalizedUsername.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    hash = hash & hash;
   }
   return colors[Math.abs(hash) % colors.length];
 };
 
-// Check if message contains only emojis (no text)
 const isOnlyEmojis = (text: string): boolean => {
-  // Remove all emojis and whitespace, if nothing left = only emojis
   const emojiRegex = /[\p{Emoji}\p{Emoji_Component}]/gu;
   const textWithoutEmojis = text.replace(emojiRegex, "").replace(/\s/g, "");
   return textWithoutEmojis.length === 0 && text.trim().length > 0;
 };
 
-// Count number of emojis in text
-/* const countEmojis = (text: string): number => {
-  const emojiRegex = /[\p{Emoji}\p{Emoji_Component}]/gu;
-  const matches = text.match(emojiRegex);
-  return matches ? matches.length : 0;
-}; */
-
 const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);
+  const [showReactions, setShowReactions] = useState(true);
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  // Get user info from Redux
   const user = useSelector((state: RootState) => state.auth.user);
 
-  // Use chat context (shared with ReactionsContainer)
   const {
     messages,
     typingUsers,
@@ -148,7 +134,6 @@ const ChatTab = () => {
     isConnected,
   } = useChatContext();
 
-  // Default reactions
   const DEFAULT_REACTIONS: ReactionType[] = [
     "😍",
     "😡",
@@ -158,7 +143,6 @@ const ChatTab = () => {
     "🔥",
   ];
 
-  // Load pinned reactions from localStorage or use defaults
   const [pinnedReactions, setPinnedReactions] = useState<ReactionType[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("pinnedReactions");
@@ -167,28 +151,23 @@ const ChatTab = () => {
     return DEFAULT_REACTIONS;
   });
 
-  // Track which reaction was just clicked for animation
   const [animatingReaction, setAnimatingReaction] =
     useState<ReactionType | null>(null);
 
-  // Save pinned reactions to localStorage whenever they change
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("pinnedReactions", JSON.stringify(pinnedReactions));
     }
   }, [pinnedReactions]);
 
-  // Handle reaction pin/unpin
   const handleReactionsChange = (newReactions: ReactionType[]) => {
     setPinnedReactions(newReactions);
   };
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Close emoji picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -210,13 +189,10 @@ const ChatTab = () => {
     };
   }, [showEmojis]);
 
-  // Handle emoji selection from emoji-picker-react
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setMessageInput((prev) => prev + emojiData.emoji);
-    // Don't close the picker, allow multiple emojis
   };
 
-  // Handle sending message
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !isJoined) return;
 
@@ -224,35 +200,28 @@ const ChatTab = () => {
     if (result.success) {
       setMessageInput("");
       stopTyping();
-
-      // Reset textarea height after sending
       if (inputRef.current) {
         inputRef.current.style.height = "20px";
       }
     } else {
       console.error("Failed to send message:", result.error);
-      // Show toast notification for failed message
       showError("Failed to send message", result.error || "Please check your connection and try again.");
     }
   };
 
-  // Handle Enter key press
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
-    // Shift+Enter will create a new line (default behavior)
   };
 
-  // Handle input change with typing indicator and line limit
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     const lines = value.split("\n");
 
-    // Limit to 10 lines
     if (lines.length > 10) {
-      return; // Don't update if exceeds 10 lines
+      return;
     }
 
     setMessageInput(value);
@@ -263,44 +232,29 @@ const ChatTab = () => {
     }
   };
 
-  // Check if message is from current user
   const isCurrentUserMessage = (message: ChatMessage) => {
     if (!user) return false;
-
-    // Compare by email (most reliable)
     if (user.email && message.userEmail) {
       return user.email.toLowerCase() === message.userEmail.toLowerCase();
     }
-
-    // Compare by username/name
     const currentUserName = (user.name || user.username || "").toLowerCase();
     const messageName = (message.userName || "").toLowerCase();
-
     return currentUserName === messageName && currentUserName !== "";
   };
 
-  // Check if two messages are from the same user
   const isSameUser = (msg1: ChatMessage, msg2: ChatMessage): boolean => {
     if (!msg1 || !msg2) return false;
-
-    // System messages are never grouped with regular messages
     if (msg1.type === "system" || msg2.type === "system") return false;
-
-    // Compare by email (most reliable)
     if (msg1.userEmail && msg2.userEmail) {
       return msg1.userEmail.toLowerCase() === msg2.userEmail.toLowerCase();
     }
-
-    // Compare by userName
     const userName1 = (msg1.userName || "").toLowerCase();
     const userName2 = (msg2.userName || "").toLowerCase();
-    
     return userName1 === userName2 && userName1 !== "";
   };
 
   return (
     <div className="flex flex-col h-full w-full gap-2 md:gap-3 overflow-visible">
-      {/* Connection Status - Modern Design */}
       {!isConnected && (
         <div className="relative px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-yellow-500/20 rounded-lg md:rounded-xl overflow-hidden">
           <div className="relative flex items-center gap-1.5 md:gap-2">
@@ -325,7 +279,6 @@ const ChatTab = () => {
         </div>
       )}
 
-      {/* Chat Messages Area */}
       <div className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {messages.length === 0 && isJoined && !isLoading && (
           <div className="flex flex-col items-center justify-center h-full gap-2 md:gap-3">
@@ -340,40 +293,27 @@ const ChatTab = () => {
         )}
 
         {messages.map((msg, i) => {
-          if (!msg || !msg.message) {
-            return null;
-          }
+          if (!msg || !msg.message) return null;
 
           const userName = msg.userName || "Unknown User";
           const isCurrentUser = isCurrentUserMessage(msg);
           const isSystemMessage = msg.type === "system";
-          
-          // Check if previous message is from the same user (for grouping)
           const prevMessage = i > 0 ? messages[i - 1] : null;
           const isGroupedMessage = prevMessage && isSameUser(msg, prevMessage) && !isSystemMessage;
 
-            // System messages (user joined/left) - Modern Design
-            if (isSystemMessage) {
-            // Always use msg.userName first (which gets updated by useChat when USERNAME_UPDATED is received)
-            let displayName = userName; // msg.userName (already updated by useChat)
+          if (isSystemMessage) {
+            let displayName = userName;
 
-            // For current user's system messages, use current username from Redux
             if (isCurrentUser && user) {
               const currentUsername = user.username || user.name || "";
-              if (currentUsername) {
-                displayName = currentUsername;
-              }
+              if (currentUsername) displayName = currentUsername;
             }
-            
-            // Only fall back to email extraction if userName is missing or "Unknown User"
+
             if ((!displayName || displayName === "Unknown User") && msg.userEmail) {
               const emailUsername = msg.userEmail.split("@")[0];
-              if (emailUsername) {
-                displayName = emailUsername;
-              }
+              if (emailUsername) displayName = emailUsername;
             }
-            
-            // Final fallback: extract from message text
+
             if (!displayName || displayName === "Unknown User") {
               displayName = msg.message
                 .replace(" joined the chat", "")
@@ -381,13 +321,9 @@ const ChatTab = () => {
                 .trim();
             }
 
-            // Remove "Unknown User" prefix if it exists
             displayName = displayName.replace(/^Unknown User\s+/i, "");
-
-            // Generate color based on the displayed username (extracted from email)
             const userColor = getUserColor(displayName);
 
-            // Check if it's a join/leave message or a host control message
             const isJoinLeaveMessage =
               msg.message.includes("joined") || msg.message.includes("left");
             const isHostControlMessage =
@@ -396,34 +332,20 @@ const ChatTab = () => {
               msg.message.includes("resumed") ||
               msg.message.includes("seeked");
 
-            // For host control messages, replace host's username with "YOU" if it's the current user
             let displayMessage = msg.message;
             if (isHostControlMessage && user) {
-              // Get the first word from the message (which should be the username)
               const messageWords = displayMessage.split(" ");
               const firstWord = messageWords[0] || "";
 
-              // Get all possible variations of current user's identifiers (normalized to lowercase)
-              const currentUserName = (user.name || user.username || "")
-                .trim()
-                .toLowerCase();
+              const currentUserName = (user.name || user.username || "").trim().toLowerCase();
               const currentUserEmail = (user.email || "").trim().toLowerCase();
-              const emailUsername = currentUserEmail
-                ? currentUserEmail.split("@")[0].toLowerCase()
-                : "";
+              const emailUsername = currentUserEmail ? currentUserEmail.split("@")[0].toLowerCase() : "";
               const messageUserName = (msg.userName || "").trim().toLowerCase();
-              const messageUserEmail = (msg.userEmail || "")
-                .trim()
-                .toLowerCase();
-              const messageEmailUsername = messageUserEmail
-                ? messageUserEmail.split("@")[0].toLowerCase()
-                : "";
+              const messageUserEmail = (msg.userEmail || "").trim().toLowerCase();
+              const messageEmailUsername = messageUserEmail ? messageUserEmail.split("@")[0].toLowerCase() : "";
 
-              // Normalize first word for comparison
               const firstWordLower = firstWord.toLowerCase();
 
-              // Check if the first word matches ANY of the current user's identifiers
-              // This catches: name, username, email, email username, or message userName/email
               const matchesName =
                 currentUserName &&
                 (firstWordLower === currentUserName ||
@@ -441,14 +363,8 @@ const ChatTab = () => {
                 messageUserEmail &&
                 currentUserEmail === messageUserEmail;
 
-              // Also use the isCurrentUser check as a fallback
-              const isFromCurrentUser =
-                matchesName ||
-                matchesEmail ||
-                matchesFullEmail ||
-                isCurrentUser;
+              const isFromCurrentUser = matchesName || matchesEmail || matchesFullEmail || isCurrentUser;
 
-              // If it's from current user, replace first word with "YOU"
               if (isFromCurrentUser) {
                 messageWords[0] = "You";
                 displayMessage = messageWords.join(" ");
@@ -458,13 +374,10 @@ const ChatTab = () => {
             return (
               <div key={msg.id || i} className="flex justify-center py-1">
                 <div className="relative group">
-                  {/* Glow effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  {/* Notification badge */}
                   <div className="relative bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-full px-4 py-1.5">
                     <span className="text-white/80 text-xs font-medium">
                       {isJoinLeaveMessage ? (
-                        // Join/Leave messages: show username + action with icon
                         <>
                           <span className="inline-flex items-center gap-1">
                             <span className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}>
@@ -488,14 +401,10 @@ const ChatTab = () => {
                           </span>
                         </>
                       ) : isHostControlMessage ? (
-                        // Host control messages: show full message (with "YOU" if current user)
                         <span className="text-white/80">{displayMessage}</span>
                       ) : (
-                        // Fallback: show username + message
                         <>
-                          <span
-                            className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}
-                          >
+                          <span className={`font-semibold text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient}`}>
                             {displayName}
                           </span>{" "}
                           <span className="text-white/60">{msg.message}</span>
@@ -503,7 +412,6 @@ const ChatTab = () => {
                       )}
                     </span>
                   </div>
-                  {/* Timestamp for system notifications - shows on hover */}
                   <span className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-gray-500/60 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                     {formatChatTime(msg.timestamp)}
                   </span>
@@ -512,32 +420,19 @@ const ChatTab = () => {
             );
           }
 
-          // Regular user messages - Modern Design
           const onlyEmojis = isOnlyEmojis(msg.message);
-          const emojiSize = "text-4xl";
+          let displayUserName = userName;
 
-          // Always use msg.userName first (which gets updated by useChat when USERNAME_UPDATED is received)
-          // For current user's messages, also check Redux for the latest username
-          let displayUserName = userName; // msg.userName (already updated by useChat)
-          
           if (isCurrentUser) {
-            // Use current username from Redux for current user's messages (most up-to-date)
             const currentUsername = user?.username || user?.name || "";
-            if (currentUsername) {
-              displayUserName = currentUsername;
-            }
+            if (currentUsername) displayUserName = currentUsername;
           }
-          
-          // Only fall back to email extraction if userName is missing or "Unknown User"
+
           if ((!displayUserName || displayUserName === "Unknown User") && msg.userEmail) {
             const emailUsername = msg.userEmail.split("@")[0];
-            if (emailUsername) {
-              displayUserName = emailUsername;
-            }
+            if (emailUsername) displayUserName = emailUsername;
           }
 
-          // Generate color based on the displayed username (extracted from email)
-          // This ensures same username always gets same color across all screens
           const userColor = getUserColor(displayUserName);
 
           return (
@@ -546,13 +441,11 @@ const ChatTab = () => {
               className={`flex items-start gap-2 md:gap-3 group animate-fade-in ${isGroupedMessage ? "mt-0" : "mt-1"}`}
               style={{ animationDelay: `${i * 0.03}s` }}
             >
-              {/* Avatar - Modern Design (only show if not grouped) */}
               <div className={`relative flex-shrink-0 ${isGroupedMessage ? "w-8 md:w-10" : ""}`}>
                 {!isGroupedMessage && (
                   <div className="relative">
-                    {/* Glow effect on hover */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300`}></div>
-                    
+
                     {msg.userProfile ? (
                       <>
                         <img
@@ -560,7 +453,6 @@ const ChatTab = () => {
                           alt={displayUserName}
                           className="relative w-8 h-8 md:w-10 md:h-10 rounded-full object-cover shadow-xl border-2 border-white/20 ring-2 ring-white/5"
                           onError={(e) => {
-                            // Hide image and show fallback if image fails to load
                             const target = e.target as HTMLImageElement;
                             target.style.display = "none";
                             const fallback =
@@ -581,8 +473,7 @@ const ChatTab = () => {
                         {displayUserName.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    
-                    {/* Online status indicator */}
+
                     {!isCurrentUser && (
                       <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-3.5 md:h-3.5 bg-green-500 border-2 border-[#18181b] rounded-full shadow-lg">
                         <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
@@ -592,9 +483,7 @@ const ChatTab = () => {
                 )}
               </div>
 
-              {/* Message Content */}
               <div className="flex-1 min-w-0 flex flex-col gap-1 md:gap-1.5 items-start">
-                {/* Show username (only if not grouped) */}
                 {!isGroupedMessage && (
                   <div className="flex items-baseline gap-1.5 md:gap-2 min-w-0 w-full">
                     <span
@@ -606,7 +495,6 @@ const ChatTab = () => {
                   </div>
                 )}
 
-                {/* Emoji-only messages: No bubble, larger size with glow */}
                 {onlyEmojis ? (
                   <div className={`relative group/emoji ${isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"}`}>
                     <div className="relative inline-block">
@@ -615,30 +503,24 @@ const ChatTab = () => {
                         {msg.message}
                       </p>
                     </div>
-                    {/* Timestamp for emoji messages - bottom right */}
                     <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-0 group-hover/emoji:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                       {formatChatTime(msg.timestamp)}
                     </span>
                   </div>
                 ) : (
-                  /* Regular messages: Modern bubble with glassmorphism */
                   <div className="relative group/message w-full">
-                    {/* Glow effect */}
                     <div className={`absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-xl md:rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
-                    
-                    {/* Message bubble */}
+
                     <div
-                      className={`relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl ${
-                        isGroupedMessage
+                      className={`relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl ${isGroupedMessage
                           ? "rounded-lg md:rounded-xl mt-0"
                           : isCurrentUser
-                          ? "rounded-xl md:rounded-2xl rounded-tl-sm"
-                          : "rounded-xl md:rounded-2xl rounded-tl-sm"
-                      } ${
-                        isCurrentUser
+                            ? "rounded-xl md:rounded-2xl rounded-tl-sm"
+                            : "rounded-xl md:rounded-2xl rounded-tl-sm"
+                        } ${isCurrentUser
                           ? `bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 `
                           : "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 "
-                      }`}
+                        }`}
                     >
                       <p className="text-white/95 text-xs md:text-sm leading-relaxed break-words whitespace-pre-wrap font-medium">
                         {msg.message}
@@ -653,22 +535,12 @@ const ChatTab = () => {
             </div>
           );
         })}
-        {/* Typing Indicator - Different Design from Message Bubbles */}
         {typingUsers.length > 0 && (
           <div className="flex items-center gap-2 md:gap-2.5 px-2 md:px-3 py-1.5 md:py-2">
             <div className="relative flex items-center gap-0.5 md:gap-1">
-              <div
-                className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0s" }}
-              ></div>
-              <div
-                className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0.2s" }}
-              ></div>
-              <div
-                className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce"
-                style={{ animationDelay: "0.4s" }}
-              ></div>
+              <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
+              <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+              <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
             </div>
             <div className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-cyan-500/20 rounded-lg">
               <span className="text-cyan-300 text-[10px] md:text-xs font-medium">
@@ -683,47 +555,44 @@ const ChatTab = () => {
           </div>
         )}
 
-        {/* Scroll anchor */}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Reaction Buttons - Modern Design */}
-      <div className="relative flex items-center justify-center gap-2 md:gap-3">
-        {/* Pinned Reactions - Centered */}
-        {pinnedReactions.map((emoji) => (
-          <AnimatedReaction
-            key={emoji}
-            emoji={emoji}
-            isAnimating={animatingReaction === emoji}
-            disabled={!isJoined}
-            onClick={() => {
-              console.log("Reaction clicked:", emoji);
-              setAnimatingReaction(emoji);
-              sendReaction(emoji);
+      {/* Reaction Buttons - Collapsible with reduced spacing */}
+      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showReactions ? 'max-h-16 opacity-100 mb-0 md:mb-1' : 'max-h-0 opacity-0 mb-0'
+        }`}>
+        <div className="relative flex items-center justify-center gap-2 md:gap-3 pb-1 md:pb-2">
+          {pinnedReactions.map((emoji) => (
+            <AnimatedReaction
+              key={emoji}
+              emoji={emoji}
+              isAnimating={animatingReaction === emoji}
+              disabled={!isJoined}
+              onClick={() => {
+                console.log("Reaction clicked:", emoji);
+                setAnimatingReaction(emoji);
+                sendReaction(emoji);
 
-              // Reset animation after it completes
-              setTimeout(() => {
-                setAnimatingReaction(null);
-              }, 600); // Match the animation duration
-            }}
-          />
-        ))}
+                setTimeout(() => {
+                  setAnimatingReaction(null);
+                }, 600);
+              }}
+            />
+          ))}
 
-        {/* Divider */}
-        <div className="w-px h-6 md:h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+          <div className="w-px h-6 md:h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
 
-        {/* Reaction Picker Button - Positioned for proper alignment */}
-        <div className="relative">
-          <ReactionPicker
-            pinnedReactions={pinnedReactions}
-            onReactionsChange={handleReactionsChange}
-          />
+          <div className="relative">
+            <ReactionPicker
+              pinnedReactions={pinnedReactions}
+              onReactionsChange={handleReactionsChange}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Input Area - Modern Design */} 
+      {/* Input Area */}
       <div className="relative flex items-center gap-1 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl md:rounded-2xl px-2.5 md:px-3 py-1 md:py-1.5 shadow-2xl overflow-visible">
-        {/* Emoji Picker */}
         {showEmojis && (
           <div
             ref={emojiPickerRef}
@@ -783,38 +652,54 @@ const ChatTab = () => {
           className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
           style={{
             minHeight: "20px",
-            maxHeight: "240px", // ~10 lines (24px per line)
+            maxHeight: "240px",
           }}
           onInput={(e) => {
-            // Auto-resize textarea based on content
             const target = e.target as HTMLTextAreaElement;
             target.style.height = "20px";
             target.style.height = Math.min(target.scrollHeight, 240) + "px";
           }}
         />
+
+        {/* Reaction Toggle Button - Always Visible as requested */}
         <button
-          onClick={handleSendMessage}
-          disabled={!messageInput.trim() || !isJoined || isLoading}
-          className="relative p-1.5 md:p-2 rounded-lg md:rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+          onClick={() => setShowReactions(!showReactions)}
+          className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showReactions
+              ? "text-rose-400"
+              : "text-white/50 hover:text-rose-400"
+            }`}
+          title={showReactions ? "Hide reactions" : "Show reactions"}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-lg md:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <FaArrowCircleUp size={18} className="relative md:w-5 md:h-5" />
+          {showReactions ? (
+            <FaHeart size={16} className="relative md:w-[18px] md:h-[18px]" />
+          ) : (
+            <FaRegHeart size={16} className="relative md:w-[18px] md:h-[18px]" />
+          )}
         </button>
+
         <button
           data-emoji-button
           onClick={() => setShowEmojis(!showEmojis)}
-          className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${
-            showEmojis
+          className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showEmojis
               ? "text-pink-400"
               : "text-white/70 hover:text-pink-400"
-          }`}
+            }`}
         >
-          <div className={`absolute inset-0 rounded-lg md:rounded-xl transition-all duration-200 ${
-            showEmojis
+          <div className={`absolute inset-0 rounded-lg md:rounded-xl transition-all duration-200 ${showEmojis
               ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
               : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
-          }`}></div>
+            }`}></div>
           <FaSmile size={18} className="relative md:w-5 md:h-5" />
+        </button>
+
+        {/* Send Button - Hidden on mobile if empty, visible on desktop always */}
+        <button
+          onClick={handleSendMessage}
+          disabled={!messageInput.trim() || !isJoined || isLoading}
+          className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group ${!messageInput.trim() ? "hidden md:block" : "block"}`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-lg md:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <FaArrowCircleUp size={18} className="relative md:w-5 md:h-5" />
         </button>
       </div>
 
@@ -858,7 +743,6 @@ const ChatTab = () => {
           display: none;
         }
 
-        /* Skin tone picker custom styling */
         .epr-skin-tones {
           margin-right: 8px !important;
           margin-left: 10px !important;
@@ -870,8 +754,6 @@ const ChatTab = () => {
           margin-right: 8px !important;
         }
 
-        /* Responsive emoji picker styles */
-        /* Small screens (mobile: < 640px) */
         @media (max-width: 639px) {
           .emoji-picker-container {
             min-width: 100% !important;
@@ -893,7 +775,6 @@ const ChatTab = () => {
           }
         }
 
-        /* Medium screens (md: 768px) */
         @media (min-width: 640px) and (max-width: 767px) {
           .emoji-picker-container {
             min-width: 280px !important;
@@ -911,7 +792,6 @@ const ChatTab = () => {
           }
         }
 
-        /* Large screens (lg: 1024px) */
         @media (min-width: 768px) and (max-width: 1023px) {
           .emoji-picker-container {
             min-width: 300px !important;
@@ -929,7 +809,6 @@ const ChatTab = () => {
           }
         }
 
-        /* Extra large screens (xl: 1280px) */
         @media (min-width: 1024px) and (max-width: 1535px) {
           .emoji-picker-container {
             min-width: 320px !important;
@@ -947,9 +826,7 @@ const ChatTab = () => {
           }
         }
 
-        /* 2xl screens and above (1536px+) - keep original settings */
         @media (min-width: 1536px) {
-          /* Original 2xl styles are already applied in inline styles */
         }
       `}</style>
     </div>
