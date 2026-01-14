@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { FaArrowCircleUp, FaSmile, FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
+import { MdCelebration, MdOutlineCelebration } from "react-icons/md";
 import dynamic from "next/dynamic";
 import { useChatContext } from "@/context/ChatContext";
 import { useSelector } from "react-redux";
@@ -670,10 +671,17 @@ const ChatTab = () => {
             }`}
           title={showReactions ? "Hide reactions" : "Show reactions"}
         >
+          
           {showReactions ? (
-            <FaHeart size={16} className="relative md:w-[18px] md:h-[18px]" />
+            <MdOutlineCelebration
+              size={16}
+              className={`relative md:w-[18px] md:h-[18px]`}
+            />
           ) : (
-            <FaRegHeart size={16} className="relative md:w-[18px] md:h-[18px]" />
+              <MdCelebration
+                size={16}
+                className={`relative md:w-[18px] md:h-[18px]`}
+              />
           )}
         </button>
 
