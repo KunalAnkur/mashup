@@ -24,12 +24,12 @@ const SourceSelection = () => {
   // Navigate to stream - shows warning on mobile
   const handleOnUploadSelection = useCallback(() => {
     trackCTAClicked("stream");
-    if (isMobile) {
-      setShowMobileWarning(true);
-    } else {
+    // if (isMobile) {
+    //   setShowMobileWarning(true);
+    // } else {
       router.push("/stream");
-    }
-  }, [isMobile, router]);
+    // }
+  }, [ router]);
 
   // Navigate to sync - no warning needed (works on mobile)
   const handleOnURLSelection = useCallback(() => {
@@ -98,11 +98,11 @@ const SourceSelection = () => {
   return (
     <>
       {/* Mobile Warning Modal - Only for Stream */}
-      <MobileWarningModal
+      {/* <MobileWarningModal
         isOpen={showMobileWarning}
         onClose={() => setShowMobileWarning(false)}
         onContinue={handleMobileWarningContinue}
-      />
+      /> */}
       
       <div className="w-full h-full flex flex-col items-center justify-center bg-transparent px-4 py-6 overflow-y-auto overflow-x-hidden">
         <div className="w-full max-w-lg flex flex-col items-center gap-3 sm:gap-4 md:gap-5 my-auto">
