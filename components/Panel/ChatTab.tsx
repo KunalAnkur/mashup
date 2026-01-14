@@ -650,6 +650,7 @@ const ChatTab = () => {
           onKeyDown={handleKeyDown}
           disabled={!isJoined || isLoading}
           rows={1}
+          enterKeyHint="send"
           className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
           style={{
             minHeight: "20px",
@@ -662,28 +663,30 @@ const ChatTab = () => {
           }}
         />
 
-        {/* Reaction Toggle Button - Always Visible as requested */}
-        <button
-          onClick={() => setShowReactions(!showReactions)}
-          className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showReactions
-              ? "text-rose-400"
-              : "text-white/50 hover:text-rose-400"
-            }`}
-          title={showReactions ? "Hide reactions" : "Show reactions"}
-        >
-          
-          {showReactions ? (
-            <MdOutlineCelebration
-              size={16}
-              className={`relative md:w-[18px] md:h-[18px]`}
-            />
-          ) : (
-              <MdCelebration
+        {/* Reaction Toggle Button - Show only when input is empty */}
+        {!messageInput.trim() && (
+          <button
+            onClick={() => setShowReactions(!showReactions)}
+            className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showReactions
+                ? "text-rose-400"
+                : "text-white/50 hover:text-rose-400"
+              }`}
+            title={showReactions ? "Hide reactions" : "Show reactions"}
+          >
+            
+            {showReactions ? (
+              <MdOutlineCelebration
                 size={16}
                 className={`relative md:w-[18px] md:h-[18px]`}
               />
-          )}
-        </button>
+            ) : (
+                <MdCelebration
+                  size={16}
+                  className={`relative md:w-[18px] md:h-[18px]`}
+                />
+            )}
+          </button>
+        )}
 
         <button
           data-emoji-button
@@ -700,15 +703,17 @@ const ChatTab = () => {
           <FaSmile size={18} className="relative md:w-5 md:h-5" />
         </button>
 
-        {/* Send Button - Hidden on mobile if empty, visible on desktop always */}
-        <button
-          onClick={handleSendMessage}
-          disabled={!messageInput.trim() || !isJoined || isLoading}
-          className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group ${!messageInput.trim() ? "hidden md:block" : "block"}`}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-lg md:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <FaArrowCircleUp size={18} className="relative md:w-5 md:h-5" />
-        </button>
+        {/* Send Button - Show only when input has text */}
+        {messageInput.trim() && (
+          <button
+            onClick={handleSendMessage}
+            disabled={!isJoined || isLoading}
+            className="relative p-1.5 md:p-2 rounded-lg md:rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-lg md:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <FaArrowCircleUp size={18} className="relative md:w-5 md:h-5" />
+          </button>
+        )}
       </div>
 
       <style jsx global>{`
