@@ -13,6 +13,7 @@ import AnimatedReaction from "./AnimatedReaction";
 import ReactionPicker from "./ReactionPicker";
 import { showError } from "@/utils/toast";
 import { formatChatTime } from "@/utils/timeFormatter";
+import { isMobile } from "react-device-detect";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -211,7 +212,7 @@ const ChatTab = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (!isMobile && e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
