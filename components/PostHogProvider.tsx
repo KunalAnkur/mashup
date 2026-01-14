@@ -6,6 +6,7 @@ import { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { generateTestUrls, detectSignupSource, simulateSignup } from "@/lib/analytics/events";
 
 // ============ INITIALIZE POSTHOG ============
 
@@ -26,6 +27,17 @@ if (typeof window !== "undefined") {
           platform: "web",
           env: process.env.NODE_ENV,
         });
+        
+        // Add test utilities to window (dev only)
+        if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
+          (window as any).generateTestUrls = generateTestUrls;
+          (window as any).detectSignupSource = detectSignupSource;
+          (window as any).simulateSignup = simulateSignup;
+          console.log("🧪 Test utilities available:");
+          console.log("   - window.generateTestUrls() - Get test URLs");
+          console.log("   - window.detectSignupSource() - Check current source");
+          console.log("   - window.simulateSignup('guest', 'reddit') - Test signup");
+        }
         
         if (process.env.NODE_ENV === "development") {
           console.log("✅ PostHog initialized with global properties");
