@@ -184,7 +184,7 @@ const Page = () => {
             bg-zinc-800 overflow-hidden transition-all duration-300 ease-in-out
             ${roomState.settings.panelCollapsed 
               ? "hidden" 
-              : "flex flex-col h-[60vh] md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative"
+              : "flex flex-col h-[70vh] md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative"
             }
           `}
         >

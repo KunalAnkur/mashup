@@ -33,7 +33,7 @@ const SkeletonRoom = ({
           </div>
         </div>
 
-        <div className={`${glassCard} relative flex-1 min-h-[60vh]`}>
+        <div className={`${glassCard} relative flex-1 min-h-[70vh]`}>
           <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[inherit]" />
           <div className="relative flex h-full flex-col gap-6 p-8">
             <SkeletonBlock className="h-8 w-1/4 rounded-full" />
