@@ -366,33 +366,25 @@ const VideoPlayer = ({
         }
     }, [playing, url]);
 
-    // Listen for fullscreen changes (works for both container-based and video element fullscreen)
+    // Listen for fullscreen changes on mobile devices
     useEffect(() => {
+        if (!isMobile || !playerRef.current) return;
+
+        const videoElement = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
+        
+        if (!videoElement || !(videoElement instanceof HTMLVideoElement)) return;
+
         const handleFullscreenChange = () => {
-            // Check if container or video element is in fullscreen
-            const targetRef = fullscreenTargetRef || playerContainerRef;
-            const isContainerFullscreen = !!(
-                document.fullscreenElement === targetRef.current ||
-                (document as any).webkitFullscreenElement === targetRef.current ||
-                (document as any).mozFullScreenElement === targetRef.current ||
-                (document as any).msFullscreenElement === targetRef.current
+            // Check if video is in fullscreen
+            const iosVideo = videoElement as IOSVideoElement;
+            const isCurrentlyFullscreen = !!(
+                document.fullscreenElement ||
+                (document as any).webkitFullscreenElement ||
+                (document as any).mozFullScreenElement ||
+                (document as any).msFullscreenElement ||
+                iosVideo.webkitDisplayingFullscreen
             );
             
-            // Also check for video element fullscreen (fallback on mobile)
-            let isVideoFullscreen = false;
-            if (playerRef.current) {
-                const videoElement = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
-                if (videoElement && videoElement instanceof HTMLVideoElement) {
-                    const iosVideo = videoElement as IOSVideoElement;
-                    isVideoFullscreen = !!(
-                        document.fullscreenElement === videoElement ||
-                        (document as any).webkitFullscreenElement === videoElement ||
-                        iosVideo.webkitDisplayingFullscreen
-                    );
-                }
-            }
-            
-            const isCurrentlyFullscreen = isContainerFullscreen || isVideoFullscreen;
             setFullscreen(isCurrentlyFullscreen);
             onFullscreenChange?.(isCurrentlyFullscreen);
         };
@@ -403,53 +395,41 @@ const VideoPlayer = ({
         document.addEventListener('mozfullscreenchange', handleFullscreenChange);
         document.addEventListener('MSFullscreenChange', handleFullscreenChange);
         
-        // iOS specific - listen for webkitbeginfullscreen and webkitendfullscreen (fallback only)
-        if (isMobile && playerRef.current) {
-            const videoElement = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
-            if (videoElement && videoElement instanceof HTMLVideoElement) {
-                const handleWebkitBeginFullscreen = () => {
-                    setFullscreen(true);
-                    onFullscreenChange?.(true);
-                };
-                
-                const handleWebkitEndFullscreen = () => {
-                    setFullscreen(false);
-                    onFullscreenChange?.(false);
-                };
-                
-                videoElement.addEventListener('webkitbeginfullscreen', handleWebkitBeginFullscreen);
-                videoElement.addEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
-
-                return () => {
-                    document.removeEventListener('fullscreenchange', handleFullscreenChange);
-                    document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-                    document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-                    document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-                    videoElement.removeEventListener('webkitbeginfullscreen', handleWebkitBeginFullscreen);
-                    videoElement.removeEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
-                };
-            }
-        }
+        // iOS specific - listen for webkitbeginfullscreen and webkitendfullscreen
+        const handleWebkitBeginFullscreen = () => {
+            setFullscreen(true);
+            onFullscreenChange?.(true);
+        };
+        
+        const handleWebkitEndFullscreen = () => {
+            setFullscreen(false);
+            onFullscreenChange?.(false);
+        };
+        
+        videoElement.addEventListener('webkitbeginfullscreen', handleWebkitBeginFullscreen);
+        videoElement.addEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
 
         return () => {
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
             document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+            videoElement.removeEventListener('webkitbeginfullscreen', handleWebkitBeginFullscreen);
+            videoElement.removeEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
         };
-    }, [onFullscreenChange, playerRef, fullscreenTargetRef]);
+    }, [onFullscreenChange, playerRef]);
 
     return (
         // TODO: Need to check about the fullscreen if there is no external control for fullscreen
         <div
             ref={!fullscreenTargetRef ? playerContainerRef : undefined}
-            className={`flex items-center justify-center h-full ${fullscreen && !fullscreenTargetRef ? "fixed inset-0 z-50 bg-black" : ""
+            className={`flex items-center justify-center h-full ${fullscreen ? "fixed inset-0 z-50 bg-black" : ""
                 }`}
             onMouseMove={controls ? handleUserActivity : undefined}
             onMouseEnter={controls ? handleUserActivity : undefined}
         >
             <div
-                className={`${fullscreen && !fullscreenTargetRef ? "w-full h-full" : "h-full w-full"
+                className={`${fullscreen ? "w-full h-full" : "h-full w-full"
                     } relative overflow-hidden shadow-2xl ${className}`}
             >
                 <ReactPlayer
