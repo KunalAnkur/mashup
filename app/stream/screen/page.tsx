@@ -245,7 +245,7 @@ const ScreenSharePage = () => {
   }, [audioOnly, setMediaStream, stream]);
 
   const handleStartStreaming = useCallback(async () => {
-    if (!isStreamReady || !stream) return;
+    if (!stream) return;
 
     try {
       // Build a playlist entry for screen sharing
@@ -590,14 +590,14 @@ const ScreenSharePage = () => {
                   </div>
                 )}
 
-                {/* Start Sharing Button */}
-                {isStreamReady && (
+                {/* Start Sharing Button - Always show when stream exists */}
+                {stream && (
                   <div className="text-center">
                     <button
                       onClick={handleStartStreaming}
-                      disabled={isCreatingRoom || !isStreamReady}
+                      disabled={isCreatingRoom}
                       className={`w-full px-4 sm:px-6 md:px-8 py-3.5 sm:py-4 md:py-5 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg transition-all duration-200 text-white inline-flex items-center justify-center gap-2 sm:gap-3 ${
-                        isCreatingRoom || !isStreamReady
+                        isCreatingRoom
                           ? "bg-zinc-700/50 cursor-not-allowed opacity-50"
                           : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-500/30"
                       }`}
