@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { cookies } from "next/headers";
+import { defaultLocale, locales, isRtlLocale, type Locale } from "@/i18n/config";
+import { I18nProvider } from "@/i18n/I18nProvider";
 import * as constants from "../constants";
 import OrganizationSchema from "@/components/SEO/OrganizationSchema";
 import WebsiteSchema from "@/components/SEO/WebsiteSchema";
@@ -73,15 +76,31 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || 'G-KJN3WCKBHG';
+  
+  // Get locale from cookie, fallback to default
+  let locale: Locale = defaultLocale;
+  
+  try {
+    const cookieStore = await cookies();
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    
+    if (localeCookie?.value && locales.includes(localeCookie.value as Locale)) {
+      locale = localeCookie.value as Locale;
+    }
+  } catch {
+    // Use default if cookie read fails
+  }
+  
+  const isRtl = isRtlLocale(locale);
 
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang={locale} dir={isRtl ? "rtl" : "ltr"} data-scroll-behavior="smooth">
       <body
         className="font-parkinsans antialiased text-smoothWhite bg-primaryDark "
         suppressHydrationWarning
@@ -98,7 +117,9 @@ export default function RootLayout({
             { name: "Home", url: baseUrl },
           ]}
         />
-        <ClientRoot>{children}</ClientRoot>
+        <I18nProvider initialLocale={locale}>
+          <ClientRoot>{children}</ClientRoot>
+        </I18nProvider>
         {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>

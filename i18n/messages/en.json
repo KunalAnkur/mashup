@@ -1,0 +1,25 @@
+{
+  "home": {
+    "brand": "Movmash",
+    "createParty": "Create Party",
+    "createPartyDescription": "Start a new session by streaming content or syncing playback.",
+    "stream": "Stream",
+    "sync": "Sync",
+    "or": "or",
+    "joinParty": "Join Party",
+    "joinPartyDescription": "Enter a Room ID to join an existing session.",
+    "roomIdPlaceholder": "Room ID",
+    "join": "Join",
+    "joining": "Joining...",
+    "login": "Login",
+    "errors": {
+      "roomNotFound": "Room not found. Please check the Room ID.",
+      "networkError": "Network error. Please try again.",
+      "joinFailed": "Failed to join room. Please try again."
+    }
+  },
+  "language": {
+    "select": "Select Language",
+    "current": "Language"
+  }
+}

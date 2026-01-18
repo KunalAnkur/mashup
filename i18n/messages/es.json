@@ -1,0 +1,25 @@
+{
+  "home": {
+    "brand": "Movmash",
+    "createParty": "Crear Fiesta",
+    "createPartyDescription": "Inicia una nueva sesión transmitiendo contenido o sincronizando la reproducción.",
+    "stream": "Transmitir",
+    "sync": "Sincronizar",
+    "or": "o",
+    "joinParty": "Unirse a la Fiesta",
+    "joinPartyDescription": "Ingresa un ID de sala para unirte a una sesión existente.",
+    "roomIdPlaceholder": "ID de Sala",
+    "join": "Unirse",
+    "joining": "Uniéndose...",
+    "login": "Iniciar Sesión",
+    "errors": {
+      "roomNotFound": "Sala no encontrada. Por favor, verifica el ID de la sala.",
+      "networkError": "Error de red. Por favor, inténtalo de nuevo.",
+      "joinFailed": "Error al unirse a la sala. Por favor, inténtalo de nuevo."
+    }
+  },
+  "language": {
+    "select": "Seleccionar Idioma",
+    "current": "Idioma"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "home": {
+    "brand": "Movmash",
+    "createParty": "Parti Oluştur",
+    "createPartyDescription": "İçerik yayınlayarak veya oynatmayı senkronize ederek yeni bir oturum başlat.",
+    "stream": "Yayın",
+    "sync": "Senkron",
+    "or": "veya",
+    "joinParty": "Partiye Katıl",
+    "joinPartyDescription": "Mevcut bir oturuma katılmak için Oda ID'sini girin.",
+    "roomIdPlaceholder": "Oda ID",
+    "join": "Katıl",
+    "joining": "Katılınıyor...",
+    "login": "Giriş Yap",
+    "errors": {
+      "roomNotFound": "Oda bulunamadı. Lütfen Oda ID'sini kontrol edin.",
+      "networkError": "Ağ hatası. Lütfen tekrar deneyin.",
+      "joinFailed": "Odaya katılma başarısız. Lütfen tekrar deneyin."
+    }
+  },
+  "language": {
+    "select": "Dil Seçin",
+    "current": "Dil"
+  }
+}

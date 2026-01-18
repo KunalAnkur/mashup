@@ -4,7 +4,9 @@ import { RootState } from "@/lib/store";
 import AvatarDropdown from "@/components/UI/AvatarDropdown";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "@/i18n/I18nProvider";
 import LoginDropdown from "./LoginDropdown";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 type ProfileHeaderProps = {
   onLoginClick?: () => void;
@@ -16,6 +18,7 @@ const ProfileHeader = ({ onLoginClick }: ProfileHeaderProps) => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("home");
 
   // Check if we're on a page that should have fixed positioning
   const isFixedPage = pathname === "/" || pathname === "/not-found";
@@ -52,9 +55,11 @@ const ProfileHeader = ({ onLoginClick }: ProfileHeaderProps) => {
   
   // For stream/sync pages, it will be integrated into the header bar
   // For other pages, it should be fixed
+  // Note: Using explicit right positioning to keep components on right even for RTL languages
   if (isFixedPage) {
     return (
-      <div className="absolute top-4 right-4 z-50 flex items-center justify-end">
+      <div className="absolute top-4 right-4 z-50 flex items-center flex-row gap-3" style={{ direction: 'ltr' }}>
+        <LanguageSelector />
         {isAuthenticated ? (
           <AvatarDropdown size={40} />
         ) : (
@@ -63,7 +68,7 @@ const ProfileHeader = ({ onLoginClick }: ProfileHeaderProps) => {
               onClick={handleLoginClick}
               className="text-white text-sm font-medium hover:text-pink-400 transition-colors duration-200"
             >
-              Login
+              {t("login")}
             </button>
             {showLoginDropdown && (
               <LoginDropdown onClose={() => setShowLoginDropdown(false)} />
@@ -85,7 +90,7 @@ const ProfileHeader = ({ onLoginClick }: ProfileHeaderProps) => {
             onClick={handleLoginClick}
             className="text-white text-xs sm:text-sm font-medium hover:text-pink-400 transition-colors duration-200 px-2 py-1"
           >
-            Login
+            {t("login")}
           </button>
           {showLoginDropdown && (
             <LoginDropdown onClose={() => setShowLoginDropdown(false)} />
