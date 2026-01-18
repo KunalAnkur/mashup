@@ -16,14 +16,6 @@ function getBrowserLocale(): { locale: Locale; rawLang: string; langCode: string
   const languages = navigator.languages || [browserLang];
   const langCode = browserLang.toLowerCase().split('-')[0];
   
-  console.log('[i18n] Browser detection:', {
-    'navigator.language': navigator.language,
-    'navigator.languages': languages,
-    'extracted langCode': langCode,
-    'supported locales': locales,
-    'is supported': locales.includes(langCode as Locale),
-  });
-  
   // Check if browser language matches any supported locale
   if (locales.includes(langCode as Locale)) {
     return { locale: langCode as Locale, rawLang: browserLang, langCode };
@@ -45,51 +37,39 @@ function getBrowserLocale(): { locale: Locale; rawLang: string; langCode: string
  * Client-side component to detect and persist browser language
  */
 export default function LocalePersistence() {
-  const locale = useLocale();
   const hasRunRef = useRef(false);
+  
+  // Must call hook unconditionally
+  const locale = useLocale();
 
   useEffect(() => {
     // Only run once on mount
     if (hasRunRef.current) return;
     hasRunRef.current = true;
     
-    console.log('[i18n] LocalePersistence mounted');
-    console.log('[i18n] Current locale from context:', locale);
-    console.log('[i18n] Default locale:', defaultLocale);
-    
     // Small delay to ensure everything is loaded
     const timer = setTimeout(() => {
+      // Always detect browser language for logging (even if cookie exists)
+      const { locale: browserLocale, rawLang, langCode } = getBrowserLocale();
+      
       // Check if cookie exists
-      const allCookies = document.cookie;
-      const existingCookie = allCookies
+      const existingCookie = document.cookie
         .split('; ')
         .find(row => row.startsWith('NEXT_LOCALE='));
 
-      console.log('[i18n] All cookies:', allCookies);
-      console.log('[i18n] Existing NEXT_LOCALE cookie:', existingCookie);
-
       if (!existingCookie) {
-        // No cookie exists - detect browser language and set it
-        const { locale: browserLocale, rawLang, langCode } = getBrowserLocale();
-        
-        console.log('[i18n] No cookie found, detected browser locale:', {
-          browserLocale,
-          rawLang,
-          langCode,
-          currentLocale: locale,
-          willApply: browserLocale !== locale,
-        });
-        
-        // Set cookie if browser locale is different from current
-        if (browserLocale !== locale) {
-          console.log('[i18n] Setting cookie and reloading for locale:', browserLocale);
-          document.cookie = `NEXT_LOCALE=${browserLocale};path=/;max-age=31536000`;
-          window.location.reload();
-        } else {
-          console.log('[i18n] Browser locale matches current, no action needed');
-        }
+              // Always set cookie to browser locale on first visit (even if it matches default)
+        document.cookie = `NEXT_LOCALE=${browserLocale};path=/;max-age=31536000;SameSite=Lax`;
+        console.log('[i18n] 🔄 Reloading page to apply browser language...');
+        window.location.reload();
       } else {
-        console.log('[i18n] Cookie already exists, skipping detection');
+        // USER HAS SELECTED LANGUAGE: Cookie exists - use it (manual selection takes precedence)
+        const cookieLocale = existingCookie.split('=')[1].trim() as Locale;
+        console.log('[i18n] ✅ Cookie exists - User has selected a language');
+        console.log('[i18n] 🍪 Cookie locale (user selection):', cookieLocale);
+        console.log('[i18n] 🌐 Browser would prefer:', browserLocale);
+        console.log('[i18n] ✨ User selection takes precedence - keeping:', cookieLocale);
+        console.log('[i18n] 💡 To reset: Clear cookie or use incognito mode');
       }
     }, 100);
 

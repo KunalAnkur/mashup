@@ -41,9 +41,10 @@ const LanguageSelector = () => {
 
   const handleLanguageChange = (locale: Locale) => {
     startTransition(() => {
-      // Set locale cookie and reload page
-      document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=31536000`;
-      window.location.reload();
+      // Set locale cookie with 1 year expiration - this will persist user's manual selection
+      // SameSite=Lax ensures cookie works properly
+      document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=31536000;SameSite=Lax`;
+         window.location.reload();
     });
     setIsOpen(false);
   };
