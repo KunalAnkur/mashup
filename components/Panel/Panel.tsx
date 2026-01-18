@@ -13,6 +13,7 @@ import { RootState } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { AvatarDropdown } from "../UI";
 import Image from "next/image";
+import { isMobile } from "react-device-detect";
 import * as constants from "../../constants";
 // Added icons for tabs and new feedback icon
 import {
@@ -169,9 +170,10 @@ const Panel = () => {
         )}
 
         {/* ============================================== */}
-        {/* MOBILE VIEW (md:hidden) - Unified Compact Header */}
+        {/* MOBILE VIEW - Unified Compact Header (shown on mobile devices, even in landscape) */}
         {/* ============================================== */}
-        <div className="flex md:hidden items-center justify-between gap-2 mb-2 w-full">
+        {isMobile ? (
+        <div className="flex items-center justify-between gap-2 mb-2 w-full">
           {/* Left: Logo */}
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50"></div>
@@ -235,11 +237,13 @@ const Panel = () => {
             </div>
           </div>
         </div>
+        ) : null}
 
 
         {/* ============================================== */}
-        {/* DESKTOP VIEW (hidden md:flex) - Original Layout */}
+        {/* DESKTOP VIEW - Original Layout (hidden on mobile devices, shown on desktop) */}
         {/* ============================================== */}
+        {!isMobile ? (
         <div className="hidden md:flex flex-col gap-4 mb-2">
           {/* Header Row */}
           <div className="flex items-center justify-between">
@@ -361,6 +365,7 @@ const Panel = () => {
             })}
           </div>
         </div>
+        ) : null}
 
         {/* Content Area (Shared) */}
         <div className="flex-1 overflow-hidden pt-2 md:pt-4">
