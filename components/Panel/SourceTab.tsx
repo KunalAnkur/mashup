@@ -2,9 +2,12 @@
 
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 const SourceTab = () => {
     const { setStream } = useMediaStreamContext();
+    const tToast = useTranslations("toast");
+    const tStream = useTranslations("stream");
     const handleShareScreen = async () => {
         try {
             const mediaStream = await navigator.mediaDevices.getDisplayMedia({
@@ -20,7 +23,7 @@ const SourceTab = () => {
             });
             setStream(mediaStream);
         } catch (err) {
-            showError("Screen sharing failed", "Please check your browser permissions and try again.");
+            showError(tToast("screenSharingFailed"), tToast("checkPermissions"));
         }
     };
     return (
@@ -34,14 +37,14 @@ const SourceTab = () => {
                             </svg>
                         </div>
                         <div>
-                            <h3 className="text-white font-semibold text-lg mb-2">Screen Sharing</h3>
-                            <p className="text-white/60 text-sm">Share your screen to stream content to the room</p>
+                            <h3 className="text-white font-semibold text-lg mb-2">{tStream("screenShare")}</h3>
+                            <p className="text-white/60 text-sm">{tStream("screenShareDescription")}</p>
                         </div>
                         <button
                             className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-purple-500/25"
                             onClick={handleShareScreen}
                         >
-                            Share Screen
+                            {tStream("screenShare")}
                         </button>
                     </div>
                 </div>

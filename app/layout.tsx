@@ -13,6 +13,9 @@ import ClientRoot from "./ClientRoot";
 
 const baseUrl = constants.seo.SITE_URL;
 
+// Force dynamic rendering to ensure cookies are read on every request
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
@@ -90,13 +93,21 @@ export default async function RootLayout({
     const cookieStore = await cookies();
     const localeCookie = cookieStore.get('NEXT_LOCALE');
     
+    console.log('[layout.tsx] Server-side cookie check:');
+    console.log('[layout.tsx] - localeCookie:', localeCookie);
+    console.log('[layout.tsx] - localeCookie value:', localeCookie?.value);
+    
     if (localeCookie?.value && locales.includes(localeCookie.value as Locale)) {
       locale = localeCookie.value as Locale;
+      console.log('[layout.tsx] - Using cookie locale:', locale);
+    } else {
+      console.log('[layout.tsx] - Using default locale:', locale);
     }
-  } catch {
-    // Use default if cookie read fails
+  } catch (error) {
+    console.log('[layout.tsx] - Cookie read error:', error);
   }
   
+  console.log('[layout.tsx] Final locale:', locale);
   const isRtl = isRtlLocale(locale);
 
   return (

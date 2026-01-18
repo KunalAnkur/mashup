@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "@/i18n/I18nProvider";
 import {
   SupportedPlatformsGrid,
   UrlInputSection,
@@ -18,6 +19,7 @@ const SyncPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
+  const t = useTranslations("sync");
 
   const {
     sourceUrlInput,
@@ -106,7 +108,7 @@ const SyncPage = () => {
 
       {/* Content - Above Background */}
       <div className="relative z-20 w-full h-screen flex flex-col overflow-hidden">
-        <PageHeader title="Enter Source URL" onBack={handleBack} />
+        <PageHeader title={t("title")} onBack={handleBack} />
 
         {/* Content - Top aligned on mobile, centered on desktop */}
         <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">

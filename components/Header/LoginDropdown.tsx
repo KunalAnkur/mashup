@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { ImSpinner2 } from "react-icons/im";
 import { showError, showSuccess } from "@/utils/toast";
 import { trackLogin, trackSignup } from "@/lib/analytics";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 type LoginDropdownProps = {
   onClose?: () => void;
@@ -21,6 +22,8 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
   const [authProvider] = useAuthProviderMutation();
   const [continueAsGuest, { isLoading: isGuestLoading }] = useContinueAsGuestMutation();
   const [isGuestProcessing, setIsGuestProcessing] = useState(false);
+  const tToast = useTranslations("toast");
+  const tCommon = useTranslations("common");
 
   const handleGoogleAuthSuccess = async (userInfo: any) => {
     try {
@@ -56,7 +59,7 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
       const response = await continueAsGuest().unwrap();
       dispatch(setUser(response));
       trackSignup("guest", "home"); // Auto-detects external source (reddit, tiktok, etc.) or falls back to "home"
-      showSuccess("Welcome! You're now signed in as a guest");
+      showSuccess(tToast("welcomeGuest"));
       if (onClose) onClose();
     } catch (error: any) {
       console.error("Guest signup failed:", error);
@@ -72,7 +75,7 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
       <div className="flex flex-col gap-3">
         {/* Google Button */}
         <GoogleButton
-          name="Continue with Google"
+          name={tCommon("continueWithGoogle")}
           onSuccess={handleGoogleAuthSuccess}
           onError={() => {
             console.log("Google authentication failed");
@@ -82,13 +85,13 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
         {/* Separator */}
         <div className="flex items-center gap-2">
           <div className="flex-1 h-px bg-zinc-600/15"></div>
-          <span className="text-xs text-white/50">or</span>
+          <span className="text-xs text-white/50">{tCommon("or")}</span>
           <div className="flex-1 h-px bg-zinc-600/15"></div>
         </div>
 
         {/* Continue as Guest Button */}
         <Button
-          name={isGuestProcessing || isGuestLoading ? "Creating account..." : "Continue as Guest"}
+          name={isGuestProcessing || isGuestLoading ? tCommon("creatingAccount") : tCommon("continueAsGuest")}
           icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
           className="w-full py-3 rounded-xl bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-xl border border-zinc-600/10 hover:from-purple-600/15 hover:via-pink-600/15 hover:to-fuchsia-600/15 hover:border-purple-500/25 text-white text-sm px-4 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleContinueAsGuest}

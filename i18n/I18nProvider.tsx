@@ -59,22 +59,37 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
+  console.log('[I18nProvider] Initializing with initialLocale:', initialLocale);
+  
   const [locale, setLocaleState] = useState<Locale>(initialLocale || defaultLocale);
   const [messages, setMessages] = useState<Messages>(messagesByLocale[initialLocale || defaultLocale]);
 
-  // TEMPORARILY DISABLED - This was causing re-renders that might affect modal state
-  // The server already reads locale from cookie in layout.tsx and passes initialLocale
-  // useEffect(() => {
-  //   const cookies = document.cookie.split(";");
-  //   const localeCookie = cookies.find((c) => c.trim().startsWith("NEXT_LOCALE="));
-  //   if (localeCookie) {
-  //     const value = localeCookie.split("=")[1] as Locale;
-  //     if (locales.includes(value) && value !== locale) {
-  //       setLocaleState(value);
-  //       setMessages(messagesByLocale[value]);
-  //     }
-  //   }
-  // }, []);
+  // Read locale from cookie on mount (client-side only)
+  // Sync with cookie if it differs from current state (e.g., if cookie was set after initial render)
+  useEffect(() => {
+    console.log('[I18nProvider] useEffect running, checking cookies...');
+    const cookies = document.cookie.split(";");
+    console.log('[I18nProvider] All cookies:', document.cookie);
+    const localeCookie = cookies.find((c) => c.trim().startsWith("NEXT_LOCALE="));
+    console.log('[I18nProvider] Found locale cookie:', localeCookie);
+    
+    if (localeCookie) {
+      const value = localeCookie.split("=")[1].trim() as Locale;
+      console.log('[I18nProvider] Cookie value:', value, 'Current locale:', locale);
+      // Update if cookie value is valid and different from current locale state
+      // This ensures client-side state matches cookie even if server-side initialLocale was different
+      if (locales.includes(value) && value !== locale) {
+        console.log('[I18nProvider] Updating locale from', locale, 'to', value);
+        setLocaleState(value);
+        setMessages(messagesByLocale[value]);
+      } else {
+        console.log('[I18nProvider] No update needed, locale matches or invalid');
+      }
+    } else {
+      console.log('[I18nProvider] No NEXT_LOCALE cookie found');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   const setLocale = useCallback((newLocale: Locale) => {
     if (locales.includes(newLocale)) {

@@ -47,31 +47,35 @@ export default function LocalePersistence() {
     if (hasRunRef.current) return;
     hasRunRef.current = true;
     
-    // Small delay to ensure everything is loaded
-    const timer = setTimeout(() => {
-      // Always detect browser language for logging (even if cookie exists)
-      const { locale: browserLocale, rawLang, langCode } = getBrowserLocale();
-      
-      // Check if cookie exists
-      const existingCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('NEXT_LOCALE='));
+    // Check if cookie exists BEFORE any delay
+    const existingCookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('NEXT_LOCALE='));
 
-      if (!existingCookie) {
-              // Always set cookie to browser locale on first visit (even if it matches default)
-        document.cookie = `NEXT_LOCALE=${browserLocale};path=/;max-age=31536000;SameSite=Lax`;
-        console.log('[i18n] 🔄 Reloading page to apply browser language...');
+    // If cookie exists, user has already selected a language - don't reload
+    if (existingCookie) {
+      const cookieLocale = existingCookie.split('=')[1].trim() as Locale;
+      console.log('[i18n] ✅ Cookie exists - User has selected a language:', cookieLocale);
+      return; // Early return - no reload needed
+    }
+
+    // Cookie doesn't exist - set it to browser locale
+    // Use a longer delay to ensure page is fully loaded and no modals are open
+    const timer = setTimeout(() => {
+      const { locale: browserLocale } = getBrowserLocale();
+      document.cookie = `NEXT_LOCALE=${browserLocale};path=/;max-age=31536000;SameSite=Lax`;
+      console.log('[i18n] 🔄 Setting browser locale cookie and reloading...');
+      // Only reload if we're not in the middle of user interaction
+      // Check if any modal is open by checking for common modal classes or z-index overlay
+      const hasOpenModal = document.querySelector('.logout-modal, .feedback-modal, .leave-modal, [role="dialog"]');
+      console.log('[i18n] Modal check result:', hasOpenModal);
+      if (!hasOpenModal) {
+        console.log('[i18n] No modal detected, reloading...');
         window.location.reload();
       } else {
-        // USER HAS SELECTED LANGUAGE: Cookie exists - use it (manual selection takes precedence)
-        const cookieLocale = existingCookie.split('=')[1].trim() as Locale;
-        console.log('[i18n] ✅ Cookie exists - User has selected a language');
-        console.log('[i18n] 🍪 Cookie locale (user selection):', cookieLocale);
-        console.log('[i18n] 🌐 Browser would prefer:', browserLocale);
-        console.log('[i18n] ✨ User selection takes precedence - keeping:', cookieLocale);
-        console.log('[i18n] 💡 To reset: Clear cookie or use incognito mode');
+        console.log('[i18n] ⏸️ Modal is open, skipping reload to preserve user state');
       }
-    }, 100);
+    }, 1000); // Longer delay to avoid interfering with modals
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps

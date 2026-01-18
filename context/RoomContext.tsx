@@ -8,6 +8,7 @@ import { RootState, store } from "@/lib/store";
 import { exitRoom, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
 import { showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomJoined, trackRoomLeft, trackRoomActive } from "@/lib/analytics";
 
 export type RoomType = "stream" | "sync";

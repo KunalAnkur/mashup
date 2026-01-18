@@ -8,6 +8,7 @@ import { LuLock } from "react-icons/lu";
 import { useUpdateRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useRoomContext } from "@/context/RoomContext";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 const PlaylistTab = () => {
     const dispatch = useDispatch();
@@ -17,6 +18,7 @@ const PlaylistTab = () => {
     const [updateRoomByRoomId] = useUpdateRoomByRoomIdMutation();
     const { broadcastPlaylist } = useRoomContext();
     const isHost = roomState.host;
+    const t = useTranslations("panel.playlist");
 
     useEffect(() => {
         setPlaylist(playlistState);
@@ -67,15 +69,15 @@ const PlaylistTab = () => {
         <div className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-3 md:mb-4 px-1">
                 <div className="flex items-center gap-1.5 md:gap-2">
-                    <h3 className="text-white font-semibold text-xs md:text-sm">Playlist</h3>
+                    <h3 className="text-white font-semibold text-xs md:text-sm">{t("title")}</h3>
                     <span className="text-gray-500 text-[10px] md:text-xs">
-                        ({playlist.length} {playlist.length === 1 ? "item" : "items"})
+                        ({playlist.length} {playlist.length === 1 ? t("item") : t("items")})
                     </span>
                 </div>
                 {!isHost && (
                     <div className="flex items-center gap-1 md:gap-1.5 text-[10px] md:text-xs text-gray-500">
                         <LuLock size={10} />
-                        <span className="hidden sm:inline">Host controls</span>
+                        <span className="hidden sm:inline">{t("hostControls")}</span>
                     </div>
                 )}
             </div>

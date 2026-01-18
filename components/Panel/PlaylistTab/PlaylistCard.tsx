@@ -7,6 +7,7 @@ import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 import { useFileContext } from "@/context/FileContext";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist } from "@/types/storeTypes";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 
 interface PlaylistCardProps {
@@ -38,6 +39,8 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
     const isClickable = source !== "screen" && host;
     const { files, getThumbnail } = useFileContext();
     const { screenType, stream, handleStopScreenSharing } = useMediaStreamContext();
+    const t = useTranslations("panel.playlist");
+    const tStream = useTranslations("stream");
     const handleClick = () => {
         if (isClickable && onSelect) {
             onSelect(content.id, source);
@@ -176,7 +179,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                             </p>
                             {isPlaying && (
                                 <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                                    Playing
+                                    {t("playing")}
                                 </span>
                             )}
                         </div>
@@ -207,7 +210,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                         </p>
                         {isPlaying && (
                             <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                                Playing
+                                {t("playing")}
                             </span>
                         )}
                     </div>
@@ -219,7 +222,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
         }
 
         if (source === "screen") {
-            const platformName = metadata?.title || "Screen Share";
+            const platformName = metadata?.title || tStream("screenShare");
             return (
                 <>
                     <div className="flex items-center gap-1.5 md:gap-2">
@@ -231,11 +234,11 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                         </p>
                         {isPlaying && (
                             <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                                Streaming
+                                {t("streaming")}
                             </span>
                         )}
                     </div>
-                    <p className="text-gray-500 text-[9px] md:text-[10px] truncate">Screen sharing active</p>
+                    <p className="text-gray-500 text-[9px] md:text-[10px] truncate">{t("screenSharingActive")}</p>
                 </>
             );
         }
@@ -255,12 +258,12 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                         </p>
                         {isPlaying && (
                             <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                                Playing
+                                {t("playing")}
                             </span>
                         )}
                     </div>
                     <p className="text-gray-500 text-[9px] md:text-[10px] truncate">
-                        {file.size ? `${formatFileSize(file.size)} • ` : ""}Local file
+                        {file.size ? `${formatFileSize(file.size)} • ` : ""}{t("localFile")}
                     </p>
                 </>
             );

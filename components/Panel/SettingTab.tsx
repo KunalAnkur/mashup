@@ -15,6 +15,7 @@ import { showError, showSuccess } from "@/utils/toast";
 import { useRoomContext } from "@/context/RoomContext";
 import { validateUsername } from "@/utils/validation";
 import { trackRoomLinkCopied } from "@/lib/analytics";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 const SettingTab = () => {
   const host = useSelector((state: RootState) => state.room.host);
@@ -24,6 +25,9 @@ const SettingTab = () => {
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const [updateRoom] = useUpdateRoomMutation();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+  const t = useTranslations("panel.settings");
+  const tToast = useTranslations("toast");
+  const tCommon = useTranslations("common");
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -77,10 +81,10 @@ const SettingTab = () => {
         body: { name: roomName },
       }).unwrap();
       setIsEditingName(false);
-      showSuccess("Room name updated successfully");
+      showSuccess(tToast("roomNameUpdated"));
     } catch (error) {
       console.error("Failed to rename room:", error);
-      showError("Failed to rename room", "Please try again. Make sure you have a stable internet connection.");
+      showError(tToast("failedToRename"), tToast("tryAgain"));
     } finally {
       setIsSavingName(false);
     }
@@ -101,12 +105,12 @@ const SettingTab = () => {
 
   const handleUpdateProfile = async () => {
     if (!authState.user?.id) {
-      showError("Error", "User not found. Please log in again.");
+      showError(tCommon("error"), tToast("userNotFound"));
       return;
     }
 
     if (!name.trim() || !username.trim()) {
-      showError("Validation error", "Please fill in name and username.");
+      showError(tToast("validationError"), tToast("fillFields"));
       return;
     }
 
@@ -114,7 +118,7 @@ const SettingTab = () => {
     const usernameValidation = validateUsername(username);
     if (!usernameValidation.valid) {
       setUsernameError(usernameValidation.error || "");
-      showError("Invalid username", usernameValidation.error || "Please enter a valid username.");
+      showError(tToast("invalidUsername"), usernameValidation.error || tToast("enterValidUsername"));
       return;
     }
 
@@ -148,7 +152,7 @@ const SettingTab = () => {
 
       await updateUserName(result.data?.username || username.trim(), result.data?.name || name.trim(), result.data?.picture || authState.user?.profile || "");
 
-      showSuccess("Profile updated successfully");
+      showSuccess(tToast("profileUpdated"));
       setIsEditingProfile(false);
     } catch (error: any) {
       console.error("Failed to update profile:", error);
@@ -157,10 +161,10 @@ const SettingTab = () => {
       // Check if it's a username already exists error
       if (errorMessage.toLowerCase().includes("username already exists") ||
         errorMessage.toLowerCase().includes("already exists")) {
-        setUsernameError("This username is already taken. Please choose a different one.");
+        setUsernameError(tToast("usernameTaken"));
       }
 
-      showError("Update failed", errorMessage);
+      showError(tToast("updateFailed"), errorMessage);
     }
   };
 
@@ -177,7 +181,7 @@ const SettingTab = () => {
               <LuUser className="text-purple-400" size={14} />
             </div>
             <h3 className="text-white font-semibold text-xs md:text-sm font-parkinsans">
-              Profile Settings
+              {t("profileSettings")}
             </h3>
           </div>
 
@@ -185,26 +189,26 @@ const SettingTab = () => {
           <div className="space-y-2.5 md:space-y-3">
             {/* Name Field */}
             <div className="space-y-1 md:space-y-1.5">
-              <label className="text-[10px] md:text-xs text-white/70 font-medium">Name</label>
+              <label className="text-[10px] md:text-xs text-white/70 font-medium">{t("name")}</label>
               {isEditingProfile ? (
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg text-white text-xs md:text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-colors"
-                  placeholder="Enter your name"
+                  placeholder={t("enterName")}
                   disabled={isUpdatingProfile}
                 />
               ) : (
                 <div className="px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
-                  <p className="text-white text-xs md:text-sm">{name || "Not set"}</p>
+                  <p className="text-white text-xs md:text-sm">{name || t("notSet")}</p>
                 </div>
               )}
             </div>
 
             {/* Username Field */}
             <div className="space-y-1 md:space-y-1.5">
-              <label className="text-[10px] md:text-xs text-white/70 font-medium">Username</label>
+              <label className="text-[10px] md:text-xs text-white/70 font-medium">{t("username")}</label>
               {isEditingProfile ? (
                 <div className="space-y-1">
                   <input
@@ -231,19 +235,19 @@ const SettingTab = () => {
                         ? "focus:ring-red-500/50 border-red-500/30" 
                         : "focus:ring-purple-500/50 border-zinc-600/15"
                     }`}
-                    placeholder="Enter your username (letters, numbers, underscores only)"
+                    placeholder={t("enterUsername")}
                     disabled={isUpdatingProfile}
                   />
                   {usernameError && (
                     <p className="text-red-400 text-[10px] md:text-xs font-medium px-1">{usernameError}</p>
                   )}
                   {!usernameError && username.trim() && (
-                    <p className="text-white/50 text-[10px] md:text-xs px-1">Username can only contain letters, numbers, and underscores</p>
+                    <p className="text-white/50 text-[10px] md:text-xs px-1">{t("usernameRules")}</p>
                   )}
                 </div>
               ) : (
                 <div className="px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
-                  <p className="text-white text-xs md:text-sm">{username || "Not set"}</p>
+                  <p className="text-white text-xs md:text-sm">{username || t("notSet")}</p>
                 </div>
               )}
             </div>
@@ -252,13 +256,13 @@ const SettingTab = () => {
             <div className="space-y-1 md:space-y-1.5">
               <label className="text-[10px] md:text-xs text-white/70 font-medium flex items-center gap-1">
                 <LuMail size={10} />
-                Email Address
+                {t("emailAddress")}
               </label>
               <div className="px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg min-w-0">
-                <p className="text-white text-xs md:text-sm truncate" title={email || "Not set"}>
-                  {email || "Not set"}
+                <p className="text-white text-xs md:text-sm truncate" title={email || t("notSet")}>
+                  {email || t("notSet")}
                 </p>
-                <p className="text-white/50 text-[10px] md:text-xs mt-1">Email cannot be changed</p>
+                <p className="text-white/50 text-[10px] md:text-xs mt-1">{t("emailCannotBeChanged")}</p>
               </div>
             </div>
           </div>
@@ -278,14 +282,14 @@ const SettingTab = () => {
                 className="flex-1 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs md:text-sm font-medium rounded-lg transition-all duration-200"
                 disabled={isUpdatingProfile}
               >
-                Cancel
+                {tCommon("cancel")}
               </button>
               <button
                 onClick={handleUpdateProfile}
                 disabled={isUpdatingProfile || !name.trim() || !username.trim() || !!usernameError}
                 className="flex-1 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-xs md:text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                {isUpdatingProfile ? tCommon("saving") : t("saveChanges")}
               </button>
             </div>
           ) : (
@@ -294,7 +298,7 @@ const SettingTab = () => {
               className="w-full px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-purple-400 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 md:gap-2"
             >
               <LuPencil size={12} />
-              Edit Profile
+              {t("editProfile")}
             </button>
           )}
         </div>
@@ -308,14 +312,14 @@ const SettingTab = () => {
               <LuLink className="text-purple-400" size={14} />
             </div>
             <h3 className="text-white font-semibold text-xs md:text-sm font-parkinsans">
-              Room Link
+              {t("roomLink")}
             </h3>
           </div>
 
           <div className="flex items-center gap-1.5 md:gap-2">
             <div className="flex-1 px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
               <p className="text-white/70 text-[10px] md:text-xs truncate">
-                {roomUrl || "No room link available"}
+                {roomUrl || t("noRoomLink")}
               </p>
             </div>
             <button
@@ -335,7 +339,7 @@ const SettingTab = () => {
               )}
               {copied && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl animate-fade-in">
-                  Link copied!
+                  {t("linkCopied")}
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
                 </div>
               )}

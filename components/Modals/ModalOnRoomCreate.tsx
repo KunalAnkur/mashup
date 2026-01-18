@@ -3,6 +3,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { trackRoomLinkCopied, trackInviteSent } from "@/lib/analytics";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 interface ModalOnRoomCreateProps {
   isHost: boolean;
@@ -22,6 +23,8 @@ const ModalOnRoomCreate = ({
   onJoinRoom,
 }: ModalOnRoomCreateProps) => {
   const [copied, setCopied] = useState(false);
+  const t = useTranslations("room");
+  const tCommon = useTranslations("common");
   
   // Extract roomId from roomUrl (e.g., /room/abc123 -> abc123)
   const roomId = roomUrl?.split('/room/')[1] || '';
@@ -38,16 +41,16 @@ const ModalOnRoomCreate = ({
 
   // Handle sharing via WhatsApp
   const handleShareWhatsApp = () => {
-    const text = `Join my watch party! ${roomUrl}`;
+    const text = `${t("joinMyWatchParty")} ${roomUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     if (roomId) trackInviteSent(roomId, "whatsapp");
   };
 
   // Handle sharing via Telegram
   const handleShareTelegram = () => {
-    const text = `Join my watch party! ${roomUrl}`;
+    const text = `${t("joinMyWatchParty")} ${roomUrl}`;
     window.open(
-      `https://t.me/share/url?url=${encodeURIComponent(roomUrl)}&text=${encodeURIComponent('Join my watch party!')}`,
+      `https://t.me/share/url?url=${encodeURIComponent(roomUrl)}&text=${encodeURIComponent(t("joinMyWatchParty"))}`,
       '_blank'
     );
     if (roomId) trackInviteSent(roomId, "telegram");
@@ -79,7 +82,7 @@ const ModalOnRoomCreate = ({
 
   // Handle sharing via Twitter
   const handleShareTwitter = () => {
-    const text = `Join my watch party on Movmash! ${roomUrl}`;
+    const text = `${t("joinMyWatchPartyOnMovmash")} ${roomUrl}`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
     if (roomId) trackInviteSent(roomId, "share_api");
   };
@@ -171,13 +174,13 @@ const ModalOnRoomCreate = ({
           <div className="text-3xl md:text-4xl mb-2 md:mb-3">{isHost ? '🎉' : '🎬'}</div>
           <h3 className="text-white text-base md:text-lg font-semibold mb-1.5 md:mb-2 px-2 md:px-0">
             {isHost
-              ? 'Your watch party is ready!'
-              : `You've been invited to a watch party on Movmash ${hostUsername ? `by ${hostUsername}` : ''}`}
+              ? t("yourWatchPartyReady")
+              : hostUsername ? t("invitedBy", { host: hostUsername }) : t("invitedToWatchParty")}
           </h3>
           <p className="text-white/60 text-[10px] md:text-xs px-2 md:px-0">
             {isHost
-              ? 'Invite friends to start watching together'
-              : 'Watch videos together in perfect sync'}
+              ? t("inviteFriendsToStart")
+              : t("watchVideosTogether")}
           </p>
         </div>
 
@@ -192,14 +195,14 @@ const ModalOnRoomCreate = ({
                 <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Copied!</span>
+                <span>{tCommon("linkCopied")}</span>
               </>
             ) : (
               <>
                 <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-                <span>Copy Invite Link</span>
+                <span>{t("copyInviteLink")}</span>
               </>
             )}
           </button>
@@ -208,14 +211,14 @@ const ModalOnRoomCreate = ({
             onClick={onJoinRoom || onClose}
             className="w-full px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-medium text-xs md:text-sm rounded-lg transition-all duration-200 shadow-lg shadow-purple-500/25 mb-4 md:mb-5 flex items-center justify-center gap-1.5 md:gap-2"
           >
-            <span>Join Room</span>
+            <span>{t("joinRoom")}</span>
           </button>
         )}
 
         {/* Separator */}
         <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4">
           <div className="flex-1 h-px bg-white/10"></div>
-          <span className="text-white/40 text-[10px] md:text-xs">or</span>
+          <span className="text-white/40 text-[10px] md:text-xs">{tCommon("or")}</span>
           <div className="flex-1 h-px bg-white/10"></div>
         </div>
 

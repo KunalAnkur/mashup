@@ -9,6 +9,7 @@ import { useLogoutMutation } from "@/lib/store/api/authApi";
 import { FcGoogle } from "react-icons/fc";
 import { IoLogOutOutline } from "react-icons/io5";
 import { showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 interface AvatarDropdownProps {
   size?: number;
@@ -24,6 +25,8 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
     (state: RootState) => state.auth
   );
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const tToast = useTranslations("toast");
+  const tCommon = useTranslations("common");
 
   // ALL useEffects REMOVED FOR TESTING - no event listeners at all
 
@@ -52,15 +55,10 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   };
 
   const handleLogoutClick = () => {
-    console.log("=== LOGOUT CLICK ===");
-    console.log("Before: showLogoutConfirm =", showLogoutConfirm);
     setShowLogoutConfirm(true);
     setIsOpen(false);
-    console.log("After setState called");
   };
   
-  // Debug: Log every render
-  console.log("=== AvatarDropdown RENDER ===", { isOpen, showLogoutConfirm });
 
   const handleLogoutConfirm = async () => {
     try {
@@ -69,7 +67,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
       }
     } catch (error) {
       console.error("Logout failed:", error);
-      showError("Logout failed", "There was an error logging out. You have been logged out locally.");
+      showError(tToast("logoutFailed"), tToast("errorLoggingOut"));
     } finally {
       // Always clear local state and redirect, even if API call fails
       dispatch(logout());
@@ -168,7 +166,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
               <div className="p-1 md:p-1.5 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 transition-colors">
                 <IoLogOutOutline size={14} className="text-red-400 md:w-4 md:h-4" />
               </div>
-              <span className="text-xs md:text-sm font-medium">Logout</span>
+              <span className="text-xs md:text-sm font-medium">{tCommon("logout")}</span>
             </button>
           </div>
         </div>
@@ -183,26 +181,25 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                 <IoLogOutOutline className="text-red-400" size={18} />
               </div>
               <h3 className="text-white text-base md:text-lg font-bold font-parkinsans">
-                Confirm Logout
+                {tCommon("confirmLogout")}
               </h3>
             </div>
             <p className="text-gray-400 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-              Are you sure you want to logout? You will be redirected to the
-              home page.
+              {tCommon("confirmLogoutMessage")}
             </p>
             <div className="flex gap-2 md:gap-3">
               <button
                 onClick={handleLogoutCancel}
                 className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-white/5 hover:bg-white/10 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200"
               >
-                Cancel
+                {tCommon("cancel")}
               </button>
               <button
                 onClick={handleLogoutConfirm}
                 disabled={isLoggingOut}
                 className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoggingOut ? "Logging out..." : "Logout"}
+                {isLoggingOut ? tCommon("loggingOut") : tCommon("logout")}
               </button>
             </div>
           </div>
