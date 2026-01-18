@@ -74,7 +74,8 @@ export default function LocalePersistence() {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [locale]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty array - only run once (hasRunRef ensures this)
 
   return null; // This component doesn't render anything
 }

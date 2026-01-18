@@ -13,14 +13,15 @@ import GoogleAuthProvider from "@/components/GoogleAuth/GoogleOAuthProvider";
 import GoogleOneTap from "@/components/GoogleAuth/GoogleOneTap";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { Toaster } from 'react-hot-toast';
-import LocalePersistence from "@/components/LanguageSelector/LocalePersistence";
+// TEMPORARILY DISABLED - LocalePersistence was causing page reloads that broke modal
+// import LocalePersistence from "@/components/LanguageSelector/LocalePersistence";
 
 export default function ClientRoot({ children }: { children: ReactNode }) {
     return (
         <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
                 <PostHogProvider>
-                    <LocalePersistence />
+                    {/* <LocalePersistence /> - DISABLED FOR TESTING */}
                     <GoogleAuthProvider>
                         <GoogleOneTap />
                         <AuthGuard>

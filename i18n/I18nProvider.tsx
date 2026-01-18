@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from "react";
 import { locales, defaultLocale, type Locale } from "./config";
 
 // Import all messages statically
@@ -62,18 +62,19 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale || defaultLocale);
   const [messages, setMessages] = useState<Messages>(messagesByLocale[initialLocale || defaultLocale]);
 
-  // Read locale from cookie on mount (client-side only)
-  useEffect(() => {
-    const cookies = document.cookie.split(";");
-    const localeCookie = cookies.find((c) => c.trim().startsWith("NEXT_LOCALE="));
-    if (localeCookie) {
-      const value = localeCookie.split("=")[1] as Locale;
-      if (locales.includes(value)) {
-        setLocaleState(value);
-        setMessages(messagesByLocale[value]);
-      }
-    }
-  }, []);
+  // TEMPORARILY DISABLED - This was causing re-renders that might affect modal state
+  // The server already reads locale from cookie in layout.tsx and passes initialLocale
+  // useEffect(() => {
+  //   const cookies = document.cookie.split(";");
+  //   const localeCookie = cookies.find((c) => c.trim().startsWith("NEXT_LOCALE="));
+  //   if (localeCookie) {
+  //     const value = localeCookie.split("=")[1] as Locale;
+  //     if (locales.includes(value) && value !== locale) {
+  //       setLocaleState(value);
+  //       setMessages(messagesByLocale[value]);
+  //     }
+  //   }
+  // }, []);
 
   const setLocale = useCallback((newLocale: Locale) => {
     if (locales.includes(newLocale)) {
@@ -92,8 +93,14 @@ export function I18nProvider({ children, initialLocale }: I18nProviderProps) {
     [messages]
   );
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({ locale, messages, t, setLocale }),
+    [locale, messages, t, setLocale]
+  );
+
   return (
-    <I18nContext.Provider value={{ locale, messages, t, setLocale }}>
+    <I18nContext.Provider value={contextValue}>
       {children}
     </I18nContext.Provider>
   );

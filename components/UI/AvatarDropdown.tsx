@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store/index";
@@ -25,48 +25,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   );
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [isOpen]);
-
-  // Close confirmation dialog when clicking outside or pressing Escape
-  useEffect(() => {
-    if (!showLogoutConfirm) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest(".logout-modal")) {
-        setShowLogoutConfirm(false);
-      }
-    };
-
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setShowLogoutConfirm(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscapeKey);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscapeKey);
-    };
-  }, [showLogoutConfirm]);
+  // ALL useEffects REMOVED FOR TESTING - no event listeners at all
 
   // Determine avatar URL with fallbacks
   const getAvatarUrl = () => {
@@ -93,9 +52,15 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   };
 
   const handleLogoutClick = () => {
+    console.log("=== LOGOUT CLICK ===");
+    console.log("Before: showLogoutConfirm =", showLogoutConfirm);
     setShowLogoutConfirm(true);
     setIsOpen(false);
+    console.log("After setState called");
   };
+  
+  // Debug: Log every render
+  console.log("=== AvatarDropdown RENDER ===", { isOpen, showLogoutConfirm });
 
   const handleLogoutConfirm = async () => {
     try {
@@ -151,7 +116,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1.5 md:mt-2 w-64 md:w-72 bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-white/10 rounded-lg md:rounded-xl shadow-2xl z-50 overflow-hidden animate-slide-down">
+        <div className="absolute right-0 top-full mt-1.5 md:mt-2 w-64 md:w-72 bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-white/10 rounded-lg md:rounded-xl shadow-2xl z-50 overflow-hidden">
           {/* User Info Section */}
           <div className="p-3 md:p-4 border-b border-white/10">
             <div className="flex items-center gap-2.5 md:gap-3">
@@ -209,10 +174,10 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
         </div>
       )}
 
-      {/* Logout Confirmation Modal */}
+      {/* Logout Confirmation Modal - ALL onClick handlers REMOVED for testing */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 logout-modal">
-          <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-lg md:rounded-2xl p-4 md:p-6 max-w-sm w-full mx-3 md:mx-4 shadow-2xl animate-scale-in">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]">
+          <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-lg md:rounded-2xl p-4 md:p-6 max-w-sm w-full mx-3 md:mx-4 shadow-2xl">
             <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
               <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-red-500/20">
                 <IoLogOutOutline className="text-red-400" size={18} />
@@ -244,37 +209,6 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
         </div>
       )}
 
-      <style jsx>{`
-        @keyframes slide-down {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes scale-in {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .animate-slide-down {
-          animation: slide-down 0.2s ease-out;
-        }
-
-        .animate-scale-in {
-          animation: scale-in 0.2s ease-out;
-        }
-      `}</style>
     </div>
   );
 };
