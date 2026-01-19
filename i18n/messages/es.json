@@ -98,6 +98,7 @@
       "checkConnection": "Por favor, verifica tu conexión e inténtalo de nuevo."
     },
     "settings": {
+      "title": "Configuración",
       "profileSettings": "Configuración de Perfil",
       "name": "Nombre",
       "username": "Nombre de Usuario",
