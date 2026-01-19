@@ -8,8 +8,7 @@ import { RootState, store } from "@/lib/store";
 import { exitRoom, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
 import { showError } from "@/utils/toast";
-import { useTranslations } from "@/i18n/I18nProvider";
-import { trackRoomJoined, trackRoomLeft, trackRoomActive } from "@/lib/analytics";
+import { trackRoomJoined, trackRoomLeft } from "@/lib/analytics";
 
 export type RoomType = "stream" | "sync";
 export interface UserInfo {
@@ -219,15 +218,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const leaveRoom = useCallback(() => {
         if (!socket || !roomId) return;
 
-        // Get current source from playlist before leaving
-        const playlist = roomState.playlist || [];
-        const selected = playlist.find((p) => p.selected) || playlist[0];
-        const currentSource = selected?.source as "file" | "url" | "screen" | undefined;
-
-        // Track room left with duration and source
+        // Track room left with duration
         if (joinTimeRef.current) {
             const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
-            trackRoomLeft(roomId, durationSec, currentSource);
+            trackRoomLeft(roomId, durationSec);
             joinTimeRef.current = null;
         }
 
@@ -388,70 +382,19 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             socket.off(SocketEvent.USERS_UPDATED, handleUsersUpdated);
         };
     }, [socket, roomId]);
-
-    // Heartbeat: Track active room every 2 minutes (more efficient for charts)
-    useEffect(() => {
-        if (!isJoined || !roomId || !roomType) return;
-
-        // Get current source from playlist
-        const playlist = roomState.playlist || [];
-        const selected = playlist.find((p) => p.selected) || playlist[0];
-        const currentSource = selected?.source as "file" | "url" | "screen" | undefined;
-
-        // Send initial heartbeat immediately when joined
-        if (joinTimeRef.current) {
-            const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
-            trackRoomActive(
-                roomId,
-                roomType,
-                isHost ? "host" : "guest",
-                participants.length,
-                durationSec,
-                currentSource
-            );
-        }
-
-        // Then send heartbeat every 2 minutes
-        const interval = setInterval(() => {
-            if (joinTimeRef.current) {
-                const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
-                // Get current source (might have changed)
-                const playlist = roomState.playlist || [];
-                const selected = playlist.find((p) => p.selected) || playlist[0];
-                const currentSource = selected?.source as "file" | "url" | "screen" | undefined;
-                
-                trackRoomActive(
-                    roomId,
-                    roomType,
-                    isHost ? "host" : "guest",
-                    participants.length,
-                    durationSec,
-                    currentSource
-                );
-            }
-        }, 120000); // Every 2 minutes (120 seconds)
-
-        return () => clearInterval(interval);
-    }, [isJoined, roomId, roomType, isHost, participants.length, roomState.playlist]);
-
     // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (isJoined && socket && roomId) {
-                // Get current source from playlist before leaving
-                const playlist = roomState.playlist || [];
-                const selected = playlist.find((p) => p.selected) || playlist[0];
-                const currentSource = selected?.source as "file" | "url" | "screen" | undefined;
-
-                // Track room left with duration and source
+                // Track room left with duration
                 if (joinTimeRef.current) {
                     const durationSec = Math.floor((Date.now() - joinTimeRef.current) / 1000);
-                    trackRoomLeft(roomId, durationSec, currentSource);
+                    trackRoomLeft(roomId, durationSec);
                 }
                 socket.emit(SocketEvent.LEAVE_ROOM, { roomId });
             }
         };
-    }, [isJoined, socket, roomId, roomState.playlist]);
+    }, [isJoined, socket, roomId]);
 
     return (
         <RoomContext.Provider value={{
