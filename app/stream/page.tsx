@@ -2,6 +2,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useFileContext } from "@/context/FileContext";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "@/i18n/I18nProvider";
 import {
   ContentDivider,
   DragOverlay,
@@ -19,6 +20,7 @@ const StreamFilesPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { files, setFiles } = useFileContext();
   const [showSpeedTip, setShowSpeedTip] = useState(true);
+  const t = useTranslations("stream");
 
   // Auto-hide speed tip after 8 seconds
   useEffect(() => {
@@ -101,7 +103,7 @@ const StreamFilesPage = () => {
       
       {/* Content - Above Background */}
       <div className="relative z-20 w-full h-screen flex flex-col overflow-hidden">
-        <PageHeader title="Stream Options" onBack={handleBack} />
+        <PageHeader title={t("title")} onBack={handleBack} />
 
         {/* Content - Top aligned on mobile, centered on desktop */}
         <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">

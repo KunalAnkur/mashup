@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import { Socket } from "socket.io-client";
 import { showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 interface SocketContextType {
     socketService: SocketService;
@@ -24,6 +25,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     const [socketService] = useState(() => new SocketService({}));
     const [isConnected, setIsConnected] = useState(false);
     const errorShownRef = useRef(false); // Prevent showing multiple error toasts
+    const tToast = useTranslations("toast");
 
     useEffect(() => {
         // Initialize the unified socket connection (single namespace)
@@ -43,7 +45,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             // Show error toast for unexpected disconnections (not user-initiated)
             if (reason !== 'io client disconnect' && !errorShownRef.current) {
                 errorShownRef.current = true;
-                showError("Connection lost", "Trying to reconnect automatically. Please wait...");
+                showError(tToast("connectionLost"), tToast("tryingToReconnect"));
             }
         };
 
@@ -76,7 +78,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             mainSocket.off("ping", handlePing);
             socketService.disconnect();
         };
-    }, [socketService]);
+    }, [socketService, tToast]);
 
     const getSocket = () => {
         // Always return the main socket (unified namespace)

@@ -14,6 +14,7 @@ import ReactionPicker from "./ReactionPicker";
 import { showError } from "@/utils/toast";
 import { formatChatTime } from "@/utils/timeFormatter";
 import { isMobile } from "react-device-detect";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -123,6 +124,8 @@ const ChatTab = () => {
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.auth.user);
+  const t = useTranslations("panel.chat");
+  const tToast = useTranslations("toast");
 
   const {
     messages,
@@ -207,7 +210,7 @@ const ChatTab = () => {
       }
     } else {
       console.error("Failed to send message:", result.error);
-      showError("Failed to send message", result.error || "Please check your connection and try again.");
+      showError(tToast("failedToSendMessage"), result.error || tToast("checkConnection"));
     }
   };
 
@@ -269,7 +272,7 @@ const ChatTab = () => {
               <div className="absolute inset-0 bg-yellow-400/20 rounded-full animate-ping"></div>
               <div className="relative w-1.5 h-1.5 md:w-2 md:h-2 bg-yellow-400 rounded-full"></div>
             </div>
-            <p className="text-yellow-300 text-[10px] md:text-xs font-medium">Connecting to chat...</p>
+            <p className="text-yellow-300 text-[10px] md:text-xs font-medium">{t("connectingToChat")}</p>
           </div>
         </div>
       )}
@@ -281,7 +284,7 @@ const ChatTab = () => {
               <div className="absolute inset-0 bg-blue-400/20 rounded-full animate-pulse"></div>
               <div className="relative w-1.5 h-1.5 md:w-2 md:h-2 bg-blue-400 rounded-full"></div>
             </div>
-            <p className="text-blue-300 text-[10px] md:text-xs font-medium">Joining chat room...</p>
+            <p className="text-blue-300 text-[10px] md:text-xs font-medium">{t("joiningChatRoom")}</p>
           </div>
         </div>
       )}
@@ -294,7 +297,7 @@ const ChatTab = () => {
               <div className="relative text-4xl md:text-6xl opacity-50">💬</div>
             </div>
             <p className="text-white/60 text-xs md:text-sm font-medium text-center px-4">
-              No messages yet. Start the conversation!
+              {t("noMessages")}
             </p>
           </div>
         )}
@@ -373,8 +376,35 @@ const ChatTab = () => {
               const isFromCurrentUser = matchesName || matchesEmail || matchesFullEmail || isCurrentUser;
 
               if (isFromCurrentUser) {
-                messageWords[0] = "You";
-                displayMessage = messageWords.join(" ");
+                // Replace action words with translated "You" versions
+                if (displayMessage.includes("started the video")) {
+                  displayMessage = t("youStarted");
+                } else if (displayMessage.includes("paused the video")) {
+                  displayMessage = t("youPaused");
+                } else if (displayMessage.includes("resumed the video")) {
+                  displayMessage = t("youResumed");
+                } else if (displayMessage.includes("seeked to")) {
+                  const timeMatch = displayMessage.match(/seeked to (.+)/);
+                  if (timeMatch) {
+                    displayMessage = `${t("youSeeked")} ${timeMatch[1]}`;
+                  } else {
+                    displayMessage = t("youSeeked");
+                  }
+                } else {
+                  messageWords[0] = t("you");
+                  displayMessage = messageWords.join(" ");
+                }
+              } else {
+                // Translate action words for other users
+                if (displayMessage.includes("started the video")) {
+                  displayMessage = displayMessage.replace("started the video", t("started"));
+                } else if (displayMessage.includes("paused the video")) {
+                  displayMessage = displayMessage.replace("paused the video", t("paused"));
+                } else if (displayMessage.includes("resumed the video")) {
+                  displayMessage = displayMessage.replace("resumed the video", t("resumed"));
+                } else if (displayMessage.includes("seeked to")) {
+                  displayMessage = displayMessage.replace("seeked to", t("seeked"));
+                }
               }
             }
 
@@ -394,12 +424,12 @@ const ChatTab = () => {
                               {msg.message.includes("joined") ? (
                                 <span className="inline-flex items-center gap-1">
                                   <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                                  joined
+                                  {t("joined")}
                                 </span>
                               ) : msg.message.includes("left") ? (
                                 <span className="inline-flex items-center gap-1">
                                   <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
-                                  left
+                                  {t("left")}
                                 </span>
                               ) : (
                                 ""
@@ -555,7 +585,7 @@ const ChatTab = () => {
                   {typingUsers.map((u) => u.userName).join(", ")}
                 </span>
                 <span className="text-cyan-400/70 ml-1 md:ml-1.5">
-                  {typingUsers.length === 1 ? "is" : "are"} typing...
+                  {typingUsers.length === 1 ? t("isTyping") : t("areTyping")}
                 </span>
               </span>
             </div>
@@ -609,7 +639,7 @@ const ChatTab = () => {
             <EmojiPicker
               onEmojiClick={handleEmojiClick}
               theme={"dark" as Theme}
-              searchPlaceHolder="Search emojis..."
+              searchPlaceHolder={t("searchEmojis")}
               width="100%"
               height="400px"
               previewConfig={{
@@ -652,7 +682,7 @@ const ChatTab = () => {
           <input
             ref={inputRef as React.RefObject<HTMLInputElement>}
             type="text"
-            placeholder={isJoined ? "Send a message..." : "Connecting..."}
+            placeholder={isJoined ? t("sendMessage") : t("connecting")}
             value={messageInput}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
@@ -663,7 +693,7 @@ const ChatTab = () => {
         ) : (
           <textarea
             ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-            placeholder={isJoined ? "Send a message..." : "Connecting..."}
+            placeholder={isJoined ? t("sendMessage") : t("connecting")}
             value={messageInput}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
@@ -690,7 +720,7 @@ const ChatTab = () => {
                 ? "text-rose-400"
                 : "text-white/50 hover:text-rose-400"
               }`}
-            title={showReactions ? "Hide reactions" : "Show reactions"}
+            title={showReactions ? t("hideReactions") : t("showReactions")}
           >
             
             {showReactions ? (

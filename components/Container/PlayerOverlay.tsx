@@ -14,6 +14,7 @@ import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import OverlayMessageBubble from "./OverlayMessageBubble";
 import AnimatedReaction from "../Panel/AnimatedReaction";
 import { showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 import { isMobile } from "react-device-detect";
 
 const PlayerOverlay = () => {
@@ -25,6 +26,7 @@ const PlayerOverlay = () => {
 
   // Get chat context
   const { messages, isJoined, sendMessage, sendReaction } = useChatContext();
+  const tToast = useTranslations("toast");
 
   // Track displayed messages to avoid showing old messages
   const [displayedMessageIds, setDisplayedMessageIds] = useState<Set<string>>(
@@ -244,7 +246,7 @@ const PlayerOverlay = () => {
       // It will auto-hide after the hover timeout
     } catch (error) {
       console.error("Failed to send message:", error);
-      showError("Failed to send message", "Please check your connection and try again.");
+      showError(tToast("failedToSendMessage"), tToast("checkConnection"));
     } finally {
       setIsSending(false);
     }

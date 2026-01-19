@@ -22,6 +22,7 @@
     "lottie-react": "^2.4.1",
     "mediasoup-client": "^3.11.0",
     "next": "16.0.8",
+    "next-intl": "^4.7.0",
     "posthog-js": "^1.318.1",
     "react": "^19.0.0",
     "react-device-detect": "^2.2.3",

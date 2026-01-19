@@ -10,6 +10,7 @@ import { setPlaylist, setRefers, setScreenSharing } from "@/lib/store/slices/roo
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { helper } from "@/utils";
 import { showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 import type { Playlist } from "@/types/storeTypes";
 
 // Generic screen share styling
@@ -24,6 +25,9 @@ const ScreenSharePage = () => {
   const dispatch = useDispatch();
   const authState = useSelector((state: RootState) => state.auth);
   const { setStream: setMediaStream, setScreenType } = useMediaStreamContext();
+  const tToast = useTranslations("toast");
+  const tStream = useTranslations("stream");
+  const tCommon = useTranslations("common");
 
   // State management
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -214,14 +218,14 @@ const ScreenSharePage = () => {
         id: mediaStream.id,
         type: "stream",
         source: "screen",
-        link: "Screen Share",
+        link: tStream("screenShare"),
         selected: true, 
         onlyAudio: currentAudioOnly,
         metadata: {
-          title: "Screen Share",
-          description: "Live screen sharing session",
+          title: tStream("screenShare"),
+          description: tStream("liveScreenSharingSession"),
           thumbnail: undefined,
-          author: authState.user?.name || authState.user?.username || "You",
+          author: authState.user?.name || authState.user?.username || tCommon("you"),
         },
       };
       dispatch(setScreenSharing(screenItem));
@@ -239,7 +243,7 @@ const ScreenSharePage = () => {
       console.error("Screen sharing error:", err);
       // Only show toast for truly unexpected errors
       if (err.name !== 'NotFoundError' && err.name !== 'NotReadableError') {
-        showError("Screen sharing failed", "Please check your browser permissions and try again.");
+        showError(tToast("screenSharingFailed"), tToast("checkPermissions"));
       }
     }
   }, [audioOnly, setMediaStream, stream]);
@@ -253,14 +257,14 @@ const ScreenSharePage = () => {
         id: stream.id,
         type: "stream",
         source: "screen",
-        link: "Screen Share",
+        link: tStream("screenShare"),
         selected: true,
         onlyAudio: audioOnly,
         metadata: {
-          title: "Screen Share",
-          description: "Live screen sharing session",
+          title: tStream("screenShare"),
+          description: tStream("liveScreenSharingSession"),
           thumbnail: undefined,
-          author: authState.user?.name || authState.user?.username || "You",
+          author: authState.user?.name || authState.user?.username || tStream("you"),
         },
       };
       
@@ -282,7 +286,7 @@ const ScreenSharePage = () => {
       setIsCreatingRoom(true);
     } catch (error) {
       console.error("Error creating room:", error);
-      showError("Failed to create room", "Please check your connection and try again.");
+      showError(tToast("failedToCreateRoom"), tToast("checkConnection"));
       setIsCreatingRoom(false);
     }
   }, [isStreamReady, stream, audioOnly, dispatch, router, authState.isAuthenticated, authState.user]);
@@ -311,7 +315,7 @@ const ScreenSharePage = () => {
 
       {/* Content - Above Background */}
       <div className="relative z-20 w-full h-screen flex flex-col overflow-hidden">
-        <PageHeader title="Screen Share" onBack={handleBack} logoGap="gap-8" />
+        <PageHeader title={tStream("screenSharePageTitle")} onBack={handleBack} logoGap="gap-8" />
 
         {/* Content - Scrollable area */}
         <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden">
@@ -327,8 +331,8 @@ const ScreenSharePage = () => {
                     <FaDesktop className="text-lg sm:text-xl text-white" />
                   </div>
                   <div className="flex-1 flex flex-col text-center sm:text-left">
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-white mb-0.5 sm:mb-1">Ready to Share?</h2>
-                    <p className="text-white/60 text-xs sm:text-sm">Click the button below to start sharing your screen</p>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-white mb-0.5 sm:mb-1">{tStream("readyToShare")}</h2>
+                    <p className="text-white/60 text-xs sm:text-sm">{tStream("clickButtonBelow")}</p>
                   </div>
                 </div>
           
@@ -342,13 +346,13 @@ const ScreenSharePage = () => {
                       : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-500/30"
                   }`}
                 >
-                  {stream ? "✓ Screen Sharing Active" : "Share Your Screen"}
+                  {stream ? tStream("screenSharingActive") : tStream("shareYourScreen")}
                 </button>
               </div>
 
               {/* Simple Steps Guide - Only show when no preview */}
               <div className="flex flex-col gap-4 sm:gap-5 md:gap-6">
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center">How it works</h3>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center">{tStream("howItWorks")}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                   {/* Step 1 */}
                   <div className="flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 transition-all duration-300">
@@ -357,10 +361,10 @@ const ScreenSharePage = () => {
                     </div>
                     <div className="flex-1 sm:flex-none">
                       <h4 className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">
-                        Click on screen share button
+                        {tStream("clickScreenShareButton")}
                       </h4>
                       <p className="text-white/60 text-[10px] sm:text-xs leading-relaxed">
-                        Click the "Share Screen" button above to start the sharing process.
+                        {tStream("clickShareScreenButton")}
                       </p>
                     </div>
                   </div>
@@ -372,10 +376,10 @@ const ScreenSharePage = () => {
                     </div>
                     <div className="flex-1 sm:flex-none">
                       <h4 className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">
-                        Choose the tab you want to share
+                        {tStream("chooseTabToShare")}
                       </h4>
                       <p className="text-white/60 text-[10px] sm:text-xs leading-relaxed">
-                        Make sure to choose a tab (not your entire screen) for best audio quality.
+                        {tStream("chooseTabForBestAudio")}
                       </p>
                     </div>
                   </div>
@@ -387,10 +391,10 @@ const ScreenSharePage = () => {
                     </div>
                     <div className="flex-1 sm:flex-none">
                       <h4 className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">
-                        Click on "Start Sharing"
+                        {tStream("clickStartSharing")}
                       </h4>
                       <p className="text-white/60 text-[10px] sm:text-xs leading-relaxed">
-                        Once your stream is ready, click "Start Sharing" to create a room and enjoy watching together!
+                        {tStream("clickStartSharingDescription")}
                       </p>
                     </div>
                   </div>
@@ -416,19 +420,19 @@ const ScreenSharePage = () => {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <p className="text-white font-semibold mb-2 sm:mb-3 text-xs sm:text-sm">Quick Tips</p>
+                    <p className="text-white font-semibold mb-2 sm:mb-3 text-xs sm:text-sm">{tStream("quickTips")}</p>
                     <div className="space-y-2 sm:space-y-2.5">
                       <div className="flex items-start gap-2 sm:gap-2.5">
                         <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
-                        <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">Select a specific tab (not your entire screen) for best audio quality</p>
+                        <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">{tStream("tipSelectSpecificTab")}</p>
                       </div>
                       <div className="flex items-start gap-2 sm:gap-2.5">
                         <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
-                        <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">Keep the tab active and playing for the best experience</p>
+                        <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">{tStream("tipKeepTabActive")}</p>
                       </div>
                       <div className="flex items-start gap-2 sm:gap-2.5">
                         <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
-                        <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">Make sure you have permission to share the content</p>
+                        <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">{tStream("tipCheckPermission")}</p>
                       </div>
                     </div>
                   </div>
@@ -441,8 +445,8 @@ const ScreenSharePage = () => {
               {/* Preview Active Status Header - Above Video */}
               <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-purple-500/30 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6">
                 <div className="text-center">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2">Preview Active</h2>
-                  <p className="text-white/70 text-xs sm:text-sm">Your screen share is ready. Adjust settings below and start sharing when ready.</p>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2">{tStream("previewActive")}</h2>
+                  <p className="text-white/70 text-xs sm:text-sm">{tStream("screenShareReady")}</p>
                 </div>
               </div>
 
@@ -459,8 +463,8 @@ const ScreenSharePage = () => {
                   {audioOnly && (
                     <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-fuchsia-900/20 to-pink-900/20">
                       <FaVolumeUp className="text-3xl sm:text-4xl md:text-5xl text-fuchsia-400/60 mb-2 sm:mb-3 md:mb-4" />
-                      <div className="text-fuchsia-300 font-semibold text-sm sm:text-base mb-0.5 sm:mb-1">Audio Only Mode</div>
-                      <div className="text-gray-400 text-xs sm:text-sm">Streaming audio from your tab</div>
+                      <div className="text-fuchsia-300 font-semibold text-sm sm:text-base mb-0.5 sm:mb-1">{tStream("audioOnlyMode")}</div>
+                      <div className="text-gray-400 text-xs sm:text-sm">{tStream("streamingAudioFromTab")}</div>
                     </div>
                   )}
                   {isStreamReady && (
@@ -468,7 +472,7 @@ const ScreenSharePage = () => {
                       <div className="flex items-center gap-1.5 sm:gap-2">
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse"></div>
                         <span className="text-green-400 text-[10px] sm:text-xs font-semibold">
-                          {audioOnly ? 'Audio Ready' : 'Ready'}
+                          {audioOnly ? tStream("audioReady") : tStream("ready")}
                         </span>
                       </div>
                     </div>
@@ -488,7 +492,7 @@ const ScreenSharePage = () => {
                         <FaVolumeUp className="text-base sm:text-lg text-purple-400 transition-colors" />
                       )}
                       <span className="text-xs sm:text-sm font-medium text-white">
-                        {audioOnly ? "Audio Only" : "Video + Audio"}
+                        {audioOnly ? tStream("audioOnly") : tStream("videoPlusAudio")}
                       </span>
                     </div>
                     <div className="relative">
@@ -550,7 +554,7 @@ const ScreenSharePage = () => {
                                   console.log("Re-capture cancelled or denied, keeping audio-only mode");
                                 } else {
                                   // Other errors - show message but keep stream active
-                                  showError("Failed to re-enable video", "Your audio-only stream is still active. Please try sharing again if you want video.");
+                                  showError(tToast("failedToReenableVideo"), tToast("audioOnlyActive"));
                                 }
                                 // Keep audioOnly as true, stream stays active
                               }
@@ -580,11 +584,11 @@ const ScreenSharePage = () => {
                   <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-md sm:rounded-lg backdrop-blur-sm">
                     <FaExclamationTriangle className="text-yellow-400 flex-shrink-0 mt-0.5 text-sm sm:text-base" />
                     <div className="flex-1">
-                      <p className="text-yellow-300 font-medium text-xs sm:text-sm mb-0.5 sm:mb-1">Tab Selection Required</p>
+                      <p className="text-yellow-300 font-medium text-xs sm:text-sm mb-0.5 sm:mb-1">{tStream("tabSelectionRequired")}</p>
                       <p className="text-yellow-200/80 text-[10px] sm:text-xs leading-relaxed">
                         {!isTabSelected
-                          ? "Please select a specific tab (not your entire screen) to capture audio properly."
-                          : "For best audio quality, select the specific tab with your content."}
+                          ? tStream("selectSpecificTabForAudio")
+                          : tStream("selectTabForBestAudio")}
                       </p>
                     </div>
                   </div>
@@ -603,10 +607,10 @@ const ScreenSharePage = () => {
                       }`}
                     >
                       {isCreatingRoom && <ImSpinner2 className="animate-spin text-sm sm:text-base" />}
-                      {isCreatingRoom ? "Creating Room..." : "Start Sharing"}
+                      {isCreatingRoom ? tStream("creatingRoom") : tStream("startSharing")}
                     </button>
                     <p className="text-white/60 text-xs sm:text-sm mt-2 sm:mt-3">
-                      Your room will be created and you can enjoy watching together!
+                      {tStream("roomWillBeCreated")}
                     </p>
                   </div>
                 )}

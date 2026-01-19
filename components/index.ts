@@ -8,6 +8,7 @@ import { SourceSelection, UrlSelection, AuthWrapper, FileSelection } from "./Onb
 import ProfileHeader from "./Header/ProfileHeader";
 import LogoHeader from "./Header/LogoHeader";
 import AvatarDropdown from "./UI/AvatarDropdown";
+import { LanguageSelector } from "./LanguageSelector";
 export {
   Logo,
   Avatar,
@@ -34,4 +35,5 @@ export {
   ProfileHeader,
   LogoHeader,
   AvatarDropdown,
+  LanguageSelector,
 };

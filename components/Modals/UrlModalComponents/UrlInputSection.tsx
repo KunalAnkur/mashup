@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Button } from "../../UI";
 import { SectionTitle } from "../DeviceModalComponents/SectionTitle";
@@ -7,6 +9,7 @@ import { EmptyUrlState } from "./EmptyUrlState";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
 import { Platform } from "@/types/ModalTypes/urlPlatformTypes";
 import { ImSpinner2 } from "react-icons/im";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 interface UrlInputSectionProps {
   sourceUrlInput: string;
@@ -42,12 +45,15 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
   getUrlDisplayName,
   isAdding = false,
   isEntering = false,
-}) => (
+}) => {
+  const t = useTranslations("sync");
+  const tCommon = useTranslations("common");
+  return (
   <div className="w-full flex flex-col sm:h-full sm:min-h-0">
     <SectionTitle
       gradientFrom="from-fuchsia-500"
       gradientTo="to-purple-500"
-      title="Paste Your URLs"
+      title={t("pasteUrls")}
     />
 
     <div className={`bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-lg md:rounded-xl lg:rounded-2xl p-3 sm:p-4 md:p-5 flex flex-col sm:flex-1 sm:min-h-0 transition-all duration-300
@@ -104,17 +110,18 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
           <Button
             onClick={onCancel}
             className="flex-1 rounded-lg md:rounded-xl flex items-center justify-center gap-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 transition-all duration-200 font-medium"
-            name="Cancel"
+            name={tCommon("cancel")}
           />
           <Button
             onClick={onEnterRoom}
             icon={isEntering ? <ImSpinner2 className="animate-spin" /> : undefined}
             className="flex-1 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:bg-zinc-700/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
-            name={isEntering ? "Entering..." : "Enter"}
+            name={isEntering ? t("entering") : t("enterRoom")}
             disabled={addedUrls.length === 0 || isEntering}
           />
         </div>
       </div>
     </div>
   </div>
-);
+  );
+};

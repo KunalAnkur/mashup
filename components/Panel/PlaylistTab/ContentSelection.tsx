@@ -11,6 +11,7 @@ import { ExtendedFile } from "@/utils/filePersistence";
 import { helper } from "@/utils";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist, UrlMetadata } from "@/types/storeTypes";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 interface Metadata {
     title?: string;
@@ -36,6 +37,10 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
     const [urlError, setUrlError] = useState("");
     const authState = useSelector((state: RootState) => state.auth);
     const { stream, setStream, setScreenType, handleStopScreenSharing } = useMediaStreamContext();
+    const t = useTranslations("sync");
+    const tCommon = useTranslations("common");
+    const tToast = useTranslations("toast");
+    const tStream = useTranslations("stream");
 
     const handleOpenAddUrlModal = () => {
         console.log("handleOpenAddUrlModal");
@@ -185,14 +190,14 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                 id: mediaStream.id,
                 type: "stream",
                 source: "screen",
-                link: "Screen Share",
+                link: tStream("screenShare"),
                 selected: true,
                 onlyAudio: false,
                 metadata: {
-                    title: "Screen Share",
-                    description: "Live screen sharing session",
+                    title: tStream("screenShare"),
+                    description: tStream("liveScreenSharingSession"),
                     thumbnail: undefined,
-                    author: authState.user?.name || authState.user?.username || "You",
+                    author: authState.user?.name || authState.user?.username || tCommon("you"),
                 },
             }
             // call the function here
@@ -209,12 +214,12 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
         if (!isHost || !roomState.roomId) return;
         const rawUrl = urlInput.trim();
         if (!rawUrl) {
-            setUrlError("Please enter a URL");
+            setUrlError(tToast("pleaseEnterUrl"));
             return;
         }
         const validation = validateUrl(rawUrl);
         if (!validation.valid) {
-            setUrlError(validation.tooltip || "Invalid URL. Please enter a supported video URL.");
+            setUrlError(validation.tooltip || tToast("invalidUrl"));
             return;
         }
         setIsAddingUrls(true);
@@ -320,7 +325,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
             const errorMessage = 
                 error?.message || 
                 error?.error ||
-                "Failed to add URL. Please try again.";
+                tToast("failedToAddUrl");
             setUrlError(errorMessage);
         } finally {
             setIsAddingUrls(false);
@@ -340,12 +345,12 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                         {isAddingUrls ? (
                             <>
                                 <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
-                                <span className="text-[10px] md:text-sm font-medium">Adding...</span>
+                                <span className="text-[10px] md:text-sm font-medium">{t("loading")}</span>
                             </>
                         ) : (
                             <>
                                 <LuPlus size={12} className="md:w-4 md:h-4" />
-                                <span className="text-[10px] md:text-sm font-medium">Add URL</span>
+                                <span className="text-[10px] md:text-sm font-medium">{t("addUrl")}</span>
                             </>
                         )}
                     </button>
@@ -358,12 +363,12 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                         {isAddingFiles ? (
                             <>
                                 <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
-                                <span className="text-[10px] md:text-sm font-medium">Adding...</span>
+                                <span className="text-[10px] md:text-sm font-medium">{t("loading")}</span>
                             </>
                         ) : (
                             <>
                                 <LuPlus size={12} className="md:w-4 md:h-4" />
-                                <span className="text-[10px] md:text-sm font-medium">Add Files</span>
+                                <span className="text-[10px] md:text-sm font-medium">{t("addFiles")}</span>
                             </>
                         )}
                     </button>
@@ -376,12 +381,12 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                         {isSharingScreen ? (
                             <>
                                 <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
-                                <span className="text-[10px] md:text-sm font-medium">Sharing...</span>
+                                <span className="text-[10px] md:text-sm font-medium">{t("sharing")}</span>
                             </>
                         ) : (
                             <>
                                 <LuShare2 size={12} className="md:w-4 md:h-4" />
-                                <span className="text-[10px] md:text-sm font-medium">Share Screen</span>
+                                <span className="text-[10px] md:text-sm font-medium">{t("shareScreen")}</span>
                             </>
                         )}
                     </button>
@@ -402,7 +407,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                                 <div className="bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-2 rounded-lg">
                                     <LuPlus className="text-white text-lg" />
                                 </div>
-                                <h3 className="text-xl font-bold text-white">Add Video URL</h3>
+                                <h3 className="text-xl font-bold text-white">{t("addVideoUrl")}</h3>
                             </div>
                             <button
                                 onClick={handleCloseAddUrlModal}
@@ -417,7 +422,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                             <div>
                                 <input
                                     type="text"
-                                    placeholder="Paste your video URL here"
+                                    placeholder={t("enterUrl")}
                                     value={urlInput}
                                     onChange={handleUrlInputChange}
                                     onKeyDown={handleUrlInputKeyDown}
@@ -439,7 +444,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                                     disabled={isAddingUrls}
                                     className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-medium text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Cancel
+                                    {tCommon("cancel")}
                                 </button>
                                 <button
                                     onClick={handleAddUrl}
@@ -449,12 +454,12 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                                     {isAddingUrls ? (
                                         <>
                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            <span>Adding...</span>
+                                            <span>{t("adding")}</span>
                                         </>
                                     ) : (
                                         <>
                                             <LuPlus size={16} />
-                                            <span>Add URL</span>
+                                            <span>{t("addUrl")}</span>
                                         </>
                                     )}
                                 </button>

@@ -12,6 +12,7 @@ import { useDispatch } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ImSpinner2 } from "react-icons/im";
 import { showError, showSuccess } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 import { trackLogin, trackSignup } from "@/lib/analytics";
 import Image from "next/image";
 
@@ -30,6 +31,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
     redirectParam ? `${path}?redirect=${encodeURIComponent(redirectParam)}` : path;
 
   const [loginUser, loginState] = useLoginMutation();
+  const tToast = useTranslations("toast");
   const [authProvider] = useAuthProviderMutation();
   const [continueAsGuest, { isLoading: isGuestLoading }] = useContinueAsGuestMutation();
   const [isGuestProcessing, setIsGuestProcessing] = useState(false);
@@ -56,7 +58,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
       trackLogin("google");
     } catch (error) {
       console.error("Google authentication failed", error);
-      showError("Google authentication failed", "Please try again or use email and password to login.");
+      showError(tToast("googleAuthFailed"), tToast("tryAgain"));
     }
   };
 
@@ -70,11 +72,11 @@ const LoginContainer = ({ setContainer }: Prop) => {
       // Determine signup source: if redirectParam contains room, it's room_join
       const signupSource = redirectParam?.includes("/room/") ? "room_join" : "direct";
       trackSignup("guest", signupSource);
-      showSuccess("Welcome! You're now signed in as a guest");
+      showSuccess(tToast("welcomeGuest"));
     } catch (error: any) {
       console.error("Guest signup failed:", error);
       const errorMessage = error?.data?.message || error?.message || "Failed to continue as guest";
-      showError("Guest signup failed", errorMessage);
+      showError(tToast("guestSignupFailed"), errorMessage);
     } finally {
       setIsGuestProcessing(false);
     }

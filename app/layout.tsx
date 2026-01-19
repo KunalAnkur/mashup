@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { cookies } from "next/headers";
+import { defaultLocale, locales, isRtlLocale, type Locale } from "@/i18n/config";
+import { I18nProvider } from "@/i18n/I18nProvider";
 import * as constants from "../constants";
 import OrganizationSchema from "@/components/SEO/OrganizationSchema";
 import WebsiteSchema from "@/components/SEO/WebsiteSchema";
@@ -9,6 +12,9 @@ import "./globals.css";
 import ClientRoot from "./ClientRoot";
 
 const baseUrl = constants.seo.SITE_URL;
+
+// Force dynamic rendering to ensure cookies are read on every request
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -73,15 +79,39 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID || 'G-KJN3WCKBHG';
+  
+  // Get locale from cookie, fallback to default
+  let locale: Locale = defaultLocale;
+  
+  try {
+    const cookieStore = await cookies();
+    const localeCookie = cookieStore.get('NEXT_LOCALE');
+    
+    console.log('[layout.tsx] Server-side cookie check:');
+    console.log('[layout.tsx] - localeCookie:', localeCookie);
+    console.log('[layout.tsx] - localeCookie value:', localeCookie?.value);
+    
+    if (localeCookie?.value && locales.includes(localeCookie.value as Locale)) {
+      locale = localeCookie.value as Locale;
+      console.log('[layout.tsx] - Using cookie locale:', locale);
+    } else {
+      console.log('[layout.tsx] - Using default locale:', locale);
+    }
+  } catch (error) {
+    console.log('[layout.tsx] - Cookie read error:', error);
+  }
+  
+  console.log('[layout.tsx] Final locale:', locale);
+  const isRtl = isRtlLocale(locale);
 
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang={locale} dir={isRtl ? "rtl" : "ltr"} data-scroll-behavior="smooth">
       <body
         className="font-parkinsans antialiased text-smoothWhite bg-primaryDark "
         suppressHydrationWarning
@@ -98,7 +128,9 @@ export default function RootLayout({
             { name: "Home", url: baseUrl },
           ]}
         />
-        <ClientRoot>{children}</ClientRoot>
+        <I18nProvider initialLocale={locale}>
+          <ClientRoot>{children}</ClientRoot>
+        </I18nProvider>
         {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>

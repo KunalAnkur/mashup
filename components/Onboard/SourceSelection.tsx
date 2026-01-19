@@ -11,8 +11,10 @@ import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { isMobile } from "react-device-detect";
 import MobileWarningModal from "@/components/Modals/MobileWarningModal";
 import { trackCTAClicked } from "@/lib/analytics";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 const SourceSelection = () => {
+  const t = useTranslations("home");
   const [isJoinDisabled, setIsJoinDisabled] = useState<boolean>(true);
   const [roomId, setRoomId] = useState<string>("");
   const [isJoining, setIsJoining] = useState<boolean>(false);
@@ -69,7 +71,7 @@ const SourceSelection = () => {
         trackCTAClicked("join_room", { room_id: trimmedRoomId });
         router.push(`/room/${trimmedRoomId}`);
       } else {
-        setJoinError("Room not found. Please check the Room ID.");
+        setJoinError(t("errors.roomNotFound"));
       }
     } catch (error: unknown) {
       // Handle API errors (404, network errors, etc.)
@@ -78,11 +80,11 @@ const SourceSelection = () => {
         data?: { status?: number };
       };
       if (err?.status === 404 || err?.data?.status === 404) {
-        setJoinError("Room not found. Please check the Room ID.");
+        setJoinError(t("errors.roomNotFound"));
       } else if (err?.status === "FETCH_ERROR") {
-        setJoinError("Network error. Please try again.");
+        setJoinError(t("errors.networkError"));
       } else {
-        setJoinError("Failed to join room. Please try again.");
+        setJoinError(t("errors.joinFailed"));
       }
     } finally {
       setIsJoining(false);
@@ -117,7 +119,7 @@ const SourceSelection = () => {
               className="sm:w-10 sm:h-10 md:w-12 md:h-12"
             />
             <h3 className="text-2xl sm:text-2xl md:text-3xl font-extrabold text-white text-center font-parkinsans tracking-tight">
-              Movmash
+              {t("brand")}
             </h3>
           </div>
 
@@ -129,7 +131,7 @@ const SourceSelection = () => {
             <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
               <div className="w-2 h-2 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 animate-pulse"></div>
               <h2 className="text-2xl sm:text-2xl md:text-3xl font-extrabold text-white text-center font-parkinsans">
-                Create Party
+                {t("createParty")}
               </h2>
               <div
                 className="w-2 h-2 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-500 animate-pulse"
@@ -137,7 +139,7 @@ const SourceSelection = () => {
               ></div>
             </div>
             <p className="text-gray-400 text-center mb-3 sm:mb-4 text-xs sm:text-sm font-medium px-2">
-              Start a new session by streaming content or syncing playback.
+              {t("createPartyDescription")}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch w-full">
               {/* Stream */}
@@ -153,7 +155,7 @@ const SourceSelection = () => {
                     <FaBroadcastTower className="text-xl sm:text-2xl text-blue-300 group-hover:text-white transition-colors duration-300" />
                   </div>
                   <span className="text-base sm:text-lg font-semibold">
-                    Stream
+                    {t("stream")}
                   </span>
                 </div>
               </button>
@@ -171,7 +173,7 @@ const SourceSelection = () => {
                     <FaSync className="text-xl sm:text-2xl text-indigo-300 group-hover:text-white transition-colors duration-300" />
                   </div>
                   <span className="text-base sm:text-lg font-semibold">
-                    Sync
+                    {t("sync")}
                   </span>
                 </div>
               </button>
@@ -185,7 +187,7 @@ const SourceSelection = () => {
           >
             <div className="flex-1 h-[1.5px] bg-gradient-to-r from-transparent via-gray-700 to-transparent rounded-full" />
             <span className="text-gray-500 text-sm sm:text-md font-semibold">
-              or
+              {t("or")}
             </span>
             <div className="flex-1 h-[1.5px] bg-gradient-to-r from-transparent via-gray-700 to-transparent rounded-full" />
           </div>
@@ -196,16 +198,16 @@ const SourceSelection = () => {
             style={{ animationDelay: "0.5s" }}
           >
             <h2 className="text-2xl sm:text-2xl md:text-3xl font-extrabold text-white text-center mb-1 font-parkinsans">
-              Join Party
+              {t("joinParty")}
             </h2>
             <p className="text-gray-400 text-center mb-3 sm:mb-4 text-xs sm:text-sm font-medium px-2">
-              Enter a Room ID to join an existing session.
+              {t("joinPartyDescription")}
             </p>
             <div className="flex flex-col w-full gap-2 sm:gap-3">
               <div className="flex w-full gap-2 sm:gap-3">
                 <input
                   type="text"
-                  placeholder="Room ID"
+                  placeholder={t("roomIdPlaceholder")}
                   value={roomId}
                   onChange={handleOnRoomIdChange}
                   onKeyDown={handleKeyDown}
@@ -219,7 +221,7 @@ const SourceSelection = () => {
                 <div className="relative">
                   <div className="group">
                     <Button
-                      name={isJoining ? "Joining..." : "Join"}
+                      name={isJoining ? t("joining") : t("join")}
                       icon={isJoining ? <ImSpinner2 className="animate-spin" /> : undefined}
 
                       onClick={handleJoinRoom}

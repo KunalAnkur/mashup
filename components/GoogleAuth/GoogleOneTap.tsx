@@ -7,11 +7,13 @@ import { useAuthProviderMutation } from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { showError, showSuccess } from "@/utils/toast";
 import { trackLogin } from "@/lib/analytics";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 const GoogleOneTap = () => {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [authProvider] = useAuthProviderMutation();
+  const tToast = useTranslations("toast");
 
   const handleOneTapSuccess = async (credentialResponse: any) => {
     try {
@@ -61,16 +63,16 @@ const GoogleOneTap = () => {
       );
 
       trackLogin("google_one_tap");
-      showSuccess("Login successful");
+      showSuccess(tToast("loginSuccessful"));
     } catch (error: any) {
       console.error("❌ Google One Tap authentication failed:", error);
-      const errorMessage = error?.data?.message || error?.message || "Authentication failed";
-      showError("Authentication failed", errorMessage);
+      const errorMessage = error?.data?.message || error?.message || tToast("authenticationFailed");
+      showError(tToast("authenticationFailed"), errorMessage);
     }
   };
 
   const handleOneTapError = () => {
-    showError("Authentication failed");
+    showError(tToast("authenticationFailed"));
   };
 
   useGoogleOneTapLogin({

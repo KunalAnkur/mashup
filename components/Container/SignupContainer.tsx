@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { ImSpinner2 } from "react-icons/im";
 import { showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 import { trackSignup } from "@/lib/analytics";
 
 type Prop = {
@@ -30,6 +31,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
   const [username, setUsername] = useState<string>("");
   const [authProvider] = useAuthProviderMutation();
   const [showPassword, setShowPassword] = useState(false);
+  const tToast = useTranslations("toast");
 
   const [signupUser, signupState] = useSignupMutation();
   const dispatch = useDispatch();
@@ -93,7 +95,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
       trackSignup("google", "direct"); // Google signup from signup page
     } catch (error) {
       console.error("Google authentication failed", error);
-      showError("Google authentication failed", "Please try again or use email and password to sign up.");
+      showError(tToast("googleAuthFailed"), tToast("tryAgain"));
     }
   };
 

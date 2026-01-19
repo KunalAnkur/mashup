@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaFilm, FaRocket, FaSearch, FaHome } from "react-icons/fa";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 const NotFound = () => {
   const router = useRouter();
@@ -54,16 +55,16 @@ const NotFound = () => {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-rose-500/20 border border-purple-500/30 backdrop-blur-sm">
               <span className="text-2xl">🎬</span>
               <h2 className="text-2xl md:text-3xl font-bold text-white">
-                Oops! This Scene is Missing
+                {t("title")}
               </h2>
               <span className="text-2xl">🎥</span>
             </div>
             
             <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-              Looks like this page went on a coffee break! ☕
+              {t("description1")}
             </p>
             <p className="text-base text-gray-400">
-              Don't worry, even the best movies have deleted scenes. Let's get you back to the main show!
+              {t("description2")}
             </p>
           </div>
 
@@ -83,15 +84,15 @@ const NotFound = () => {
               className="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-300 hover:text-white font-semibold rounded-xl transition-all duration-300 flex items-center gap-2"
             >
               <span>←</span>
-              <span>Go Back</span>
+              <span>{t("goBack")}</span>
             </button>
           </div>
 
           {/* Fun facts or tips */}
           <div className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-rose-500/10 border border-purple-500/20 backdrop-blur-sm max-w-md">
             <p className="text-sm text-gray-400 text-center">
-              <span className="text-purple-400 font-semibold">Fun Fact:</span>{" "}
-              The first 404 error appeared in 1992. You're experiencing a piece of internet history! 🚀
+              <span className="text-purple-400 font-semibold">{t("funFact")}</span>{" "}
+              {t("funFactText")}
             </p>
           </div>
         </div>

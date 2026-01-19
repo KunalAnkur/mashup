@@ -1,5 +1,6 @@
 import React from "react";
 import { LuPlay, LuFilm } from "react-icons/lu";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 interface PlaylistFileCardProps {
     file: File;
@@ -26,6 +27,7 @@ export const PlaylistFileCard: React.FC<PlaylistFileCardProps> = ({
     thumbnail,
     onSelect,
 }) => {
+    const t = useTranslations("panel.playlist");
     return (
         <button
             onClick={onSelect}
@@ -81,12 +83,12 @@ export const PlaylistFileCard: React.FC<PlaylistFileCardProps> = ({
                     </p>
                     {isPlaying && (
                         <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                            Playing
+                            {t("playing")}
                         </span>
                     )}
                 </div>
                 <p className="text-gray-500 text-[10px] truncate">
-                    {formatFileSize(file.size)} • Local file
+                    {formatFileSize(file.size)} • {t("localFile")}
                 </p>
             </div>
 

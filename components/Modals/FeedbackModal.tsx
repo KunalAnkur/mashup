@@ -5,6 +5,7 @@ import { RootState } from "@/lib/store";
 import { LuX, LuSend, LuSparkles, LuMessageSquare } from "react-icons/lu";
 import { useSubmitFeedbackMutation } from "@/lib/store/api/feedbackApi";
 import { showSuccess, showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -22,13 +23,14 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
     description: "",
     category: "bug" as "bug" | "feature" | "other",
   });
-
-  if (!isOpen) return null;
+  const tToast = useTranslations("toast");
+  const tCommon = useTranslations("common");
+  const tFeedback = useTranslations("feedback");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.title.length < 3 || formData.description.length < 10) {
-      showError("Invalid Input", "Please fill in all fields correctly.");
+      showError(tToast("invalidInput"), tToast("fillFieldsCorrectly"));
       return;
     }
 
@@ -42,24 +44,23 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
           room_details: roomDetailsSnapshot
         });
       
-        showSuccess("Feedback Sent! 🎉\nThank you for helping us grow!");
+        showSuccess(tToast("feedbackSent"));
         onClose();
         setFormData({ title: "", description: "", category: "bug" });
       } else {
-        showError("Error", "Please login to send feedback.");
+        showError(tCommon("error"), tToast("pleaseLogin"));
       }
     } catch (err: any) {
-      showError("Error", "Could not send feedback. Try again.");
+      showError(tCommon("error"), tToast("couldNotSendFeedback"));
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Background Overlay */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+  if (!isOpen) return null;
 
+  return (
+    <div className="feedback-modal fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="relative w-full max-w-md bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518]  rounded-[2rem] shadow-2xl overflow-hidden animate-slide-up">
         
         {/* Dynamic Background Glows (Matching Panel Style) */}
@@ -73,8 +74,8 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
               <LuMessageSquare className="text-rose-400" size={20} />
             </div>
             <div>
-              <h3 className="text-white text-lg font-bold font-parkinsans">Feedback</h3>
-              <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">Help us improve</p>
+              <h3 className="text-white text-lg font-bold font-parkinsans">{tFeedback("title")}</h3>
+              <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">{tFeedback("helpUsImprove")}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all">
@@ -85,7 +86,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
         <form onSubmit={handleSubmit} className="relative p-6 space-y-5">
           {/* Category Chips - Matching Tab Style */}
           <div className="flex p-1 bg-zinc-900/50 rounded-2xl ">
-            {["bug", "feature", "other"].map((cat) => (
+            {(["bug", "feature", "other"] as const).map((cat) => (
               <button
                 key={cat}
                 type="button"
@@ -96,7 +97,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
                     : "text-white/40 hover:text-white/60"
                 }`}
               >
-                {cat}
+                {tFeedback(`category.${cat}`)}
               </button>
             ))}
           </div>
@@ -104,14 +105,14 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
           <div className="space-y-4">
             <input
               type="text"
-              placeholder="Topic"
+              placeholder={tFeedback("topic")}
               className="w-full bg-zinc-800/20  rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all font-medium"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             />
 
             <textarea
-              placeholder="Tell us what's on your mind..."
+              placeholder={tFeedback("descriptionPlaceholder")}
               rows={4}
               className="w-full bg-zinc-800/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all resize-none font-medium"
               value={formData.description}
@@ -130,7 +131,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
               ) : (
                 <>
                   <LuSend size={18} />
-                  <span>Send Feedback</span>
+                  <span>{tFeedback("sendFeedback")}</span>
                 </>
               )}
             </div>

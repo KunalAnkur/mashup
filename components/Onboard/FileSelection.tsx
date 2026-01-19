@@ -24,6 +24,7 @@ import { showError } from "@/utils/toast";
 import { ExtendedFile } from "@/utils/filePersistence";
 import { Playlist } from "@/types/storeTypes";
 import { isMobile } from "react-device-detect";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 const FileSelection = () => {
   const dispatch = useDispatch();
@@ -45,6 +46,9 @@ const FileSelection = () => {
   const [isStarting, setIsStarting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tToast = useTranslations("toast");
+  const tStream = useTranslations("stream");
+  const tCommon = useTranslations("common");
 
   // Ensure one file is selected by default when files are loaded
   useEffect(() => {
@@ -163,8 +167,8 @@ const FileSelection = () => {
         }
         console.error("Error selecting files:", error);
         showError(
-          "Failed to select files",
-          "Please check your browser permissions and try again."
+          tToast("failedToSelectFiles"),
+          tToast("checkPermissions")
         );
         showPermissionPrompt();
         fileInputRef.current?.click();
@@ -204,7 +208,7 @@ const FileSelection = () => {
         <div className="flex items-center gap-2 sm:gap-3">
           <span className="w-1 h-5 sm:h-6 bg-gradient-to-b from-purple-500 to-fuchsia-500 rounded-full"></span>
           <h3 className="text-base sm:text-lg md:text-xl font-bold text-white font-parkinsans">
-            Choose Files
+            {tStream("chooseFiles")}
           </h3>
         </div>
         <button
@@ -220,7 +224,7 @@ const FileSelection = () => {
             <FaUpload className="relative z-10 text-zinc-300 group-hover:text-white transition-colors duration-300 text-xs sm:text-sm" />
           )}
           <span className="relative z-10 text-xs sm:text-sm font-medium text-white/80 group-hover:text-white transition-colors duration-300">
-            {isLoading ? "Loading..." : "Add Files"}
+            {isLoading ? tCommon("loading") : tStream("addFiles")}
           </span>
         </button>
       </div>
@@ -352,10 +356,10 @@ const FileSelection = () => {
                   )}
                 </div>
                 <span className="relative z-10 text-sm sm:text-base font-semibold text-white/90 group-hover:text-white transition-colors duration-300 mb-0.5 sm:mb-1">
-                  {isLoading ? "Loading..." : "Click to Upload Files"}
+                  {isLoading ? tCommon("loading") : tStream("clickToUploadFiles")}
                 </span>
                 <span className="relative z-10 text-[10px] sm:text-xs text-white/60 group-hover:text-white/80 transition-colors duration-300">
-                  {isLoading ? "Please wait..." : "or drag and drop files here"}
+                  {isLoading ? tStream("pleaseWait") : tStream("dragAndDropFiles")}
                 </span>
               </button>
             ) : files.length < 2 ? (
@@ -373,7 +377,7 @@ const FileSelection = () => {
                     <FaPlus className="text-zinc-300 group-hover:text-white transition-colors duration-200 text-xs sm:text-sm" />
                   )}
                   <span className="text-[10px] sm:text-xs text-white/70 group-hover:text-white transition-colors duration-200">
-                    {isLoading ? "Loading..." : "Click to add more files"}
+                    {isLoading ? tCommon("loading") : tStream("clickToAddMoreFiles")}
                   </span>
                 </div>
               </div>
@@ -398,8 +402,7 @@ const FileSelection = () => {
               </div>
               <div>
                 <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">
-                  <span className="text-white/90 font-medium">Tip 1:</span> You can
-                  select multiple files at once.
+                  <span className="text-white/90 font-medium">{tStream("tip1")}:</span> {tStream("tip1MultipleFiles")}
                 </p>
               </div>
             </div>
@@ -419,8 +422,7 @@ const FileSelection = () => {
               </div>
               <div>
                 <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">
-                  <span className="text-white/90 font-medium">Tip 2:</span> You can
-                  drag and drop files to upload.
+                  <span className="text-white/90 font-medium">{tStream("tip2")}:</span> {tStream("tip2DragAndDrop")}
                 </p>
               </div>
             </div>
@@ -430,18 +432,18 @@ const FileSelection = () => {
             <Button
               onClick={handleBack}
               className="w-full rounded-lg sm:rounded-xl flex items-center justify-center gap-1.5 sm:gap-2 bg-gray-900/10 hover:from-purple-600/15 hover:via-pink-600/15 hover:to-fuchsia-600/15 hover:border-purple-500/30 border border-zinc-600/10 text-white text-xs sm:text-sm px-3 sm:px-4 py-2.5 sm:py-3 transition-all duration-200"
-              name="Back"
+              name={tStream("back")}
             >
               <FaArrowLeft className="text-[10px] sm:text-xs" />
-              Back
+              {tStream("back")}
             </Button>
             <Button
               onClick={handleOnURLSelection}
               className="w-full rounded-lg sm:rounded-xl flex items-center justify-center gap-1.5 sm:gap-2 bg-gray-900/10 hover:from-purple-600/15 hover:via-pink-600/15 hover:to-fuchsia-600/15 hover:border-purple-500/30 border border-zinc-600/10 text-white text-xs sm:text-sm px-3 sm:px-4 py-2.5 sm:py-3 transition-all duration-200"
-              name="Use Sync"
+              name={tStream("useSync")}
             >
               <FaLink className="text-[10px] sm:text-xs" />
-              Use Sync
+              {tStream("useSync")}
             </Button>
           </div>
 
@@ -454,7 +456,7 @@ const FileSelection = () => {
                 ? "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-700 hover:via-pink-700 hover:to-fuchsia-700 text-white"
                 : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 text-white opacity-50 cursor-not-allowed"
             }`}
-            name={isStarting ? "Starting..." : "Start Watching"}
+            name={isStarting ? tStream("starting") : tStream("startWatching")}
           />
 
           {/* Mobile-only Tip - Bottom */}
@@ -462,7 +464,7 @@ const FileSelection = () => {
             <div className="flex items-center justify-center gap-1.5 py-2 text-center">
               <span className="text-amber-400 text-[10px]">💡</span>
               <p className="text-white/50 text-[10px] leading-relaxed">
-                Use desktop or laptop for better stream quality
+                {tStream("useDesktopForBetterQuality")}
               </p>
             </div>
           )}

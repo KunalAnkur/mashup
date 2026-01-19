@@ -1,29 +1,37 @@
+"use client";
+
 import React from "react";
 import { SectionTitle } from "../Modals/DeviceModalComponents/SectionTitle";
 import { FaDesktop } from "react-icons/fa";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 interface ScreenShareBoxProps {
   handleScreenShareClick: (platformName: string) => void;
 }
 
-const ScreenShareInfo: React.FC = () => (
-  <div className="p-3 sm:p-4 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl rounded-lg sm:rounded-xl border border-zinc-600/15">
-    <p className="text-white/80 text-xs sm:text-sm text-center leading-relaxed">
-      <span className="text-white/90 font-semibold">Share your screen:</span>
-      <br />
-      <span className="text-white/60 text-xs">Be sure to enable audio while sharing to include audio</span>
-    </p>
-  </div>
-);
+const ScreenShareInfo: React.FC = () => {
+  const t = useTranslations("stream");
+  return (
+    <div className="p-3 sm:p-4 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl rounded-lg sm:rounded-xl border border-zinc-600/15">
+      <p className="text-white/80 text-xs sm:text-sm text-center leading-relaxed">
+        <span className="text-white/90 font-semibold">{t("screenShareTitle")}:</span>
+        <br />
+        <span className="text-white/60 text-xs">{t("screenShareDescription")}</span>
+      </p>
+    </div>
+  );
+};
 
 export const ScreenShareBox: React.FC<ScreenShareBoxProps> = ({
   handleScreenShareClick,
-}) => (
+}) => {
+  const t = useTranslations("stream");
+  return (
   <div className="flex flex-col w-full h-full">
     <SectionTitle
       gradientFrom="from-fuchsia-500"
       gradientTo="to-purple-500"
-      title="Screen Share"
+      title={t("screenShare")}
     />
     <div className="flex flex-1 flex-col gap-3 sm:gap-4">
       <button
@@ -39,12 +47,13 @@ export const ScreenShareBox: React.FC<ScreenShareBoxProps> = ({
             <FaDesktop className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-300 group-hover:text-white transition-all duration-300" />
           </div>
           <span className="text-base sm:text-lg md:text-xl font-semibold text-white/90 group-hover:text-white transition-all duration-300">
-            Screen Share
+            {t("screenShare")}
           </span>
         </div>
       </button>
       <ScreenShareInfo />
     </div>
   </div>
-);
+  );
+};
 

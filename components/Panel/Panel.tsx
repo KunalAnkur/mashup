@@ -20,36 +20,52 @@ import {
   LuCheck,
   LuLink,
   LuLogOut,
-  LuSparkles, // New Feedback Icon
-  LuMessageCircle, // Chat Tab Icon
-  LuUsers, // People Tab Icon
-  LuSettings, // Settings Tab Icon
-  LuListVideo // Playlist Tab Icon
+  LuSparkles,
+  LuMessageCircle,
+  LuUsers,
+  LuSettings,
+  LuListVideo,
+  LuX,
+  LuSend,
+  LuMessageSquare
 } from "react-icons/lu";
 import { useRoomContext } from "@/context/RoomContext";
-import { showError } from "@/utils/toast";
+import { showError, showSuccess } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomLinkCopied } from "@/lib/analytics";
-import FeedbackModal from "../Modals/FeedbackModal";
 import { usePlaytimeTracking } from "@/hooks/usePlaytimeTracking";
+import { useSubmitFeedbackMutation } from "@/lib/store/api/feedbackApi";
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackForm, setFeedbackForm] = useState({
+    title: "",
+    description: "",
+    category: "bug" as "bug" | "feature" | "other",
+  });
 
   const { leaveRoom, roomId, isHost, isJoined } = useRoomContext();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const router = useRouter();
   const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const roomState = useSelector((state: RootState) => state.room);
+  const authState = useSelector((state: RootState) => state.auth);
   const host = roomState.host;
   const dispatch = useDispatch();
+  const [submitFeedback] = useSubmitFeedbackMutation();
 
   const { sendPlaytime } = usePlaytimeTracking({
     roomId: roomState.roomId || roomId || null,
     isHost: (isHost || host) || false,
     enabled: false,
   });
+  const tToast = useTranslations("toast");
+  const tPanel = useTranslations("panel");
+  const tCommon = useTranslations("common");
+  const tFeedback = useTranslations("feedback");
 
   const roomUrl = roomId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/room/${roomId}` : '';
 
@@ -87,6 +103,16 @@ const Panel = () => {
     }
   };
 
+  const getTabLabel = (tab: Tabs) => {
+    switch (tab) {
+      case Tabs.CHAT: return tPanel("chat.title");
+      case Tabs.PEOPLE: return tPanel("people.title");
+      case Tabs.SETTINGS: return tPanel("settings.title");
+      case Tabs.PLAYLIST: return tPanel("playlist.title");
+      default: return tab;
+    }
+  };
+
   const handleCopyLink = () => {
     if (roomUrl && roomId) {
       navigator.clipboard.writeText(roomUrl);
@@ -105,7 +131,7 @@ const Panel = () => {
       setShowLeaveConfirm(false);
       router.push("/");
     } catch (error) {
-      showError("Failed to leave room", "There was an error leaving the room. You have been removed locally.");
+      showError(tToast("failedToLeaveRoom"), tToast("errorLeavingRoom"));
       dispatch(exitRoom());
       router.push("/");
       setShowLeaveConfirm(false);
@@ -120,13 +146,119 @@ const Panel = () => {
     setShowLeaveConfirm(false);
   };
 
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (feedbackForm.title.length < 3 || feedbackForm.description.length < 10) {
+      showError(tToast("invalidInput"), tToast("fillFieldsCorrectly"));
+      return;
+    }
+
+    setFeedbackLoading(true);
+    try {
+      if (authState.isAuthenticated) {
+        await submitFeedback({
+          ...feedbackForm,
+          room_id: roomId || undefined,
+          room_details: roomState
+        });
+      
+        showSuccess(tToast("feedbackSent"));
+        setIsFeedbackOpen(false);
+        setFeedbackForm({ title: "", description: "", category: "bug" });
+      } else {
+        showError(tCommon("error"), tToast("pleaseLogin"));
+      }
+    } catch (err: any) {
+      showError(tCommon("error"), tToast("couldNotSendFeedback"));
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
   return (
     <div className="relative flex flex-col h-full w-full bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] px-3 py-3 md:px-4 md:py-4 overflow-hidden">
-      <FeedbackModal
-        isOpen={isFeedbackOpen}
-        onClose={() => setIsFeedbackOpen(false)}
-        roomId={roomId || undefined}
-      />
+      {/* Feedback Modal - Inline like leave modal */}
+      {isFeedbackOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]">
+          <div className="relative w-full max-w-md mx-4 bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] rounded-[2rem] shadow-2xl overflow-hidden">
+            {/* Dynamic Background Glows */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[60px]" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-[60px]" />
+
+            {/* Header */}
+            <div className="relative px-6 pt-6 pb-2 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
+                  <LuMessageSquare className="text-rose-400" size={20} />
+                </div>
+                <div>
+                  <h3 className="text-white text-lg font-bold font-parkinsans">{tFeedback("title")}</h3>
+                  <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">{tFeedback("helpUsImprove")}</p>
+                </div>
+              </div>
+              <button onClick={() => setIsFeedbackOpen(false)} className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all">
+                <LuX size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleFeedbackSubmit} className="relative p-6 space-y-5">
+              {/* Category Chips */}
+              <div className="flex p-1 bg-zinc-900/50 rounded-2xl">
+                {(["bug", "feature", "other"] as const).map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setFeedbackForm({ ...feedbackForm, category: cat })}
+                    className={`flex-1 py-2 text-[11px] font-bold capitalize transition-all duration-300 rounded-xl ${
+                      feedbackForm.category === cat 
+                        ? "bg-gradient-to-r from-rose-500/20 to-fuchsia-500/20 text-white" 
+                        : "text-white/40 hover:text-white/60"
+                    }`}
+                  >
+                    {tFeedback(`category.${cat}`)}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder={tFeedback("topic")}
+                  className="w-full bg-zinc-800/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all font-medium"
+                  value={feedbackForm.title}
+                  onChange={(e) => setFeedbackForm({ ...feedbackForm, title: e.target.value })}
+                />
+
+                <textarea
+                  placeholder={tFeedback("descriptionPlaceholder")}
+                  rows={4}
+                  className="w-full bg-zinc-800/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all resize-none font-medium"
+                  value={feedbackForm.description}
+                  onChange={(e) => setFeedbackForm({ ...feedbackForm, description: e.target.value })}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={feedbackLoading}
+                className="group relative w-full py-4 bg-gradient-to-r from-rose-600 to-fuchsia-600 hover:from-rose-500 hover:to-fuchsia-500 text-white font-bold text-sm rounded-2xl transition-all duration-300 shadow-lg shadow-rose-500/20 overflow-hidden active:scale-95 disabled:opacity-50"
+              >
+                <div className="relative z-10 flex items-center justify-center gap-2">
+                  {feedbackLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <LuSend size={18} />
+                      <span>{tFeedback("sendFeedback")}</span>
+                    </>
+                  )}
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Background Effects */}
       <div className="absolute inset-0 z-0">
@@ -137,32 +269,31 @@ const Panel = () => {
 
       <div className="relative z-30 flex flex-col h-full w-full">
         {showLeaveConfirm && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="leave-modal fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-xl md:rounded-2xl p-4 md:p-6 max-w-sm w-full mx-4 shadow-2xl">
               <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                 <div className="p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
                   <LuLogOut className="text-red-400" size={18} />
                 </div>
                 <h3 className="text-white text-base md:text-lg font-bold font-parkinsans">
-                  Leave Party?
+                  {tPanel("leaveParty")}
                 </h3>
               </div>
               <p className="text-white/70 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-                Are you sure you want to leave this party? You&apos;ll need the
-                room ID to rejoin.
+                {tPanel("leavePartyMessage")}
               </p>
               <div className="flex gap-2 md:gap-3">
                 <button
                   onClick={handleStay}
                   className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200"
                 >
-                  Stay
+                  {tPanel("stay")}
                 </button>
                 <button
                   onClick={handleLeaveParty}
                   className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
                 >
-                  Leave
+                  {tPanel("leave")}
                 </button>
               </div>
             </div>
@@ -275,7 +406,7 @@ const Panel = () => {
                 )}
                 {copied && (
                   <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl animate-fade-in">
-                    Link copied!
+                    {tCommon("linkCopied")}
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
                   </div>
                 )}
@@ -307,10 +438,10 @@ const Panel = () => {
                   </div>
                   <div className="flex flex-col">
                     <p className="text-white/90 text-xs font-semibold tracking-tight">
-                      Actively Improving
+                      {tPanel("activelyImproving")}
                     </p>
                     <p className="text-white/40 text-[10px] leading-none mt-0.5">
-                      Help us shape Movmash
+                      {tPanel("helpUsShapeMovmash")}
                     </p>
                   </div>
                 </div>
@@ -318,7 +449,7 @@ const Panel = () => {
                   onClick={() => setIsFeedbackOpen(true)}
                   className="px-4 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 text-amber-400 text-[11px] font-bold rounded-lg transition-all duration-300 active:scale-95 shadow-lg shadow-amber-900/5"
                 >
-                  Feedback
+                  {tPanel("feedback")}
                 </button>
               </div>
             </div>
@@ -353,7 +484,7 @@ const Panel = () => {
                   className={`px-3 py-2 font-medium text-sm transition-all duration-200 relative rounded-t-xl z-10 flex-shrink-0
                               ${activeTab === tab ? "text-white" : "text-white/60 hover:text-white/80"}`}
                 >
-                  <span className="relative z-20 whitespace-nowrap">{tab}</span>
+                  <span className="relative z-20 whitespace-nowrap">{getTabLabel(tab)}</span>
                   {activeTab === tab && (
                     <>
                       <div className={`absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r ${getTabBorderGradient(tab)} rounded-full z-10`}></div>

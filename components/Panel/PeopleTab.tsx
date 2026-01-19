@@ -5,6 +5,7 @@ import { RootState } from "@/lib/store";
 import { useRoomContext, UserInfo } from "@/context/RoomContext";
 import { FaCrown, FaUserShield } from "react-icons/fa";
 import Avatar from "../UI/Avatar";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 const getUserColor = (username: string) => {
   const colors = [
@@ -52,6 +53,8 @@ const getUserColor = (username: string) => {
 const PeopleTab = () => {
   const { participants } = useRoomContext();
   const currentUser = useSelector((state: RootState) => state.auth.user);
+  const t = useTranslations("panel.people");
+  const tCommon = useTranslations("common");
 
   // Get avatar URL helper
   const getAvatarUrl = (user: UserInfo) => {
@@ -80,7 +83,7 @@ const PeopleTab = () => {
         <div className="flex items-center gap-1.5 md:gap-2 mb-2 px-1">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
           <h3 className="text-white/80 text-[10px] md:text-xs font-bold uppercase tracking-widest px-2 md:px-3 py-0.5 md:py-1 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-full">
-            {sortedParticipants.length} {sortedParticipants.length === 1 ? 'Participant' : 'Participants'}
+            {sortedParticipants.length} {sortedParticipants.length === 1 ? t("participant") : t("participants")}
           </h3>
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
         </div>
@@ -90,8 +93,8 @@ const PeopleTab = () => {
             <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 flex items-center justify-center mb-3 md:mb-4">
               <FaUserShield className="text-white/50" size={20} />
             </div>
-            <p className="text-white/70 text-xs md:text-sm font-medium">No participants yet</p>
-            <p className="text-white/50 text-[10px] md:text-xs mt-1">Waiting for others to join...</p>
+            <p className="text-white/70 text-xs md:text-sm font-medium">{t("noParticipants")}</p>
+            <p className="text-white/50 text-[10px] md:text-xs mt-1">{t("waitingForOthers")}</p>
           </div>
         ) : (
           sortedParticipants.map((participant, index) => {
@@ -151,13 +154,13 @@ const PeopleTab = () => {
                       
                       {isCurrentUser && (
                         <span className="px-1.5 md:px-2 py-0.5 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full text-rose-300 text-[9px] md:text-[10px] font-semibold uppercase tracking-wide">
-                          You
+                          {tCommon("you")}
                         </span>
                       )}
                       
                       {participant.host && (
                         <span className="px-1.5 md:px-2 py-0.5 bg-gradient-to-r from-yellow-500/25 via-amber-500/25 to-yellow-500/25 rounded-full text-yellow-300 text-[9px] md:text-[10px] font-semibold uppercase tracking-wide shadow-lg shadow-yellow-500/10">
-                          Host
+                          {tCommon("host")}
                         </span>
                       )}
                     </div>
