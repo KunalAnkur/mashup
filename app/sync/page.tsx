@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { usePreventMobileScroll } from "@/hooks/usePreventMobileScroll";
 import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "@/i18n/I18nProvider";
@@ -16,6 +17,7 @@ import { PageHeader } from "@/components/UI";
 import { Playlist } from "@/types/storeTypes";
 
 const SyncPage = () => {
+  usePreventMobileScroll();
   const dispatch = useDispatch();
   const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
@@ -111,7 +113,7 @@ const SyncPage = () => {
         <PageHeader title={t("title")} onBack={handleBack} />
 
         {/* Content - Top aligned on mobile, centered on desktop */}
-        <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">
+        <div className="flex-1 w-full min-h-0 overflow-hidden md:overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">
           <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 md:py-8">
             <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 2xl:gap-16 w-full">
               {/* Left Side - Supported Platforms - Hidden on SM, XS, shown on MD+ but only on XL+ as side-by-side */}

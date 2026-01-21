@@ -1,8 +1,11 @@
 "use client";
 import { SourceSelection, ProfileHeader } from "@/components";
 import React from "react";
+import { usePreventMobileScroll } from "@/hooks/usePreventMobileScroll";
 
 const Page = () => {
+  usePreventMobileScroll();
+  
   return (
     <div className="relative h-screen bg-[#18181b] overflow-hidden">
       {/* Background Effects - Matching CTASection */}

@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "@/i18n/I18nProvider";
 import LoginDropdown from "./LoginDropdown";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import Image from "next/image";
 
 type ProfileHeaderProps = {
   onLoginClick?: () => void;
@@ -58,23 +59,41 @@ const ProfileHeader = ({ onLoginClick }: ProfileHeaderProps) => {
   // Note: Using explicit right positioning to keep components on right even for RTL languages
   if (isFixedPage) {
     return (
-      <div className="absolute top-4 right-4 z-50 flex items-center flex-row gap-3" style={{ direction: 'ltr' }}>
-        <LanguageSelector />
-        {isAuthenticated ? (
-          <AvatarDropdown size={40} />
-        ) : (
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={handleLoginClick}
-              className="text-white text-sm font-medium hover:text-pink-400 transition-colors duration-200"
-            >
-              {t("login")}
-            </button>
-            {showLoginDropdown && (
-              <LoginDropdown onClose={() => setShowLoginDropdown(false)} />
-            )}
-          </div>
-        )}
+      <div className="absolute top-4 left-4 right-4 sm:left-auto sm:right-4 z-50 flex items-center justify-between sm:justify-end" style={{ direction: 'ltr' }}>
+        {/* Brand name - visible on mobile only */}
+        <div className="flex items-center gap-2 sm:hidden">
+          <Image
+            src="/assets/logo.svg"
+            alt="Movmash Logo"
+            priority
+            width={28}
+            height={28}
+            className="w-7 h-7"
+          />
+          <h3 className="text-xl font-extrabold text-white font-parkinsans tracking-tight">
+            {t("brand")}
+          </h3>
+        </div>
+        
+        {/* Right side: Language selector and auth controls */}
+        <div className="flex items-center flex-row gap-2 sm:gap-3">
+          <LanguageSelector />
+          {isAuthenticated ? (
+            <AvatarDropdown size={40} />
+          ) : (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={handleLoginClick}
+                className="text-white text-sm font-medium hover:text-pink-400 transition-colors duration-200"
+              >
+                {t("login")}
+              </button>
+              {showLoginDropdown && (
+                <LoginDropdown onClose={() => setShowLoginDropdown(false)} />
+              )}
+            </div>
+          )}
+        </div>
       </div>
     );
   }

@@ -106,10 +106,10 @@ const SourceSelection = () => {
         onContinue={handleMobileWarningContinue}
       /> */}
       
-      <div className="w-full h-full flex flex-col items-center justify-center bg-transparent px-4 py-6 overflow-y-auto overflow-x-hidden">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-transparent px-4 pt-20 sm:pt-6 pb-6 overflow-hidden sm:overflow-y-auto overflow-x-hidden">
         <div className="w-full max-w-lg flex flex-col items-center gap-3 sm:gap-4 md:gap-5 my-auto">
-          {/* LOGO & BRAND */}
-          <div className="flex items-center justify-center gap-3 ">
+          {/* LOGO & BRAND - Hidden on mobile (shown in header instead) */}
+          <div className="hidden sm:flex items-center justify-center gap-3 ">
             <Image
               src="/assets/logo.svg"
               alt="Movmash Logo"
@@ -138,7 +138,7 @@ const SourceSelection = () => {
                 style={{ animationDelay: "0.5s" }}
               ></div>
             </div>
-            <p className="text-gray-400 text-center mb-3 sm:mb-4 text-xs sm:text-sm font-medium px-2">
+            <p className="text-gray-400 text-center mb-3 sm:mb-4 text-xs sm:text-sm font-medium px-2 mt-1">
               {t("createPartyDescription")}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch w-full">
