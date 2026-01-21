@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useFileContext } from "@/context/FileContext";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { usePreventMobileScroll } from "@/hooks/usePreventMobileScroll";
 import {
   ContentDivider,
   DragOverlay,
@@ -16,6 +17,7 @@ import { isMobile } from "react-device-detect";
 import { ExtendedFile } from "@/utils/filePersistence";
 
 const StreamFilesPage = () => {
+  usePreventMobileScroll();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { files, setFiles } = useFileContext();
@@ -106,7 +108,7 @@ const StreamFilesPage = () => {
         <PageHeader title={t("title")} onBack={handleBack} />
 
         {/* Content - Top aligned on mobile, centered on desktop */}
-        <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">
+        <div className="flex-1 w-full min-h-0 overflow-hidden md:overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">
           <div className="w-full max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-8">
             {/* Desktop-only: Internet Speed Tip - Auto disappears */}
             {!isMobile && showSpeedTip && (
