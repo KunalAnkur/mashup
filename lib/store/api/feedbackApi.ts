@@ -8,7 +8,7 @@ export interface FeedbackInput {
   room_details?: object; // Redux snapshot
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8989";
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8989";
 
 export const feedbackApi = createApi({
   reducerPath: "feedbackApi",
