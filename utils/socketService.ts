@@ -23,7 +23,7 @@ export class SocketService {
   }: SocketServiceOptions = {}) {
     this.baseUrl = baseUrl;
     this.options = {
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 100,
       reconnectionDelay: 1000,
       autoConnect: true,
       ...options,

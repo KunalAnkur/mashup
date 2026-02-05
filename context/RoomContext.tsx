@@ -179,6 +179,23 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [socket, roomId, isHost, username, email, profile, roomState.playlist, roomTypeFromState, isJoined]);
 
+    // If the socket disconnects (e.g., internet drop), reset local "joined" state
+    // so that the auto-join effect can re-run once the connection is restored.
+    useEffect(() => {
+        if (isConnected) return;
+
+        // Clear join guards/state; we can't emit LEAVE_ROOM when offline anyway.
+        setIsLoading(false);
+        setIsJoined(false);
+        setRoomType(null);
+        setHostLeft(false);
+        setRoomClosed(false);
+        setJoinResponse(null);
+        setParticipants([]);
+        joinAttemptedRef.current = false;
+        currentRoomRef.current = null;
+    }, [isConnected]);
+
     const updatePlaylist = useCallback(
         async (urls: string[]) => {
             if (!socket || !roomId) return;
@@ -238,7 +255,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     // Auto-join
     useEffect(() => {
+        console.log("Reconnection test - auto-join called", { roomId, socket, username, isConnected, isJoined, joinAttemptedRef: joinAttemptedRef.current });
+        console.log("Reconnection test - auto-join condition", (roomId && socket && username && isConnected && !isJoined && !joinAttemptedRef.current));
         if (roomId && socket && username && isConnected && !isJoined && !joinAttemptedRef.current) {
+            console.log("Reconnection test - auto-join calling joinRoom", { roomId, socket, username, isConnected, isJoined, joinAttemptedRef: joinAttemptedRef.current });
             joinRoom();
         }
     }, [roomId, socket, username, isConnected, isJoined, joinRoom]);
