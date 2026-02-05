@@ -50,6 +50,7 @@ export const useStream = ({
     const consumerTransportRef = useRef<Transport | null>(null);
     const audioProducerRef = useRef<Producer | null>(null);
     const videoProducerRef = useRef<Producer | null>(null);
+    const reconnectCountRef = useRef(0);
     const consumersRef = useRef<Consumer[]>([]);
     const initializingRef = useRef(false);
     const isSeekingRef = useRef(false);
@@ -531,6 +532,14 @@ export const useStream = ({
         return () => { socket.off(SocketEvent.STREAM_STOPPED, handleStreamStopped); };
     }, [socket, isHost, enabled]);
     
+    useEffect(() => {
+        if (!socket || !enabled) return;
+        if (reconnectCountRef.current > 0) {
+            initializeFromJoinResponse()
+        };
+        reconnectCountRef.current++;
+    }, [socket, enabled]);
+
     // useEffect(() => {
     //     if (!isHost || !enabled || !isInitialized) return;
 
