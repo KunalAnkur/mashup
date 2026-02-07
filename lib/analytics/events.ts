@@ -39,9 +39,26 @@ type ExternalSource =
   | "google_organic"
   | "referral"
   | "email_campaign"
-  | "blog";
+  | "blog"
+  | "movmash_landing";
 
 export type SignupSource = InAppSource | ExternalSource | "unknown";
+
+export type AttributionSnapshot = {
+  detected_source: SignupSource | null;
+  referrer: string;
+  referring_domain: string;
+  is_internal_referrer?: boolean;
+  is_movmash_landing: boolean;
+  captured_at: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+};
+
+const ATTRIBUTION_STORAGE_KEY = "movmash:first_touch_attribution:v1";
 
 // ============ SAFETY CHECK ============
 
@@ -122,6 +139,144 @@ const getUTMParams = () => {
   return utm;
 };
 
+const getHostnameFromUrl = (url: string): string => {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+};
+
+const isMovmashLandingReferrer = (referrer: string): boolean => {
+  const hostname = getHostnameFromUrl(referrer);
+  return hostname === "movmash.com" || hostname === "www.movmash.com";
+};
+
+const isInternalReferrer = (referrer: string): boolean => {
+  if (typeof window === "undefined" || !referrer) return false;
+  const referrerHost = getHostnameFromUrl(referrer);
+  const currentHost = window.location.hostname.toLowerCase();
+  return !!referrerHost && referrerHost === currentHost;
+};
+
+const mapUtmSourceToSignupSource = (utmSource?: string | null): SignupSource | null => {
+  if (!utmSource) return null;
+
+  const sourceMap: Record<string, SignupSource> = {
+    "reddit": "reddit",
+    "tiktok": "tiktok",
+    "instagram": "instagram",
+    "twitter": "twitter",
+    "x": "twitter",
+    "facebook": "facebook",
+    "fb": "facebook",
+    "youtube": "youtube",
+    "yt": "youtube",
+    "linkedin": "linkedin",
+    "discord": "discord",
+    "producthunt": "producthunt",
+    "product_hunt": "producthunt",
+    "hackernews": "hackernews",
+    "hn": "hackernews",
+    "google": "google_ads",
+    "email": "email_campaign",
+    "newsletter": "email_campaign",
+    "blog": "blog",
+    "referral": "referral",
+    "movmash": "movmash_landing",
+    "movmash_landing": "movmash_landing",
+    "landing": "movmash_landing",
+  };
+
+  return sourceMap[utmSource.toLowerCase()] || null;
+};
+
+const mapReferrerToSignupSource = (referrer: string): SignupSource | null => {
+  if (!referrer) return null;
+
+  if (isMovmashLandingReferrer(referrer)) return "movmash_landing";
+  if (referrer.includes("reddit.com")) return "reddit";
+  if (referrer.includes("tiktok.com")) return "tiktok";
+  if (referrer.includes("instagram.com")) return "instagram";
+  if (referrer.includes("twitter.com") || referrer.includes("x.com")) return "twitter";
+  if (referrer.includes("facebook.com") || referrer.includes("fb.com")) return "facebook";
+  if (referrer.includes("youtube.com") || referrer.includes("youtu.be")) return "youtube";
+  if (referrer.includes("linkedin.com")) return "linkedin";
+  if (referrer.includes("discord.com") || referrer.includes("discord.gg")) return "discord";
+  if (referrer.includes("producthunt.com")) return "producthunt";
+  if (referrer.includes("news.ycombinator.com")) return "hackernews";
+  if (referrer.includes("google.com")) return "google_organic";
+
+  return null;
+};
+
+const readStoredAttribution = (): AttributionSnapshot | null => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(ATTRIBUTION_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as AttributionSnapshot;
+  } catch {
+    return null;
+  }
+};
+
+const hasUsefulAttributionSignal = (snapshot: AttributionSnapshot | null): boolean => {
+  if (!snapshot) return false;
+  const hasUtmSource = !!snapshot.utm_source;
+  const hasExternalReferrer = !!snapshot.referrer && !snapshot.is_internal_referrer;
+  return !!snapshot.detected_source || hasUtmSource || hasExternalReferrer;
+};
+
+/**
+ * Persist first-touch attribution once per browser profile.
+ * This prevents losing attribution after internal route changes (e.g. / -> /login).
+ */
+export const persistFirstTouchAttribution = (): AttributionSnapshot | null => {
+  if (typeof window === "undefined") return null;
+
+  const params = new URLSearchParams(window.location.search);
+  const utmSource = params.get("utm_source")?.toLowerCase() || "";
+  const utmMedium = params.get("utm_medium") || undefined;
+  const utmCampaign = params.get("utm_campaign") || undefined;
+  const utmContent = params.get("utm_content") || undefined;
+  const utmTerm = params.get("utm_term") || undefined;
+  const referrer = document.referrer || "";
+  const internalReferrer = isInternalReferrer(referrer);
+  const referringDomain = getHostnameFromUrl(referrer);
+  const detectedSource = mapUtmSourceToSignupSource(utmSource) || mapReferrerToSignupSource(referrer);
+
+  const candidateSnapshot: AttributionSnapshot = {
+    detected_source: detectedSource,
+    referrer,
+    referring_domain: referringDomain,
+    is_internal_referrer: internalReferrer,
+    is_movmash_landing: isMovmashLandingReferrer(referrer),
+    captured_at: new Date().toISOString(),
+    utm_source: utmSource || undefined,
+    utm_medium: utmMedium,
+    utm_campaign: utmCampaign,
+    utm_content: utmContent,
+    utm_term: utmTerm,
+  };
+
+  const existing = readStoredAttribution();
+  const shouldReplace =
+    !existing ||
+    (!hasUsefulAttributionSignal(existing) && hasUsefulAttributionSignal(candidateSnapshot));
+
+  if (!shouldReplace) return existing;
+
+  try {
+    window.localStorage.setItem(ATTRIBUTION_STORAGE_KEY, JSON.stringify(candidateSnapshot));
+  } catch {
+    // Ignore storage write failures (private mode, quota, etc.)
+  }
+
+  return candidateSnapshot;
+};
+
 /**
  * Automatically detect signup source from UTM params or referrer
  * Use this when you want to auto-detect external traffic source
@@ -137,48 +292,16 @@ export const detectSignupSource = (): SignupSource | null => {
   const referrer = document.referrer?.toLowerCase() || "";
   
   // Check UTM source first (most reliable)
-  if (utmSource) {
-    const sourceMap: Record<string, SignupSource> = {
-      "reddit": "reddit",
-      "tiktok": "tiktok",
-      "instagram": "instagram",
-      "twitter": "twitter",
-      "x": "twitter", // X is Twitter
-      "facebook": "facebook",
-      "fb": "facebook",
-      "youtube": "youtube",
-      "yt": "youtube",
-      "linkedin": "linkedin",
-      "discord": "discord",
-      "producthunt": "producthunt",
-      "product_hunt": "producthunt",
-      "hackernews": "hackernews",
-      "hn": "hackernews",
-      "google": "google_ads",
-      "email": "email_campaign",
-      "newsletter": "email_campaign",
-      "blog": "blog",
-      "referral": "referral",
-    };
-    
-    const detected = sourceMap[utmSource];
-    if (detected) return detected;
-  }
+  const utmDetected = mapUtmSourceToSignupSource(utmSource);
+  if (utmDetected) return utmDetected;
   
   // Fallback: check referrer URL
-  if (referrer) {
-    if (referrer.includes("reddit.com")) return "reddit";
-    if (referrer.includes("tiktok.com")) return "tiktok";
-    if (referrer.includes("instagram.com")) return "instagram";
-    if (referrer.includes("twitter.com") || referrer.includes("x.com")) return "twitter";
-    if (referrer.includes("facebook.com") || referrer.includes("fb.com")) return "facebook";
-    if (referrer.includes("youtube.com") || referrer.includes("youtu.be")) return "youtube";
-    if (referrer.includes("linkedin.com")) return "linkedin";
-    if (referrer.includes("discord.com") || referrer.includes("discord.gg")) return "discord";
-    if (referrer.includes("producthunt.com")) return "producthunt";
-    if (referrer.includes("news.ycombinator.com")) return "hackernews";
-    if (referrer.includes("google.com")) return "google_organic";
-  }
+  const referrerDetected = mapReferrerToSignupSource(referrer);
+  if (referrerDetected) return referrerDetected;
+
+  // Final fallback: use first-touch snapshot if it was captured earlier
+  const storedAttribution = readStoredAttribution();
+  if (storedAttribution?.detected_source) return storedAttribution.detected_source;
   
   return null; // Could not detect
 };
@@ -212,7 +335,10 @@ export const trackSignup = (
   method: AuthMethod, 
   inAppSource: SignupSource = "unknown"
 ) => {
+  const firstTouchAttribution = persistFirstTouchAttribution();
   const utmParams = getUTMParams();
+  const currentReferrer = document.referrer || "";
+  const currentReferringDomain = getHostnameFromUrl(currentReferrer);
   
   // Priority: External source (UTM/referrer) > In-app source > "unknown"
   // This way if user comes from Reddit but signs up on home page,
@@ -224,12 +350,26 @@ export const trackSignup = (
     method,
     signup_source: finalSource,
     in_app_location: inAppSource, // Also track where in app they signed up
+    detected_external_source: externalSource || "none",
+    current_referrer: currentReferrer || undefined,
+    current_referring_domain: currentReferringDomain || undefined,
+    first_touch_source: firstTouchAttribution?.detected_source || undefined,
+    first_touch_referrer: firstTouchAttribution?.referrer || undefined,
+    first_touch_referring_domain: firstTouchAttribution?.referring_domain || undefined,
+    first_touch_is_movmash_landing: firstTouchAttribution?.is_movmash_landing,
     ...utmParams, // Include UTM params for attribution
   });
   logEvent("user_signed_up", { 
     method, 
     signup_source: finalSource, 
     in_app_location: inAppSource, 
+    detected_external_source: externalSource || "none",
+    current_referrer: currentReferrer || undefined,
+    current_referring_domain: currentReferringDomain || undefined,
+    first_touch_source: firstTouchAttribution?.detected_source || undefined,
+    first_touch_referrer: firstTouchAttribution?.referrer || undefined,
+    first_touch_referring_domain: firstTouchAttribution?.referring_domain || undefined,
+    first_touch_is_movmash_landing: firstTouchAttribution?.is_movmash_landing,
     ...utmParams 
   });
   
@@ -240,11 +380,21 @@ export const trackSignup = (
     console.log("Signup Source (final):", finalSource);
     console.log("In-App Location:", inAppSource);
     console.log("External Source Detected:", detectSignupSource() || "none");
+    console.log("Current Referrer:", currentReferrer || "none");
+    console.log("Current Referring Domain:", currentReferringDomain || "none");
+    console.log("First-Touch Attribution:", firstTouchAttribution || "none");
     console.log("UTM Params:", utmParams);
     console.log("Full Event Data:", {
       method,
       signup_source: finalSource,
       in_app_location: inAppSource,
+      detected_external_source: externalSource || "none",
+      current_referrer: currentReferrer || undefined,
+      current_referring_domain: currentReferringDomain || undefined,
+      first_touch_source: firstTouchAttribution?.detected_source || undefined,
+      first_touch_referrer: firstTouchAttribution?.referrer || undefined,
+      first_touch_referring_domain: firstTouchAttribution?.referring_domain || undefined,
+      first_touch_is_movmash_landing: firstTouchAttribution?.is_movmash_landing,
       ...utmParams
     });
     console.groupEnd();
@@ -449,15 +599,17 @@ export const testSignupTracking = (source?: string) => {
   
   // Test current URL detection
   const currentSource = detectSignupSource();
+  const firstTouchAttribution = persistFirstTouchAttribution();
   const utmParams = getUTMParams();
   
   console.log("📍 Current URL:", window.location.href);
   console.log("🔍 Detected Source:", currentSource || "none (no UTM/referrer)");
   console.log("📊 UTM Params:", Object.keys(utmParams).length > 0 ? utmParams : "none");
   console.log("🔗 Referrer:", document.referrer || "none");
+  console.log("💾 First Touch Attribution:", firstTouchAttribution || "none");
   
   // Show all test URLs
-  const testSources = ["reddit", "tiktok", "instagram", "twitter", "facebook", "youtube"];
+  const testSources = ["movmash", "reddit", "tiktok", "instagram", "twitter", "facebook", "youtube"];
   console.log("\n📝 Test URLs (copy & open in new tab, then signup):");
   testSources.forEach(s => {
     const testUrl = `${window.location.origin}${window.location.pathname}?utm_source=${s}`;
@@ -478,6 +630,7 @@ export const testSignupTracking = (source?: string) => {
   
   return {
     currentSource,
+    firstTouchAttribution,
     utmParams,
     referrer: document.referrer,
     testUrls: testSources.reduce((acc, s) => {
@@ -562,6 +715,7 @@ export const analytics = {
   testSignupTracking,
   simulateSignup,
   detectSignupSource,
+  persistFirstTouchAttribution,
 };
 
 export default analytics;

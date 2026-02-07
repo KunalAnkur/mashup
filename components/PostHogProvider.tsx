@@ -6,6 +6,7 @@ import { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { persistFirstTouchAttribution } from "@/lib/analytics";
 
 // ============ INITIALIZE POSTHOG ============
 
@@ -46,6 +47,7 @@ function PostHogPageView() {
 
   useEffect(() => {
     if (pathname && ph) {
+      const firstTouchAttribution = persistFirstTouchAttribution();
       let url = window.origin + pathname;
       if (searchParams?.toString()) {
         url = url + `?${searchParams.toString()}`;
@@ -57,6 +59,9 @@ function PostHogPageView() {
       ph.capture("$pageview", { 
         $current_url: url,
         page: pageName,
+        first_touch_source: firstTouchAttribution?.detected_source || undefined,
+        first_touch_referring_domain: firstTouchAttribution?.referring_domain || undefined,
+        first_touch_is_movmash_landing: firstTouchAttribution?.is_movmash_landing,
       });
       
       if (process.env.NODE_ENV === "development") {
