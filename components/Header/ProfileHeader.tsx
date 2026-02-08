@@ -8,7 +8,7 @@ import { useTranslations } from "@/i18n/I18nProvider";
 import LoginDropdown from "./LoginDropdown";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import Image from "next/image";
-
+import { Logo } from "@/components/UI";
 type ProfileHeaderProps = {
   onLoginClick?: () => void;
 };
@@ -62,14 +62,15 @@ const ProfileHeader = ({ onLoginClick }: ProfileHeaderProps) => {
       <div className="absolute top-4 left-4 right-4 sm:left-auto sm:right-4 z-50 flex items-center justify-between sm:justify-end" style={{ direction: 'ltr' }}>
         {/* Brand name - visible on mobile only */}
         <div className="flex items-center gap-2 sm:hidden">
-          <Image
-            src="/assets/logo.svg"
+          {/* <Image
+            src={Logo}
             alt="Movmash Logo"
             priority
             width={28}
             height={28}
             className="w-7 h-7"
-          />
+          /> */}
+          <Logo height={28} width={28} custom={true} />
           <h3 className="text-xl font-extrabold text-white font-parkinsans tracking-tight">
             {t("brand")}
           </h3>

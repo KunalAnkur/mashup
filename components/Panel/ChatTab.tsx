@@ -793,9 +793,9 @@ const ChatTab = () => {
           opacity: 0;
         }
 
-        .animate-slide-up {
-          animation: slide-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        // .animate-slide-up {
+        //   animation: slide-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        // }
 
         .scrollbar-hide {
           -ms-overflow-style: none;

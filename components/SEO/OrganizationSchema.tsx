@@ -8,13 +8,13 @@ export default function OrganizationSchema() {
     url: baseUrl,
     logo: {
       "@type": "ImageObject",
-      url: `${baseUrl}/assets/logo.svg`,
+      url: `${baseUrl}/android-chrome-512x512.png`,
       width: 512,
       height: 512,
     },
     image: {
       "@type": "ImageObject",
-      url: `${baseUrl}/assets/logo.svg`,
+      url: `${baseUrl}/android-chrome-512x512.png`,
       width: 512,
       height: 512,
     },

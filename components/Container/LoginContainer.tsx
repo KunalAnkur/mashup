@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button } from "../UI";
+import { Button, Logo } from "../UI";
 import GoogleButton from "../GoogleAuth/GoogleButton";
 import {
   useLoginMutation,
@@ -91,14 +91,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-xl animate-pulse"></div>
             <div className="relative z-10">
-              <Image 
-                src="/assets/logo.svg" 
-                alt="Movmash Logo" 
-                priority
-                width={64} 
-                height={64}
-                className="drop-shadow-lg"
-              />
+              <Logo height={64} width={64} custom={true} />
             </div>
           </div>
           

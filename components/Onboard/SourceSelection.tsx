@@ -1,7 +1,7 @@
 "use client";
 
 import { FaBroadcastTower, FaSync } from "react-icons/fa";
-import { Button } from "../UI";
+import { Button, Logo } from "../UI";
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import { ImSpinner2 } from "react-icons/im";
@@ -46,7 +46,7 @@ const SourceSelection = () => {
   }, [router]);
 
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const value = e.target.value.toUpperCase();
     setRoomId(value);
     setIsJoinDisabled(value.trim().length === 0);
     setJoinError(""); // Clear error when user types
@@ -86,8 +86,9 @@ const SourceSelection = () => {
       } else {
         setJoinError(t("errors.joinFailed"));
       }
-    } finally {
       setIsJoining(false);
+    } finally {
+      // setIsJoining(false);
     }
   }, [roomId, isJoining, getRoomByRoomId, router]);
 
@@ -110,14 +111,7 @@ const SourceSelection = () => {
         <div className="w-full max-w-lg flex flex-col items-center gap-3 sm:gap-4 md:gap-5 my-auto">
           {/* LOGO & BRAND - Hidden on mobile (shown in header instead) */}
           <div className="hidden sm:flex items-center justify-center gap-3 ">
-            <Image
-              src="/assets/logo.svg"
-              alt="Movmash Logo"
-              priority
-              width={36}
-              height={36}
-              className="sm:w-10 sm:h-10 md:w-12 md:h-12"
-            />
+            <Logo height={36} width={36} custom={true} />
             <h3 className="text-2xl sm:text-2xl md:text-3xl font-extrabold text-white text-center font-parkinsans tracking-tight">
               {t("brand")}
             </h3>

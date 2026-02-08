@@ -5,14 +5,20 @@ import Image from "next/image";
 interface LogoProps {
   size?: "sm" | "md" | "lg";
   href?: string;
+  custom?: boolean;
   brandName?: string;
   showText?: boolean;
+  height?: number;
+  width?: number;
 }
 
 const Logo: React.FC<LogoProps> = ({
   size = "md",
   href = "/",
+  custom = false,
   brandName = constants.seo.BRAND_NAME,
+  height,
+  width,
   showText = true,
 }) => {
   const sizeClasses = {
@@ -33,7 +39,7 @@ const Logo: React.FC<LogoProps> = ({
     },
   };
 
-  return (
+  return !custom ? 
     <Link
       href={href}
       className={`
@@ -70,8 +76,14 @@ const Logo: React.FC<LogoProps> = ({
           {brandName}
         </span>
       )}
-    </Link>
-  );
+    </Link> : 
+    <Image
+      src={constants.assets.logo}
+      alt="Logo"
+      height={height}
+      width={width}
+      className="object-contain"
+    />;
 };
 
 export default Logo;
