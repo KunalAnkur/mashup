@@ -4,7 +4,7 @@ import BreadcrumbSchema from "@/components/SEO/BreadcrumbSchema";
 import RoomProviderWrapper from "./RoomProviderWrapper";
 
 const baseUrl = constants.seo.SITE_URL;
-const fallbackTitle = "Movmash Party";
+const fallbackTitle = "Join a Live Watch Party on Movmash - Stream and Chat";
 const logoUrl = `${baseUrl}/assets/logo-square.png`;
 
 function sanitizeHostName(value?: string): string | null {
@@ -12,6 +12,20 @@ function sanitizeHostName(value?: string): string | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
   return trimmed.slice(0, 50);
+}
+
+function buildRoomTitle(hostName: string | null): string {
+  if (!hostName) return fallbackTitle;
+  const shortHost = hostName.length > 24 ? `${hostName.slice(0, 24)}...` : hostName;
+  return `Join ${shortHost}'s Watch Party on Movmash - Chat Live`;
+}
+
+function buildRoomDescription(hostName: string | null): string {
+  if (!hostName) {
+    return "Join this Movmash watch party to stream in perfect sync, chat with friends, and react in real time. Tap to join instantly.";
+  }
+
+  return `Join ${hostName}'s Movmash watch party to stream in perfect sync, chat with friends, and react in real time. Tap to join instantly.`;
 }
 
 async function fetchHostNameFromApi(roomId: string): Promise<string | null> {
@@ -59,10 +73,8 @@ export async function generateMetadata({
   const query = searchParams ? await searchParams : undefined;
   const hostNameFromQuery = sanitizeHostName(query?.host || query?.username);
   const hostName = hostNameFromQuery || (await fetchHostNameFromApi(roomId));
-  const pageTitle = hostName ? `${hostName}'s Party` : fallbackTitle;
-  const description = hostName
-    ? `Join ${hostName}'s watch party on Movmash.`
-    : "Join this watch party on Movmash.";
+  const pageTitle = buildRoomTitle(hostName);
+  const description = buildRoomDescription(hostName);
   const roomUrl = `${baseUrl}/room/${roomId}`;
 
   return {
