@@ -4,39 +4,91 @@ import BreadcrumbSchema from "@/components/SEO/BreadcrumbSchema";
 import RoomProviderWrapper from "./RoomProviderWrapper";
 
 const baseUrl = constants.seo.SITE_URL;
+const fallbackTitle = "Movmash Party";
+const logoUrl = `${baseUrl}/assets/logo-square.png`;
+
+function sanitizeHostName(value?: string): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, 50);
+}
+
+async function fetchHostNameFromApi(roomId: string): Promise<string | null> {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!apiBase) return null;
+
+  const endpoints = [
+    `${apiBase}/api/v1/room/public-room-info/${roomId}`,
+    `${apiBase}/api/v1/room/room-info/${roomId}`,
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, { next: { revalidate: 60 } });
+      if (!response.ok) continue;
+
+      const payload = await response.json();
+      const data = payload?.data ?? payload;
+      const hostName = sanitizeHostName(
+        data?.host?.username ||
+          data?.user?.username ||
+          data?.hostName ||
+          data?.username
+      );
+
+      if (hostName) return hostName;
+    } catch {
+      // Ignore fetch failures and fallback to default metadata.
+    }
+  }
+
+  return null;
+}
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ roomId: string }>;
+  searchParams?:
+    | Promise<{ host?: string; username?: string }>
+    | { host?: string; username?: string };
 }): Promise<Metadata> {
   const { roomId } = await params;
+  const query = searchParams ? await searchParams : undefined;
+  const hostNameFromQuery = sanitizeHostName(query?.host || query?.username);
+  const hostName = hostNameFromQuery || (await fetchHostNameFromApi(roomId));
+  const pageTitle = hostName ? `${hostName}'s Party` : fallbackTitle;
+  const description = hostName
+    ? `Join ${hostName}'s watch party on Movmash.`
+    : "Join this watch party on Movmash.";
+  const roomUrl = `${baseUrl}/room/${roomId}`;
+
   return {
-    title: "Watch Party Room",
-    description: `Join the watch party room and watch videos together with friends in perfect sync. Chat, react, and share the moment in real-time.`,
+    title: pageTitle,
+    description,
     keywords: constants.seo.roomKeywords.join(", "),
     openGraph: {
-      title: "Watch Party Room - Movmash",
-      description: `Join the watch party room and watch videos together with friends in perfect sync.`,
-      url: `${baseUrl}/room/${roomId}`,
+      title: pageTitle,
+      description,
+      url: roomUrl,
       type: "website",
       images: [
         {
-          url: `${baseUrl}/og-image.png`,
-          width: 1200,
-          height: 630,
-          alt: "Watch Party Room - Movmash",
+          url: logoUrl,
+          alt: "Movmash logo",
         },
       ],
     },
     twitter: {
-      card: "summary_large_image",
-      title: "Watch Party Room - Movmash",
-      description: `Join the watch party room and watch videos together with friends.`,
-      images: [`${baseUrl}/og-image.png`],
+      card: "summary",
+      title: pageTitle,
+      description,
+      images: [logoUrl],
     },
     alternates: {
-      canonical: `${baseUrl}/room/${roomId}`,
+      canonical: roomUrl,
     },
     robots: {
       index: false, // Room pages shouldn't be indexed (private rooms)

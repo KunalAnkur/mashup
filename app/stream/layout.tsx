@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${baseUrl}/og-image.png`,
+        url: `${baseUrl}/assets/logo-square.png`,
         width: 1200,
         height: 630,
         alt: "Stream Options - Movmash",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Stream Options - Movmash",
     description: "Stream videos from your device. Upload video files or share your screen.",
-    images: [`${baseUrl}/og-image.png`],
+    images: [`${baseUrl}/assets/logo-square.png`],
   },
   alternates: {
     canonical: `${baseUrl}/stream`,
@@ -50,4 +50,3 @@ export default function StreamLayout({
     </>
   );
 }
-

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: `${baseUrl}/og-image.png`,
+        url: `${baseUrl}/assets/logo-square.png`,
         width: 1200,
         height: 630,
         alt: "Enter Source URL - Movmash",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Enter Source URL - Movmash",
     description: "Watch videos together from YouTube, Vimeo, Twitch, and more.",
-    images: [`${baseUrl}/og-image.png`],
+    images: [`${baseUrl}/assets/logo-square.png`],
   },
   alternates: {
     canonical: `${baseUrl}/sync`,
@@ -50,4 +50,3 @@ export default function SyncLayout({
     </>
   );
 }
-

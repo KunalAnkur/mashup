@@ -33,8 +33,12 @@ const Page = () => {
   const modalShownRef = useRef(false);
   const roomIdRef = useRef<string | null>(null);
 
-  // Generate room URL
-  const roomUrl = roomId ? `${typeof window !== 'undefined' ? window.location.origin : ''}/room/${roomId}` : '';
+  // Generate room URL (include host query so social previews can render host-specific titles)
+  const roomUrl = roomId
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/room/${roomId}${
+        hostUsername ? `?host=${encodeURIComponent(hostUsername)}` : ""
+      }`
+    : "";
 
   // Reset modal when room changes
   useEffect(() => {

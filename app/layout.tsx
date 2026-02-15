@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     description: constants.seo.BRAND_DESCRIPTION,
     images: [
       {
-        url: `${baseUrl}/og-image.png`,
+        url: `${baseUrl}/assets/logo-square.png`,
         width: 1200,
         height: 630,
         alt: "Movmash - Watch Together, Anywhere",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     title: "Movmash - Watch Together, Anywhere",
     description: constants.seo.BRAND_DESCRIPTION,
     creator: "@movmash",
-    images: [`${baseUrl}/og-image.png`],
+    images: [`${baseUrl}/assets/logo-square.png`],
   },
   robots: {
     index: true,
