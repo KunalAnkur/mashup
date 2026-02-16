@@ -127,6 +127,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
       hideControls={controlsConfig.hideControls}
       disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
       onPlaytimeUpdate={isHost ? handlePlaytimeUpdate : undefined}
+      autoResumeOnFullscreenExit={!isHost}
     >
       <PlayerOverlay />
     </Player>

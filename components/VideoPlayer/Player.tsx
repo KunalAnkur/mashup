@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect, ReactNode } from "react";
+import { useState, useRef, useEffect, ReactNode, useCallback } from "react";
 import ReactPlayer from "react-player";
 import screenfull from "screenfull";
 import { isMobile } from "react-device-detect";
@@ -54,6 +54,7 @@ type VideoPlayerProps = {
     hasVideoTrack?: boolean; // External prop to indicate if video track exists (for AudioVisualizer)
     disableSeekPauseResume?: boolean; // If true, video won't pause on seek start or resume on seek end
     onPlaytimeUpdate?: (seconds: number) => void; // Callback to track playtime (called every second while playing)
+    autoResumeOnFullscreenExit?: boolean; // For consumers on iOS: resume if native fullscreen exit pauses playback
 };
 
 const VideoPlayer = ({
@@ -86,7 +87,8 @@ const VideoPlayer = ({
     children,
     hasVideoTrack: externalHasVideoTrack,
     disableSeekPauseResume = false,
-    onPlaytimeUpdate
+    onPlaytimeUpdate,
+    autoResumeOnFullscreenExit = false,
 }: VideoPlayerProps) => {
     // State management
     const [playing, setPlaying] = useState(externalPlaying);
@@ -107,6 +109,27 @@ const VideoPlayer = ({
     const seekDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wasPlayingBeforeSeek = useRef(false);
     const lastPlayedSecondsRef = useRef(0); // Track last reported playtime position for accurate tracking
+
+    const resumePlaybackIfNeeded = useCallback(() => {
+        if (!autoResumeOnFullscreenExit) return;
+
+        const shouldBePlaying = externalPlaying || playing;
+        if (!shouldBePlaying) return;
+
+        const mediaElement = playerRef.current?.getInternalPlayer() as HTMLMediaElement | null;
+        if (!mediaElement || !mediaElement.paused) return;
+
+        // Delay slightly because iOS may still be transitioning out of native fullscreen.
+        setTimeout(() => {
+            mediaElement.play()
+                .then(() => {
+                    setPlaying(true);
+                })
+                .catch((error) => {
+                    console.debug("Auto-resume after fullscreen exit failed:", error);
+                });
+        }, 120);
+    }, [autoResumeOnFullscreenExit, externalPlaying, playing, playerRef]);
 
     // Sync with external props
     useEffect(() => setPlaying(externalPlaying), [externalPlaying]);
@@ -387,6 +410,7 @@ const VideoPlayer = ({
         const handleWebkitEndFullscreen = () => {
             setFullscreen(false);
             onFullscreenChange?.(false);
+            resumePlaybackIfNeeded();
         };
         
         videoElement.addEventListener('webkitbeginfullscreen', handleWebkitBeginFullscreen);
@@ -400,7 +424,7 @@ const VideoPlayer = ({
             videoElement.removeEventListener('webkitbeginfullscreen', handleWebkitBeginFullscreen);
             videoElement.removeEventListener('webkitendfullscreen', handleWebkitEndFullscreen);
         };
-    }, [onFullscreenChange, playerRef]);
+    }, [onFullscreenChange, playerRef, resumePlaybackIfNeeded]);
 
     return (
         // TODO: Need to check about the fullscreen if there is no external control for fullscreen
@@ -432,6 +456,10 @@ const VideoPlayer = ({
                     onClick={togglePlay}
                     onReady={onReady}
                     onEnded={onEnded}
+                    onPause={() => {
+                        // iOS can emit pause while collapsing native fullscreen for non-host consumers.
+                        resumePlaybackIfNeeded();
+                    }}
                     config={{
                         youtube: {
                             playerVars: {

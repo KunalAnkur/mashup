@@ -440,6 +440,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
                 hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
                 onPlaytimeUpdate={isHost ? handlePlaytimeUpdate : undefined}
+                autoResumeOnFullscreenExit={!isHost}
             >
                 <PlayerOverlay />
             </Player>
