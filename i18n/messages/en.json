@@ -189,6 +189,8 @@
     "clickToAddMoreFiles": "Click to add more files",
     "back": "Back",
     "useSync": "Use Sync",
+    "tip1": "Tip 1",
+    "tip2": "Tip 2",
     "tip1MultipleFiles": "You can select multiple files at once.",
     "tip2DragAndDrop": "You can drag and drop files to upload.",
     "useDesktopForBetterQuality": "Use desktop or laptop for better stream quality",
