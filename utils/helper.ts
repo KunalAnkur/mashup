@@ -387,6 +387,14 @@ export function getInitialPlayerState({ url, roomType, host, focused, screenShar
         //         muted: false,
         //     };
         // }
+        if ((url as string).includes('youtube.com')) {
+            if (!host) {
+                return {
+                    playing: false,
+                    muted: true,
+                };
+            }
+        }
         return {
             playing: false,
             muted: false,
