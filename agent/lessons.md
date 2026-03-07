@@ -35,3 +35,16 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Avoid smooth auto-scroll for initialization cases.
   - Do not apply stagger/mount animations to full historical chat lists on tab mount.
 - Follow-up action: Apply same scroll pattern to any future chat-like list.
+
+## 2026-03-07 (Typing Username Resolution)
+
+- Date: 2026-03-07
+- Context: Chat typing indicator was showing generic `USER` instead of real username.
+- Error: Typing label looked like placeholder text, reducing clarity in multi-user rooms.
+- Root cause: Typing payload/userName fallback path allowed generic values; UI relied on raw typing event name.
+- Prevention checklist:
+  - Resolve typing display names from participant data first (`socketId` match), then message history.
+  - Prefer `username` over `name` for typing payloads.
+  - Keep fallback order deterministic: `username` -> `name` -> email prefix -> `User`.
+- Follow-up action: Reuse this resolution pattern for other transient user-presence UI states.
+- Validation: Confirmed working by user on 2026-03-07.

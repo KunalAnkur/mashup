@@ -1,7 +1,7 @@
 # Agent Rules
 
 These rules are mandatory for all future work in this repo unless you override them.
-Last sync: 2026-03-07 (Task 1 chat scroll + bubble render step)
+Last sync: 2026-03-07 (Task 1 and Task 2 marked completed)
 
 1. Use Tailwind CSS.
 2. Write clean code.

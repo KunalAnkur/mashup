@@ -1,7 +1,7 @@
 # Notion Backlog
 
-- [ ] In right panel, when we change tab and come to CHAT tab again, scrollbar starts from very top and then scrolls to bottom. Scrollbar should stay at the bottom by default so users can adapt easier like other chat apps. Use best practices. `(IN PROGRESS - 2026-03-07)`
-- [ ] In chat tab, `USER IS TYPING` is not correct. We must use real username there.
+- [x] In right panel, when we change tab and come to CHAT tab again, scrollbar starts from very top and then scrolls to bottom. Scrollbar should stay at the bottom by default so users can adapt easier like other chat apps. Use best practices.
+- [x] In chat tab, `USER IS TYPING` is not correct. We must use real username there.
 - [ ] In chat tab, message appears with delay. Until it appears, we see an empty gap where the message bubble should be.
 - [ ] Host must be able to pin a message in chat. Add character limit for pinned message.
 - [ ] Add reactions to message bubbles.
