@@ -716,7 +716,7 @@ const ChatTab = () => {
       </div>
 
       {/* Input Area */}
-      <div className="relative flex items-center gap-1 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl md:rounded-2xl px-2.5 md:px-3 py-1 md:py-1.5 shadow-2xl overflow-visible">
+      <div className="relative flex items-center gap-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl md:rounded-2xl px-2.5 md:px-3 py-1 md:py-1.5 shadow-2xl overflow-visible">
         {showEmojis && (
           <div
             ref={emojiPickerRef}
@@ -765,91 +765,95 @@ const ChatTab = () => {
             />
           </div>
         )}
-        {isMobile ? (
-          <input
-            ref={inputRef as React.RefObject<HTMLInputElement>}
-            type="text"
-            placeholder={isJoined ? t("sendMessage") : t("connecting")}
-            value={messageInput}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            disabled={!isJoined || isLoading}
-            enterKeyHint="send"
-            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-          />
-        ) : (
-          <textarea
-            ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-            placeholder={isJoined ? t("sendMessage") : t("connecting")}
-            value={messageInput}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            disabled={!isJoined || isLoading}
-            rows={1}
-            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
-            style={{
-              minHeight: "20px",
-              maxHeight: "240px",
-            }}
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = "20px";
-              target.style.height = Math.min(target.scrollHeight, 240) + "px";
-            }}
-          />
-        )}
+        <div className="flex-1 min-w-0">
+          {isMobile ? (
+            <input
+              ref={inputRef as React.RefObject<HTMLInputElement>}
+              type="text"
+              placeholder={isJoined ? t("sendMessage") : t("connecting")}
+              value={messageInput}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              disabled={!isJoined || isLoading}
+              enterKeyHint="send"
+              className="w-full min-w-0 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            />
+          ) : (
+            <textarea
+              ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+              placeholder={isJoined ? t("sendMessage") : t("connecting")}
+              value={messageInput}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              disabled={!isJoined || isLoading}
+              rows={1}
+              className="w-full min-w-0 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium break-all"
+              style={{
+                minHeight: "20px",
+                maxHeight: "240px",
+              }}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = "20px";
+                target.style.height = Math.min(target.scrollHeight, 240) + "px";
+              }}
+            />
+          )}
+        </div>
 
-        {/* Reaction Toggle Button - Show only when input is empty */}
-        {!messageInput.trim() && (
-          <button
-            onClick={() => setShowReactions(!showReactions)}
-            className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showReactions
+        <div className="flex items-center gap-1 md:gap-1.5 flex-shrink-0">
+          {/* Reaction Toggle Button - Show only when input is empty */}
+          {!messageInput.trim() && (
+            <button
+              onClick={() => setShowReactions(!showReactions)}
+              className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showReactions
                 ? "text-rose-400"
                 : "text-white/50 hover:text-rose-400"
-              }`}
-            title={showReactions ? t("hideReactions") : t("showReactions")}
-          >
-            
-            {showReactions ? (
-              <MdOutlineCelebration
-                size={16}
-                className={`relative md:w-[18px] md:h-[18px]`}
-              />
-            ) : (
+                }`}
+              title={showReactions ? t("hideReactions") : t("showReactions")}
+            >
+
+              {showReactions ? (
+                <MdOutlineCelebration
+                  size={16}
+                  className={`relative md:w-[18px] md:h-[18px]`}
+                />
+              ) : (
                 <MdCelebration
                   size={16}
                   className={`relative md:w-[18px] md:h-[18px]`}
                 />
-            )}
-          </button>
-        )}
+              )}
+            </button>
+          )}
 
-        <button
-          data-emoji-button
-          onClick={() => setShowEmojis(!showEmojis)}
-          className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showEmojis
+          <button
+            data-emoji-button
+            onClick={() => setShowEmojis(!showEmojis)}
+            className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showEmojis
               ? "text-pink-400"
               : "text-white/70 hover:text-pink-400"
-            }`}
-        >
-          <div className={`absolute inset-0 rounded-lg md:rounded-xl transition-all duration-200 ${showEmojis
+              }`}
+          >
+            <div className={`absolute inset-0 rounded-lg md:rounded-xl transition-all duration-200 ${showEmojis
               ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
               : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
-            }`}></div>
-          <FaSmile size={18} className="relative md:w-5 md:h-5" />
-        </button>
-
-        {/* Send Button - Show only when input has text */}
-        {messageInput.trim() && (
-          <button
-            onClick={handleSendMessage}
-            disabled={!isJoined || isLoading}
-            className="relative p-1.5 md:p-2 rounded-lg md:rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-lg md:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <FaArrowCircleUp size={18} className="relative md:w-5 md:h-5" />
+              }`}></div>
+            <FaSmile size={18} className="relative md:w-5 md:h-5" />
           </button>
-        )}
+
+          {/* Send Button - Show only when input has text */}
+          {messageInput.trim() && (
+            <button
+              onClick={handleSendMessage}
+              disabled={!isJoined || isLoading}
+              className="relative p-1.5 md:p-2 rounded-lg md:rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-lg md:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <FaArrowCircleUp size={18} className="relative md:w-5 md:h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       <style jsx global>{`
