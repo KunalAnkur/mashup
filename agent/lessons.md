@@ -48,3 +48,15 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Keep fallback order deterministic: `username` -> `name` -> email prefix -> `User`.
 - Follow-up action: Reuse this resolution pattern for other transient user-presence UI states.
 - Validation: Confirmed working by user on 2026-03-07.
+
+## 2026-03-07 (Message Delay and Empty Gap)
+
+- Date: 2026-03-07
+- Context: Chat tab message appears late; sender also sees own message with delay.
+- Error: Visual gap/latency before message bubble appears.
+- Root cause: Message UI waited for network roundtrip (`emitWithAck` + receive event) before rendering, with no optimistic local append.
+- Prevention checklist:
+  - Render outgoing message optimistically immediately.
+  - Reconcile optimistic message with server `id/timestamp` when ack or receive event arrives.
+  - Deduplicate incoming messages using both `id` and optimistic match rules.
+- Follow-up action: Use the same optimistic + reconciliation pattern for future realtime list interactions.

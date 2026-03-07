@@ -1,7 +1,7 @@
 # Agent Rules
 
 These rules are mandatory for all future work in this repo unless you override them.
-Last sync: 2026-03-07 (Task 1 and Task 2 marked completed)
+Last sync: 2026-03-07 (Task 3 and Task 9 optimistic chat delivery step)
 
 1. Use Tailwind CSS.
 2. Write clean code.

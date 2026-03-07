@@ -5,9 +5,9 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 ## Current Step
 
 - Date: 2026-03-07
-- Active task: Task 3 (chat message delay + empty gap before bubble)
-- Status: Task 1 and Task 2 completed
-- Sub-update: Task 2 validated by user; typing indicator now shows resolved real usernames.
+- Active task: Task 3 + Task 9 (chat message delay and sender own-message delay)
+- Status: In progress (Task 1 and Task 2 completed)
+- Sub-update: Added optimistic message rendering and server-event reconciliation for chat sends.
 - Localization note: No new UI text in this step (`tr/en/es` unchanged).
 
 Rules for execution:
