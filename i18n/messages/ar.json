@@ -94,6 +94,12 @@
       "showReactions": "إظهار التفاعلات",
       "hideReactions": "إخفاء التفاعلات",
       "searchEmojis": "البحث عن الرموز التعبيرية...",
+      "pinnedMessage": "الرسالة المثبتة",
+      "pinMessage": "تثبيت الرسالة",
+      "unpinMessage": "إلغاء تثبيت الرسالة",
+      "pinMessageLengthError": "يجب ألا تتجاوز الرسالة المثبتة {max} حرفًا.",
+      "pinMessageErrorTitle": "تعذر تثبيت الرسالة",
+      "pinMessageErrorFallback": "حدث خطأ أثناء تحديث الرسالة المثبتة.",
       "failedToSend": "فشل إرسال الرسالة",
       "checkConnection": "يرجى التحقق من اتصالك والمحاولة مرة أخرى."
     },

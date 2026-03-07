@@ -32,6 +32,19 @@ export interface SendMessageResponse {
   error?: string;
 }
 
+export interface PinnedChatMessage extends ChatMessage {
+  pinnedAt: number;
+  pinnedByUserId: string;
+  pinnedByUserName: string;
+}
+
+export interface PinMessageResponse {
+  success: boolean;
+  roomId?: string;
+  pinnedMessage?: PinnedChatMessage | null;
+  error?: string;
+}
+
 // Reaction types - All 60 available animated emojis
 export type ReactionType = 
   | "😍" | "😡" | "😭" | "😂" | "🤯" | "🔥"

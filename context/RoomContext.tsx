@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, store } from "@/lib/store";
 import { exitRoom, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
+import type { PinnedChatMessage } from "@/types/chatTypes";
 import { showError } from "@/utils/toast";
 import { trackRoomJoined, trackRoomLeft } from "@/lib/analytics";
 
@@ -35,6 +36,7 @@ interface JoinResponse {
     roomId: string;
     roomType: RoomType;
     chatHistory?: any[];
+    pinnedMessage?: PinnedChatMessage | null;
     rtpCapabilities?: any;
     sendTransportOptions?: any;
     recvTransportOptions?: any;

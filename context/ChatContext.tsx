@@ -3,18 +3,30 @@
 import { createContext, useContext, ReactNode, useEffect } from "react";
 import { useChat } from "@/hooks/useChat";
 import { useRoomContext } from "@/context/RoomContext";
-import { ChatMessage, TypingUser, SendMessageResponse, Reaction, ReactionType } from "@/types/chatTypes";
+import {
+    ChatMessage,
+    TypingUser,
+    SendMessageResponse,
+    Reaction,
+    ReactionType,
+    PinnedChatMessage,
+    PinMessageResponse,
+} from "@/types/chatTypes";
 
 interface ChatContextType {
     messages: ChatMessage[];
     typingUsers: TypingUser[];
     reactions: Reaction[];
+    pinnedMessage: PinnedChatMessage | null;
     sendMessage: (message: string) => Promise<SendMessageResponse>;
     sendReaction: (emoji: ReactionType) => void;
+    pinMessage: (messageId: string) => Promise<PinMessageResponse>;
+    unpinMessage: () => Promise<PinMessageResponse>;
     handleTyping: () => void;
     stopTyping: () => void;
     getChatHistory: () => Promise<void>;
     setInitialChatHistory?: (chatHistory: ChatMessage[]) => void;
+    setInitialPinnedMessage?: (pinnedMessage: PinnedChatMessage | null) => void;
     isJoined: boolean;
     isLoading: boolean;
     isConnected: boolean;
@@ -37,6 +49,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
             chatData.setInitialChatHistory?.(joinResponse.chatHistory);
         }
     }, [joinResponse?.chatHistory, roomJoined, chatData.setInitialChatHistory]);
+
+    useEffect(() => {
+        if (!roomJoined) return;
+        chatData.setInitialPinnedMessage?.(joinResponse?.pinnedMessage || null);
+    }, [joinResponse?.pinnedMessage, roomJoined, chatData.setInitialPinnedMessage]);
 
     return <ChatContext.Provider value={chatData}>{children}</ChatContext.Provider>;
 };
