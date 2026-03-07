@@ -12,11 +12,13 @@ import React, {
 import { Socket } from "socket.io-client";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
 
 interface SocketContextType {
     socketService: SocketService;
     isConnected: boolean;
-    getSocket: () => Socket; // Unified socket - no namespace needed
+    getSocket: () => Socket | null; // Unified socket - no namespace needed
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
@@ -26,10 +28,21 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     const [isConnected, setIsConnected] = useState(false);
     const errorShownRef = useRef(false); // Prevent showing multiple error toasts
     const tToast = useTranslations("toast");
+    const authToken = useSelector((state: RootState) => state.auth.token);
 
     useEffect(() => {
-        // Initialize the unified socket connection (single namespace)
+        if (!authToken) {
+            socketService.disconnect();
+            setIsConnected(false);
+            return;
+        }
+
+        socketService.setAuthToken(authToken);
         const mainSocket = socketService.getSocket();
+        if (!mainSocket) {
+            setIsConnected(false);
+            return;
+        }
 
         // Setup connection status listeners
         const onConnect = () => {
@@ -78,7 +91,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             mainSocket.off("ping", handlePing);
             socketService.disconnect();
         };
-    }, [socketService, tToast]);
+    }, [socketService, tToast, authToken]);
 
     const getSocket = () => {
         // Always return the main socket (unified namespace)
@@ -104,7 +117,7 @@ export const useSocket = () => {
     useEffect(() => {
         // Get the unified socket
         const socketInstance = context.getSocket();
-        setSocket(socketInstance);
+        setSocket(socketInstance || null);
     }, [context]);
 
     return {
