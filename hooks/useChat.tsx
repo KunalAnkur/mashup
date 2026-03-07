@@ -4,6 +4,7 @@ import { SocketEvent } from "@/types/socketEvents";
 import { ChatMessage, TypingUser, SendMessageResponse, Reaction, ReactionType } from "@/types/chatTypes";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { getEmailPrefix, resolveDisplayName, isGenericName } from "@/utils/chatName";
 
 interface UseChatParams {
     roomId: string | null;
@@ -23,27 +24,62 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastTypingEmitRef = useRef(0);
 
-    const userName = user?.name || user?.username || "User";
+    const userName = resolveDisplayName(
+        [user?.username, user?.name, getEmailPrefix(user?.email)],
+        "User"
+    );
 
     const sendMessage = useCallback(async (message: string): Promise<SendMessageResponse> => {
         if (!socket || !roomId || !user || !message.trim() || !enabled) {
             return { success: false, error: "Invalid message or not connected" };
         }
 
+        const trimmedMessage = message.trim();
+        const optimisticId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+        const optimisticMessage: ChatMessage = {
+            id: optimisticId,
+            roomId,
+            userId: socket.id || user.id,
+            userName,
+            userEmail: user?.email,
+            userProfile: user?.profile,
+            message: trimmedMessage,
+            timestamp: Date.now(),
+            isHost,
+            type: "user",
+        };
+
+        setMessages(prev => [...prev, optimisticMessage]);
+
         try {
             const response = await socket.emitWithAck(SocketEvent.SEND_CHAT_MESSAGE, {
                 roomId,
-                message: message.trim(),
+                message: trimmedMessage,
                 userName,
                 userEmail: user?.email,
                 userProfile: user?.profile,
                 isHost,
             });
 
-            return response?.success
-                ? { success: true, messageId: response.messageId, timestamp: response.timestamp }
-                : { success: false, error: response?.error || "Failed to send message" };
+            if (response?.success) {
+                setMessages(prev =>
+                    prev.map(msg =>
+                        msg.id === optimisticId
+                            ? {
+                                ...msg,
+                                id: response.messageId || msg.id,
+                                timestamp: response.timestamp || msg.timestamp,
+                            }
+                            : msg
+                    )
+                );
+                return { success: true, messageId: response.messageId, timestamp: response.timestamp };
+            }
+
+            setMessages(prev => prev.filter(msg => msg.id !== optimisticId));
+            return { success: false, error: response?.error || "Failed to send message" };
         } catch {
+            setMessages(prev => prev.filter(msg => msg.id !== optimisticId));
             return { success: false, error: "Error sending message" };
         }
     }, [socket, roomId, user, isHost, enabled, userName]);
@@ -55,12 +91,20 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
         if (now - lastTypingEmitRef.current < 3000) return;
 
         lastTypingEmitRef.current = now;
-        socket.emit(SocketEvent.USER_TYPING, { roomId, userName });
+        socket.emit(SocketEvent.USER_TYPING, {
+            roomId,
+            userName,
+            userEmail: user?.email,
+        });
 
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
         typingTimeoutRef.current = setTimeout(() => {
-            socket?.emit(SocketEvent.USER_STOPPED_TYPING, { roomId, userName });
+            socket?.emit(SocketEvent.USER_STOPPED_TYPING, {
+                roomId,
+                userName,
+                userEmail: user?.email,
+            });
         }, 3000);
     }, [socket, roomId, user, enabled, userName]);
 
@@ -72,7 +116,11 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
             typingTimeoutRef.current = null;
         }
 
-        socket.emit(SocketEvent.USER_STOPPED_TYPING, { roomId, userName });
+        socket.emit(SocketEvent.USER_STOPPED_TYPING, {
+            roomId,
+            userName,
+            userEmail: user?.email,
+        });
     }, [socket, roomId, user, enabled, userName]);
 
     const getChatHistory = useCallback(async () => {
@@ -122,6 +170,29 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
                     console.log("[useChat] Message already exists, skipping:", data.id);
                     return prev;
                 }
+
+                const optimisticMatchIndex = prev.findIndex((message) => {
+                    if (!message.id.startsWith("temp-")) return false;
+                    if (message.message !== data.message) return false;
+
+                    const sameUserId = !!message.userId && !!data.userId && message.userId === data.userId;
+                    const sameUserEmail =
+                        !!message.userEmail &&
+                        !!data.userEmail &&
+                        message.userEmail.toLowerCase() === data.userEmail.toLowerCase();
+
+                    return sameUserId || sameUserEmail;
+                });
+
+                if (optimisticMatchIndex !== -1) {
+                    const next = [...prev];
+                    next[optimisticMatchIndex] = {
+                        ...next[optimisticMatchIndex],
+                        ...data,
+                    };
+                    return next;
+                }
+
                 console.log("[useChat] Adding new message to state:", data);
                 return [...prev, data];
             });
@@ -129,12 +200,31 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
 
         const handleUserTyping = (data: TypingUser) => {
             if (data.userId === socket.id) return;
-            // Ensure userName is set, fallback to "User" if missing
+
+            const resolvedName = resolveDisplayName(
+                [data.userName, data.username, getEmailPrefix(data.userEmail)],
+                "User"
+            );
+
             const typingUser: TypingUser = {
                 ...data,
-                userName: data.userName || "User",
+                userName: resolvedName,
+                username: resolvedName,
             };
-            setTypingUsers(prev => prev.some(u => u.userId === data.userId) ? prev : [...prev, typingUser]);
+            setTypingUsers(prev => {
+                const existingUser = prev.find(u => u.userId === data.userId);
+                if (!existingUser) {
+                    return [...prev, typingUser];
+                }
+
+                const shouldKeepExistingName =
+                    !isGenericName(existingUser.userName) && isGenericName(typingUser.userName);
+                if (shouldKeepExistingName || existingUser.userName === typingUser.userName) {
+                    return prev;
+                }
+
+                return prev.map(u => (u.userId === data.userId ? { ...u, ...typingUser } : u));
+            });
         };
 
         const handleUserStoppedTyping = (data: TypingUser) => {
