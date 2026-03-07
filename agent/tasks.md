@@ -15,6 +15,9 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 - Sub-update: Restored compact composer height and centered icon/text alignment while keeping long-word wrapping.
 - Sub-update: Adjusted input/textarea line-height (`leading-5`) to center placeholder/text vertically.
 - Sub-update: Re-aligned composer to dev-branch baseline classes/structure and kept only `break-all` for long unbroken words.
+- Sub-update: Centralized generic username detection into shared `utils/chatName.ts` and removed duplicate logic from `useChat` + `ChatTab`.
+- Sub-update: Synced typing user payload type with optional `username` alias to avoid frontend type mismatch and IDE red underlines.
+- Sub-update: Fixed `resolveDisplayName` TS2322 by normalizing candidate to `string` before return (`(candidate ?? \"\").trim()`).
 - Localization note: No new UI text in this step (`tr/en/es` unchanged).
 
 Rules for execution:

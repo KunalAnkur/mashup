@@ -98,3 +98,26 @@ Use this file to record mistakes, root causes, and prevention steps.
   - When pixel parity matters, diff against known-good branch and restore exact class structure.
   - Keep only minimal functional delta (`break-all`) after baseline parity is re-established.
 - Follow-up action: Use branch-baseline matching earlier for UI parity requests.
+
+## 2026-03-07 (Generic Name Drift)
+
+- Date: 2026-03-07
+- Context: Typing/message display name fallback in chat.
+- Error: Generic-name filtering logic was duplicated across `useChat` and `ChatTab`, making behavior drift-prone and harder to debug.
+- Root cause: Same helper logic (`isGenericName`, email prefix fallback) was copy-pasted in multiple files instead of shared utility.
+- Prevention checklist:
+  - Keep name-resolution rules in one shared helper.
+  - Reuse the same helper in hook and UI layers.
+  - Include backward-compatible payload aliases in types when socket payloads can vary (`userName` vs `username`).
+- Follow-up action: Reuse `utils/chatName.ts` for any new chat/presence display-name paths.
+
+## 2026-03-07 (TS Narrowing in Name Resolver)
+
+- Date: 2026-03-07
+- Context: Shared chat display-name utility.
+- Error: TS2322 in `resolveDisplayName` (`string | undefined` returned where `string` required).
+- Root cause: `candidate?.trim()` preserves `undefined` in type flow.
+- Prevention checklist:
+  - Normalize optional strings before return (`(value ?? \"\").trim()`).
+  - Keep helper function return contracts strict and explicit.
+- Follow-up action: Apply same pattern in other utility resolvers with optional inputs.

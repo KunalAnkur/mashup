@@ -16,6 +16,7 @@ import { showError } from "@/utils/toast";
 import { formatChatTime } from "@/utils/timeFormatter";
 import { isMobile } from "react-device-detect";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { getEmailPrefix, isGenericName } from "@/utils/chatName";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -114,22 +115,6 @@ const isOnlyEmojis = (text: string): boolean => {
   const emojiRegex = /[\p{Emoji}\p{Emoji_Component}]/gu;
   const textWithoutEmojis = text.replace(emojiRegex, "").replace(/\s/g, "");
   return textWithoutEmojis.length === 0 && text.trim().length > 0;
-};
-
-const isGenericName = (name?: string | null) => {
-  if (!name) return true;
-  const normalized = name.trim().toLowerCase();
-  return (
-    normalized.length === 0 ||
-    normalized === "user" ||
-    normalized === "unknown user" ||
-    normalized === "guest"
-  );
-};
-
-const getEmailPrefix = (email?: string) => {
-  if (!email) return "";
-  return email.split("@")[0]?.trim() || "";
 };
 
 const SCROLL_BOTTOM_THRESHOLD = 64;

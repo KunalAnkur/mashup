@@ -4,6 +4,7 @@ import { SocketEvent } from "@/types/socketEvents";
 import { ChatMessage, TypingUser, SendMessageResponse, Reaction, ReactionType } from "@/types/chatTypes";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { getEmailPrefix, resolveDisplayName, isGenericName } from "@/utils/chatName";
 
 interface UseChatParams {
     roomId: string | null;
@@ -23,34 +24,10 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastTypingEmitRef = useRef(0);
 
-    const isGenericName = (name?: string | null) => {
-        if (!name) return true;
-        const normalized = name.trim().toLowerCase();
-        return (
-            normalized.length === 0 ||
-            normalized === "user" ||
-            normalized === "unknown user" ||
-            normalized === "guest"
-        );
-    };
-
-    const getEmailPrefix = (email?: string) => {
-        if (!email) return "";
-        return email.split("@")[0]?.trim() || "";
-    };
-
-    const userName = (() => {
-        const preferredUsername = user?.username?.trim();
-        if (!isGenericName(preferredUsername)) return preferredUsername;
-
-        const preferredName = user?.name?.trim();
-        if (!isGenericName(preferredName)) return preferredName;
-
-        const emailPrefix = getEmailPrefix(user?.email);
-        if (!isGenericName(emailPrefix)) return emailPrefix;
-
-        return "User";
-    })();
+    const userName = resolveDisplayName(
+        [user?.username, user?.name, getEmailPrefix(user?.email)],
+        "User"
+    );
 
     const sendMessage = useCallback(async (message: string): Promise<SendMessageResponse> => {
         if (!socket || !roomId || !user || !message.trim() || !enabled) {
@@ -224,16 +201,15 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
         const handleUserTyping = (data: TypingUser) => {
             if (data.userId === socket.id) return;
 
-            const emailPrefix = getEmailPrefix(data.userEmail);
-            const resolvedName = !isGenericName(data.userName)
-                ? data.userName
-                : !isGenericName(emailPrefix)
-                    ? emailPrefix
-                    : "User";
+            const resolvedName = resolveDisplayName(
+                [data.userName, data.username, getEmailPrefix(data.userEmail)],
+                "User"
+            );
 
             const typingUser: TypingUser = {
                 ...data,
                 userName: resolvedName,
+                username: resolvedName,
             };
             setTypingUsers(prev => {
                 const existingUser = prev.find(u => u.userId === data.userId);
