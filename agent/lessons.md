@@ -83,6 +83,18 @@ Use this file to record mistakes, root causes, and prevention steps.
 - Prevention checklist:
   - Prefer natural flex layout (`input flex-1` + `actions flex-shrink-0`) before absolute positioning.
   - Tune vertical paddings symmetrically (`py-*` on container and input/textarea).
+  - If placeholder baseline feels off, adjust line-height first (`leading-*`) before changing height/padding.
   - For long unbroken words, apply explicit wrap behavior (`break-all`).
 - Follow-up action: Keep composer fixes layout-first, then micro-tune spacing.
 - Validation: Returned to compact composer height and centered alignment after user feedback.
+
+## 2026-03-07 (Composer Baseline Matching)
+
+- Date: 2026-03-07
+- Context: Final visual parity request for chat composer (placeholder + icons).
+- Error: Iterative fixes still looked visually off versus known-good dev baseline.
+- Root cause: Multiple micro changes drifted away from baseline spacing/alignment classes.
+- Prevention checklist:
+  - When pixel parity matters, diff against known-good branch and restore exact class structure.
+  - Keep only minimal functional delta (`break-all`) after baseline parity is re-established.
+- Follow-up action: Use branch-baseline matching earlier for UI parity requests.

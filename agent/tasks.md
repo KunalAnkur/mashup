@@ -13,6 +13,8 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 - Sub-update: Reduced reserved right padding to bring text visually closer to composer action buttons.
 - Sub-update: Reverted absolute composer actions and restored balanced flex layout; added long-word wrapping (`break-all`) for textarea stability.
 - Sub-update: Restored compact composer height and centered icon/text alignment while keeping long-word wrapping.
+- Sub-update: Adjusted input/textarea line-height (`leading-5`) to center placeholder/text vertically.
+- Sub-update: Re-aligned composer to dev-branch baseline classes/structure and kept only `break-all` for long unbroken words.
 - Localization note: No new UI text in this step (`tr/en/es` unchanged).
 
 Rules for execution:
