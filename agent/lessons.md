@@ -60,3 +60,29 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Reconcile optimistic message with server `id/timestamp` when ack or receive event arrives.
   - Deduplicate incoming messages using both `id` and optimistic match rules.
 - Follow-up action: Use the same optimistic + reconciliation pattern for future realtime list interactions.
+
+## 2026-03-07 (Composer Width Shrink on Long Text)
+
+- Date: 2026-03-07
+- Context: Chat input/composer in right panel.
+- Error: Long multiline text used a narrow typing area instead of full available width.
+- Root cause: Composer row lacked a strict width contract between text input and action buttons.
+- Prevention checklist:
+  - Keep text input wrapper as `flex-1 min-w-0`.
+  - Keep textarea/input as `w-full min-w-0`.
+  - Keep action icon group as `flex-shrink-0`.
+  - Keep wrapping/layout fixes scoped so composer height and centering are not unintentionally changed.
+- Follow-up action: Reuse the same flex layout pattern for any input+actions composer UI.
+
+## 2026-03-07 (Composer Spacing Regression)
+
+- Date: 2026-03-07
+- Context: Chat composer after width-fix iteration.
+- Error: Content looked top-heavy; excessive visual gap between text and action buttons.
+- Root cause: Absolute-positioned action buttons with reserved right padding hurt vertical and horizontal balance.
+- Prevention checklist:
+  - Prefer natural flex layout (`input flex-1` + `actions flex-shrink-0`) before absolute positioning.
+  - Tune vertical paddings symmetrically (`py-*` on container and input/textarea).
+  - For long unbroken words, apply explicit wrap behavior (`break-all`).
+- Follow-up action: Keep composer fixes layout-first, then micro-tune spacing.
+- Validation: Returned to compact composer height and centered alignment after user feedback.
