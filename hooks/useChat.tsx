@@ -1,7 +1,15 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
-import { ChatMessage, TypingUser, SendMessageResponse, Reaction, ReactionType } from "@/types/chatTypes";
+import {
+    ChatMessage,
+    TypingUser,
+    SendMessageResponse,
+    Reaction,
+    ReactionType,
+    PinnedChatMessage,
+    PinMessageResponse,
+} from "@/types/chatTypes";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { getEmailPrefix, resolveDisplayName, isGenericName } from "@/utils/chatName";
@@ -19,6 +27,7 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
     const [reactions, setReactions] = useState<Reaction[]>([]);
+    const [pinnedMessage, setPinnedMessage] = useState<PinnedChatMessage | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -132,6 +141,9 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
             if (response?.success && response.chatHistory) {
                 setMessages(response.chatHistory);
             }
+            if (response?.success) {
+                setPinnedMessage(response.pinnedMessage || null);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -141,6 +153,10 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
         if (Array.isArray(chatHistory) && chatHistory.length) {
             setMessages(chatHistory);
         }
+    }, []);
+
+    const setInitialPinnedMessage = useCallback((nextPinnedMessage: PinnedChatMessage | null) => {
+        setPinnedMessage(nextPinnedMessage || null);
     }, []);
 
     const sendReaction = useCallback((emoji: ReactionType) => {
@@ -153,6 +169,43 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
             userProfile: user?.profile,
         });
     }, [socket, roomId, user, enabled, userName]);
+
+    const pinMessage = useCallback(async (messageId: string): Promise<PinMessageResponse> => {
+        if (!socket || !roomId || !user || !enabled || !messageId) {
+            return { success: false, error: "Invalid pin request or not connected" };
+        }
+
+        try {
+            const response = await socket.emitWithAck(SocketEvent.PIN_CHAT_MESSAGE, {
+                roomId,
+                messageId,
+            });
+
+            return response?.success
+                ? { success: true, roomId: response.roomId, pinnedMessage: response.pinnedMessage || null }
+                : { success: false, error: response?.error || "Failed to pin message" };
+        } catch {
+            return { success: false, error: "Error pinning message" };
+        }
+    }, [socket, roomId, user, enabled]);
+
+    const unpinMessage = useCallback(async (): Promise<PinMessageResponse> => {
+        if (!socket || !roomId || !user || !enabled) {
+            return { success: false, error: "Invalid unpin request or not connected" };
+        }
+
+        try {
+            const response = await socket.emitWithAck(SocketEvent.UNPIN_CHAT_MESSAGE, {
+                roomId,
+            });
+
+            return response?.success
+                ? { success: true, roomId: response.roomId, pinnedMessage: null }
+                : { success: false, error: response?.error || "Failed to unpin message" };
+        } catch {
+            return { success: false, error: "Error unpinning message" };
+        }
+    }, [socket, roomId, user, enabled]);
 
     // Socket events
     useEffect(() => {
@@ -238,6 +291,11 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
             }, 3000);
         };
 
+        const handlePinnedMessageUpdated = (data: { roomId: string; pinnedMessage: PinnedChatMessage | null }) => {
+            if (!data || data.roomId !== roomId) return;
+            setPinnedMessage(data.pinnedMessage || null);
+        };
+
         const handleUsernameUpdated = (data: { socketId: string; username?: string; name?: string; profile?: string }) => {
             // Determine the new username to use (prioritize username over name)
             const newUsername = data.username || data.name;
@@ -273,6 +331,7 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
         socket.on(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
         socket.on(SocketEvent.RECEIVE_REACTION, handleReceiveReaction);
         socket.on(SocketEvent.USERNAME_UPDATED, handleUsernameUpdated);
+        socket.on(SocketEvent.PINNED_CHAT_MESSAGE_UPDATED, handlePinnedMessageUpdated);
 
         return () => {
             socket.off(SocketEvent.RECEIVE_CHAT_MESSAGE, handleReceiveMessage);
@@ -280,21 +339,32 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
             socket.off(SocketEvent.USER_STOPPED_TYPING, handleUserStoppedTyping);
             socket.off(SocketEvent.RECEIVE_REACTION, handleReceiveReaction);
             socket.off(SocketEvent.USERNAME_UPDATED, handleUsernameUpdated);
+            socket.off(SocketEvent.PINNED_CHAT_MESSAGE_UPDATED, handlePinnedMessageUpdated);
 
             if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         };
-    }, [socket, enabled]);
+    }, [socket, enabled, roomId]);
+
+    useEffect(() => {
+        if (!enabled || !roomId) {
+            setPinnedMessage(null);
+        }
+    }, [enabled, roomId]);
 
     return {
         messages,
         typingUsers,
         reactions,
+        pinnedMessage,
         sendMessage,
         sendReaction,
+        pinMessage,
+        unpinMessage,
         handleTyping,
         stopTyping,
         getChatHistory,
         setInitialChatHistory,
+        setInitialPinnedMessage,
         isJoined: enabled && !!roomId && isConnected,
         isLoading,
         isConnected,

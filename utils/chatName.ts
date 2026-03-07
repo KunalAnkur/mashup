@@ -15,9 +15,6 @@ export const isGenericName = (name?: string | null): boolean => {
   const normalized = name.trim().toLowerCase();
   if (GENERIC_NAME_VALUES.has(normalized)) return true;
 
-  if (SOCKET_FALLBACK_PATTERN.test(normalized) && /\d/.test(normalized)) {
-    return true;
-  }
 
   return false;
 };

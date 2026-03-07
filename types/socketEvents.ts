@@ -35,6 +35,9 @@ export enum SocketEvent {
   USER_STOPPED_TYPING = "userStoppedTyping",
   LEAVE_CHAT_ROOM = "leaveChatRoom",
   GET_CHAT_HISTORY = "getChatHistory",
+  PIN_CHAT_MESSAGE = "pinChatMessage",
+  UNPIN_CHAT_MESSAGE = "unpinChatMessage",
+  PINNED_CHAT_MESSAGE_UPDATED = "pinnedChatMessageUpdated",
 
   // Reaction events
   SEND_REACTION = "sendReaction",

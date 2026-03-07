@@ -94,6 +94,12 @@
       "showReactions": "Mostrar reacciones",
       "hideReactions": "Ocultar reacciones",
       "searchEmojis": "Buscar emojis...",
+      "pinnedMessage": "Mensaje fijado",
+      "pinMessage": "Fijar mensaje",
+      "unpinMessage": "Desfijar mensaje",
+      "pinMessageLengthError": "El mensaje fijado debe tener {max} caracteres o menos.",
+      "pinMessageErrorTitle": "No se pudo fijar el mensaje",
+      "pinMessageErrorFallback": "Ocurrió un error al actualizar el mensaje fijado.",
       "failedToSend": "Error al enviar mensaje",
       "checkConnection": "Por favor, verifica tu conexión e inténtalo de nuevo."
     },
