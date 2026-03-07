@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
 import { MdCelebration, MdOutlineCelebration } from "react-icons/md";
 import dynamic from "next/dynamic";
@@ -115,11 +115,14 @@ const isOnlyEmojis = (text: string): boolean => {
   return textWithoutEmojis.length === 0 && text.trim().length > 0;
 };
 
+const SCROLL_BOTTOM_THRESHOLD = 64;
+
 const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);
   const [showReactions, setShowReactions] = useState(true);
   const [messageInput, setMessageInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
@@ -169,9 +172,25 @@ const ChatTab = () => {
     setPinnedReactions(newReactions);
   };
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const isNearBottom = (container: HTMLDivElement) => {
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceFromBottom <= SCROLL_BOTTOM_THRESHOLD;
+  };
+
+  const handleMessagesScroll = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    shouldAutoScrollRef.current = isNearBottom(container);
+  };
+
+  useLayoutEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container || !shouldAutoScrollRef.current) return;
+
+    // Keep chat pinned to bottom on mount/tab re-entry without visible jump.
+    container.scrollTop = container.scrollHeight;
+  }, [messages, typingUsers.length]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -289,7 +308,11 @@ const ChatTab = () => {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleMessagesScroll}
+        className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+      >
         {messages.length === 0 && isJoined && !isLoading && (
           <div className="flex flex-col items-center justify-center h-full gap-2 md:gap-3">
             <div className="relative">
@@ -475,8 +498,7 @@ const ChatTab = () => {
           return (
             <div
               key={msg.id || i}
-              className={`flex items-start gap-2 md:gap-3 group animate-fade-in ${isGroupedMessage ? "mt-0" : "mt-1"}`}
-              style={{ animationDelay: `${i * 0.03}s` }}
+              className={`flex items-start gap-2 md:gap-3 group ${isGroupedMessage ? "mt-0" : "mt-1"}`}
             >
               <div className={`relative flex-shrink-0 ${isGroupedMessage ? "w-8 md:w-10" : ""}`}>
                 {!isGroupedMessage && (
@@ -592,7 +614,6 @@ const ChatTab = () => {
           </div>
         )}
 
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Reaction Buttons - Collapsible with reduced spacing */}
@@ -766,37 +787,6 @@ const ChatTab = () => {
       </div>
 
       <style jsx global>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(4px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(6px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-          opacity: 0;
-        }
-
-        // .animate-slide-up {
-        //   animation: slide-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        // }
-
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
