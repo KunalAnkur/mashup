@@ -23,7 +23,34 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastTypingEmitRef = useRef(0);
 
-    const userName = user?.name || user?.username || "User";
+    const isGenericName = (name?: string | null) => {
+        if (!name) return true;
+        const normalized = name.trim().toLowerCase();
+        return (
+            normalized.length === 0 ||
+            normalized === "user" ||
+            normalized === "unknown user" ||
+            normalized === "guest"
+        );
+    };
+
+    const getEmailPrefix = (email?: string) => {
+        if (!email) return "";
+        return email.split("@")[0]?.trim() || "";
+    };
+
+    const userName = (() => {
+        const preferredUsername = user?.username?.trim();
+        if (!isGenericName(preferredUsername)) return preferredUsername;
+
+        const preferredName = user?.name?.trim();
+        if (!isGenericName(preferredName)) return preferredName;
+
+        const emailPrefix = getEmailPrefix(user?.email);
+        if (!isGenericName(emailPrefix)) return emailPrefix;
+
+        return "User";
+    })();
 
     const sendMessage = useCallback(async (message: string): Promise<SendMessageResponse> => {
         if (!socket || !roomId || !user || !message.trim() || !enabled) {
@@ -55,12 +82,20 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
         if (now - lastTypingEmitRef.current < 3000) return;
 
         lastTypingEmitRef.current = now;
-        socket.emit(SocketEvent.USER_TYPING, { roomId, userName });
+        socket.emit(SocketEvent.USER_TYPING, {
+            roomId,
+            userName,
+            userEmail: user?.email,
+        });
 
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
         typingTimeoutRef.current = setTimeout(() => {
-            socket?.emit(SocketEvent.USER_STOPPED_TYPING, { roomId, userName });
+            socket?.emit(SocketEvent.USER_STOPPED_TYPING, {
+                roomId,
+                userName,
+                userEmail: user?.email,
+            });
         }, 3000);
     }, [socket, roomId, user, enabled, userName]);
 
@@ -72,7 +107,11 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
             typingTimeoutRef.current = null;
         }
 
-        socket.emit(SocketEvent.USER_STOPPED_TYPING, { roomId, userName });
+        socket.emit(SocketEvent.USER_STOPPED_TYPING, {
+            roomId,
+            userName,
+            userEmail: user?.email,
+        });
     }, [socket, roomId, user, enabled, userName]);
 
     const getChatHistory = useCallback(async () => {
@@ -129,12 +168,32 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
 
         const handleUserTyping = (data: TypingUser) => {
             if (data.userId === socket.id) return;
-            // Ensure userName is set, fallback to "User" if missing
+
+            const emailPrefix = getEmailPrefix(data.userEmail);
+            const resolvedName = !isGenericName(data.userName)
+                ? data.userName
+                : !isGenericName(emailPrefix)
+                    ? emailPrefix
+                    : "User";
+
             const typingUser: TypingUser = {
                 ...data,
-                userName: data.userName || "User",
+                userName: resolvedName,
             };
-            setTypingUsers(prev => prev.some(u => u.userId === data.userId) ? prev : [...prev, typingUser]);
+            setTypingUsers(prev => {
+                const existingUser = prev.find(u => u.userId === data.userId);
+                if (!existingUser) {
+                    return [...prev, typingUser];
+                }
+
+                const shouldKeepExistingName =
+                    !isGenericName(existingUser.userName) && isGenericName(typingUser.userName);
+                if (shouldKeepExistingName || existingUser.userName === typingUser.userName) {
+                    return prev;
+                }
+
+                return prev.map(u => (u.userId === data.userId ? { ...u, ...typingUser } : u));
+            });
         };
 
         const handleUserStoppedTyping = (data: TypingUser) => {

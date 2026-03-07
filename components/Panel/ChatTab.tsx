@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
 import { MdCelebration, MdOutlineCelebration } from "react-icons/md";
 import dynamic from "next/dynamic";
 import { useChatContext } from "@/context/ChatContext";
+import { useRoomContext } from "@/context/RoomContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { ChatMessage, ReactionType } from "@/types/chatTypes";
@@ -115,6 +116,22 @@ const isOnlyEmojis = (text: string): boolean => {
   return textWithoutEmojis.length === 0 && text.trim().length > 0;
 };
 
+const isGenericName = (name?: string | null) => {
+  if (!name) return true;
+  const normalized = name.trim().toLowerCase();
+  return (
+    normalized.length === 0 ||
+    normalized === "user" ||
+    normalized === "unknown user" ||
+    normalized === "guest"
+  );
+};
+
+const getEmailPrefix = (email?: string) => {
+  if (!email) return "";
+  return email.split("@")[0]?.trim() || "";
+};
+
 const SCROLL_BOTTOM_THRESHOLD = 64;
 
 const ChatTab = () => {
@@ -127,6 +144,7 @@ const ChatTab = () => {
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.auth.user);
+  const { participants } = useRoomContext();
   const t = useTranslations("panel.chat");
   const tToast = useTranslations("toast");
 
@@ -281,6 +299,50 @@ const ChatTab = () => {
     const userName2 = (msg2.userName || "").toLowerCase();
     return userName1 === userName2 && userName1 !== "";
   };
+
+  const latestMessageNameByUserId = useMemo(() => {
+    const nameByUserId = new Map<string, string>();
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const message = messages[i];
+      if (!message?.userId || nameByUserId.has(message.userId)) continue;
+      if (!isGenericName(message.userName)) {
+        nameByUserId.set(message.userId, message.userName);
+      }
+    }
+    return nameByUserId;
+  }, [messages]);
+
+  const typingDisplayNames = useMemo(() => {
+    const resolvedNames = typingUsers
+      .map((typingUser) => {
+        const participant = participants.find(
+          (roomUser) => roomUser.socketId === typingUser.userId
+        );
+        const participantName = participant?.username || participant?.name || "";
+        if (!isGenericName(participantName)) {
+          return participantName;
+        }
+
+        const recentMessageName = latestMessageNameByUserId.get(typingUser.userId);
+        if (recentMessageName && !isGenericName(recentMessageName)) {
+          return recentMessageName;
+        }
+
+        if (!isGenericName(typingUser.userName)) {
+          return typingUser.userName;
+        }
+
+        const participantEmailPrefix = getEmailPrefix(participant?.email);
+        if (participantEmailPrefix) {
+          return participantEmailPrefix;
+        }
+
+        return "User";
+      })
+      .filter((name) => name.trim().length > 0);
+
+    return Array.from(new Set(resolvedNames));
+  }, [typingUsers, participants, latestMessageNameByUserId]);
 
   return (
     <div className="flex flex-col h-full w-full gap-2 md:gap-3 overflow-visible">
@@ -594,7 +656,7 @@ const ChatTab = () => {
             </div>
           );
         })}
-        {typingUsers.length > 0 && (
+        {typingDisplayNames.length > 0 && (
           <div className="flex items-center gap-2 md:gap-2.5 px-2 md:px-3 py-1.5 md:py-2">
             <div className="relative flex items-center gap-0.5 md:gap-1">
               <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
@@ -604,10 +666,10 @@ const ChatTab = () => {
             <div className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-cyan-500/20 rounded-lg">
               <span className="text-cyan-300 text-[10px] md:text-xs font-medium">
                 <span className="font-semibold">
-                  {typingUsers.map((u) => u.userName).join(", ")}
+                  {typingDisplayNames.join(", ")}
                 </span>
                 <span className="text-cyan-400/70 ml-1 md:ml-1.5">
-                  {typingUsers.length === 1 ? t("isTyping") : t("areTyping")}
+                  {typingDisplayNames.length === 1 ? t("isTyping") : t("areTyping")}
                 </span>
               </span>
             </div>

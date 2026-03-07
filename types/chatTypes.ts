@@ -17,6 +17,7 @@ export interface TypingUser {
   userId: string;
   userName: string;
   roomId: string;
+  userEmail?: string;
 }
 
 export interface ChatHistoryResponse {
