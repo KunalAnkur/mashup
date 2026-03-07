@@ -236,16 +236,20 @@ const ChatTab = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!messageInput.trim() || !isJoined) return;
+    const trimmedMessage = messageInput.trim();
+    if (!trimmedMessage || !isJoined) return;
 
-    const result = await sendMessage(messageInput);
+    setMessageInput("");
+    stopTyping();
+    if (inputRef.current && inputRef.current instanceof HTMLTextAreaElement) {
+      inputRef.current.style.height = "20px";
+    }
+
+    const result = await sendMessage(trimmedMessage);
     if (result.success) {
-      setMessageInput("");
-      stopTyping();
-      if (inputRef.current && inputRef.current instanceof HTMLTextAreaElement) {
-        inputRef.current.style.height = "20px";
-      }
+      return;
     } else {
+      setMessageInput(trimmedMessage);
       console.error("Failed to send message:", result.error);
       showError(tToast("failedToSendMessage"), result.error || tToast("checkConnection"));
     }
