@@ -21,6 +21,18 @@ interface UseChatParams {
   enabled?: boolean;
 }
 
+type IncomingTypingUser = TypingUser & {
+  username?: string;
+  userEmail?: string;
+};
+
+type UsernameUpdatedPayload = {
+  socketId: string;
+  username?: string;
+  name?: string;
+  profile?: string;
+};
+
 const normalizeReactionOwnerKey = (reaction: {
   userId: string;
   userEmail?: string;
@@ -66,6 +78,9 @@ const applyMessageReactionsUpdate = (
       : message
   );
 
+const resolveTypingUserName = (data: IncomingTypingUser): string =>
+  (data.userName || data.username || "").trim();
+
 export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
   const { socket, isConnected } = useSocket();
   const user = useSelector((state: RootState) => state.auth.user);
@@ -79,17 +94,18 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingEmitRef = useRef(0);
 
-  const userName = user?.username || user?.name || "User";
+  const userName = (user?.username || user?.name || "User").trim() || "User";
 
   const sendMessage = useCallback(async (message: string): Promise<SendMessageResponse> => {
-    if (!socket || !roomId || !user || !message.trim() || !enabled) {
+    const trimmedMessage = message.trim();
+    if (!socket || !roomId || !user || !trimmedMessage || !enabled) {
       return { success: false, error: "Invalid message or not connected" };
     }
 
     try {
       const response = await socket.emitWithAck(SocketEvent.SEND_CHAT_MESSAGE, {
         roomId,
-        message: message.trim(),
+        message: trimmedMessage,
         userName,
         userEmail: user.email,
         userProfile: user.profile,
@@ -111,12 +127,22 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
     if (now - lastTypingEmitRef.current < 3000) return;
 
     lastTypingEmitRef.current = now;
-    socket.emit(SocketEvent.USER_TYPING, { roomId, userName });
+    socket.emit(SocketEvent.USER_TYPING, {
+      roomId,
+      userName,
+      userEmail: user.email,
+    });
 
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
 
     typingTimeoutRef.current = setTimeout(() => {
-      socket.emit(SocketEvent.USER_STOPPED_TYPING, { roomId, userName });
+      socket.emit(SocketEvent.USER_STOPPED_TYPING, {
+        roomId,
+        userName,
+        userEmail: user.email,
+      });
     }, 3000);
   }, [socket, roomId, user, enabled, userName]);
 
@@ -128,7 +154,11 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
       typingTimeoutRef.current = null;
     }
 
-    socket.emit(SocketEvent.USER_STOPPED_TYPING, { roomId, userName });
+    socket.emit(SocketEvent.USER_STOPPED_TYPING, {
+      roomId,
+      userName,
+      userEmail: user.email,
+    });
   }, [socket, roomId, user, enabled, userName]);
 
   const getChatHistory = useCallback(async () => {
@@ -255,29 +285,48 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
       });
     };
 
-    const handleUserTyping = (data: TypingUser) => {
+    const handleUserTyping = (data: IncomingTypingUser) => {
       if (data.userId === socket.id) return;
 
-      const typingUser: TypingUser = {
-        ...data,
-        userName: data.userName || "User",
-      };
+      const resolvedUserName = resolveTypingUserName(data);
+      if (!resolvedUserName) return;
 
-      setTypingUsers((prev) =>
-        prev.some((existingUser) => existingUser.userId === data.userId)
-          ? prev
-          : [...prev, typingUser]
-      );
+      setTypingUsers((prev) => {
+        const existingUserIndex = prev.findIndex(
+          (typingUser) => typingUser.userId === data.userId
+        );
+
+        if (existingUserIndex === -1) {
+          return [
+            ...prev,
+            {
+              userId: data.userId,
+              userName: resolvedUserName,
+              roomId: data.roomId || roomId || "",
+            },
+          ];
+        }
+
+        return prev.map((typingUser, index) =>
+          index === existingUserIndex
+            ? { ...typingUser, userName: resolvedUserName }
+            : typingUser
+        );
+      });
     };
 
-    const handleUserStoppedTyping = (data: TypingUser) => {
-      setTypingUsers((prev) => prev.filter((typingUser) => typingUser.userId !== data.userId));
+    const handleUserStoppedTyping = (data: IncomingTypingUser) => {
+      setTypingUsers((prev) =>
+        prev.filter((typingUser) => typingUser.userId !== data.userId)
+      );
     };
 
     const handleReceiveReaction = (data: { reaction: Reaction }) => {
       setReactions((prev) => [...prev, data.reaction]);
       setTimeout(() => {
-        setReactions((prev) => prev.filter((reaction) => reaction.id !== data.reaction.id));
+        setReactions((prev) =>
+          prev.filter((reaction) => reaction.id !== data.reaction.id)
+        );
       }, 3000);
     };
 
@@ -297,12 +346,7 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
       );
     };
 
-    const handleUsernameUpdated = (data: {
-      socketId: string;
-      username?: string;
-      name?: string;
-      profile?: string;
-    }) => {
+    const handleUsernameUpdated = (data: UsernameUpdatedPayload) => {
       const newUsername = data.username || data.name;
       if (!newUsername) return;
 
@@ -335,6 +379,26 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
         })
       );
 
+      setPinnedMessage((prev) => {
+        if (!prev) return prev;
+
+        let changed = false;
+        const nextPinnedMessage: PinnedChatMessage = { ...prev };
+
+        if (prev.userId === data.socketId) {
+          nextPinnedMessage.userName = newUsername;
+          nextPinnedMessage.userProfile = data.profile || prev.userProfile;
+          changed = true;
+        }
+
+        if (prev.pinnedByUserId === data.socketId) {
+          nextPinnedMessage.pinnedByUserName = newUsername;
+          changed = true;
+        }
+
+        return changed ? nextPinnedMessage : prev;
+      });
+
       setTypingUsers((prev) =>
         prev.map((typingUser) =>
           typingUser.userId === data.socketId
@@ -361,13 +425,16 @@ export const useChat = ({ roomId, isHost, enabled = true }: UseChatParams) => {
       socket.off(SocketEvent.MESSAGE_REACTIONS_UPDATED, handleMessageReactionsUpdated);
       socket.off(SocketEvent.USERNAME_UPDATED, handleUsernameUpdated);
 
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
   }, [socket, enabled, roomId]);
 
   useEffect(() => {
     if (!enabled || !roomId) {
       setPinnedMessage(null);
+      setTypingUsers([]);
     }
   }, [enabled, roomId]);
 

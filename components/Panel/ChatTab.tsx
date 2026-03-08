@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
 import { MdCelebration, MdOutlineCelebration, MdOutlinePushPin, MdPushPin } from "react-icons/md";
 import dynamic from "next/dynamic";
@@ -144,6 +144,7 @@ const ChatTab = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastMessageCountRef = useRef(0);
+  const shouldAutoScrollRef = useRef(true);
   const messageBubbleRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -202,11 +203,29 @@ const ChatTab = () => {
     setPinnedReactions(newReactions);
   };
 
-  useEffect(() => {
-    if (messages.length === lastMessageCountRef.current) return;
+  const isNearBottom = (container: HTMLDivElement) => {
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceFromBottom <= 24;
+  };
 
+  const handleMessagesScroll = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    shouldAutoScrollRef.current = isNearBottom(container);
+  };
+
+  useLayoutEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    if (messages.length === lastMessageCountRef.current) return;
     lastMessageCountRef.current = messages.length;
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+
+    if (!shouldAutoScrollRef.current) return;
+
+    container.scrollTop = container.scrollHeight;
   }, [messages.length]);
 
   useEffect(() => {
@@ -606,7 +625,11 @@ const ChatTab = () => {
         </div>
       )}
 
-      <div ref={messagesContainerRef} className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleMessagesScroll}
+        className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+      >
         {messages.length === 0 && isJoined && !isLoading && (
           <div className="flex flex-col items-center justify-center h-full gap-2 md:gap-3">
             <div className="relative">
