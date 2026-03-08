@@ -28,7 +28,12 @@ const roomSlice = createSlice({
       state.haveRoom = true;
       state.loading = false;
       state.roomId = data.room_id;
-      state.playlist = data.playlist || [];
+      state.playlist = data.playlist.filter((item) => item.source !== "screen").map((item, index) => {
+        if (index === 0) {
+          return { ...item, selected: true };
+        }
+        return { ...item, selected: false };
+      }) || [];
       state.host = action.payload.authId === action.payload.data.user_id;
       // Backend now uses type and source directly
       state.refer = false;
@@ -70,6 +75,10 @@ const roomSlice = createSlice({
         // state.selectedIndex = action.payload.playlist.findIndex((item) => item.selected) || 0;
       }
     },
+    cleanScreenSourcePlaylist: (state) => {
+      state.playlist = state.playlist.filter(item => item.source !== "screen");
+      // state.selectedIndex = state.playlist.findIndex((item) => item.selected) || 0;
+    },
     setPanelCollapsed: (state, action: PayloadAction<Partial<RoomSetting>>) => {
       state.settings = {
         ...state.settings,
@@ -109,6 +118,7 @@ export const {
   setPlaylist,
   setScreenSharing,
   updateWatchTime,
+  cleanScreenSourcePlaylist,
   setHostPlaybackPlaying,
 } = roomSlice.actions;
 export default roomSlice;
