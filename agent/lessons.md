@@ -30,3 +30,6 @@
 - Do not bind auto-scroll to the full `messages` object when message metadata can change.
 - Normalize incoming message shape so older history payloads without `reactions` do not break UI.
 - If users want long-press mobile behavior later, add it on top of the current quick-reaction picker instead of replacing the socket contract.
+- Do not reserve permanent `pr-*` space for hover-only pin controls; keep the idle bubble layout full-width and move transient actions into a floating overlay.
+- For chat bubble readability, keep the timestamp in its expected bottom-right slot and float hover actions above the bubble instead of mixing them into text/time layout.
+- Message reaction pickers should open from the bubble's own start edge with a capped width and horizontal overflow handling, otherwise icons can clip off-screen on narrow layouts.

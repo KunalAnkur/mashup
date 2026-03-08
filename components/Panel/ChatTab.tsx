@@ -715,41 +715,41 @@ const ChatTab = () => {
 
                 {onlyEmojis ? (
                   <div className={`relative group/message inline-flex max-w-full flex-col ${isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"}`}>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveReactionMessageId((current) =>
-                          current === msg.id ? null : msg.id
-                        )
-                      }
-                      disabled={!isJoined}
-                      className="absolute -right-1.5 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
-                      title={t("reactToMessage")}
-                    >
-                      <FaSmile size={10} />
-                    </button>
+                    <div className="absolute right-1 top-0 z-20 flex -translate-y-1/2 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActiveReactionMessageId((current) =>
+                            current === msg.id ? null : msg.id
+                          )
+                        }
+                        disabled={!isJoined}
+                        className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
+                        title={t("reactToMessage")}
+                      >
+                        <FaSmile size={10} />
+                      </button>
+                      {isHost && (canPinMessage || isPinnedMessage) && (
+                        <button
+                          type="button"
+                          onClick={() => canPinMessage && handlePinFromMessage(msg)}
+                          disabled={pinActionLoadingId === msg.id || !canPinMessage}
+                          className={`flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 shadow-lg backdrop-blur-xl transition-all duration-150 ${
+                            isPinnedMessage
+                              ? "text-white/95 opacity-100"
+                              : "text-white/50 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 hover:text-white/90"
+                          } disabled:cursor-not-allowed disabled:opacity-40`}
+                          title={pinButtonTitle}
+                        >
+                          <MdOutlinePushPin size={11} className="md:h-3 md:w-3" />
+                        </button>
+                      )}
+                    </div>
                     {activeReactionMessageId === msg.id && (
                       <MessageReactionPicker
-                        align="right"
                         selectedEmoji={selectedMessageReaction}
                         onSelect={(emoji) => handleMessageReactionSelect(msg.id, emoji)}
                       />
-                    )}
-
-                    {isHost && (canPinMessage || isPinnedMessage) && (
-                      <button
-                        type="button"
-                        onClick={() => canPinMessage && handlePinFromMessage(msg)}
-                        disabled={pinActionLoadingId === msg.id || !canPinMessage}
-                        className={`absolute right-0.5 top-0.5 z-20 flex h-5 w-5 items-center justify-center transition-all duration-200 ${
-                          isPinnedMessage
-                            ? "text-white/95 opacity-100"
-                            : "text-white/50 opacity-0 group-hover/message:opacity-100 hover:text-white/90"
-                        } disabled:cursor-not-allowed disabled:opacity-40`}
-                        title={pinButtonTitle}
-                      >
-                        <MdOutlinePushPin size={12} className="md:h-3.5 md:w-3.5" />
-                      </button>
                     )}
 
                     <div className="relative inline-block">
@@ -759,28 +759,44 @@ const ChatTab = () => {
                       </p>
                     </div>
                     {renderMessageReactionChips(msg)}
-                    <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                    <span className="absolute -bottom-4 right-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                       {formatChatTime(msg.timestamp)}
                     </span>
                   </div>
                 ) : (
                   <div className="relative group/message inline-flex max-w-full flex-col">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setActiveReactionMessageId((current) =>
-                          current === msg.id ? null : msg.id
-                        )
-                      }
-                      disabled={!isJoined}
-                      className="absolute -right-1.5 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
-                      title={t("reactToMessage")}
-                    >
-                      <FaSmile size={10} />
-                    </button>
+                    <div className="absolute right-1 top-0 z-20 flex -translate-y-1/2 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActiveReactionMessageId((current) =>
+                            current === msg.id ? null : msg.id
+                          )
+                        }
+                        disabled={!isJoined}
+                        className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
+                        title={t("reactToMessage")}
+                      >
+                        <FaSmile size={10} />
+                      </button>
+                      {isHost && (canPinMessage || isPinnedMessage) && (
+                        <button
+                          type="button"
+                          onClick={() => canPinMessage && handlePinFromMessage(msg)}
+                          disabled={pinActionLoadingId === msg.id || !canPinMessage}
+                          className={`flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 shadow-lg backdrop-blur-xl transition-all duration-150 ${
+                            isPinnedMessage
+                              ? "text-white/95 opacity-100"
+                              : "text-white/50 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 hover:text-white/90"
+                          } disabled:cursor-not-allowed disabled:opacity-40`}
+                          title={pinButtonTitle}
+                        >
+                          <MdOutlinePushPin size={11} className="md:h-3 md:w-3" />
+                        </button>
+                      )}
+                    </div>
                     {activeReactionMessageId === msg.id && (
                       <MessageReactionPicker
-                        align="right"
                         selectedEmoji={selectedMessageReaction}
                         onSelect={(emoji) => handleMessageReactionSelect(msg.id, emoji)}
                       />
@@ -788,36 +804,22 @@ const ChatTab = () => {
 
                     <div className={`absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-xl md:rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
 
-	                    <div
-	                      className={`relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl ${isGroupedMessage
-	                          ? "rounded-lg md:rounded-xl mt-0"
-	                          : isCurrentUser
-	                            ? "rounded-xl md:rounded-2xl rounded-tl-sm"
-	                            : "rounded-xl md:rounded-2xl rounded-tl-sm"
-	                        } ${isCurrentUser
-	                          ? `bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 `
-	                          : "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 "
-	                        } ${isHost ? "pr-8 md:pr-9" : ""}`}
-	                    >
-	                      {isHost && (canPinMessage || isPinnedMessage) && (
-	                        <button
-	                          onClick={() => canPinMessage && handlePinFromMessage(msg)}
-	                          disabled={pinActionLoadingId === msg.id || !canPinMessage}
-	                          className={`absolute top-1.5 right-1.5 md:top-2 md:right-2 h-5 w-5 md:h-6 md:w-6 flex items-center justify-center transition-all duration-200 ${
-	                            isPinnedMessage
-	                              ? "text-white/95 opacity-100"
-	                              : "text-white/50 opacity-0 group-hover/message:opacity-100 hover:text-white/90"
-	                          } disabled:opacity-40 disabled:cursor-not-allowed`}
-	                          title={pinButtonTitle}
-	                        >
-	                          <MdOutlinePushPin size={12} className="md:w-3.5 md:h-3.5" />
-	                        </button>
-	                      )}
-	                      <p className="text-white/95 text-xs md:text-sm leading-relaxed break-words whitespace-pre-wrap font-medium">
-	                        {msg.message}
-	                      </p>
-	                      <div className="w-full text-right text-white/50 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-	                        {formatChatTime(msg.timestamp)}
+                    <div
+                      className={`relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl ${isGroupedMessage
+                          ? "rounded-lg md:rounded-xl mt-0"
+                          : isCurrentUser
+                            ? "rounded-xl md:rounded-2xl rounded-tl-sm"
+                            : "rounded-xl md:rounded-2xl rounded-tl-sm"
+                        } ${isCurrentUser
+                          ? `bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 `
+                          : "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 "
+                        }`}
+                    >
+                      <p className="text-white/95 text-xs md:text-sm leading-relaxed break-words whitespace-pre-wrap font-medium">
+                        {msg.message}
+                      </p>
+                      <div className="w-full text-right text-white/50 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                        {formatChatTime(msg.timestamp)}
                       </div>
                     </div>
                     {renderMessageReactionChips(msg)}

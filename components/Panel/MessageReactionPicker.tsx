@@ -12,20 +12,16 @@ export const QUICK_MESSAGE_REACTIONS: ReactionType[] = [
 ];
 
 interface MessageReactionPickerProps {
-  align?: "left" | "right";
   selectedEmoji?: ReactionType | null;
   onSelect: (emoji: ReactionType) => void;
 }
 
 const MessageReactionPicker = ({
-  align = "left",
   selectedEmoji = null,
   onSelect,
 }: MessageReactionPickerProps) => (
   <div
-    className={`absolute -top-12 z-30 flex items-center gap-1 rounded-full border border-white/10 bg-zinc-950/90 px-2 py-1.5 shadow-2xl backdrop-blur-xl ${
-      align === "right" ? "right-0" : "left-0"
-    }`}
+    className="absolute left-0 top-0 z-30 flex max-w-[min(calc(100vw-4rem),18rem)] -translate-y-[calc(100%+0.5rem)] items-center gap-1 overflow-x-auto rounded-full border border-white/10 bg-zinc-950/90 px-2 py-1.5 shadow-2xl backdrop-blur-xl scrollbar-hide"
   >
     {QUICK_MESSAGE_REACTIONS.map((emoji) => {
       const isSelected = selectedEmoji === emoji;

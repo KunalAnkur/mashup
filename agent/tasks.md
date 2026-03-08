@@ -37,3 +37,9 @@
   - Test with host + guest in the same room.
   - Test add, switch, and remove reaction on the same message.
   - Test older messages so reaction updates do not force chat scroll to bottom.
+
+- UI refinement (2026-03-08):
+  - Remove empty right-side pin padding from message bubbles.
+  - Keep timestamp at the classic bottom-right position inside the bubble.
+  - Float pin/reaction actions above the bubble edge so text width stays intact at rest.
+  - Open message reaction picker from the message start edge to avoid left/right clipping on mobile and desktop.
