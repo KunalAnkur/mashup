@@ -678,23 +678,18 @@ const ChatTab = () => {
     };
   }, [messages]);
 
-  const renderMessageReactionChips = (
-    message: ChatMessage,
-    align: "start" | "end" = "start"
-  ) => {
+  const renderMessageReactionChips = (message: ChatMessage) => {
     const reactionGroups = getMessageReactionGroups(message);
     if (!reactionGroups.length) return null;
     const isDetailsOpen = activeReactionDetails?.messageId === message.id;
 
     return (
       <div
-        className={`relative -mt-2 inline-flex max-w-full flex-col ${
+        className={`pointer-events-none absolute bottom-0 right-0 max-w-[min(calc(100%-0.5rem),calc(100vw-3rem))] translate-y-1/2 flex-col items-end ${
           isDetailsOpen ? "z-40" : "z-10"
-        } ${
-          align === "end" ? "self-end items-end" : "self-start items-start"
         }`}
       >
-        <div className="inline-flex max-w-full flex-wrap items-center gap-1 rounded-full bg-zinc-950/85 px-1.5 py-1 shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-md">
+        <div className="inline-flex max-w-full flex-wrap items-center justify-end gap-1 rounded-full bg-zinc-950/85 px-1.5 py-1 shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-md">
           {reactionGroups.map((group) => (
             <div
               key={`${message.id}-${group.emoji}`}
@@ -761,7 +756,7 @@ const ChatTab = () => {
             : "left-full top-1/2 ml-1 -translate-y-1/2"
         }`}
       >
-        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-zinc-950/88 px-0.5 py-0.5 shadow-lg backdrop-blur-xl transition-opacity duration-150 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100">
+        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-zinc-950/88 p-1 shadow-lg backdrop-blur-xl transition-opacity duration-150 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100">
           <button
             type="button"
             onClick={() => handleReactionPickerToggle(message.id)}
@@ -1137,7 +1132,7 @@ const ChatTab = () => {
                         {msg.message}
                       </p>
                     </div>
-                    {renderMessageReactionChips(msg, isCurrentUser ? "end" : "start")}
+                    {renderMessageReactionChips(msg)}
                     <span className="pointer-events-none absolute -bottom-4 right-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                       {formatChatTime(msg.timestamp)}
                     </span>
@@ -1184,7 +1179,7 @@ const ChatTab = () => {
                         {formatChatTime(msg.timestamp)}
                       </div>
                     </div>
-                    {renderMessageReactionChips(msg, isCurrentUser ? "end" : "start")}
+                    {renderMessageReactionChips(msg)}
                   </div>
                 )}
               </div>
