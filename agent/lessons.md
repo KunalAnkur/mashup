@@ -165,3 +165,20 @@ Use this file to record mistakes, root causes, and prevention steps.
 - `ChatTab.tsx` merge conflicts also need a true merge: keep overlay refs/state from the feature branch and combine them with guarded auto-scroll logic instead of accepting one side wholesale.
 - A file can still be broken after all conflict markers are removed; duplicate refs/imports from blind "Accept current change" resolutions must be caught with a local compile check before pushing.
 - Chat message rows should not use entry fade animations in a live conversation UI; they read as flicker and feel worse than immediate render.
+- Message reaction chips should read as one attached reaction tray, not as separate floating pills, when the goal is WhatsApp-like chat hierarchy.
+- Hover actions scan better when they sit beside the bubble body; stacking them above the bubble competes with the message shape and looks disconnected.
+- If the chat layout keeps all bubbles left-aligned, the "empty side" for hover actions is the bubble's right edge; pushing actions to the left can hide them behind the avatar/gutter.
+- For minimal reaction trays, avoid both an outer badge background and separate inner chip backgrounds at the same time; keep one visual layer only.
+- Side hover actions need a placement fallback for wide bubbles; otherwise their absolute offset can increase scroll width and create horizontal scrolling.
+- For top-placement hover actions, a slight overlap on the bubble border reads more integrated than leaving the controls fully detached above the message.
+- Absolute reaction detail popovers need both vertical placement and horizontal alignment; `top/bottom` alone is not enough for a polished chat layout.
+- Reaction detail popovers work better as plain black utility overlays than as styled accent cards; this UI needs low visual noise.
+- If message widths vary a lot, reaction detail overlays should open from one stable horizontal anchor; switching between `left` and `right` alignment makes short-message popovers feel jumpy.
+- A good reaction-detail popover strategy is hybrid: keep short-message popovers start-anchored, but allow wide-message popovers to center only when there is proven room on both sides.
+- If the detail popover is anchored to a full-width wrapper instead of the reaction tray itself, wide-message layouts will feel wrong; keep the wrapper `w-fit`/inline and raise its stacking above hover controls.
+- If an absolute popover participates in the scroll container, it can increase scroll width and create horizontal scrolling; use fixed positioning plus viewport clamping for stable chat overlays.
+- For fixed chat overlays, do not derive position from a stale placement state; compute placement and coordinates together or the popover can flash in the wrong place for one frame.
+- Temporary chat overlays such as reaction pickers/details should dismiss on scroll, not only on outside click; otherwise they remain visually detached from the message they belong to.
+- Reaction detail popovers should sit closer to their trigger than the emoji picker does; reusing the same offset for both makes the detail list feel detached.
+- When the requirement is "open from the button edge", tray-level anchoring is too coarse; use the clicked chip/button rect as the popup anchor.
+- If the requirement is "start from the button edge", avoid adding a second centering rule for wide messages; that fights the intended alignment and causes long-message popovers to drift left.
