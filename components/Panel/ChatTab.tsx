@@ -124,9 +124,25 @@ const SCROLL_BOTTOM_THRESHOLD = 64;
 const PIN_MESSAGE_CHAR_LIMIT = 180;
 const MESSAGE_REACTION_PICKER_APPROX_HEIGHT = 52;
 const MESSAGE_REACTION_DETAILS_APPROX_HEIGHT = 148;
+const MESSAGE_REACTION_DETAILS_WIDTH = 224;
 const MESSAGE_REACTION_PICKER_VERTICAL_OFFSET = 8;
+const MESSAGE_REACTION_DETAILS_VERTICAL_OFFSET = 4;
+const MESSAGE_ACTIONS_MIN_SIDE_SPACE = 72;
+const MESSAGE_ACTIONS_WIDE_BUBBLE_RATIO = 0.72;
+const MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING = 12;
 
 type MessageReactionPlacement = "top" | "bottom";
+type MessageActionPlacement = "side" | "top";
+type MessageReactionDetailsPosition = {
+  left: number;
+  top: number;
+};
+type MessageReactionDetailsAnchor = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
 type ActiveReactionDetails = {
   messageId: string;
   emoji: ReactionType;
@@ -142,6 +158,13 @@ const ChatTab = () => {
     useState<ActiveReactionDetails>(null);
   const [activeReactionDetailsPlacement, setActiveReactionDetailsPlacement] =
     useState<MessageReactionPlacement>("bottom");
+  const [activeReactionDetailsPosition, setActiveReactionDetailsPosition] =
+    useState<MessageReactionDetailsPosition | null>(null);
+  const [activeReactionDetailsAnchor, setActiveReactionDetailsAnchor] =
+    useState<MessageReactionDetailsAnchor | null>(null);
+  const [messageActionPlacements, setMessageActionPlacements] = useState<
+    Record<string, MessageActionPlacement>
+  >({});
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -216,6 +239,16 @@ const ChatTab = () => {
     if (!container) return;
 
     shouldAutoScrollRef.current = isNearBottom(container);
+
+    if (activeReactionMessageId) {
+      setActiveReactionMessageId(null);
+    }
+
+    if (activeReactionDetails) {
+      setActiveReactionDetails(null);
+      setActiveReactionDetailsPosition(null);
+      setActiveReactionDetailsAnchor(null);
+    }
   };
 
   useLayoutEffect(() => {
@@ -255,6 +288,8 @@ const ChatTab = () => {
         const activeBubble = messageBubbleRefs.current[activeReactionDetails.messageId];
         if (activeBubble && !activeBubble.contains(target)) {
           setActiveReactionDetails(null);
+          setActiveReactionDetailsPosition(null);
+          setActiveReactionDetailsAnchor(null);
         }
       }
     };
@@ -546,14 +581,60 @@ const ChatTab = () => {
     );
   };
 
-  const handleReactionDetailsToggle = (messageId: string, emoji: ReactionType) => {
+  const getMessageReactionDetailsPlacement = (messageId: string) =>
+    resolveMessageOverlayPlacement(
+      messageId,
+      MESSAGE_REACTION_DETAILS_APPROX_HEIGHT
+    );
+
+  const resolveMessageReactionDetailsPosition = (
+    messageId: string,
+    anchor: MessageReactionDetailsAnchor | null,
+    placement: MessageReactionPlacement = getMessageReactionDetailsPlacement(messageId)
+  ): MessageReactionDetailsPosition | null => {
+    if (!anchor || typeof window === "undefined") {
+      return null;
+    }
+
+    const viewportWidth = window.innerWidth;
+    const overlayWidth = Math.min(
+      MESSAGE_REACTION_DETAILS_WIDTH,
+      viewportWidth - MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING * 2
+    );
+    const desiredLeft = anchor.right;
+    const left = Math.min(
+      Math.max(desiredLeft, MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING),
+      viewportWidth - overlayWidth - MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING
+    );
+
+    return {
+      left,
+      top:
+        placement === "top"
+          ? anchor.top - MESSAGE_REACTION_DETAILS_VERTICAL_OFFSET
+          : anchor.bottom + MESSAGE_REACTION_DETAILS_VERTICAL_OFFSET,
+    };
+  };
+
+  const handleReactionDetailsToggle = (
+    messageId: string,
+    emoji: ReactionType,
+    anchor: MessageReactionDetailsAnchor
+  ) => {
     setActiveReactionMessageId(null);
     setActiveReactionDetails((current) => {
       if (current?.messageId === messageId && current.emoji === emoji) {
+        setActiveReactionDetailsPosition(null);
+        setActiveReactionDetailsAnchor(null);
         return null;
       }
 
-      updateMessageReactionDetailsPlacement(messageId);
+      const nextPlacement = getMessageReactionDetailsPlacement(messageId);
+      setActiveReactionDetailsAnchor(anchor);
+      setActiveReactionDetailsPlacement(nextPlacement);
+      setActiveReactionDetailsPosition(
+        resolveMessageReactionDetailsPosition(messageId, anchor, nextPlacement)
+      );
       return { messageId, emoji };
     });
   };
@@ -565,7 +646,17 @@ const ChatTab = () => {
       updateMessageReactionPlacement(activeReactionMessageId);
     }
     if (activeReactionDetails) {
-      updateMessageReactionDetailsPlacement(activeReactionDetails.messageId);
+      const nextPlacement = getMessageReactionDetailsPlacement(
+        activeReactionDetails.messageId
+      );
+      setActiveReactionDetailsPlacement(nextPlacement);
+      setActiveReactionDetailsPosition(
+        resolveMessageReactionDetailsPosition(
+          activeReactionDetails.messageId,
+          activeReactionDetailsAnchor,
+          nextPlacement
+        )
+      );
     }
 
     const handleViewportChange = () => {
@@ -573,7 +664,17 @@ const ChatTab = () => {
         updateMessageReactionPlacement(activeReactionMessageId);
       }
       if (activeReactionDetails) {
-        updateMessageReactionDetailsPlacement(activeReactionDetails.messageId);
+        const nextPlacement = getMessageReactionDetailsPlacement(
+          activeReactionDetails.messageId
+        );
+        setActiveReactionDetailsPlacement(nextPlacement);
+        setActiveReactionDetailsPosition(
+          resolveMessageReactionDetailsPosition(
+            activeReactionDetails.messageId,
+            activeReactionDetailsAnchor,
+            nextPlacement
+          )
+        );
       }
     };
 
@@ -585,24 +686,108 @@ const ChatTab = () => {
       window.removeEventListener("resize", handleViewportChange);
       containerElement?.removeEventListener("scroll", handleViewportChange);
     };
-  }, [activeReactionMessageId, activeReactionDetails]);
+  }, [activeReactionDetails, activeReactionDetailsAnchor, activeReactionDetailsPlacement, activeReactionMessageId, messageActionPlacements]);
 
-  const renderMessageReactionChips = (message: ChatMessage) => {
+  useEffect(() => {
+    if (!activeReactionMessageId && !activeReactionDetails) return;
+
+    const handleViewportScroll = () => {
+      setActiveReactionMessageId(null);
+      setActiveReactionDetails(null);
+      setActiveReactionDetailsPosition(null);
+      setActiveReactionDetailsAnchor(null);
+    };
+
+    window.addEventListener("scroll", handleViewportScroll, true);
+
+    return () => {
+      window.removeEventListener("scroll", handleViewportScroll, true);
+    };
+  }, [activeReactionDetails, activeReactionMessageId]);
+
+  const resolveMessageActionPlacement = (
+    messageId: string
+  ): MessageActionPlacement => {
+    const bubbleElement = messageBubbleRefs.current[messageId];
+    const containerElement = messagesContainerRef.current;
+
+    if (!bubbleElement || !containerElement) {
+      return "side";
+    }
+
+    const bubbleRect = bubbleElement.getBoundingClientRect();
+    const containerRect = containerElement.getBoundingClientRect();
+    const availableRightSpace = containerRect.right - bubbleRect.right;
+    const isWideBubble =
+      bubbleRect.width >= containerRect.width * MESSAGE_ACTIONS_WIDE_BUBBLE_RATIO;
+
+    if (isWideBubble || availableRightSpace < MESSAGE_ACTIONS_MIN_SIDE_SPACE) {
+      return "top";
+    }
+
+    return "side";
+  };
+
+  useLayoutEffect(() => {
+    if (!messages.length) {
+      setMessageActionPlacements({});
+      return;
+    }
+
+    const updatePlacements = () => {
+      const nextPlacements: Record<string, MessageActionPlacement> = {};
+
+      messages.forEach((message) => {
+        if (!message?.id) return;
+        nextPlacements[message.id] = resolveMessageActionPlacement(message.id);
+      });
+
+      setMessageActionPlacements(nextPlacements);
+    };
+
+    const rafId = window.requestAnimationFrame(updatePlacements);
+    window.addEventListener("resize", updatePlacements);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", updatePlacements);
+    };
+  }, [messages]);
+
+  const renderMessageReactionChips = (
+    message: ChatMessage,
+    align: "start" | "end" = "start"
+  ) => {
     const reactionGroups = getMessageReactionGroups(message);
     if (!reactionGroups.length) return null;
+    const isDetailsOpen = activeReactionDetails?.messageId === message.id;
 
     return (
-      <div className="relative z-10 mt-1 inline-flex max-w-full flex-col items-start">
-        <div className="flex flex-wrap gap-1">
+      <div
+        className={`relative -mt-2 inline-flex max-w-full flex-col ${
+          isDetailsOpen ? "z-40" : "z-10"
+        } ${
+          align === "end" ? "self-end items-end" : "self-start items-start"
+        }`}
+      >
+        <div className="inline-flex max-w-full flex-wrap items-center gap-1 rounded-full bg-zinc-950/85 px-1.5 py-1 shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-md">
           {reactionGroups.map((group) => (
             <button
               key={`${message.id}-${group.emoji}`}
               type="button"
-              onClick={() => handleReactionDetailsToggle(message.id, group.emoji)}
-              className={`pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] md:text-[11px] font-medium transition-all duration-150 ${
+              onClick={(event) => {
+                const rect = event.currentTarget.getBoundingClientRect();
+                handleReactionDetailsToggle(message.id, group.emoji, {
+                  left: rect.left,
+                  right: rect.right,
+                  top: rect.top,
+                  bottom: rect.bottom,
+                });
+              }}
+              className={`pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full px-1 py-0.5 text-[10px] md:text-[11px] transition-colors duration-150 ${
                 group.reactedByCurrentUser
-                  ? "border-pink-400/30 bg-pink-500/12 text-white shadow-[0_0_0_1px_rgba(236,72,153,0.15)]"
-                  : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                  ? "font-semibold text-white"
+                  : "font-medium text-white/80 hover:text-white"
               }`}
               title={t("viewMessageReactions")}
             >
@@ -611,9 +796,10 @@ const ChatTab = () => {
             </button>
           ))}
         </div>
-        {activeReactionDetails?.messageId === message.id && (
+        {isDetailsOpen && activeReactionDetailsPosition && (
           <MessageReactionDetails
             placement={activeReactionDetailsPlacement}
+            position={activeReactionDetailsPosition}
             reactions={message.reactions || []}
             focusedEmoji={activeReactionDetails.emoji}
             currentUserOwnerKey={currentReactionOwnerKey}
@@ -622,6 +808,55 @@ const ChatTab = () => {
           />
         )}
       </div>
+    );
+  };
+
+  const renderMessageBubbleActions = ({
+    message,
+    canPinMessage,
+    isPinnedMessage,
+    pinButtonTitle,
+  }: {
+    message: ChatMessage;
+    canPinMessage: boolean;
+    isPinnedMessage: boolean;
+    pinButtonTitle: string;
+  }) => {
+    const actionPlacement = messageActionPlacements[message.id] || "side";
+
+    return (
+      <div
+        className={`pointer-events-none absolute z-20 flex items-center gap-1 ${
+          actionPlacement === "top"
+            ? "right-2 top-0 -translate-y-1/2"
+            : "left-full top-1/2 ml-2 -translate-y-1/2"
+        }`}
+      >
+      <button
+        type="button"
+        onClick={() => handleReactionPickerToggle(message.id)}
+        disabled={!isJoined}
+        className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/88 text-white/70 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100"
+        title={t("reactToMessage")}
+      >
+        <FaSmile size={11} />
+      </button>
+      {isHost && (canPinMessage || isPinnedMessage) && (
+        <button
+          type="button"
+          onClick={() => canPinMessage && handlePinFromMessage(message)}
+          disabled={pinActionLoadingId === message.id || !canPinMessage}
+          className={`pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/88 shadow-lg backdrop-blur-xl transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100 ${
+            isPinnedMessage
+              ? "text-white/95"
+              : "text-white/50 hover:text-white/90"
+          }`}
+          title={pinButtonTitle}
+        >
+          <MdOutlinePushPin size={11} className="md:h-3 md:w-3" />
+        </button>
+      )}
+    </div>
     );
   };
 
@@ -946,32 +1181,12 @@ const ChatTab = () => {
                       isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"
                     }`}
                   >
-                    <div className="absolute right-1 top-0 z-20 flex -translate-y-1/2 items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleReactionPickerToggle(msg.id)}
-                        disabled={!isJoined}
-                        className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
-                        title={t("reactToMessage")}
-                      >
-                        <FaSmile size={10} />
-                      </button>
-                      {isHost && (canPinMessage || isPinnedMessage) && (
-                        <button
-                          type="button"
-                          onClick={() => canPinMessage && handlePinFromMessage(msg)}
-                          disabled={pinActionLoadingId === msg.id || !canPinMessage}
-                          className={`flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 shadow-lg backdrop-blur-xl transition-all duration-150 ${
-                            isPinnedMessage
-                              ? "text-white/95 opacity-100"
-                              : "text-white/50 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 hover:text-white/90"
-                          } disabled:cursor-not-allowed disabled:opacity-40`}
-                          title={pinButtonTitle}
-                        >
-                          <MdOutlinePushPin size={11} className="md:h-3 md:w-3" />
-                        </button>
-                      )}
-                    </div>
+                    {renderMessageBubbleActions({
+                      message: msg,
+                      canPinMessage,
+                      isPinnedMessage,
+                      pinButtonTitle,
+                    })}
                     {activeReactionMessageId === msg.id && (
                       <MessageReactionPicker
                         placement={activeReactionPlacement}
@@ -986,7 +1201,7 @@ const ChatTab = () => {
                         {msg.message}
                       </p>
                     </div>
-                    {renderMessageReactionChips(msg)}
+                    {renderMessageReactionChips(msg, isCurrentUser ? "end" : "start")}
                     <span className="pointer-events-none absolute -bottom-4 right-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                       {formatChatTime(msg.timestamp)}
                     </span>
@@ -998,32 +1213,12 @@ const ChatTab = () => {
                     }}
                     className="relative isolate group/message inline-flex max-w-full flex-col"
                   >
-                    <div className="absolute right-1 top-0 z-20 flex -translate-y-1/2 items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleReactionPickerToggle(msg.id)}
-                        disabled={!isJoined}
-                        className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
-                        title={t("reactToMessage")}
-                      >
-                        <FaSmile size={10} />
-                      </button>
-                      {isHost && (canPinMessage || isPinnedMessage) && (
-                        <button
-                          type="button"
-                          onClick={() => canPinMessage && handlePinFromMessage(msg)}
-                          disabled={pinActionLoadingId === msg.id || !canPinMessage}
-                          className={`flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 shadow-lg backdrop-blur-xl transition-all duration-150 ${
-                            isPinnedMessage
-                              ? "text-white/95 opacity-100"
-                              : "text-white/50 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 hover:text-white/90"
-                          } disabled:cursor-not-allowed disabled:opacity-40`}
-                          title={pinButtonTitle}
-                        >
-                          <MdOutlinePushPin size={11} className="md:h-3 md:w-3" />
-                        </button>
-                      )}
-                    </div>
+                    {renderMessageBubbleActions({
+                      message: msg,
+                      canPinMessage,
+                      isPinnedMessage,
+                      pinButtonTitle,
+                    })}
                     {activeReactionMessageId === msg.id && (
                       <MessageReactionPicker
                         placement={activeReactionPlacement}
@@ -1052,7 +1247,7 @@ const ChatTab = () => {
                         {formatChatTime(msg.timestamp)}
                       </div>
                     </div>
-                    {renderMessageReactionChips(msg)}
+                    {renderMessageReactionChips(msg, isCurrentUser ? "end" : "start")}
                   </div>
                 )}
               </div>

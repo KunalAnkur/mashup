@@ -4,6 +4,10 @@ import { MessageReaction, ReactionType } from "@/types/chatTypes";
 
 interface MessageReactionDetailsProps {
   placement?: "top" | "bottom";
+  position?: {
+    left: number;
+    top: number;
+  } | null;
   reactions: MessageReaction[];
   focusedEmoji?: ReactionType | null;
   currentUserOwnerKey: string;
@@ -13,6 +17,7 @@ interface MessageReactionDetailsProps {
 
 const MessageReactionDetails = ({
   placement = "bottom",
+  position = null,
   reactions,
   focusedEmoji = null,
   currentUserOwnerKey,
@@ -37,25 +42,33 @@ const MessageReactionDetails = ({
 
   return (
     <div
-      className={`absolute left-0 z-[75] min-w-[9rem] max-w-[min(calc(100vw-4rem),13rem)] overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/95 shadow-2xl backdrop-blur-xl ${
-        placement === "top" ? "bottom-full mb-2" : "top-full mt-2"
+      className={`pointer-events-auto fixed z-[90] w-max min-w-[9rem] max-w-[min(calc(100vw-3rem),13rem)] overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_12px_28px_rgba(0,0,0,0.24)] ${
+        placement === "top" ? "-translate-y-full" : ""
       }`}
+      style={position ? { left: position.left, top: position.top } : undefined}
     >
-      <div className="max-h-36 overflow-y-auto px-1.5 py-1.5">
-        <div className="flex flex-col gap-1">
+      <div className="max-h-32 overflow-y-auto px-1 py-1">
+        <div className="flex flex-col gap-0.5">
           {orderedReactions.map((reaction) => {
             const isCurrentUser =
               getReactionOwnerKey(reaction) === currentUserOwnerKey;
+            const isFocusedReaction = focusedEmoji
+              ? reaction.emoji === focusedEmoji
+              : false;
 
             return (
               <div
                 key={`${reaction.userId}-${reaction.emoji}-${reaction.reactedAt}`}
-                className="flex items-center justify-between gap-2 rounded-xl px-2 py-1 text-[11px] text-white/85"
+                className={`flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-[10px] ${
+                  isFocusedReaction
+                    ? "bg-white/8 text-white"
+                    : "text-white/82"
+                }`}
               >
-                <span className="truncate">
+                <span className="truncate pr-1.5">
                   {isCurrentUser ? currentUserLabel : reaction.userName}
                 </span>
-                <span className="shrink-0 text-[13px] leading-none">{reaction.emoji}</span>
+                <span className="shrink-0 text-xs leading-none">{reaction.emoji}</span>
               </div>
             );
           })}

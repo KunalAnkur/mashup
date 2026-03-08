@@ -79,3 +79,19 @@ Rules for execution:
   - Merge `ChatTab.tsx` conflicts by keeping the reaction/pin UI state and overlay refs, while folding in guarded auto-scroll behavior so new messages do not force-scroll users who read older chat.
   - After manual GitHub conflict resolution, run a focused compile pass and remove duplicated refs/imports immediately; conflict markers can be gone while broken merge state remains.
   - Remove message-row entry animation so incoming chat bubbles render immediately instead of flashing.
+  - Restyle message reaction chips into a single WhatsApp-like capsule row instead of separate floating circles.
+  - Move hover reaction/pin actions to the side of the message bubble instead of stacking them above the bubble.
+  - Keep side actions on the bubble's visible empty side and remove nested reaction-chip backgrounds for a simpler, more legible WhatsApp-like tray.
+  - For wide bubbles, move hover actions above the bubble automatically so side actions never create horizontal scroll.
+  - In top-placement mode, let hover actions overlap the bubble's top border slightly instead of floating too far above it.
+  - Align the absolute reaction-detail overlay to the reaction tray edge (`start/end`) so it opens with consistent positioning instead of drifting.
+  - Keep the reaction-detail overlay black and minimal; avoid decorative tinted card styling for this popover.
+  - Keep the reaction-detail overlay anchored from a stable start edge so short messages do not make the popover jump left/right when opened.
+  - For wide bubbles, center the reaction-detail overlay only when there is enough safe horizontal space; otherwise keep the stable start anchor.
+  - Anchor the reaction-detail overlay to the reaction tray itself, not to the full message row, and keep its stacking above hover action buttons.
+  - Render the reaction-detail overlay as a viewport-clamped fixed layer so it never expands chat scroll width or causes horizontal scrolling.
+  - Compute reaction-detail placement and viewport-clamped fixed position in the same pass so the popover never flashes into a wrong intermediate spot.
+  - Auto-close the message reaction picker/detail overlay on scroll as well as outside click; temporary chat overlays should not linger.
+  - Keep the reaction-detail popover closer to the tray button than the picker and trim its spacing so it reads as a compact utility overlay.
+  - Position the reaction-detail popover from the clicked reaction button rect, not the whole tray, so the list can start from the button edge consistently.
+  - Do not recenter the reaction-detail popover for wide messages; long bubbles should still open the list from the clicked emoji button edge.
