@@ -3,11 +3,7 @@
 import { MessageReaction, ReactionType } from "@/types/chatTypes";
 
 interface MessageReactionDetailsProps {
-  placement?: "top" | "bottom";
-  position?: {
-    left: number;
-    top: number;
-  } | null;
+  align?: "start" | "end";
   reactions: MessageReaction[];
   focusedEmoji?: ReactionType | null;
   currentUserOwnerKey: string;
@@ -16,8 +12,7 @@ interface MessageReactionDetailsProps {
 }
 
 const MessageReactionDetails = ({
-  placement = "bottom",
-  position = null,
+  align = "start",
   reactions,
   focusedEmoji = null,
   currentUserOwnerKey,
@@ -42,12 +37,11 @@ const MessageReactionDetails = ({
 
   return (
     <div
-      className={`pointer-events-auto fixed z-[90] w-max min-w-[9rem] max-w-[min(calc(100vw-3rem),13rem)] overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_12px_28px_rgba(0,0,0,0.24)] ${
-        placement === "top" ? "-translate-y-full" : ""
+      className={`pointer-events-auto absolute top-full z-[90] mt-1 w-max min-w-[9rem] max-w-[min(calc(100vw-3rem),13rem)] overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_12px_28px_rgba(0,0,0,0.24)] ${
+        align === "end" ? "right-0" : "left-0"
       }`}
-      style={position ? { left: position.left, top: position.top } : undefined}
     >
-      <div className="max-h-32 overflow-y-auto px-1 py-1">
+      <div className="max-h-[min(9rem,calc(100vh-8rem))] overflow-y-auto px-1 py-1">
         <div className="flex flex-col gap-0.5">
           {orderedReactions.map((reaction) => {
             const isCurrentUser =
