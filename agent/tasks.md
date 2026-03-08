@@ -77,3 +77,5 @@ Rules for execution:
   - Keep reaction-detail chips clickable even when the chat is not in an active send state; view interactions must not be disabled by `isJoined`.
   - Merge `useChat.tsx` conflicts by keeping message reactions and pinned-message state from the reaction branch while preserving the newer typing/message lifecycle from `dev`.
   - Merge `ChatTab.tsx` conflicts by keeping the reaction/pin UI state and overlay refs, while folding in guarded auto-scroll behavior so new messages do not force-scroll users who read older chat.
+  - After manual GitHub conflict resolution, run a focused compile pass and remove duplicated refs/imports immediately; conflict markers can be gone while broken merge state remains.
+  - Remove message-row entry animation so incoming chat bubbles render immediately instead of flashing.

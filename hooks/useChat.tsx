@@ -14,7 +14,6 @@ import {
 } from "@/types/chatTypes";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { getEmailPrefix, resolveDisplayName, isGenericName } from "@/utils/chatName";
 
 interface UseChatParams {
   roomId: string | null;

@@ -163,3 +163,5 @@ Use this file to record mistakes, root causes, and prevention steps.
 - View-only reaction chips should never depend on the send/join enabled state, and decorative glow layers must be `pointer-events-none` so the chips remain clickable.
 - `useChat.tsx` merge conflicts should not be resolved by choosing a whole side; keep the reaction/pin data model and socket handlers from the feature branch, then layer in the latest `dev` typing/message lifecycle changes explicitly.
 - `ChatTab.tsx` merge conflicts also need a true merge: keep overlay refs/state from the feature branch and combine them with guarded auto-scroll logic instead of accepting one side wholesale.
+- A file can still be broken after all conflict markers are removed; duplicate refs/imports from blind "Accept current change" resolutions must be caught with a local compile check before pushing.
+- Chat message rows should not use entry fade animations in a live conversation UI; they read as flicker and feel worse than immediate render.

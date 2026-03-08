@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
 import { MdCelebration, MdOutlineCelebration, MdOutlinePushPin, MdPushPin } from "react-icons/md";
 import dynamic from "next/dynamic";
@@ -148,8 +148,6 @@ const ChatTab = () => {
   const lastMessageCountRef = useRef(0);
   const shouldAutoScrollRef = useRef(true);
   const messageBubbleRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const shouldAutoScrollRef = useRef(true);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
@@ -327,7 +325,7 @@ const ChatTab = () => {
     if (user.email && message.userEmail) {
       return user.email.toLowerCase() === message.userEmail.toLowerCase();
     }
-    const currentUserName = (user.name || user.username || "").toLowerCase();
+    const currentUserName = (user.username || user.name || "").toLowerCase();
     const messageName = (message.userName || "").toLowerCase();
     return currentUserName === messageName && currentUserName !== "";
   };
@@ -739,7 +737,7 @@ const ChatTab = () => {
               const messageWords = displayMessage.split(" ");
               const firstWord = messageWords[0] || "";
 
-              const currentUserName = (user.name || user.username || "").trim().toLowerCase();
+              const currentUserName = (user.username || user.name || "").trim().toLowerCase();
               const currentUserEmail = (user.email || "").trim().toLowerCase();
               const emailUsername = currentUserEmail ? currentUserEmail.split("@")[0].toLowerCase() : "";
               const messageUserName = (msg.userName || "").trim().toLowerCase();
@@ -881,10 +879,9 @@ const ChatTab = () => {
           return (
             <div
               key={msg.id || i}
-              className={`relative flex items-start gap-2 md:gap-3 group animate-fade-in ${
+              className={`relative flex items-start gap-2 md:gap-3 group ${
                 hasActiveReactionPicker || hasActiveReactionDetails ? "z-30" : "z-0"
               } ${isGroupedMessage ? "mt-0" : "mt-1"}`}
-              style={{ animationDelay: `${i * 0.03}s` }}
             >
               <div className={`relative flex-shrink-0 ${isGroupedMessage ? "w-8 md:w-10" : ""}`}>
                 {!isGroupedMessage && (
