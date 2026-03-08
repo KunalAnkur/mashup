@@ -22,6 +22,7 @@ interface ChatContextType {
     sendReaction: (emoji: ReactionType) => void;
     pinMessage: (messageId: string) => Promise<PinMessageResponse>;
     unpinMessage: () => Promise<PinMessageResponse>;
+    toggleMessageReaction: (messageId: string, emoji: ReactionType) => void;
     handleTyping: () => void;
     stopTyping: () => void;
     getChatHistory: () => Promise<void>;

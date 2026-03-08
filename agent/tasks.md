@@ -50,3 +50,32 @@ Rules for execution:
   - Replace pinned banner `pr-*` spacing hack with `flex + justify-between` layout for cleaner, maintainable alignment.
   - Reduce pinned banner text scale and weight for less visual dominance.
   - Tone down pinned banner background to a softer, less saturated gradient.
+
+## 2026-03-08
+
+- Active task: Chat tab message-bubble reactions.
+- Status: Implemented, awaiting manual host/guest verification.
+- Scope:
+  - Added WhatsApp-style quick reactions to chat bubbles.
+  - Added grouped reaction chips under each message bubble.
+  - Added optimistic reaction toggle on the frontend.
+  - Added minimal reaction-detail list when users tap an existing reaction chip.
+  - Added `tr/en/es/ar` chat tooltip text for message reactions.
+- Testing reminder:
+  - Test with host + guest in the same room.
+  - Test add, switch, and remove reaction on the same message.
+  - Test older messages so reaction updates do not force chat scroll to bottom.
+
+- UI refinement (2026-03-08):
+  - Remove empty right-side pin padding from message bubbles.
+  - Keep timestamp at the classic bottom-right position inside the bubble.
+  - Float pin/reaction actions above the bubble edge so text width stays intact at rest.
+  - Open message reaction picker from the message start edge to avoid left/right clipping on mobile and desktop.
+  - Flip the message reaction picker below the bubble when the message sits near the top of the scroll area so the full row stays visible.
+  - Raise the active message row and picker stacking order so the picker always stays above neighboring bubbles, including emoji-only messages.
+  - Open a minimal `username + emoji` reaction list as an absolute overlay anchored to the reaction chips so it does not push the chat layout down while staying visible on mobile and desktop.
+  - Keep reaction-detail chips clickable even when the chat is not in an active send state; view interactions must not be disabled by `isJoined`.
+  - Merge `useChat.tsx` conflicts by keeping message reactions and pinned-message state from the reaction branch while preserving the newer typing/message lifecycle from `dev`.
+  - Merge `ChatTab.tsx` conflicts by keeping the reaction/pin UI state and overlay refs, while folding in guarded auto-scroll behavior so new messages do not force-scroll users who read older chat.
+  - After manual GitHub conflict resolution, run a focused compile pass and remove duplicated refs/imports immediately; conflict markers can be gone while broken merge state remains.
+  - Remove message-row entry animation so incoming chat bubbles render immediately instead of flashing.

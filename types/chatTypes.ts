@@ -11,6 +11,7 @@ export interface ChatMessage {
   timestamp: number;
   isHost: boolean;
   type?: "user" | "system"; // System messages for join/leave notifications
+  reactions: MessageReaction[];
 }
 
 export interface TypingUser {
@@ -63,6 +64,21 @@ export interface Reaction {
   userProfile?: string;
   emoji: ReactionType;
   timestamp: number;
+}
+
+export interface MessageReaction {
+  userId: string;
+  userName: string;
+  userEmail?: string;
+  userProfile?: string;
+  emoji: ReactionType;
+  reactedAt: number;
+}
+
+export interface MessageReactionsUpdatedPayload {
+  roomId: string;
+  messageId: string;
+  reactions: MessageReaction[];
 }
 
 export interface SendReactionPayload {

@@ -145,3 +145,23 @@ Use this file to record mistakes, root causes, and prevention steps.
 - Prefer structural flex alignment (`justify-between`, `flex-shrink-0`) over padding reservations (`pr-*`) for right-side actions.
 - Pinned preview typography should be one step smaller than normal chat bubbles to avoid dominating chat hierarchy.
 - High-saturation warning colors can overpower chat UI; prefer muted accent gradients for pinned state.
+
+## 2026-03-08 (Message Bubble Reactions)
+
+- Existing reaction flow was only for floating room reactions, not per-message state.
+- Keep floating reactions and message reactions as separate socket flows.
+- Do not bind auto-scroll to the full `messages` object when message metadata can change.
+- Normalize incoming message shape so older history payloads without `reactions` do not break UI.
+- If users want long-press mobile behavior later, add it on top of the current quick-reaction picker instead of replacing the socket contract.
+- Do not reserve permanent `pr-*` space for hover-only pin controls; keep the idle bubble layout full-width and move transient actions into a floating overlay.
+- For chat bubble readability, keep the timestamp in its expected bottom-right slot and float hover actions above the bubble instead of mixing them into text/time layout.
+- Message reaction pickers should open from the bubble's own start edge with a capped width and horizontal overflow handling, otherwise icons can clip off-screen on narrow layouts.
+- Message reaction pickers cannot use a fixed upward offset only; they must choose top or bottom placement from the available space inside the scroll container or the first visible messages will clip the picker.
+- A reaction picker that overlaps neighboring rows needs row-level stacking control; raising only the picker is not enough if sibling message rows create their own stacking contexts.
+- Message reaction chips and reaction edit pickers should not share the same click behavior; use chips for viewing reactor details and keep add/remove/change actions in the dedicated picker to avoid accidental toggles.
+- Reaction detail overlays should be anchored to the reaction-chip row itself with high `z-index`; that preserves an overlay feel without pushing chat layout down.
+- View-only reaction chips should never depend on the send/join enabled state, and decorative glow layers must be `pointer-events-none` so the chips remain clickable.
+- `useChat.tsx` merge conflicts should not be resolved by choosing a whole side; keep the reaction/pin data model and socket handlers from the feature branch, then layer in the latest `dev` typing/message lifecycle changes explicitly.
+- `ChatTab.tsx` merge conflicts also need a true merge: keep overlay refs/state from the feature branch and combine them with guarded auto-scroll logic instead of accepting one side wholesale.
+- A file can still be broken after all conflict markers are removed; duplicate refs/imports from blind "Accept current change" resolutions must be caught with a local compile check before pushing.
+- Chat message rows should not use entry fade animations in a live conversation UI; they read as flicker and feel worse than immediate render.

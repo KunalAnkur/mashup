@@ -43,6 +43,8 @@ export enum SocketEvent {
   // Reaction events
   SEND_REACTION = "sendReaction",
   RECEIVE_REACTION = "receiveReaction",
+  TOGGLE_MESSAGE_REACTION = "toggleMessageReaction",
+  MESSAGE_REACTIONS_UPDATED = "messageReactionsUpdated",
 
   // Mediasoup / streaming
   GET_TRANSPORT_INFO = "getTransportInfo",
