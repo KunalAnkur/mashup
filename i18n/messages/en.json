@@ -94,6 +94,12 @@
       "showReactions": "Show reactions",
       "hideReactions": "Hide reactions",
       "searchEmojis": "Search emojis...",
+      "pinnedMessage": "Pinned message",
+      "pinMessage": "Pin message",
+      "unpinMessage": "Unpin message",
+      "pinMessageLengthError": "Pinned message must be {max} characters or less.",
+      "pinMessageErrorTitle": "Pin message failed",
+      "pinMessageErrorFallback": "Something went wrong while updating pinned message.",
       "failedToSend": "Failed to send message",
       "checkConnection": "Please check your connection and try again."
     },

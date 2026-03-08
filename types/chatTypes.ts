@@ -16,7 +16,9 @@ export interface ChatMessage {
 export interface TypingUser {
   userId: string;
   userName: string;
+  username?: string; // Backward-compatible alias from socket payload
   roomId: string;
+  userEmail?: string;
 }
 
 export interface ChatHistoryResponse {
@@ -29,6 +31,19 @@ export interface SendMessageResponse {
   success: boolean;
   messageId?: string;
   timestamp?: number;
+  error?: string;
+}
+
+export interface PinnedChatMessage extends ChatMessage {
+  pinnedAt: number;
+  pinnedByUserId: string;
+  pinnedByUserName: string;
+}
+
+export interface PinMessageResponse {
+  success: boolean;
+  roomId?: string;
+  pinnedMessage?: PinnedChatMessage | null;
   error?: string;
 }
 

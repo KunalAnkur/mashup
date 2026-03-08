@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
-import { MdCelebration, MdOutlineCelebration } from "react-icons/md";
+import { MdCelebration, MdOutlineCelebration, MdOutlinePushPin, MdPushPin } from "react-icons/md";
 import dynamic from "next/dynamic";
 import { useChatContext } from "@/context/ChatContext";
+import { useRoomContext } from "@/context/RoomContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { ChatMessage, ReactionType } from "@/types/chatTypes";
@@ -15,6 +16,7 @@ import { showError } from "@/utils/toast";
 import { formatChatTime } from "@/utils/timeFormatter";
 import { isMobile } from "react-device-detect";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { getEmailPrefix, isGenericName } from "@/utils/chatName";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -115,15 +117,20 @@ const isOnlyEmojis = (text: string): boolean => {
   return textWithoutEmojis.length === 0 && text.trim().length > 0;
 };
 
+const SCROLL_BOTTOM_THRESHOLD = 64;
+const PIN_MESSAGE_CHAR_LIMIT = 180;
+
 const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);
   const [showReactions, setShowReactions] = useState(true);
   const [messageInput, setMessageInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.auth.user);
+  const { participants, isHost } = useRoomContext();
   const t = useTranslations("panel.chat");
   const tToast = useTranslations("toast");
 
@@ -132,12 +139,16 @@ const ChatTab = () => {
     typingUsers,
     sendMessage,
     sendReaction,
+    pinMessage,
+    unpinMessage,
+    pinnedMessage,
     handleTyping,
     stopTyping,
     isJoined,
     isLoading,
     isConnected,
   } = useChatContext();
+  const [pinActionLoadingId, setPinActionLoadingId] = useState<string | null>(null);
 
   const DEFAULT_REACTIONS: ReactionType[] = [
     "😍",
@@ -169,9 +180,25 @@ const ChatTab = () => {
     setPinnedReactions(newReactions);
   };
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const isNearBottom = (container: HTMLDivElement) => {
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceFromBottom <= SCROLL_BOTTOM_THRESHOLD;
+  };
+
+  const handleMessagesScroll = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    shouldAutoScrollRef.current = isNearBottom(container);
+  };
+
+  useLayoutEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container || !shouldAutoScrollRef.current) return;
+
+    // Keep chat pinned to bottom on mount/tab re-entry without visible jump.
+    container.scrollTop = container.scrollHeight;
+  }, [messages, typingUsers.length]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -199,16 +226,20 @@ const ChatTab = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!messageInput.trim() || !isJoined) return;
+    const trimmedMessage = messageInput.trim();
+    if (!trimmedMessage || !isJoined) return;
 
-    const result = await sendMessage(messageInput);
+    setMessageInput("");
+    stopTyping();
+    if (inputRef.current && inputRef.current instanceof HTMLTextAreaElement) {
+      inputRef.current.style.height = "20px";
+    }
+
+    const result = await sendMessage(trimmedMessage);
     if (result.success) {
-      setMessageInput("");
-      stopTyping();
-      if (inputRef.current && inputRef.current instanceof HTMLTextAreaElement) {
-        inputRef.current.style.height = "20px";
-      }
+      return;
     } else {
+      setMessageInput(trimmedMessage);
       console.error("Failed to send message:", result.error);
       showError(tToast("failedToSendMessage"), result.error || tToast("checkConnection"));
     }
@@ -263,6 +294,86 @@ const ChatTab = () => {
     return userName1 === userName2 && userName1 !== "";
   };
 
+  const latestMessageNameByUserId = useMemo(() => {
+    const nameByUserId = new Map<string, string>();
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const message = messages[i];
+      if (!message?.userId || nameByUserId.has(message.userId)) continue;
+      if (!isGenericName(message.userName)) {
+        nameByUserId.set(message.userId, message.userName);
+      }
+    }
+    return nameByUserId;
+  }, [messages]);
+
+  const typingDisplayNames = useMemo(() => {
+    const resolvedNames = typingUsers
+      .map((typingUser) => {
+        const participant = participants.find(
+          (roomUser) => roomUser.socketId === typingUser.userId
+        );
+        const participantName = participant?.username || participant?.name || "";
+        if (!isGenericName(participantName)) {
+          return participantName;
+        }
+
+        const recentMessageName = latestMessageNameByUserId.get(typingUser.userId);
+        if (recentMessageName && !isGenericName(recentMessageName)) {
+          return recentMessageName;
+        }
+
+        if (!isGenericName(typingUser.userName)) {
+          return typingUser.userName;
+        }
+
+        const participantEmailPrefix = getEmailPrefix(participant?.email);
+        if (participantEmailPrefix) {
+          return participantEmailPrefix;
+        }
+
+        return "User";
+      })
+      .filter((name) => name.trim().length > 0);
+
+    return Array.from(new Set(resolvedNames));
+  }, [typingUsers, participants, latestMessageNameByUserId]);
+
+  const handlePinFromMessage = async (message: ChatMessage) => {
+    if (!isHost || !message?.id) return;
+
+    const normalizedLength = message.message.trim().length;
+    if (normalizedLength === 0 || normalizedLength > PIN_MESSAGE_CHAR_LIMIT) {
+      showError(
+        t("pinMessageErrorTitle"),
+        t("pinMessageLengthError", { max: String(PIN_MESSAGE_CHAR_LIMIT) })
+      );
+      return;
+    }
+
+    setPinActionLoadingId(message.id);
+
+    const isAlreadyPinned = pinnedMessage?.id === message.id;
+    const response = isAlreadyPinned ? await unpinMessage() : await pinMessage(message.id);
+
+    setPinActionLoadingId(null);
+
+    if (!response.success) {
+      showError(t("pinMessageErrorTitle"), response.error || t("pinMessageErrorFallback"));
+    }
+  };
+
+  const handleUnpinFromBanner = async () => {
+    if (!isHost || !pinnedMessage) return;
+
+    setPinActionLoadingId(pinnedMessage.id);
+    const response = await unpinMessage();
+    setPinActionLoadingId(null);
+
+    if (!response.success) {
+      showError(t("pinMessageErrorTitle"), response.error || t("pinMessageErrorFallback"));
+    }
+  };
+
   return (
     <div className="flex flex-col h-full w-full gap-2 md:gap-3 overflow-visible">
       {!isConnected && (
@@ -289,7 +400,35 @@ const ChatTab = () => {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      {pinnedMessage && (
+        <div className="relative px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-zinc-800/25 via-amber-300/10 to-zinc-800/25 backdrop-blur-xl border border-amber-200/20 rounded-lg md:rounded-xl overflow-hidden">
+          <div className="flex items-start justify-between gap-2 md:gap-3">
+            <p className="min-w-0 flex-1 text-[11px] md:text-xs text-white/90 leading-snug whitespace-pre-wrap">
+              <span className="font-medium text-white/95 whitespace-nowrap">
+                {pinnedMessage.userName}:
+              </span>
+              <span style={{ overflowWrap: "anywhere" }}> {pinnedMessage.message}</span>
+            </p>
+
+            <button
+              onClick={isHost ? handleUnpinFromBanner : undefined}
+              disabled={!isHost || pinActionLoadingId === pinnedMessage.id}
+              className={`mt-0.5 h-4 w-4 md:h-[18px] md:w-[18px] flex-shrink-0 flex items-center justify-center text-white transition-opacity duration-200 ${
+                isHost ? "opacity-90 hover:opacity-100" : "opacity-80"
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+              title={isHost ? t("unpinMessage") : t("pinnedMessage")}
+            >
+              <MdPushPin size={12} className="rotate-[28deg] md:w-[13px] md:h-[13px]" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleMessagesScroll}
+        className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+      >
         {messages.length === 0 && isJoined && !isLoading && (
           <div className="flex flex-col items-center justify-center h-full gap-2 md:gap-3">
             <div className="relative">
@@ -471,12 +610,21 @@ const ChatTab = () => {
           }
 
           const userColor = getUserColor(displayUserName);
+          const canPinMessage =
+            msg.type === "user" &&
+            msg.message.trim().length > 0 &&
+            msg.message.trim().length <= PIN_MESSAGE_CHAR_LIMIT;
+          const isPinnedMessage = pinnedMessage?.id === msg.id;
+          const pinButtonTitle = !canPinMessage
+            ? t("pinMessageLengthError", { max: String(PIN_MESSAGE_CHAR_LIMIT) })
+            : isPinnedMessage
+              ? t("unpinMessage")
+              : t("pinMessage");
 
           return (
             <div
               key={msg.id || i}
-              className={`flex items-start gap-2 md:gap-3 group animate-fade-in ${isGroupedMessage ? "mt-0" : "mt-1"}`}
-              style={{ animationDelay: `${i * 0.03}s` }}
+              className={`flex items-start gap-2 md:gap-3 group ${isGroupedMessage ? "mt-0" : "mt-1"}`}
             >
               <div className={`relative flex-shrink-0 ${isGroupedMessage ? "w-8 md:w-10" : ""}`}>
                 {!isGroupedMessage && (
@@ -532,38 +680,66 @@ const ChatTab = () => {
                   </div>
                 )}
 
-                {onlyEmojis ? (
-                  <div className={`relative group/emoji ${isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"}`}>
-                    <div className="relative inline-block">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
-                      <p className={`relative text-3xl md:text-4xl leading-tight filter`}>
-                        {msg.message}
-                      </p>
-                    </div>
-                    <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-0 group-hover/emoji:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-                      {formatChatTime(msg.timestamp)}
-                    </span>
-                  </div>
-                ) : (
+	                {onlyEmojis ? (
+	                  <div className={`relative group/emoji ${isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"}`}>
+	                    <div className="relative inline-block">
+	                      <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
+	                      <p className={`relative text-3xl md:text-4xl leading-tight filter`}>
+	                        {msg.message}
+	                      </p>
+	                    </div>
+	                    {isHost && (canPinMessage || isPinnedMessage) && (
+	                      <button
+	                        onClick={() => canPinMessage && handlePinFromMessage(msg)}
+	                        disabled={pinActionLoadingId === msg.id || !canPinMessage}
+	                        className={`absolute top-0.5 right-0.5 h-5 w-5 md:h-6 md:w-6 flex items-center justify-center transition-all duration-200 ${
+	                          isPinnedMessage
+	                            ? "text-white/95 opacity-100"
+	                            : "text-white/50 opacity-0 group-hover/emoji:opacity-100 hover:text-white/90"
+	                        } disabled:opacity-40 disabled:cursor-not-allowed`}
+	                        title={pinButtonTitle}
+	                      >
+	                        <MdOutlinePushPin size={12} className="md:w-3.5 md:h-3.5" />
+	                      </button>
+	                    )}
+	                    <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-0 group-hover/emoji:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+	                      {formatChatTime(msg.timestamp)}
+	                    </span>
+	                  </div>
+	                ) : (
                   <div className="relative group/message w-full">
                     <div className={`absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-xl md:rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
 
-                    <div
-                      className={`relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl ${isGroupedMessage
-                          ? "rounded-lg md:rounded-xl mt-0"
-                          : isCurrentUser
-                            ? "rounded-xl md:rounded-2xl rounded-tl-sm"
-                            : "rounded-xl md:rounded-2xl rounded-tl-sm"
-                        } ${isCurrentUser
-                          ? `bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 `
-                          : "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 "
-                        }`}
-                    >
-                      <p className="text-white/95 text-xs md:text-sm leading-relaxed break-words whitespace-pre-wrap font-medium">
-                        {msg.message}
-                      </p>
-                      <div className="w-full text-right text-white/50 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
-                        {formatChatTime(msg.timestamp)}
+	                    <div
+	                      className={`relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl ${isGroupedMessage
+	                          ? "rounded-lg md:rounded-xl mt-0"
+	                          : isCurrentUser
+	                            ? "rounded-xl md:rounded-2xl rounded-tl-sm"
+	                            : "rounded-xl md:rounded-2xl rounded-tl-sm"
+	                        } ${isCurrentUser
+	                          ? `bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 `
+	                          : "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 "
+	                        } ${isHost ? "pr-8 md:pr-9" : ""}`}
+	                    >
+	                      {isHost && (canPinMessage || isPinnedMessage) && (
+	                        <button
+	                          onClick={() => canPinMessage && handlePinFromMessage(msg)}
+	                          disabled={pinActionLoadingId === msg.id || !canPinMessage}
+	                          className={`absolute top-1.5 right-1.5 md:top-2 md:right-2 h-5 w-5 md:h-6 md:w-6 flex items-center justify-center transition-all duration-200 ${
+	                            isPinnedMessage
+	                              ? "text-white/95 opacity-100"
+	                              : "text-white/50 opacity-0 group-hover/message:opacity-100 hover:text-white/90"
+	                          } disabled:opacity-40 disabled:cursor-not-allowed`}
+	                          title={pinButtonTitle}
+	                        >
+	                          <MdOutlinePushPin size={12} className="md:w-3.5 md:h-3.5" />
+	                        </button>
+	                      )}
+	                      <p className="text-white/95 text-xs md:text-sm leading-relaxed break-words whitespace-pre-wrap font-medium">
+	                        {msg.message}
+	                      </p>
+	                      <div className="w-full text-right text-white/50 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+	                        {formatChatTime(msg.timestamp)}
                       </div>
                     </div>
                   </div>
@@ -572,7 +748,7 @@ const ChatTab = () => {
             </div>
           );
         })}
-        {typingUsers.length > 0 && (
+        {typingDisplayNames.length > 0 && (
           <div className="flex items-center gap-2 md:gap-2.5 px-2 md:px-3 py-1.5 md:py-2">
             <div className="relative flex items-center gap-0.5 md:gap-1">
               <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
@@ -582,17 +758,16 @@ const ChatTab = () => {
             <div className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-cyan-500/20 rounded-lg">
               <span className="text-cyan-300 text-[10px] md:text-xs font-medium">
                 <span className="font-semibold">
-                  {typingUsers.map((u) => u.userName).join(", ")}
+                  {typingDisplayNames.join(", ")}
                 </span>
                 <span className="text-cyan-400/70 ml-1 md:ml-1.5">
-                  {typingUsers.length === 1 ? t("isTyping") : t("areTyping")}
+                  {typingDisplayNames.length === 1 ? t("isTyping") : t("areTyping")}
                 </span>
               </span>
             </div>
           </div>
         )}
 
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Reaction Buttons - Collapsible with reduced spacing */}
@@ -699,7 +874,7 @@ const ChatTab = () => {
             onKeyDown={handleKeyDown}
             disabled={!isJoined || isLoading}
             rows={1}
-            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
+            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium break-all"
             style={{
               minHeight: "20px",
               maxHeight: "240px",
@@ -717,22 +892,22 @@ const ChatTab = () => {
           <button
             onClick={() => setShowReactions(!showReactions)}
             className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showReactions
-                ? "text-rose-400"
-                : "text-white/50 hover:text-rose-400"
+              ? "text-rose-400"
+              : "text-white/50 hover:text-rose-400"
               }`}
             title={showReactions ? t("hideReactions") : t("showReactions")}
           >
-            
+
             {showReactions ? (
               <MdOutlineCelebration
                 size={16}
                 className={`relative md:w-[18px] md:h-[18px]`}
               />
             ) : (
-                <MdCelebration
-                  size={16}
-                  className={`relative md:w-[18px] md:h-[18px]`}
-                />
+              <MdCelebration
+                size={16}
+                className={`relative md:w-[18px] md:h-[18px]`}
+              />
             )}
           </button>
         )}
@@ -741,13 +916,13 @@ const ChatTab = () => {
           data-emoji-button
           onClick={() => setShowEmojis(!showEmojis)}
           className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showEmojis
-              ? "text-pink-400"
-              : "text-white/70 hover:text-pink-400"
+            ? "text-pink-400"
+            : "text-white/70 hover:text-pink-400"
             }`}
         >
           <div className={`absolute inset-0 rounded-lg md:rounded-xl transition-all duration-200 ${showEmojis
-              ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
-              : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
+            ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
+            : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
             }`}></div>
           <FaSmile size={18} className="relative md:w-5 md:h-5" />
         </button>
@@ -766,37 +941,6 @@ const ChatTab = () => {
       </div>
 
       <style jsx global>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(4px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(6px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-          opacity: 0;
-        }
-
-        // .animate-slide-up {
-        //   animation: slide-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        // }
-
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;

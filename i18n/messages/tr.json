@@ -94,6 +94,12 @@
       "showReactions": "Tepkileri göster",
       "hideReactions": "Tepkileri gizle",
       "searchEmojis": "Emoji ara...",
+      "pinnedMessage": "Sabitlenen mesaj",
+      "pinMessage": "Mesajı sabitle",
+      "unpinMessage": "Sabitlemeyi kaldır",
+      "pinMessageLengthError": "Sabitlenen mesaj en fazla {max} karakter olmalıdır.",
+      "pinMessageErrorTitle": "Mesaj sabitlenemedi",
+      "pinMessageErrorFallback": "Sabit mesaj güncellenirken bir hata oluştu.",
       "failedToSend": "Mesaj gönderilemedi",
       "checkConnection": "Lütfen bağlantınızı kontrol edin ve tekrar deneyin."
     },

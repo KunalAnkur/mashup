@@ -42,6 +42,7 @@ type VideoPlayerProps = {
     onFullscreenChange?: (isFullscreen: boolean) => void;
     onReady?: () => void;
     onEnded?: () => void;
+    onProgress?: () => void;
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
     loop?: boolean;
@@ -53,7 +54,6 @@ type VideoPlayerProps = {
     hideControls?: ControlComponents[];
     hasVideoTrack?: boolean; // External prop to indicate if video track exists (for AudioVisualizer)
     disableSeekPauseResume?: boolean; // If true, video won't pause on seek start or resume on seek end
-    onPlaytimeUpdate?: (seconds: number) => void; // Callback to track playtime (called every second while playing)
     autoResumeOnFullscreenExit?: boolean; // For consumers on iOS: resume if native fullscreen exit pauses playback
 };
 
@@ -75,6 +75,7 @@ const VideoPlayer = ({
     onReady,
     onEnded,
     onFullscreenChange,
+    onProgress,
     controls = true,
     loop = false,
     playerRef: externalPlayerRef,
@@ -87,7 +88,6 @@ const VideoPlayer = ({
     children,
     hasVideoTrack: externalHasVideoTrack,
     disableSeekPauseResume = false,
-    onPlaytimeUpdate,
     autoResumeOnFullscreenExit = false,
 }: VideoPlayerProps) => {
     // State management
@@ -108,7 +108,6 @@ const VideoPlayer = ({
     const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
     const seekDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wasPlayingBeforeSeek = useRef(false);
-    const lastPlayedSecondsRef = useRef(0); // Track last reported playtime position for accurate tracking
 
     const resumePlaybackIfNeeded = useCallback(() => {
         if (!autoResumeOnFullscreenExit) return;
@@ -292,31 +291,13 @@ const VideoPlayer = ({
     const handleProgress = (state: { played: number; loaded: number }) => {
         setProgress(state.played * 100);
         setBuffered(state.loaded * 100);
-        
-        // Track playtime based on actual progress (more accurate than interval)
-        if (playing && onPlaytimeUpdate && duration > 0) {
-            const currentPlayedSeconds = state.played * duration;
-            const lastPlayedSeconds = lastPlayedSecondsRef.current;
-            
-            // Only track if we've actually progressed (not paused, not seeking)
-            if (currentPlayedSeconds > lastPlayedSeconds) {
-                const secondsPlayed = currentPlayedSeconds - lastPlayedSeconds;
-                onPlaytimeUpdate(secondsPlayed);
-                lastPlayedSecondsRef.current = currentPlayedSeconds;
-            }
-        }
+        onProgress?.();
     };
 
     const handleSeekStart = () => {
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         
         wasPlayingBeforeSeek.current = playing;
-        
-        // Reset playtime tracking position when seeking starts
-        if (duration > 0) {
-            const currentProgress = progress / 100;
-            lastPlayedSecondsRef.current = currentProgress * duration;
-        }
         
         // Only pause on seek start if disableSeekPauseResume is false
         if (playing && !disableSeekPauseResume) {
@@ -365,12 +346,6 @@ const VideoPlayer = ({
         setIsBuffering(true);
     };
 
-    // Reset playtime tracking when video changes or pauses
-    useEffect(() => {
-        if (!playing) {
-            lastPlayedSecondsRef.current = 0;
-        }
-    }, [playing, url]);
 
     // Listen for fullscreen changes on mobile devices
     useEffect(() => {

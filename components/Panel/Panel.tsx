@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
 import SettingTab from "./SettingTab";
 import PlaylistTab from "./PlaylistTab";
 import { useDispatch, useSelector } from "react-redux";
-import { useInactiveMyRoomMutation } from "@/lib/store/api/roomApi";
 import { exitRoom } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
 import { useRouter } from "next/navigation";
@@ -33,7 +32,6 @@ import { useRoomContext } from "@/context/RoomContext";
 import { showError, showSuccess } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomLinkCopied } from "@/lib/analytics";
-import { usePlaytimeTracking } from "@/hooks/usePlaytimeTracking";
 import { useSubmitFeedbackMutation } from "@/lib/store/api/feedbackApi";
 
 const Panel = () => {
@@ -47,21 +45,15 @@ const Panel = () => {
     category: "bug" as "bug" | "feature" | "other",
   });
 
-  const { leaveRoom, roomId, isHost, isJoined } = useRoomContext();
+  const { leaveRoom, roomId } = useRoomContext();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const router = useRouter();
-  const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
   const roomState = useSelector((state: RootState) => state.room);
   const authState = useSelector((state: RootState) => state.auth);
   const host = roomState.host;
   const dispatch = useDispatch();
   const [submitFeedback] = useSubmitFeedbackMutation();
 
-  const { sendPlaytime } = usePlaytimeTracking({
-    roomId: roomState.roomId || roomId || null,
-    isHost: (isHost || host) || false,
-    enabled: false,
-  });
   const tToast = useTranslations("toast");
   const tPanel = useTranslations("panel");
   const tCommon = useTranslations("common");
@@ -124,13 +116,10 @@ const Panel = () => {
 
   const handleLeaveParty = async () => {
     try {
-      if (host) {
-        await sendPlaytime();
-      }
       leaveRoom();
       setShowLeaveConfirm(false);
       router.push("/");
-    } catch (error) {
+    } catch {
       showError(tToast("failedToLeaveRoom"), tToast("errorLeavingRoom"));
       dispatch(exitRoom());
       router.push("/");
@@ -168,7 +157,7 @@ const Panel = () => {
       } else {
         showError(tCommon("error"), tToast("pleaseLogin"));
       }
-    } catch (err: any) {
+    } catch {
       showError(tCommon("error"), tToast("couldNotSendFeedback"));
     } finally {
       setFeedbackLoading(false);

@@ -14,6 +14,7 @@ export enum SocketEvent {
   ROOM_INFO_UPDATED = "roomInfoUpdated",
   UPDATE_PLAYLIST = "updatePlaylist",
   PLAYLIST_UPDATED = "playlistUpdated",
+  WATCH_TIME = "watchTime",
   // Video selection events
   SELECT_VIDEO = "selectVideo",
   VIDEO_SELECTED = "videoSelected",
@@ -34,6 +35,9 @@ export enum SocketEvent {
   USER_STOPPED_TYPING = "userStoppedTyping",
   LEAVE_CHAT_ROOM = "leaveChatRoom",
   GET_CHAT_HISTORY = "getChatHistory",
+  PIN_CHAT_MESSAGE = "pinChatMessage",
+  UNPIN_CHAT_MESSAGE = "unpinChatMessage",
+  PINNED_CHAT_MESSAGE_UPDATED = "pinnedChatMessageUpdated",
 
   // Reaction events
   SEND_REACTION = "sendReaction",
