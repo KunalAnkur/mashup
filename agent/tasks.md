@@ -100,3 +100,5 @@ Rules for execution:
   - Replace the viewport `left/top` math for the reaction-detail list with a real absolute popover rendered under the clicked reaction chip wrapper; long-message behavior should come from trigger-relative DOM positioning, not fake page coordinates.
   - Do not add a second centering transform on top of the clicked-chip wrapper anchor; once the popup is rendered as an absolute child of the chip wrapper, `left-0` / `right-0` on that wrapper is already the correct short-message anchor.
   - Choose the detail popover side from real viewport room at click time (`start` if there is room on the right, `end` if there is room on the left, otherwise the larger side) instead of inheriting message alignment.
+  - Collapse the message-side react/pin icons into one shared hover shell with transparent inner buttons so the actions sit tighter and do not read as nested floating circles.
+  - Set the shared hover-action shell to `gap-1` so the react and pin icons have a deliberate but still compact separation.

@@ -761,21 +761,22 @@ const ChatTab = () => {
             : "left-full top-1/2 ml-1 -translate-y-1/2"
         }`}
       >
-        <button
-          type="button"
-          onClick={() => handleReactionPickerToggle(message.id)}
-          disabled={!isJoined}
-          className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/88 text-white/70 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100"
-          title={t("reactToMessage")}
-        >
-          <FaSmile size={11} />
-        </button>
-        {showPinAction && (
+        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-zinc-950/88 px-0.5 py-0.5 shadow-lg backdrop-blur-xl transition-opacity duration-150 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100">
+          <button
+            type="button"
+            onClick={() => handleReactionPickerToggle(message.id)}
+            disabled={!isJoined}
+            className="flex h-6.5 w-6.5 items-center justify-center rounded-full text-white/70 transition-colors duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            title={t("reactToMessage")}
+          >
+            <FaSmile size={11} />
+          </button>
+          {showPinAction && (
           <button
             type="button"
             onClick={() => canPinMessage && handlePinFromMessage(message)}
             disabled={pinActionLoadingId === message.id || !canPinMessage}
-            className={`pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/88 shadow-lg backdrop-blur-xl transition-all duration-150 disabled:cursor-not-allowed opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100 ${
+            className={`flex h-6.5 w-6.5 items-center justify-center rounded-full transition-colors duration-150 disabled:cursor-not-allowed ${
               isPinnedMessage
                 ? "text-white/95"
                 : canPinMessage
@@ -786,7 +787,8 @@ const ChatTab = () => {
           >
             <MdOutlinePushPin size={11} className="md:h-3 md:w-3" />
           </button>
-        )}
+          )}
+        </div>
       </div>
     );
   };
