@@ -123,29 +123,18 @@ const isOnlyEmojis = (text: string): boolean => {
 const SCROLL_BOTTOM_THRESHOLD = 64;
 const PIN_MESSAGE_CHAR_LIMIT = 180;
 const MESSAGE_REACTION_PICKER_APPROX_HEIGHT = 52;
-const MESSAGE_REACTION_DETAILS_APPROX_HEIGHT = 148;
-const MESSAGE_REACTION_DETAILS_WIDTH = 224;
+const MESSAGE_REACTION_DETAILS_APPROX_WIDTH = 208;
 const MESSAGE_REACTION_PICKER_VERTICAL_OFFSET = 8;
-const MESSAGE_REACTION_DETAILS_VERTICAL_OFFSET = 4;
 const MESSAGE_ACTIONS_MIN_SIDE_SPACE = 72;
 const MESSAGE_ACTIONS_WIDE_BUBBLE_RATIO = 0.72;
 const MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING = 12;
 
 type MessageReactionPlacement = "top" | "bottom";
 type MessageActionPlacement = "side" | "top";
-type MessageReactionDetailsPosition = {
-  left: number;
-  top: number;
-};
-type MessageReactionDetailsAnchor = {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-};
 type ActiveReactionDetails = {
   messageId: string;
   emoji: ReactionType;
+  popupAlign: "start" | "end";
 } | null;
 
 const ChatTab = () => {
@@ -156,12 +145,6 @@ const ChatTab = () => {
     useState<MessageReactionPlacement>("top");
   const [activeReactionDetails, setActiveReactionDetails] =
     useState<ActiveReactionDetails>(null);
-  const [activeReactionDetailsPlacement, setActiveReactionDetailsPlacement] =
-    useState<MessageReactionPlacement>("bottom");
-  const [activeReactionDetailsPosition, setActiveReactionDetailsPosition] =
-    useState<MessageReactionDetailsPosition | null>(null);
-  const [activeReactionDetailsAnchor, setActiveReactionDetailsAnchor] =
-    useState<MessageReactionDetailsAnchor | null>(null);
   const [messageActionPlacements, setMessageActionPlacements] = useState<
     Record<string, MessageActionPlacement>
   >({});
@@ -246,8 +229,6 @@ const ChatTab = () => {
 
     if (activeReactionDetails) {
       setActiveReactionDetails(null);
-      setActiveReactionDetailsPosition(null);
-      setActiveReactionDetailsAnchor(null);
     }
   };
 
@@ -288,8 +269,6 @@ const ChatTab = () => {
         const activeBubble = messageBubbleRefs.current[activeReactionDetails.messageId];
         if (activeBubble && !activeBubble.contains(target)) {
           setActiveReactionDetails(null);
-          setActiveReactionDetailsPosition(null);
-          setActiveReactionDetailsAnchor(null);
         }
       }
     };
@@ -572,109 +551,56 @@ const ChatTab = () => {
     });
   };
 
-  const updateMessageReactionDetailsPlacement = (messageId: string) => {
-    setActiveReactionDetailsPlacement(
-      resolveMessageOverlayPlacement(
-        messageId,
-        MESSAGE_REACTION_DETAILS_APPROX_HEIGHT
-      )
-    );
-  };
-
-  const getMessageReactionDetailsPlacement = (messageId: string) =>
-    resolveMessageOverlayPlacement(
-      messageId,
-      MESSAGE_REACTION_DETAILS_APPROX_HEIGHT
-    );
-
-  const resolveMessageReactionDetailsPosition = (
-    messageId: string,
-    anchor: MessageReactionDetailsAnchor | null,
-    placement: MessageReactionPlacement = getMessageReactionDetailsPlacement(messageId)
-  ): MessageReactionDetailsPosition | null => {
-    if (!anchor || typeof window === "undefined") {
-      return null;
-    }
-
-    const viewportWidth = window.innerWidth;
-    const overlayWidth = Math.min(
-      MESSAGE_REACTION_DETAILS_WIDTH,
-      viewportWidth - MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING * 2
-    );
-    const desiredLeft = anchor.right;
-    const left = Math.min(
-      Math.max(desiredLeft, MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING),
-      viewportWidth - overlayWidth - MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING
-    );
-
-    return {
-      left,
-      top:
-        placement === "top"
-          ? anchor.top - MESSAGE_REACTION_DETAILS_VERTICAL_OFFSET
-          : anchor.bottom + MESSAGE_REACTION_DETAILS_VERTICAL_OFFSET,
-    };
-  };
-
   const handleReactionDetailsToggle = (
     messageId: string,
     emoji: ReactionType,
-    anchor: MessageReactionDetailsAnchor
+    popupAlign: "start" | "end"
   ) => {
     setActiveReactionMessageId(null);
     setActiveReactionDetails((current) => {
-      if (current?.messageId === messageId && current.emoji === emoji) {
-        setActiveReactionDetailsPosition(null);
-        setActiveReactionDetailsAnchor(null);
+      if (
+        current?.messageId === messageId &&
+        current.emoji === emoji
+      ) {
         return null;
       }
 
-      const nextPlacement = getMessageReactionDetailsPlacement(messageId);
-      setActiveReactionDetailsAnchor(anchor);
-      setActiveReactionDetailsPlacement(nextPlacement);
-      setActiveReactionDetailsPosition(
-        resolveMessageReactionDetailsPosition(messageId, anchor, nextPlacement)
-      );
-      return { messageId, emoji };
+      return { messageId, emoji, popupAlign };
     });
   };
 
-  useEffect(() => {
-    if (!activeReactionMessageId && !activeReactionDetails) return;
+  const resolveReactionDetailsAlign = (
+    triggerRect: DOMRect
+  ): "start" | "end" => {
+    if (typeof window === "undefined") {
+      return "start";
+    }
 
-    if (activeReactionMessageId) {
-      updateMessageReactionPlacement(activeReactionMessageId);
+    const requiredWidth =
+      MESSAGE_REACTION_DETAILS_APPROX_WIDTH +
+      MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING;
+    const availableRight =
+      window.innerWidth - triggerRect.left - MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING;
+    const availableLeft =
+      triggerRect.right - MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING;
+
+    if (availableRight >= requiredWidth) {
+      return "start";
     }
-    if (activeReactionDetails) {
-      const nextPlacement = getMessageReactionDetailsPlacement(
-        activeReactionDetails.messageId
-      );
-      setActiveReactionDetailsPlacement(nextPlacement);
-      setActiveReactionDetailsPosition(
-        resolveMessageReactionDetailsPosition(
-          activeReactionDetails.messageId,
-          activeReactionDetailsAnchor,
-          nextPlacement
-        )
-      );
+
+    if (availableLeft >= requiredWidth) {
+      return "end";
     }
+
+    return availableRight >= availableLeft ? "start" : "end";
+  };
+
+  useEffect(() => {
+    if (!activeReactionMessageId) return;
 
     const handleViewportChange = () => {
       if (activeReactionMessageId) {
         updateMessageReactionPlacement(activeReactionMessageId);
-      }
-      if (activeReactionDetails) {
-        const nextPlacement = getMessageReactionDetailsPlacement(
-          activeReactionDetails.messageId
-        );
-        setActiveReactionDetailsPlacement(nextPlacement);
-        setActiveReactionDetailsPosition(
-          resolveMessageReactionDetailsPosition(
-            activeReactionDetails.messageId,
-            activeReactionDetailsAnchor,
-            nextPlacement
-          )
-        );
       }
     };
 
@@ -686,7 +612,7 @@ const ChatTab = () => {
       window.removeEventListener("resize", handleViewportChange);
       containerElement?.removeEventListener("scroll", handleViewportChange);
     };
-  }, [activeReactionDetails, activeReactionDetailsAnchor, activeReactionDetailsPlacement, activeReactionMessageId, messageActionPlacements]);
+  }, [activeReactionMessageId, messageActionPlacements]);
 
   useEffect(() => {
     if (!activeReactionMessageId && !activeReactionDetails) return;
@@ -694,8 +620,6 @@ const ChatTab = () => {
     const handleViewportScroll = () => {
       setActiveReactionMessageId(null);
       setActiveReactionDetails(null);
-      setActiveReactionDetailsPosition(null);
-      setActiveReactionDetailsAnchor(null);
     };
 
     window.addEventListener("scroll", handleViewportScroll, true);
@@ -772,52 +696,57 @@ const ChatTab = () => {
       >
         <div className="inline-flex max-w-full flex-wrap items-center gap-1 rounded-full bg-zinc-950/85 px-1.5 py-1 shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-md">
           {reactionGroups.map((group) => (
-            <button
+            <div
               key={`${message.id}-${group.emoji}`}
-              type="button"
-              onClick={(event) => {
-                const rect = event.currentTarget.getBoundingClientRect();
-                handleReactionDetailsToggle(message.id, group.emoji, {
-                  left: rect.left,
-                  right: rect.right,
-                  top: rect.top,
-                  bottom: rect.bottom,
-                });
-              }}
-              className={`pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full px-1 py-0.5 text-[10px] md:text-[11px] transition-colors duration-150 ${
-                group.reactedByCurrentUser
-                  ? "font-semibold text-white"
-                  : "font-medium text-white/80 hover:text-white"
-              }`}
-              title={t("viewMessageReactions")}
+              className="relative inline-flex"
             >
-              <span className="leading-none">{group.emoji}</span>
-              {group.count > 1 && <span>{group.count}</span>}
-            </button>
+              <button
+                type="button"
+                onClick={(event) =>
+                  handleReactionDetailsToggle(
+                    message.id,
+                    group.emoji,
+                    resolveReactionDetailsAlign(
+                      event.currentTarget.getBoundingClientRect()
+                    )
+                  )
+                }
+                className={`pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full px-1 py-0.5 text-[10px] md:text-[11px] transition-colors duration-150 ${
+                  group.reactedByCurrentUser
+                    ? "font-semibold text-white"
+                    : "font-medium text-white/80 hover:text-white"
+                }`}
+                title={t("viewMessageReactions")}
+              >
+                <span className="leading-none">{group.emoji}</span>
+                {group.count > 1 && <span>{group.count}</span>}
+              </button>
+              {isDetailsOpen && activeReactionDetails?.emoji === group.emoji && (
+                <MessageReactionDetails
+                  align={activeReactionDetails.popupAlign}
+                  reactions={message.reactions || []}
+                  focusedEmoji={activeReactionDetails.emoji}
+                  currentUserOwnerKey={currentReactionOwnerKey}
+                  getReactionOwnerKey={getReactionOwnerKey}
+                  currentUserLabel={tCommon("you")}
+                />
+              )}
+            </div>
           ))}
         </div>
-        {isDetailsOpen && activeReactionDetailsPosition && (
-          <MessageReactionDetails
-            placement={activeReactionDetailsPlacement}
-            position={activeReactionDetailsPosition}
-            reactions={message.reactions || []}
-            focusedEmoji={activeReactionDetails.emoji}
-            currentUserOwnerKey={currentReactionOwnerKey}
-            getReactionOwnerKey={getReactionOwnerKey}
-            currentUserLabel={tCommon("you")}
-          />
-        )}
       </div>
     );
   };
 
   const renderMessageBubbleActions = ({
     message,
+    showPinAction,
     canPinMessage,
     isPinnedMessage,
     pinButtonTitle,
   }: {
     message: ChatMessage;
+    showPinAction: boolean;
     canPinMessage: boolean;
     isPinnedMessage: boolean;
     pinButtonTitle: string;
@@ -826,37 +755,39 @@ const ChatTab = () => {
 
     return (
       <div
-        className={`pointer-events-none absolute z-20 flex items-center gap-1 ${
+        className={`pointer-events-none absolute z-20 flex items-center gap-0.5 ${
           actionPlacement === "top"
-            ? "right-2 top-0 -translate-y-1/2"
-            : "left-full top-1/2 ml-2 -translate-y-1/2"
+            ? "right-1.5 top-0 -translate-y-[42%]"
+            : "left-full top-1/2 ml-1 -translate-y-1/2"
         }`}
       >
-      <button
-        type="button"
-        onClick={() => handleReactionPickerToggle(message.id)}
-        disabled={!isJoined}
-        className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/88 text-white/70 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100"
-        title={t("reactToMessage")}
-      >
-        <FaSmile size={11} />
-      </button>
-      {isHost && (canPinMessage || isPinnedMessage) && (
         <button
           type="button"
-          onClick={() => canPinMessage && handlePinFromMessage(message)}
-          disabled={pinActionLoadingId === message.id || !canPinMessage}
-          className={`pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/88 shadow-lg backdrop-blur-xl transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100 ${
-            isPinnedMessage
-              ? "text-white/95"
-              : "text-white/50 hover:text-white/90"
-          }`}
-          title={pinButtonTitle}
+          onClick={() => handleReactionPickerToggle(message.id)}
+          disabled={!isJoined}
+          className="pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/88 text-white/70 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100"
+          title={t("reactToMessage")}
         >
-          <MdOutlinePushPin size={11} className="md:h-3 md:w-3" />
+          <FaSmile size={11} />
         </button>
-      )}
-    </div>
+        {showPinAction && (
+          <button
+            type="button"
+            onClick={() => canPinMessage && handlePinFromMessage(message)}
+            disabled={pinActionLoadingId === message.id || !canPinMessage}
+            className={`pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full bg-zinc-950/88 shadow-lg backdrop-blur-xl transition-all duration-150 disabled:cursor-not-allowed opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100 ${
+              isPinnedMessage
+                ? "text-white/95"
+                : canPinMessage
+                  ? "text-white/50 hover:text-white/90"
+                  : "text-white/30"
+            } ${canPinMessage ? "" : "disabled:opacity-55"}`}
+            title={pinButtonTitle}
+          >
+            <MdOutlinePushPin size={11} className="md:h-3 md:w-3" />
+          </button>
+        )}
+      </div>
     );
   };
 
@@ -1100,6 +1031,8 @@ const ChatTab = () => {
             msg.type === "user" &&
             msg.message.trim().length > 0 &&
             msg.message.trim().length <= PIN_MESSAGE_CHAR_LIMIT;
+          const showPinAction =
+            isHost && msg.type === "user" && msg.message.trim().length > 0;
           const isPinnedMessage = pinnedMessage?.id === msg.id;
           const hasActiveReactionPicker = activeReactionMessageId === msg.id;
           const hasActiveReactionDetails =
@@ -1183,6 +1116,7 @@ const ChatTab = () => {
                   >
                     {renderMessageBubbleActions({
                       message: msg,
+                      showPinAction,
                       canPinMessage,
                       isPinnedMessage,
                       pinButtonTitle,
@@ -1215,6 +1149,7 @@ const ChatTab = () => {
                   >
                     {renderMessageBubbleActions({
                       message: msg,
+                      showPinAction,
                       canPinMessage,
                       isPinnedMessage,
                       pinButtonTitle,

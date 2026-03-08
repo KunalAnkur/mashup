@@ -95,3 +95,8 @@ Rules for execution:
   - Keep the reaction-detail popover closer to the tray button than the picker and trim its spacing so it reads as a compact utility overlay.
   - Position the reaction-detail popover from the clicked reaction button rect, not the whole tray, so the list can start from the button edge consistently.
   - Do not recenter the reaction-detail popover for wide messages; long bubbles should still open the list from the clicked emoji button edge.
+  - Keep the hover reaction/pin actions tighter to each other and to the bubble edge, and keep the host pin affordance visible on long user messages as a disabled, tooltip-backed control when the pin limit blocks the action.
+  - Keep the reaction-detail popover centered on the clicked reaction chip with a tight vertical gap, then clamp only at the viewport edges; chip-centered placement stays stable for both short and wide messages.
+  - Replace the viewport `left/top` math for the reaction-detail list with a real absolute popover rendered under the clicked reaction chip wrapper; long-message behavior should come from trigger-relative DOM positioning, not fake page coordinates.
+  - Do not add a second centering transform on top of the clicked-chip wrapper anchor; once the popup is rendered as an absolute child of the chip wrapper, `left-0` / `right-0` on that wrapper is already the correct short-message anchor.
+  - Choose the detail popover side from real viewport room at click time (`start` if there is room on the right, `end` if there is room on the left, otherwise the larger side) instead of inheriting message alignment.
