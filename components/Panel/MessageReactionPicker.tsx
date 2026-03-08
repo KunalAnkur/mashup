@@ -12,16 +12,22 @@ export const QUICK_MESSAGE_REACTIONS: ReactionType[] = [
 ];
 
 interface MessageReactionPickerProps {
+  placement?: "top" | "bottom";
   selectedEmoji?: ReactionType | null;
   onSelect: (emoji: ReactionType) => void;
 }
 
 const MessageReactionPicker = ({
+  placement = "top",
   selectedEmoji = null,
   onSelect,
 }: MessageReactionPickerProps) => (
   <div
-    className="absolute left-0 top-0 z-30 flex max-w-[min(calc(100vw-4rem),18rem)] -translate-y-[calc(100%+0.5rem)] items-center gap-1 overflow-x-auto rounded-full border border-white/10 bg-zinc-950/90 px-2 py-1.5 shadow-2xl backdrop-blur-xl scrollbar-hide"
+    className={`absolute left-0 z-[70] flex max-w-[min(calc(100vw-4rem),18rem)] items-center gap-1 overflow-x-auto rounded-full border border-white/10 bg-zinc-950/95 px-2 py-1.5 shadow-2xl backdrop-blur-xl scrollbar-hide ${
+      placement === "bottom"
+        ? "top-full mt-2"
+        : "top-0 -translate-y-[calc(100%+0.5rem)]"
+    }`}
   >
     {QUICK_MESSAGE_REACTIONS.map((emoji) => {
       const isSelected = selectedEmoji === emoji;

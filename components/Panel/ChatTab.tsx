@@ -12,6 +12,7 @@ import { RootState } from "@/lib/store";
 import { ChatMessage, MessageReaction, ReactionType } from "@/types/chatTypes";
 import type { EmojiClickData, Theme } from "emoji-picker-react";
 import AnimatedReaction from "./AnimatedReaction";
+import MessageReactionDetails from "./MessageReactionDetails";
 import MessageReactionPicker from "./MessageReactionPicker";
 import ReactionPicker from "./ReactionPicker";
 import { showError } from "@/utils/toast";
@@ -119,14 +120,31 @@ const isOnlyEmojis = (text: string): boolean => {
 };
 
 const PIN_MESSAGE_CHAR_LIMIT = 180;
+const MESSAGE_REACTION_PICKER_APPROX_HEIGHT = 52;
+const MESSAGE_REACTION_DETAILS_APPROX_HEIGHT = 148;
+const MESSAGE_REACTION_PICKER_VERTICAL_OFFSET = 8;
+
+type MessageReactionPlacement = "top" | "bottom";
+type ActiveReactionDetails = {
+  messageId: string;
+  emoji: ReactionType;
+} | null;
 
 const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);
   const [showReactions, setShowReactions] = useState(true);
   const [activeReactionMessageId, setActiveReactionMessageId] = useState<string | null>(null);
+  const [activeReactionPlacement, setActiveReactionPlacement] =
+    useState<MessageReactionPlacement>("top");
+  const [activeReactionDetails, setActiveReactionDetails] =
+    useState<ActiveReactionDetails>(null);
+  const [activeReactionDetailsPlacement, setActiveReactionDetailsPlacement] =
+    useState<MessageReactionPlacement>("bottom");
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastMessageCountRef = useRef(0);
+  const messageBubbleRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
@@ -135,6 +153,7 @@ const ChatTab = () => {
   const { isHost } = useRoomContext();
   const t = useTranslations("panel.chat");
   const tToast = useTranslations("toast");
+  const tCommon = useTranslations("common");
 
   const {
     messages,
@@ -192,24 +211,41 @@ const ChatTab = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
       if (
+        showEmojis &&
         emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target as Node) &&
-        !inputRef.current?.contains(event.target as Node) &&
+        !emojiPickerRef.current.contains(target) &&
+        !inputRef.current?.contains(target) &&
         !(event.target as HTMLElement).closest("[data-emoji-button]")
       ) {
         setShowEmojis(false);
       }
+
+      if (activeReactionMessageId) {
+        const activeBubble = messageBubbleRefs.current[activeReactionMessageId];
+        if (activeBubble && !activeBubble.contains(target)) {
+          setActiveReactionMessageId(null);
+        }
+      }
+
+      if (activeReactionDetails) {
+        const activeBubble = messageBubbleRefs.current[activeReactionDetails.messageId];
+        if (activeBubble && !activeBubble.contains(target)) {
+          setActiveReactionDetails(null);
+        }
+      }
     };
 
-    if (showEmojis) {
+    if (showEmojis || activeReactionMessageId || activeReactionDetails) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showEmojis]);
+  }, [showEmojis, activeReactionMessageId, activeReactionDetails]);
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setMessageInput((prev) => prev + emojiData.emoji);
@@ -380,31 +416,142 @@ const ChatTab = () => {
   const handleMessageReactionSelect = (messageId: string, emoji: ReactionType) => {
     toggleMessageReaction(messageId, emoji);
     setActiveReactionMessageId(null);
+    setActiveReactionDetails(null);
   };
+
+  const resolveMessageOverlayPlacement = (
+    messageId: string,
+    overlayHeight: number
+  ): MessageReactionPlacement => {
+    const bubbleElement = messageBubbleRefs.current[messageId];
+    const containerElement = messagesContainerRef.current;
+
+    if (!bubbleElement || !containerElement) {
+      return "top";
+    }
+
+    const bubbleRect = bubbleElement.getBoundingClientRect();
+    const containerRect = containerElement.getBoundingClientRect();
+    const requiredHeight = overlayHeight + MESSAGE_REACTION_PICKER_VERTICAL_OFFSET;
+    const availableTop = bubbleRect.top - containerRect.top;
+    const availableBottom = containerRect.bottom - bubbleRect.bottom;
+
+    if (availableTop >= requiredHeight) {
+      return "top";
+    }
+
+    if (availableBottom >= requiredHeight) {
+      return "bottom";
+    }
+
+    return availableBottom > availableTop ? "bottom" : "top";
+  };
+
+  const updateMessageReactionPlacement = (messageId: string) => {
+    setActiveReactionPlacement(
+      resolveMessageOverlayPlacement(
+        messageId,
+        MESSAGE_REACTION_PICKER_APPROX_HEIGHT
+      )
+    );
+  };
+
+  const handleReactionPickerToggle = (messageId: string) => {
+    setActiveReactionDetails(null);
+    setActiveReactionMessageId((current) => {
+      if (current === messageId) {
+        return null;
+      }
+
+      updateMessageReactionPlacement(messageId);
+      return messageId;
+    });
+  };
+
+  const updateMessageReactionDetailsPlacement = (messageId: string) => {
+    setActiveReactionDetailsPlacement(
+      resolveMessageOverlayPlacement(
+        messageId,
+        MESSAGE_REACTION_DETAILS_APPROX_HEIGHT
+      )
+    );
+  };
+
+  const handleReactionDetailsToggle = (messageId: string, emoji: ReactionType) => {
+    setActiveReactionMessageId(null);
+    setActiveReactionDetails((current) => {
+      if (current?.messageId === messageId && current.emoji === emoji) {
+        return null;
+      }
+
+      updateMessageReactionDetailsPlacement(messageId);
+      return { messageId, emoji };
+    });
+  };
+
+  useEffect(() => {
+    if (!activeReactionMessageId && !activeReactionDetails) return;
+
+    if (activeReactionMessageId) {
+      updateMessageReactionPlacement(activeReactionMessageId);
+    }
+    if (activeReactionDetails) {
+      updateMessageReactionDetailsPlacement(activeReactionDetails.messageId);
+    }
+
+    const handleViewportChange = () => {
+      if (activeReactionMessageId) {
+        updateMessageReactionPlacement(activeReactionMessageId);
+      }
+      if (activeReactionDetails) {
+        updateMessageReactionDetailsPlacement(activeReactionDetails.messageId);
+      }
+    };
+
+    const containerElement = messagesContainerRef.current;
+    window.addEventListener("resize", handleViewportChange);
+    containerElement?.addEventListener("scroll", handleViewportChange, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", handleViewportChange);
+      containerElement?.removeEventListener("scroll", handleViewportChange);
+    };
+  }, [activeReactionMessageId, activeReactionDetails]);
 
   const renderMessageReactionChips = (message: ChatMessage) => {
     const reactionGroups = getMessageReactionGroups(message);
     if (!reactionGroups.length) return null;
 
     return (
-      <div className="mt-1 flex flex-wrap gap-1">
-        {reactionGroups.map((group) => (
-          <button
-            key={`${message.id}-${group.emoji}`}
-            type="button"
-            onClick={() => toggleMessageReaction(message.id, group.emoji)}
-            disabled={!isJoined}
-            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] md:text-[11px] font-medium transition-all duration-150 ${
-              group.reactedByCurrentUser
-                ? "border-pink-400/30 bg-pink-500/12 text-white shadow-[0_0_0_1px_rgba(236,72,153,0.15)]"
-                : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
-            } disabled:cursor-not-allowed disabled:opacity-60`}
-            title={group.reactors.join(", ")}
-          >
-            <span className="leading-none">{group.emoji}</span>
-            {group.count > 1 && <span>{group.count}</span>}
-          </button>
-        ))}
+      <div className="relative z-10 mt-1 inline-flex max-w-full flex-col items-start">
+        <div className="flex flex-wrap gap-1">
+          {reactionGroups.map((group) => (
+            <button
+              key={`${message.id}-${group.emoji}`}
+              type="button"
+              onClick={() => handleReactionDetailsToggle(message.id, group.emoji)}
+              className={`pointer-events-auto inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] md:text-[11px] font-medium transition-all duration-150 ${
+                group.reactedByCurrentUser
+                  ? "border-pink-400/30 bg-pink-500/12 text-white shadow-[0_0_0_1px_rgba(236,72,153,0.15)]"
+                  : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+              }`}
+              title={t("viewMessageReactions")}
+            >
+              <span className="leading-none">{group.emoji}</span>
+              {group.count > 1 && <span>{group.count}</span>}
+            </button>
+          ))}
+        </div>
+        {activeReactionDetails?.messageId === message.id && (
+          <MessageReactionDetails
+            placement={activeReactionDetailsPlacement}
+            reactions={message.reactions || []}
+            focusedEmoji={activeReactionDetails.emoji}
+            currentUserOwnerKey={currentReactionOwnerKey}
+            getReactionOwnerKey={getReactionOwnerKey}
+            currentUserLabel={tCommon("you")}
+          />
+        )}
       </div>
     );
   };
@@ -459,7 +606,7 @@ const ChatTab = () => {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div ref={messagesContainerRef} className="flex-1 flex flex-col gap-2 md:gap-3 overflow-y-auto pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         {messages.length === 0 && isJoined && !isLoading && (
           <div className="flex flex-col items-center justify-center h-full gap-2 md:gap-3">
             <div className="relative">
@@ -581,7 +728,7 @@ const ChatTab = () => {
             return (
               <div key={msg.id || i} className="flex justify-center py-1">
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="relative bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-full px-4 py-1.5">
                     <span className="text-white/80 text-xs font-medium">
                       {isJoinLeaveMessage ? (
@@ -646,6 +793,9 @@ const ChatTab = () => {
             msg.message.trim().length > 0 &&
             msg.message.trim().length <= PIN_MESSAGE_CHAR_LIMIT;
           const isPinnedMessage = pinnedMessage?.id === msg.id;
+          const hasActiveReactionPicker = activeReactionMessageId === msg.id;
+          const hasActiveReactionDetails =
+            activeReactionDetails?.messageId === msg.id;
           const pinButtonTitle = !canPinMessage
             ? t("pinMessageLengthError", { max: String(PIN_MESSAGE_CHAR_LIMIT) })
             : isPinnedMessage
@@ -656,13 +806,15 @@ const ChatTab = () => {
           return (
             <div
               key={msg.id || i}
-              className={`flex items-start gap-2 md:gap-3 group animate-fade-in ${isGroupedMessage ? "mt-0" : "mt-1"}`}
+              className={`relative flex items-start gap-2 md:gap-3 group animate-fade-in ${
+                hasActiveReactionPicker || hasActiveReactionDetails ? "z-30" : "z-0"
+              } ${isGroupedMessage ? "mt-0" : "mt-1"}`}
               style={{ animationDelay: `${i * 0.03}s` }}
             >
               <div className={`relative flex-shrink-0 ${isGroupedMessage ? "w-8 md:w-10" : ""}`}>
                 {!isGroupedMessage && (
                   <div className="relative">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300`}></div>
+                    <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-300`}></div>
 
                     {msg.userProfile ? (
                       <>
@@ -714,15 +866,18 @@ const ChatTab = () => {
                 )}
 
                 {onlyEmojis ? (
-                  <div className={`relative group/message inline-flex max-w-full flex-col ${isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"}`}>
+                  <div
+                    ref={(element) => {
+                      messageBubbleRefs.current[msg.id] = element;
+                    }}
+                    className={`relative isolate group/message inline-flex max-w-full flex-col ${
+                      isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"
+                    }`}
+                  >
                     <div className="absolute right-1 top-0 z-20 flex -translate-y-1/2 items-center gap-1">
                       <button
                         type="button"
-                        onClick={() =>
-                          setActiveReactionMessageId((current) =>
-                            current === msg.id ? null : msg.id
-                          )
-                        }
+                        onClick={() => handleReactionPickerToggle(msg.id)}
                         disabled={!isJoined}
                         className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
                         title={t("reactToMessage")}
@@ -747,32 +902,34 @@ const ChatTab = () => {
                     </div>
                     {activeReactionMessageId === msg.id && (
                       <MessageReactionPicker
+                        placement={activeReactionPlacement}
                         selectedEmoji={selectedMessageReaction}
                         onSelect={(emoji) => handleMessageReactionSelect(msg.id, emoji)}
                       />
                     )}
 
-                    <div className="relative inline-block">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
+                    <div className="relative z-0 inline-block">
+                      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
                       <p className={`relative text-3xl md:text-4xl leading-tight filter`}>
                         {msg.message}
                       </p>
                     </div>
                     {renderMessageReactionChips(msg)}
-                    <span className="absolute -bottom-4 right-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                    <span className="pointer-events-none absolute -bottom-4 right-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap">
                       {formatChatTime(msg.timestamp)}
                     </span>
                   </div>
                 ) : (
-                  <div className="relative group/message inline-flex max-w-full flex-col">
+                  <div
+                    ref={(element) => {
+                      messageBubbleRefs.current[msg.id] = element;
+                    }}
+                    className="relative isolate group/message inline-flex max-w-full flex-col"
+                  >
                     <div className="absolute right-1 top-0 z-20 flex -translate-y-1/2 items-center gap-1">
                       <button
                         type="button"
-                        onClick={() =>
-                          setActiveReactionMessageId((current) =>
-                            current === msg.id ? null : msg.id
-                          )
-                        }
+                        onClick={() => handleReactionPickerToggle(msg.id)}
                         disabled={!isJoined}
                         className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
                         title={t("reactToMessage")}
@@ -797,12 +954,13 @@ const ChatTab = () => {
                     </div>
                     {activeReactionMessageId === msg.id && (
                       <MessageReactionPicker
+                        placement={activeReactionPlacement}
                         selectedEmoji={selectedMessageReaction}
                         onSelect={(emoji) => handleMessageReactionSelect(msg.id, emoji)}
                       />
                     )}
 
-                    <div className={`absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-xl md:rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
+                    <div className={`pointer-events-none absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-xl md:rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
 
                     <div
                       className={`relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl ${isGroupedMessage

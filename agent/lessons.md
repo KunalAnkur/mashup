@@ -33,3 +33,8 @@
 - Do not reserve permanent `pr-*` space for hover-only pin controls; keep the idle bubble layout full-width and move transient actions into a floating overlay.
 - For chat bubble readability, keep the timestamp in its expected bottom-right slot and float hover actions above the bubble instead of mixing them into text/time layout.
 - Message reaction pickers should open from the bubble's own start edge with a capped width and horizontal overflow handling, otherwise icons can clip off-screen on narrow layouts.
+- Message reaction pickers cannot use a fixed upward offset only; they must choose top or bottom placement from the available space inside the scroll container or the first visible messages will clip the picker.
+- A reaction picker that overlaps neighboring rows needs row-level stacking control; raising only the picker is not enough if sibling message rows create their own stacking contexts.
+- Message reaction chips and reaction edit pickers should not share the same click behavior; use chips for viewing reactor details and keep add/remove/change actions in the dedicated picker to avoid accidental toggles.
+- Reaction detail overlays should be anchored to the reaction-chip row itself with high `z-index`; that preserves an overlay feel without pushing chat layout down.
+- View-only reaction chips should never depend on the send/join enabled state, and decorative glow layers must be `pointer-events-none` so the chips remain clickable.
