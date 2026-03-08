@@ -14,6 +14,7 @@ export class SocketService {
   private baseUrl: string;
   private options: Partial<ManagerOptions & SocketOptions>;
   private namespaces: string[];
+  private authToken: string | null = null;
   private eventListeners: Map<string, Set<(data: any) => void>> = new Map();
 
   constructor({
@@ -31,11 +32,44 @@ export class SocketService {
     this.namespaces = namespaces;
   }
 
-  connect(token?: string) {
+  setAuthToken(token?: string | null) {
+    const normalizedToken = token || null;
+    if (this.authToken === normalizedToken) {
+      return;
+    }
+
+    this.authToken = normalizedToken;
+
+    if (this.socket) {
+      this.socket.auth = this.authToken ? { token: this.authToken } : {};
+      this.socket.disconnect();
+      if (this.authToken) {
+        this.socket.connect();
+      }
+    }
+
+    this.namespaceMap.forEach((nsSocket) => {
+      nsSocket.auth = this.authToken ? { token: this.authToken } : {};
+      nsSocket.disconnect();
+      if (this.authToken) {
+        nsSocket.connect();
+      }
+    });
+  }
+
+  connect(token?: string | null): Socket | null {
+    if (token !== undefined) {
+      this.setAuthToken(token);
+    }
+
+    if (!this.authToken) {
+      return null;
+    }
+
     if (!this.socket) {
       const mergedOptions = {
         ...this.options,
-        auth: token ? { token } : undefined,
+        auth: { token: this.authToken },
       };
 
       this.socket = io(this.baseUrl, mergedOptions);
@@ -47,18 +81,22 @@ export class SocketService {
 
       // Setup additional namespaces
       this.namespaces.forEach((namespace) => {
-        this.connectToNamespace(namespace, token);
+        this.connectToNamespace(namespace);
       });
     }
 
     return this.socket;
   }
 
-  connectToNamespace(namespace: string, token?: string) {
+  connectToNamespace(namespace: string): Socket | null {
+    if (!this.authToken) {
+      return null;
+    }
+
     if (!this.namespaceMap.has(namespace)) {
       const nsSocket = io(`${this.baseUrl}/${namespace}`, {
         ...this.options,
-        auth: token ? { token } : undefined,
+        auth: { token: this.authToken },
       });
 
       this.setupSocketListeners(nsSocket);
@@ -68,15 +106,14 @@ export class SocketService {
     return this.namespaceMap.get(namespace)!;
   }
 
-  getNamespaceSocket(namespace: string, token?: string) {
+  getNamespaceSocket(namespace: string) {
     return (
       this.namespaceMap.get(namespace) ??
-      this.connectToNamespace(namespace, token)
+      this.connectToNamespace(namespace)
     );
   }
 
   getSocket() {
-    // return this.socket ?? this.connect(`${useAuthStore.getState().token}`);
     return this.socket ?? this.connect();
   }
 

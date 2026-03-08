@@ -14,6 +14,7 @@ export enum SocketEvent {
   ROOM_INFO_UPDATED = "roomInfoUpdated",
   UPDATE_PLAYLIST = "updatePlaylist",
   PLAYLIST_UPDATED = "playlistUpdated",
+  WATCH_TIME = "watchTime",
   // Video selection events
   SELECT_VIDEO = "selectVideo",
   VIDEO_SELECTED = "videoSelected",

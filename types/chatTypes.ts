@@ -17,7 +17,9 @@ export interface ChatMessage {
 export interface TypingUser {
   userId: string;
   userName: string;
+  username?: string; // Backward-compatible alias from socket payload
   roomId: string;
+  userEmail?: string;
 }
 
 export interface ChatHistoryResponse {

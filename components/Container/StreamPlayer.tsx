@@ -11,7 +11,6 @@ import { useStream } from "@/hooks/useStream";
 import { useStreamSource } from "@/hooks/useStreamSource";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
-import { usePlaytimeTracking } from "@/hooks/usePlaytimeTracking";
 import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
 
 type Props = {
@@ -33,14 +32,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const syncStartedTrackedRef = useRef(false); // Track if sync_started was already tracked
     const pendingInitializationRef = useRef(false);
     
-    const { isJoined, roomType, isHost, hostLeft, roomId } = useRoomContext();
-    
-    // Playtime tracking (host only) - use hook directly here since we're tracking
-    const { handlePlaytimeUpdate } = usePlaytimeTracking({
-        roomId: roomState.roomId || roomId || null,
-        isHost: isHost || false,
-        enabled: isJoined && isHost,
-    });
+    const { isJoined, roomType, isHost, hostLeft, roomId, captureWatchTime } = useRoomContext();
     
     // ============================================================================
     // Layer 1: Source Layer
@@ -87,10 +79,6 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         
         // Track sync started when consumer receives stream
         if (!isHost && !syncStartedTrackedRef.current && roomId) {
-            const state = store.getState() as RootState;
-            const playlist = state.room.playlist || [];
-            const selected = playlist.find((p) => p.selected) || playlist[0];
-           
             trackSyncStarted(roomId);
             syncStartedTrackedRef.current = true;
         }
@@ -385,6 +373,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 }).playing}
                 onReady={handleVideoReady}
                 onEnded={handleVideoEnded}
+                onProgress={captureWatchTime}
                 onSeekStart={() => {
                     isSeekingRef.current = true;
                     onSeekStart();
@@ -439,7 +428,6 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 hasVideoTrack={!activeItem?.onlyAudio}
                 disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
                 hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
-                onPlaytimeUpdate={isHost ? handlePlaytimeUpdate : undefined}
                 autoResumeOnFullscreenExit={!isHost}
             >
                 <PlayerOverlay />

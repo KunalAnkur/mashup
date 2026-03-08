@@ -5,7 +5,7 @@ import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, store } from "@/lib/store";
-import { exitRoom, updateRoomInfo } from "@/lib/store/slices/roomSlice";
+import { exitRoom, updateRoomInfo, updateWatchTime } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
 import type { PinnedChatMessage } from "@/types/chatTypes";
 import { showError } from "@/utils/toast";
@@ -61,6 +61,7 @@ interface RoomContextType {
     updatePlaylist: (urls: string[]) => void;
     broadcastPlaylist: (playlist: Playlist[]) => void;
     updateUserName: (username: string, name: string, profile: string) => void;
+    captureWatchTime: () => void;
     participants: UserInfo[];
 }
 
@@ -418,6 +419,14 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         };
     }, [isJoined, socket, roomId]);
 
+    const captureWatchTime = useCallback(() => {
+        dispatch(updateWatchTime()); // Reset local watch time in Redux
+        if (!socket) return;
+        socket.emit(SocketEvent.WATCH_TIME, {
+            watchTime: roomState.watchTime,
+            roomId
+        });
+    }, [socket, roomState.watchTime, dispatch, roomId]);
     return (
         <RoomContext.Provider value={{
             isJoined,
@@ -434,6 +443,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             broadcastPlaylist,
             updateUserName,
             participants,
+            captureWatchTime
         }}>
             {children}
         </RoomContext.Provider>

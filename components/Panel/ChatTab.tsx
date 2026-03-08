@@ -19,6 +19,7 @@ import { showError } from "@/utils/toast";
 import { formatChatTime } from "@/utils/timeFormatter";
 import { isMobile } from "react-device-detect";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { getEmailPrefix, isGenericName } from "@/utils/chatName";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -119,6 +120,7 @@ const isOnlyEmojis = (text: string): boolean => {
   return textWithoutEmojis.length === 0 && text.trim().length > 0;
 };
 
+const SCROLL_BOTTOM_THRESHOLD = 64;
 const PIN_MESSAGE_CHAR_LIMIT = 180;
 const MESSAGE_REACTION_PICKER_APPROX_HEIGHT = 52;
 const MESSAGE_REACTION_DETAILS_APPROX_HEIGHT = 148;
@@ -146,12 +148,14 @@ const ChatTab = () => {
   const lastMessageCountRef = useRef(0);
   const shouldAutoScrollRef = useRef(true);
   const messageBubbleRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const { socket } = useSocket();
   const user = useSelector((state: RootState) => state.auth.user);
-  const { isHost } = useRoomContext();
+  const { participants, isHost } = useRoomContext();
   const t = useTranslations("panel.chat");
   const tToast = useTranslations("toast");
   const tCommon = useTranslations("common");
@@ -271,16 +275,20 @@ const ChatTab = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!messageInput.trim() || !isJoined) return;
+    const trimmedMessage = messageInput.trim();
+    if (!trimmedMessage || !isJoined) return;
 
-    const result = await sendMessage(messageInput);
+    setMessageInput("");
+    stopTyping();
+    if (inputRef.current && inputRef.current instanceof HTMLTextAreaElement) {
+      inputRef.current.style.height = "20px";
+    }
+
+    const result = await sendMessage(trimmedMessage);
     if (result.success) {
-      setMessageInput("");
-      stopTyping();
-      if (inputRef.current && inputRef.current instanceof HTMLTextAreaElement) {
-        inputRef.current.style.height = "20px";
-      }
+      return;
     } else {
+      setMessageInput(trimmedMessage);
       console.error("Failed to send message:", result.error);
       showError(tToast("failedToSendMessage"), result.error || tToast("checkConnection"));
     }
@@ -334,6 +342,50 @@ const ChatTab = () => {
     const userName2 = (msg2.userName || "").toLowerCase();
     return userName1 === userName2 && userName1 !== "";
   };
+
+  const latestMessageNameByUserId = useMemo(() => {
+    const nameByUserId = new Map<string, string>();
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const message = messages[i];
+      if (!message?.userId || nameByUserId.has(message.userId)) continue;
+      if (!isGenericName(message.userName)) {
+        nameByUserId.set(message.userId, message.userName);
+      }
+    }
+    return nameByUserId;
+  }, [messages]);
+
+  const typingDisplayNames = useMemo(() => {
+    const resolvedNames = typingUsers
+      .map((typingUser) => {
+        const participant = participants.find(
+          (roomUser) => roomUser.socketId === typingUser.userId
+        );
+        const participantName = participant?.username || participant?.name || "";
+        if (!isGenericName(participantName)) {
+          return participantName;
+        }
+
+        const recentMessageName = latestMessageNameByUserId.get(typingUser.userId);
+        if (recentMessageName && !isGenericName(recentMessageName)) {
+          return recentMessageName;
+        }
+
+        if (!isGenericName(typingUser.userName)) {
+          return typingUser.userName;
+        }
+
+        const participantEmailPrefix = getEmailPrefix(participant?.email);
+        if (participantEmailPrefix) {
+          return participantEmailPrefix;
+        }
+
+        return "User";
+      })
+      .filter((name) => name.trim().length > 0);
+
+    return Array.from(new Set(resolvedNames));
+  }, [typingUsers, participants, latestMessageNameByUserId]);
 
   const handlePinFromMessage = async (message: ChatMessage) => {
     if (!isHost || !message?.id) return;
@@ -1007,11 +1059,10 @@ const ChatTab = () => {
                   </div>
                 )}
               </div>
-
-	            </div>
-	          );
-	        })}
-        {typingUsers.length > 0 && (
+            </div>
+          );
+        })}
+        {typingDisplayNames.length > 0 && (
           <div className="flex items-center gap-2 md:gap-2.5 px-2 md:px-3 py-1.5 md:py-2">
             <div className="relative flex items-center gap-0.5 md:gap-1">
               <div className="w-1 h-1 md:w-1.5 md:h-1.5 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
@@ -1021,17 +1072,16 @@ const ChatTab = () => {
             <div className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-cyan-500/20 rounded-lg">
               <span className="text-cyan-300 text-[10px] md:text-xs font-medium">
                 <span className="font-semibold">
-                  {typingUsers.map((u) => u.userName).join(", ")}
+                  {typingDisplayNames.join(", ")}
                 </span>
                 <span className="text-cyan-400/70 ml-1 md:ml-1.5">
-                  {typingUsers.length === 1 ? t("isTyping") : t("areTyping")}
+                  {typingDisplayNames.length === 1 ? t("isTyping") : t("areTyping")}
                 </span>
               </span>
             </div>
           </div>
         )}
 
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Reaction Buttons - Collapsible with reduced spacing */}
@@ -1138,7 +1188,7 @@ const ChatTab = () => {
             onKeyDown={handleKeyDown}
             disabled={!isJoined || isLoading}
             rows={1}
-            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium"
+            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium break-all"
             style={{
               minHeight: "20px",
               maxHeight: "240px",
@@ -1156,22 +1206,22 @@ const ChatTab = () => {
           <button
             onClick={() => setShowReactions(!showReactions)}
             className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showReactions
-                ? "text-rose-400"
-                : "text-white/50 hover:text-rose-400"
+              ? "text-rose-400"
+              : "text-white/50 hover:text-rose-400"
               }`}
             title={showReactions ? t("hideReactions") : t("showReactions")}
           >
-            
+
             {showReactions ? (
               <MdOutlineCelebration
                 size={16}
                 className={`relative md:w-[18px] md:h-[18px]`}
               />
             ) : (
-                <MdCelebration
-                  size={16}
-                  className={`relative md:w-[18px] md:h-[18px]`}
-                />
+              <MdCelebration
+                size={16}
+                className={`relative md:w-[18px] md:h-[18px]`}
+              />
             )}
           </button>
         )}
@@ -1180,13 +1230,13 @@ const ChatTab = () => {
           data-emoji-button
           onClick={() => setShowEmojis(!showEmojis)}
           className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showEmojis
-              ? "text-pink-400"
-              : "text-white/70 hover:text-pink-400"
+            ? "text-pink-400"
+            : "text-white/70 hover:text-pink-400"
             }`}
         >
           <div className={`absolute inset-0 rounded-lg md:rounded-xl transition-all duration-200 ${showEmojis
-              ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
-              : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
+            ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
+            : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
             }`}></div>
           <FaSmile size={18} className="relative md:w-5 md:h-5" />
         </button>
@@ -1205,37 +1255,6 @@ const ChatTab = () => {
       </div>
 
       <style jsx global>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(4px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(6px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-          opacity: 0;
-        }
-
-        // .animate-slide-up {
-        //   animation: slide-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        // }
-
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
