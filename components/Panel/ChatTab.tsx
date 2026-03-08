@@ -6,11 +6,13 @@ import { MdCelebration, MdOutlineCelebration, MdOutlinePushPin, MdPushPin } from
 import dynamic from "next/dynamic";
 import { useChatContext } from "@/context/ChatContext";
 import { useRoomContext } from "@/context/RoomContext";
+import { useSocket } from "@/context/SocketContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { ChatMessage, ReactionType } from "@/types/chatTypes";
+import { ChatMessage, MessageReaction, ReactionType } from "@/types/chatTypes";
 import type { EmojiClickData, Theme } from "emoji-picker-react";
 import AnimatedReaction from "./AnimatedReaction";
+import MessageReactionPicker from "./MessageReactionPicker";
 import ReactionPicker from "./ReactionPicker";
 import { showError } from "@/utils/toast";
 import { formatChatTime } from "@/utils/timeFormatter";
@@ -121,11 +123,14 @@ const PIN_MESSAGE_CHAR_LIMIT = 180;
 const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);
   const [showReactions, setShowReactions] = useState(true);
+  const [activeReactionMessageId, setActiveReactionMessageId] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastMessageCountRef = useRef(0);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
+  const { socket } = useSocket();
   const user = useSelector((state: RootState) => state.auth.user);
   const { isHost } = useRoomContext();
   const t = useTranslations("panel.chat");
@@ -139,6 +144,7 @@ const ChatTab = () => {
     pinMessage,
     unpinMessage,
     pinnedMessage,
+    toggleMessageReaction,
     handleTyping,
     stopTyping,
     isJoined,
@@ -178,8 +184,11 @@ const ChatTab = () => {
   };
 
   useEffect(() => {
+    if (messages.length === lastMessageCountRef.current) return;
+
+    lastMessageCountRef.current = messages.length;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages.length]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -305,6 +314,99 @@ const ChatTab = () => {
     if (!response.success) {
       showError(t("pinMessageErrorTitle"), response.error || t("pinMessageErrorFallback"));
     }
+  };
+
+  const getReactionOwnerKey = (reaction: MessageReaction) =>
+    reaction.userEmail?.trim().toLowerCase() || reaction.userId;
+
+  const currentReactionOwnerKey =
+    user?.email?.trim().toLowerCase() || socket?.id || "";
+
+  const getCurrentUserReaction = (message: ChatMessage): ReactionType | null => {
+    const reaction = (message.reactions || []).find(
+      (entry) => getReactionOwnerKey(entry) === currentReactionOwnerKey
+    );
+    return reaction?.emoji || null;
+  };
+
+  const getMessageReactionGroups = (message: ChatMessage) => {
+    const groupedReactions = new Map<
+      ReactionType,
+      {
+        emoji: ReactionType;
+        count: number;
+        reactedByCurrentUser: boolean;
+        reactors: string[];
+        latestReactedAt: number;
+      }
+    >();
+
+    (message.reactions || []).forEach((reaction) => {
+      const existingGroup = groupedReactions.get(reaction.emoji);
+      if (existingGroup) {
+        existingGroup.count += 1;
+        existingGroup.reactors.push(reaction.userName);
+        existingGroup.reactedByCurrentUser =
+          existingGroup.reactedByCurrentUser ||
+          getReactionOwnerKey(reaction) === currentReactionOwnerKey;
+        existingGroup.latestReactedAt = Math.max(
+          existingGroup.latestReactedAt,
+          reaction.reactedAt
+        );
+        return;
+      }
+
+      groupedReactions.set(reaction.emoji, {
+        emoji: reaction.emoji,
+        count: 1,
+        reactedByCurrentUser:
+          getReactionOwnerKey(reaction) === currentReactionOwnerKey,
+        reactors: [reaction.userName],
+        latestReactedAt: reaction.reactedAt,
+      });
+    });
+
+    return Array.from(groupedReactions.values()).sort((left, right) => {
+      if (left.reactedByCurrentUser !== right.reactedByCurrentUser) {
+        return left.reactedByCurrentUser ? -1 : 1;
+      }
+      if (left.count !== right.count) {
+        return right.count - left.count;
+      }
+      return right.latestReactedAt - left.latestReactedAt;
+    });
+  };
+
+  const handleMessageReactionSelect = (messageId: string, emoji: ReactionType) => {
+    toggleMessageReaction(messageId, emoji);
+    setActiveReactionMessageId(null);
+  };
+
+  const renderMessageReactionChips = (message: ChatMessage) => {
+    const reactionGroups = getMessageReactionGroups(message);
+    if (!reactionGroups.length) return null;
+
+    return (
+      <div className="mt-1 flex flex-wrap gap-1">
+        {reactionGroups.map((group) => (
+          <button
+            key={`${message.id}-${group.emoji}`}
+            type="button"
+            onClick={() => toggleMessageReaction(message.id, group.emoji)}
+            disabled={!isJoined}
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] md:text-[11px] font-medium transition-all duration-150 ${
+              group.reactedByCurrentUser
+                ? "border-pink-400/30 bg-pink-500/12 text-white shadow-[0_0_0_1px_rgba(236,72,153,0.15)]"
+                : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+            } disabled:cursor-not-allowed disabled:opacity-60`}
+            title={group.reactors.join(", ")}
+          >
+            <span className="leading-none">{group.emoji}</span>
+            {group.count > 1 && <span>{group.count}</span>}
+          </button>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -549,6 +651,7 @@ const ChatTab = () => {
             : isPinnedMessage
               ? t("unpinMessage")
               : t("pinMessage");
+          const selectedMessageReaction = getCurrentUserReaction(msg);
 
           return (
             <div
@@ -610,34 +713,79 @@ const ChatTab = () => {
                   </div>
                 )}
 
-	                {onlyEmojis ? (
-	                  <div className={`relative group/emoji ${isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"}`}>
-	                    <div className="relative inline-block">
-	                      <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
-	                      <p className={`relative text-3xl md:text-4xl leading-tight filter`}>
-	                        {msg.message}
-	                      </p>
-	                    </div>
-	                    {isHost && (canPinMessage || isPinnedMessage) && (
-	                      <button
-	                        onClick={() => canPinMessage && handlePinFromMessage(msg)}
-	                        disabled={pinActionLoadingId === msg.id || !canPinMessage}
-	                        className={`absolute top-0.5 right-0.5 h-5 w-5 md:h-6 md:w-6 flex items-center justify-center transition-all duration-200 ${
-	                          isPinnedMessage
-	                            ? "text-white/95 opacity-100"
-	                            : "text-white/50 opacity-0 group-hover/emoji:opacity-100 hover:text-white/90"
-	                        } disabled:opacity-40 disabled:cursor-not-allowed`}
-	                        title={pinButtonTitle}
-	                      >
-	                        <MdOutlinePushPin size={12} className="md:w-3.5 md:h-3.5" />
-	                      </button>
-	                    )}
-	                    <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-0 group-hover/emoji:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-	                      {formatChatTime(msg.timestamp)}
-	                    </span>
-	                  </div>
-	                ) : (
-                  <div className="relative group/message w-full">
+                {onlyEmojis ? (
+                  <div className={`relative group/message inline-flex max-w-full flex-col ${isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"}`}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveReactionMessageId((current) =>
+                          current === msg.id ? null : msg.id
+                        )
+                      }
+                      disabled={!isJoined}
+                      className="absolute -right-1.5 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
+                      title={t("reactToMessage")}
+                    >
+                      <FaSmile size={10} />
+                    </button>
+                    {activeReactionMessageId === msg.id && (
+                      <MessageReactionPicker
+                        align="right"
+                        selectedEmoji={selectedMessageReaction}
+                        onSelect={(emoji) => handleMessageReactionSelect(msg.id, emoji)}
+                      />
+                    )}
+
+                    {isHost && (canPinMessage || isPinnedMessage) && (
+                      <button
+                        type="button"
+                        onClick={() => canPinMessage && handlePinFromMessage(msg)}
+                        disabled={pinActionLoadingId === msg.id || !canPinMessage}
+                        className={`absolute right-0.5 top-0.5 z-20 flex h-5 w-5 items-center justify-center transition-all duration-200 ${
+                          isPinnedMessage
+                            ? "text-white/95 opacity-100"
+                            : "text-white/50 opacity-0 group-hover/message:opacity-100 hover:text-white/90"
+                        } disabled:cursor-not-allowed disabled:opacity-40`}
+                        title={pinButtonTitle}
+                      >
+                        <MdOutlinePushPin size={12} className="md:h-3.5 md:w-3.5" />
+                      </button>
+                    )}
+
+                    <div className="relative inline-block">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
+                      <p className={`relative text-3xl md:text-4xl leading-tight filter`}>
+                        {msg.message}
+                      </p>
+                    </div>
+                    {renderMessageReactionChips(msg)}
+                    <span className="absolute -bottom-4 left-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-0 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                      {formatChatTime(msg.timestamp)}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="relative group/message inline-flex max-w-full flex-col">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setActiveReactionMessageId((current) =>
+                          current === msg.id ? null : msg.id
+                        )
+                      }
+                      disabled={!isJoined}
+                      className="absolute -right-1.5 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-zinc-950/80 text-white/70 opacity-100 shadow-lg backdrop-blur-xl transition-all duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 md:opacity-0 md:group-hover/message:opacity-100"
+                      title={t("reactToMessage")}
+                    >
+                      <FaSmile size={10} />
+                    </button>
+                    {activeReactionMessageId === msg.id && (
+                      <MessageReactionPicker
+                        align="right"
+                        selectedEmoji={selectedMessageReaction}
+                        onSelect={(emoji) => handleMessageReactionSelect(msg.id, emoji)}
+                      />
+                    )}
+
                     <div className={`absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-xl md:rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
 
 	                    <div
@@ -672,6 +820,7 @@ const ChatTab = () => {
 	                        {formatChatTime(msg.timestamp)}
                       </div>
                     </div>
+                    {renderMessageReactionChips(msg)}
                   </div>
                 )}
               </div>

@@ -23,3 +23,17 @@
   - Replace pinned banner `pr-*` spacing hack with `flex + justify-between` layout for cleaner, maintainable alignment.
   - Reduce pinned banner text scale and weight for less visual dominance.
   - Tone down pinned banner background to a softer, less saturated gradient.
+
+## 2026-03-08
+
+- Active task: Chat tab message-bubble reactions.
+- Status: Implemented, awaiting manual host/guest verification.
+- Scope:
+  - Added WhatsApp-style quick reactions to chat bubbles.
+  - Added grouped reaction chips under each message bubble.
+  - Added optimistic reaction toggle on the frontend.
+  - Added `tr/en/es/ar` chat tooltip text for message reactions.
+- Testing reminder:
+  - Test with host + guest in the same room.
+  - Test add, switch, and remove reaction on the same message.
+  - Test older messages so reaction updates do not force chat scroll to bottom.

@@ -22,3 +22,11 @@
 - Prefer structural flex alignment (`justify-between`, `flex-shrink-0`) over padding reservations (`pr-*`) for right-side actions.
 - Pinned preview typography should be one step smaller than normal chat bubbles to avoid dominating chat hierarchy.
 - High-saturation warning colors can overpower chat UI; prefer muted accent gradients for pinned state.
+
+## 2026-03-08 (Message Bubble Reactions)
+
+- Existing reaction flow was only for floating room reactions, not per-message state.
+- Keep floating reactions and message reactions as separate socket flows.
+- Do not bind auto-scroll to the full `messages` object when message metadata can change.
+- Normalize incoming message shape so older history payloads without `reactions` do not break UI.
+- If users want long-press mobile behavior later, add it on top of the current quick-reaction picker instead of replacing the socket contract.
