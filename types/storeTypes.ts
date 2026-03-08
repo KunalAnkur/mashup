@@ -52,6 +52,9 @@ export interface RoomState {
   // selectedIndex: number;
   refer: boolean;
   settings: RoomSetting;
+  hostPlayback: {
+    playing: boolean;
+  };
 }
 export type Playlist = {
   id: string;

@@ -15,6 +15,7 @@ export enum SocketEvent {
   UPDATE_PLAYLIST = "updatePlaylist",
   PLAYLIST_UPDATED = "playlistUpdated",
   WATCH_TIME = "watchTime",
+  HOST_PLAYBACK_STATE = "hostPlaybackState",
   // Video selection events
   SELECT_VIDEO = "selectVideo",
   VIDEO_SELECTED = "videoSelected",

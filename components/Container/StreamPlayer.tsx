@@ -28,6 +28,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const pendingVideoReadyRef = useRef(false);
     const lastInitializedItemIdRef = useRef<string | null>(null);
     const isInitialSetupRef = useRef(true);
+    const previousSourceRef = useRef<"file" | "url" | "screen" | null>(null);
     const videoStartedTrackedRef = useRef(false); // Track if video_started was already tracked
     const syncStartedTrackedRef = useRef(false); // Track if sync_started was already tracked
     const pendingInitializationRef = useRef(false);
@@ -82,7 +83,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
             trackSyncStarted(roomId);
             syncStartedTrackedRef.current = true;
         }
-    }, [remoteStream, isHost, roomId]);
+    }, [isHost, roomId]);
 
     
 
@@ -106,7 +107,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const handleStreamStopped = useCallback(() => {
         setRemoteStream(null);
         console.log("[StreamPlayer] Stream stopped");
-    }, [remoteStream]);
+    }, []);
 
     // const handleStreamHasVideo = useCallback((hasVideoTrack: boolean) => {
     //     onStreamHasVideo(hasVideoTrack);
@@ -195,8 +196,9 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
             return;
         }
         
-        // Check if video is playing before replacing tracks (only for non-initial setup)
-        if (!isInitialSetupRef.current) {
+        // Check if video is playing before replacing tracks (only for non-initial setup).
+        // For screen sharing, do not defer on paused file state from previous source.
+        if (!isInitialSetupRef.current && !isScreenSharing) {
             const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
             if (video && video.paused) {
                 console.log("[StreamPlayer] Video is paused - deferring track replacement until play");
@@ -221,7 +223,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         
         // console.log({ activeItem, stream: getStream(), playableSource });
         // hasVideoTrack is now managed by useStreamSource based on actual stream tracks
-    }, [activeItem, playableSource, onVideoReady, initializeFromJoinResponse, isHost, isJoined]);
+    }, [activeItem, onVideoReady, initializeFromJoinResponse, isHost, isJoined, isScreenSharing]);
     
     // ============================================================================
     // Initialization Effects
@@ -242,6 +244,21 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
             // Don't reset isInitialSetupRef here - let handleVideoReady handle it
         }
     }, [activeItem?.id, isHost]);
+
+    useEffect(() => {
+        // * This effect listens for changes in the active item's source (file, URL, screen) and triggers a play event when switching to screen sharing.
+        if (!isHost) return;
+
+        const currentSource = activeItem?.source ?? null;
+        const switchedToScreen =
+            previousSourceRef.current !== "screen" && currentSource === "screen";
+        previousSourceRef.current = currentSource;
+
+        if (!switchedToScreen) return;
+
+        // Ensure producers are resumed when switching from paused file to screen share.
+        streamOnPlay("switch-to-screen");
+    }, [isHost, activeItem?.source, streamOnPlay]);
     
     // Handle pending initialization when isJoined becomes true
     useEffect(() => {
@@ -279,7 +296,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     
     const handleVideoEnded = useCallback(() => {
     
-    }, [isHost]);
+    }, []);
 
     const onPlay = useCallback((event: string) => {
         streamOnPlay(event);
@@ -333,7 +350,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         if (!isInitialized || hostLeft) {
             setRemoteStream(null);
         }
-    }, [isInitialized, hostLeft, remoteStream]);
+    }, [isHost, isInitialized, hostLeft]);
 
     // ============================================================================
     // Render
@@ -356,7 +373,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
             />
         );
     }
-    
+
     return (
         <div className="relative w-full h-full">
             <Player

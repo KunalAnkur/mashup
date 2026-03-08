@@ -5,7 +5,7 @@ import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, store } from "@/lib/store";
-import { exitRoom, updateRoomInfo, updateWatchTime } from "@/lib/store/slices/roomSlice";
+import { setHostPlaybackPlaying, updateRoomInfo, updateWatchTime } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
 import type { PinnedChatMessage } from "@/types/chatTypes";
 import { showError } from "@/utils/toast";
@@ -44,6 +44,9 @@ interface JoinResponse {
     playlist?: Playlist[];
     users?: UserInfo[];
     existingProducers?: Record<string, any[]>;
+    hostPlayback?: {
+        playing: boolean;
+    };
     error?: string;
 }
 
@@ -157,6 +160,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 currentRoomRef.current = roomId;
                 setRoomType(response.roomType || derivedRoomType);
                 setJoinResponse(response);
+                dispatch(setHostPlaybackPlaying(response.hostPlayback?.playing === true));
                 setParticipants(response.users || []);
                 setHostLeft(false);
                 setRoomClosed(false);
@@ -168,6 +172,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setIsJoined(false);
                 setJoinResponse(null);
                 joinAttemptedRef.current = false;
+                dispatch(setHostPlaybackPlaying(false));
                 const errorMessage = response?.error || "Failed to join room";
                 showError("Failed to join room", errorMessage);
             }
@@ -175,12 +180,13 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             console.error("Error joining room:", error);
             setIsJoined(false);
             joinAttemptedRef.current = false;
+            dispatch(setHostPlaybackPlaying(false));
             const errorMessage = error?.message || "Unable to connect to room. Please check your connection and try again.";
             showError("Failed to join room", errorMessage);
         } finally {
             setIsLoading(false);
         }
-    }, [socket, roomId, isHost, username, email, profile, roomState.playlist, roomTypeFromState, isJoined]);
+    }, [socket, roomId, isHost, username, email, profile, roomState.playlist, roomTypeFromState, isJoined, dispatch]);
 
     // If the socket disconnects (e.g., internet drop), reset local "joined" state
     // so that the auto-join effect can re-run once the connection is restored.
@@ -193,11 +199,12 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         setRoomType(null);
         setHostLeft(false);
         setRoomClosed(false);
+        dispatch(setHostPlaybackPlaying(false));
         setJoinResponse(null);
         setParticipants([]);
         joinAttemptedRef.current = false;
         currentRoomRef.current = null;
-    }, [isConnected]);
+    }, [isConnected, dispatch]);
 
     const updatePlaylist = useCallback(
         async (urls: string[]) => {
@@ -250,11 +257,12 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         setRoomType(null);
         setHostLeft(false);
         setRoomClosed(false);
+        dispatch(setHostPlaybackPlaying(false));
         setJoinResponse(null);
         joinAttemptedRef.current = false;
         currentRoomRef.current = null;
         // dispatch(exitRoom());
-    }, [socket, roomId, roomState]);
+    }, [socket, roomId, roomState, dispatch]);
 
     // Auto-join
     useEffect(() => {
@@ -271,8 +279,9 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         if (roomId !== currentRoomRef.current) {
             joinAttemptedRef.current = false;
             currentRoomRef.current = null;
+            dispatch(setHostPlaybackPlaying(false));
         }
-    }, [roomId]);
+    }, [roomId, dispatch]);
 
     // Socket events
     useEffect(() => {
@@ -282,6 +291,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             if (!data.roomId || data.roomId === roomId) {
                 setHostLeft(true);
                 setRoomClosed(true);
+                dispatch(setHostPlaybackPlaying(false));
             }
         };
 
@@ -289,6 +299,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             if (data.roomId === roomId) {
                 setRoomClosed(true);
                 setIsJoined(false);
+                dispatch(setHostPlaybackPlaying(false));
             }
         };
 
@@ -374,12 +385,19 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             }
         };
 
+        const handleHostPlaybackState = (data: { roomId: string; playing: boolean }) => {
+            if (data.roomId === roomId) {
+                dispatch(setHostPlaybackPlaying(data.playing === true));
+            }
+        };
+
         socket.on(SocketEvent.HOST_LEFT, handleHostLeft);
         socket.on(SocketEvent.LEAVE_ROOM, handleRoomClosed);
         socket.on(SocketEvent.HOST_JOINED, handleHostJoined);
         socket.on(SocketEvent.ROOM_INFO_UPDATED, handleRoomInfoUpdated);
         socket.on(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
         socket.on(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
+        socket.on(SocketEvent.HOST_PLAYBACK_STATE, handleHostPlaybackState);
         return () => {
             socket.off(SocketEvent.HOST_LEFT, handleHostLeft);
             socket.off(SocketEvent.LEAVE_ROOM, handleRoomClosed);
@@ -387,6 +405,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             socket.off(SocketEvent.ROOM_INFO_UPDATED, handleRoomInfoUpdated);
             socket.off(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
             socket.off(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
+            socket.off(SocketEvent.HOST_PLAYBACK_STATE, handleHostPlaybackState);
         };
     }, [socket, roomId, isHost, roomType, dispatch]);
     
@@ -415,18 +434,20 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                     trackRoomLeft(roomId, durationSec);
                 }
                 socket.emit(SocketEvent.LEAVE_ROOM, { roomId });
+                dispatch(setHostPlaybackPlaying(false));
             }
         };
-    }, [isJoined, socket, roomId]);
+    }, [isJoined, socket, roomId, dispatch]);
 
     const captureWatchTime = useCallback(() => {
+        if (!roomState.hostPlayback.playing) return;
         dispatch(updateWatchTime()); // Reset local watch time in Redux
         if (!socket) return;
         socket.emit(SocketEvent.WATCH_TIME, {
             watchTime: roomState.watchTime,
             roomId
         });
-    }, [socket, roomState.watchTime, dispatch, roomId]);
+    }, [socket, roomState.watchTime, dispatch, roomId, roomState.hostPlayback.playing]);
     return (
         <RoomContext.Provider value={{
             isJoined,

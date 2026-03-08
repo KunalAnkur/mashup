@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Playlist, RoomSetting, RoomState, UrlMetadata } from "@/types/storeTypes";
+import { Playlist, RoomSetting, RoomState } from "@/types/storeTypes";
 import { RoomCreateResponse } from "@/types/responseTypes";
 
 const initialState: RoomState = {
@@ -14,6 +14,9 @@ const initialState: RoomState = {
   },
   loading: false,
   focused: false,
+  hostPlayback: {
+    playing: false,
+  },
 };
 
 const roomSlice = createSlice({
@@ -30,12 +33,14 @@ const roomSlice = createSlice({
       // Backend now uses type and source directly
       state.refer = false;
       state.watchTime = 0;
+      state.hostPlayback.playing = false;
       // state.selectedIndex = data.playlist.findIndex((item) => item.selected) || 0;
     },
     exitRoom: (state) => {
       state.haveRoom = false;
       state.loading = false;
       state.roomId = null;
+      state.hostPlayback.playing = false;
       // state.event = action.payload;
     },
     setPlaylist: (state, action: PayloadAction<Playlist[]>) => {
@@ -86,8 +91,11 @@ const roomSlice = createSlice({
     setFocused: (state, action: PayloadAction<boolean>) => {
       state.focused = action.payload;
     },
+    setHostPlaybackPlaying: (state, action: PayloadAction<boolean>) => {
+      state.hostPlayback.playing = action.payload;
+    },
   },
-  extraReducers: (builder) => {},
+  extraReducers: () => {},
 });
 
 export const {
@@ -101,5 +109,6 @@ export const {
   setPlaylist,
   setScreenSharing,
   updateWatchTime,
+  setHostPlaybackPlaying,
 } = roomSlice.actions;
 export default roomSlice;

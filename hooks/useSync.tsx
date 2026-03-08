@@ -110,16 +110,12 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             
             // Track sync started (first time sync is applied successfully)
             if (!syncStartedTrackedRef.current && roomId) {
-                const state = store.getState() as RootState;
-                const playlist = state.room.playlist || [];
-                const selected = playlist.find((p) => p.selected) || playlist[0];
-               
                 const latencyMs = drift > 0.5 ? Math.round(drift * 1000) : undefined;
                 trackSyncStarted(roomId, latencyMs);
                 syncStartedTrackedRef.current = true;
             }
         },
-        [playerRef, isHost, dispatch, enabled]
+        [playerRef, isHost, dispatch, enabled, roomId]
     );
 
     // Video ready handler - apply pending sync or request state
@@ -181,6 +177,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
 
             if (socket && roomId && isHost) {
                 socket.emit(SocketEvent.ONPLAY, { roomId, videoState: getHostState() });
+                socket.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: true });
             }
         },
         [isHost, roomId, socket, getHostState, enabled]
@@ -195,6 +192,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
 
             if (socket && roomId && isHost) {
                 socket.emit(SocketEvent.ONPAUSE, { roomId, videoState: getHostState() });
+                socket.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
             }
         },
         [isHost, roomId, socket, getHostState, enabled]
