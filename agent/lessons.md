@@ -145,3 +145,47 @@ Use this file to record mistakes, root causes, and prevention steps.
 - Prefer structural flex alignment (`justify-between`, `flex-shrink-0`) over padding reservations (`pr-*`) for right-side actions.
 - Pinned preview typography should be one step smaller than normal chat bubbles to avoid dominating chat hierarchy.
 - High-saturation warning colors can overpower chat UI; prefer muted accent gradients for pinned state.
+
+## 2026-03-08 (Message Bubble Reactions)
+
+- Existing reaction flow was only for floating room reactions, not per-message state.
+- Keep floating reactions and message reactions as separate socket flows.
+- Do not bind auto-scroll to the full `messages` object when message metadata can change.
+- Normalize incoming message shape so older history payloads without `reactions` do not break UI.
+- If users want long-press mobile behavior later, add it on top of the current quick-reaction picker instead of replacing the socket contract.
+- Do not reserve permanent `pr-*` space for hover-only pin controls; keep the idle bubble layout full-width and move transient actions into a floating overlay.
+- For chat bubble readability, keep the timestamp in its expected bottom-right slot and float hover actions above the bubble instead of mixing them into text/time layout.
+- Message reaction pickers should open from the bubble's own start edge with a capped width and horizontal overflow handling, otherwise icons can clip off-screen on narrow layouts.
+- Message reaction pickers cannot use a fixed upward offset only; they must choose top or bottom placement from the available space inside the scroll container or the first visible messages will clip the picker.
+- A reaction picker that overlaps neighboring rows needs row-level stacking control; raising only the picker is not enough if sibling message rows create their own stacking contexts.
+- Message reaction chips and reaction edit pickers should not share the same click behavior; use chips for viewing reactor details and keep add/remove/change actions in the dedicated picker to avoid accidental toggles.
+- Reaction detail overlays should be anchored to the reaction-chip row itself with high `z-index`; that preserves an overlay feel without pushing chat layout down.
+- View-only reaction chips should never depend on the send/join enabled state, and decorative glow layers must be `pointer-events-none` so the chips remain clickable.
+- `useChat.tsx` merge conflicts should not be resolved by choosing a whole side; keep the reaction/pin data model and socket handlers from the feature branch, then layer in the latest `dev` typing/message lifecycle changes explicitly.
+- `ChatTab.tsx` merge conflicts also need a true merge: keep overlay refs/state from the feature branch and combine them with guarded auto-scroll logic instead of accepting one side wholesale.
+- A file can still be broken after all conflict markers are removed; duplicate refs/imports from blind "Accept current change" resolutions must be caught with a local compile check before pushing.
+- Chat message rows should not use entry fade animations in a live conversation UI; they read as flicker and feel worse than immediate render.
+- Message reaction chips should read as one attached reaction tray, not as separate floating pills, when the goal is WhatsApp-like chat hierarchy.
+- Hover actions scan better when they sit beside the bubble body; stacking them above the bubble competes with the message shape and looks disconnected.
+- If the chat layout keeps all bubbles left-aligned, the "empty side" for hover actions is the bubble's right edge; pushing actions to the left can hide them behind the avatar/gutter.
+- For minimal reaction trays, avoid both an outer badge background and separate inner chip backgrounds at the same time; keep one visual layer only.
+- Side hover actions need a placement fallback for wide bubbles; otherwise their absolute offset can increase scroll width and create horizontal scrolling.
+- For top-placement hover actions, a slight overlap on the bubble border reads more integrated than leaving the controls fully detached above the message.
+- Absolute reaction detail popovers need both vertical placement and horizontal alignment; `top/bottom` alone is not enough for a polished chat layout.
+- Reaction detail popovers work better as plain black utility overlays than as styled accent cards; this UI needs low visual noise.
+- If message widths vary a lot, reaction detail overlays should open from one stable horizontal anchor; switching between `left` and `right` alignment makes short-message popovers feel jumpy.
+- A good reaction-detail popover strategy is hybrid: keep short-message popovers start-anchored, but allow wide-message popovers to center only when there is proven room on both sides.
+- If the detail popover is anchored to a full-width wrapper instead of the reaction tray itself, wide-message layouts will feel wrong; keep the wrapper `w-fit`/inline and raise its stacking above hover controls.
+- If an absolute popover participates in the scroll container, it can increase scroll width and create horizontal scrolling; use fixed positioning plus viewport clamping for stable chat overlays.
+- For fixed chat overlays, do not derive position from a stale placement state; compute placement and coordinates together or the popover can flash in the wrong place for one frame.
+- Temporary chat overlays such as reaction pickers/details should dismiss on scroll, not only on outside click; otherwise they remain visually detached from the message they belong to.
+- Reaction detail popovers should sit closer to their trigger than the emoji picker does; reusing the same offset for both makes the detail list feel detached.
+- When the requirement is "open from the button edge", tray-level anchoring is too coarse; use the clicked chip/button rect as the popup anchor.
+- If the requirement is "start from the button edge", avoid adding a second centering rule for wide messages; that fights the intended alignment and causes long-message popovers to drift left.
+- If a host-only action is blocked by a rule like a character limit, keep the control visible in a disabled state with the error tooltip; hiding it entirely on long messages reads as a layout bug, not an intentional constraint.
+- The stable rule for reaction-detail popovers is trigger-centered, not message-width-based: center the popup on the clicked chip with a small vertical offset, then clamp to the viewport edges. That keeps both short and wide message popovers close to the trigger without special long-message drift rules.
+- If the UX rule is "open under the trigger", stop using viewport coordinate math for this popup. Render the reaction-detail list as an absolute child of the clicked reaction-chip wrapper and align it with `left-0` or `right-0`; that keeps long-message placement correct without chasing per-message geometry bugs.
+- Once the reaction-detail popup is rendered as an absolute child of the clicked chip wrapper, do not add an extra centering transform for short messages. The wrapper itself is the precise anchor; adding `left-1/2 -translate-x-1/2` over-corrects and shifts the popup right.
+- The correct side for a trigger-relative absolute popup should come from available viewport room at click time, not from message alignment. Decide `start` vs `end` from the clicked trigger rect, then let the popup stay absolute to that trigger wrapper.
+- For compact hover actions beside chat bubbles, one shared background shell with transparent inner buttons reads cleaner than giving each icon its own full dark pill; separate icon backgrounds exaggerate spacing and create a noisy nested look.
+- After collapsing bubble actions into one shared shell, tune spacing explicitly (`gap-1` here) instead of relying on fractional gaps; it keeps the cluster readable without recreating the old separated-pill look.

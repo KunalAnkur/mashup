@@ -15,6 +15,7 @@ export enum SocketEvent {
   UPDATE_PLAYLIST = "updatePlaylist",
   PLAYLIST_UPDATED = "playlistUpdated",
   WATCH_TIME = "watchTime",
+  HOST_PLAYBACK_STATE = "hostPlaybackState",
   // Video selection events
   SELECT_VIDEO = "selectVideo",
   VIDEO_SELECTED = "videoSelected",
@@ -42,6 +43,8 @@ export enum SocketEvent {
   // Reaction events
   SEND_REACTION = "sendReaction",
   RECEIVE_REACTION = "receiveReaction",
+  TOGGLE_MESSAGE_REACTION = "toggleMessageReaction",
+  MESSAGE_REACTIONS_UPDATED = "messageReactionsUpdated",
 
   // Mediasoup / streaming
   GET_TRANSPORT_INFO = "getTransportInfo",

@@ -26,7 +26,7 @@ const PlaylistTab = () => {
     const handleSelect = (id: string, source: "file" | "url" | "screen") => {
         console.log("handleSelect", id, source);
         if (!isHost) return;
-        const newPlaylist = playlist.map((item) => ({
+        const newPlaylist = playlist.filter((item) => item.source !== "screen").map((item) => ({
             ...item,
             selected: item.id === id,
         }));
@@ -39,7 +39,7 @@ const PlaylistTab = () => {
     const handleAddPlaylistContent = (content: Playlist[], source: "file" | "url" | "screen") => {
         console.log("handleAddPlaylistContent", content);
         if (source === "screen") {
-            const playlistItems = [...content, ...playlistState.map((item) => ({ ...item, selected: false }))];
+            const playlistItems = [...content, ...playlistState.filter((item) => item.source !== "screen").map((item) => ({ ...item, selected: false }))];
             updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
             dispatch(updateRoomInfo({ playlist: playlistItems }));
             setPlaylist(playlistItems);
@@ -55,7 +55,7 @@ const PlaylistTab = () => {
 
     const handleScreenShareStopped = (id: string, source: "file" | "url" | "screen" = "screen") => {
         console.log("handleScreenShareStopped", id);
-        const filteredItems = playlistState.filter((item) => item.id !== id);
+        const filteredItems = playlistState.filter((item) => item.source !== "screen");
         const playlistItems = filteredItems.map((item, index) => ({
             ...item,
             selected: index === 0

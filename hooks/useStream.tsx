@@ -136,6 +136,7 @@ export const useStream = ({
         audioProducerRef.current?.pause();
         videoProducerRef.current?.pause();
         socket?.emit(SocketEvent.STREAM_PAUSED, { roomId });
+        socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
     }, [isHost, roomId, socket]);
 
     /**
@@ -153,6 +154,7 @@ export const useStream = ({
         if (audioProducerRef.current?.paused) audioProducerRef.current.resume();
         if (videoProducerRef.current?.paused) videoProducerRef.current.resume();
         socket?.emit(SocketEvent.STREAM_RESUMED, { roomId });
+        socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: true });
     }, [isHost, roomId, socket, areTracksEnded, replaceEndedTracks]);
 
     
@@ -607,6 +609,7 @@ export const useStream = ({
             videoProducerRef.current = null;
             setIsInitialized(false);
             socket?.emit(SocketEvent.STREAM_STOPPED, { roomId });
+            socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
         };
 
         const tracks: MediaStreamTrack[] = [];

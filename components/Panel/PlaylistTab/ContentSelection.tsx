@@ -195,7 +195,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                 onlyAudio: false,
                 metadata: {
                     title: tStream("screenShare"),
-                    description: tStream("liveScreenSharingSession"),
+                    description: screenType ? `${screenType}-${tStream("liveScreenSharingSession")}` : tStream("liveScreenSharingSession"),
                     thumbnail: undefined,
                     author: authState.user?.name || authState.user?.username || tCommon("you"),
                 },

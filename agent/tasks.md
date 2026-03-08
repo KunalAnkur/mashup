@@ -50,3 +50,55 @@ Rules for execution:
   - Replace pinned banner `pr-*` spacing hack with `flex + justify-between` layout for cleaner, maintainable alignment.
   - Reduce pinned banner text scale and weight for less visual dominance.
   - Tone down pinned banner background to a softer, less saturated gradient.
+
+## 2026-03-08
+
+- Active task: Chat tab message-bubble reactions.
+- Status: Implemented, awaiting manual host/guest verification.
+- Scope:
+  - Added WhatsApp-style quick reactions to chat bubbles.
+  - Added grouped reaction chips under each message bubble.
+  - Added optimistic reaction toggle on the frontend.
+  - Added minimal reaction-detail list when users tap an existing reaction chip.
+  - Added `tr/en/es/ar` chat tooltip text for message reactions.
+- Testing reminder:
+  - Test with host + guest in the same room.
+  - Test add, switch, and remove reaction on the same message.
+  - Test older messages so reaction updates do not force chat scroll to bottom.
+
+- UI refinement (2026-03-08):
+  - Remove empty right-side pin padding from message bubbles.
+  - Keep timestamp at the classic bottom-right position inside the bubble.
+  - Float pin/reaction actions above the bubble edge so text width stays intact at rest.
+  - Open message reaction picker from the message start edge to avoid left/right clipping on mobile and desktop.
+  - Flip the message reaction picker below the bubble when the message sits near the top of the scroll area so the full row stays visible.
+  - Raise the active message row and picker stacking order so the picker always stays above neighboring bubbles, including emoji-only messages.
+  - Open a minimal `username + emoji` reaction list as an absolute overlay anchored to the reaction chips so it does not push the chat layout down while staying visible on mobile and desktop.
+  - Keep reaction-detail chips clickable even when the chat is not in an active send state; view interactions must not be disabled by `isJoined`.
+  - Merge `useChat.tsx` conflicts by keeping message reactions and pinned-message state from the reaction branch while preserving the newer typing/message lifecycle from `dev`.
+  - Merge `ChatTab.tsx` conflicts by keeping the reaction/pin UI state and overlay refs, while folding in guarded auto-scroll behavior so new messages do not force-scroll users who read older chat.
+  - After manual GitHub conflict resolution, run a focused compile pass and remove duplicated refs/imports immediately; conflict markers can be gone while broken merge state remains.
+  - Remove message-row entry animation so incoming chat bubbles render immediately instead of flashing.
+  - Restyle message reaction chips into a single WhatsApp-like capsule row instead of separate floating circles.
+  - Move hover reaction/pin actions to the side of the message bubble instead of stacking them above the bubble.
+  - Keep side actions on the bubble's visible empty side and remove nested reaction-chip backgrounds for a simpler, more legible WhatsApp-like tray.
+  - For wide bubbles, move hover actions above the bubble automatically so side actions never create horizontal scroll.
+  - In top-placement mode, let hover actions overlap the bubble's top border slightly instead of floating too far above it.
+  - Align the absolute reaction-detail overlay to the reaction tray edge (`start/end`) so it opens with consistent positioning instead of drifting.
+  - Keep the reaction-detail overlay black and minimal; avoid decorative tinted card styling for this popover.
+  - Keep the reaction-detail overlay anchored from a stable start edge so short messages do not make the popover jump left/right when opened.
+  - For wide bubbles, center the reaction-detail overlay only when there is enough safe horizontal space; otherwise keep the stable start anchor.
+  - Anchor the reaction-detail overlay to the reaction tray itself, not to the full message row, and keep its stacking above hover action buttons.
+  - Render the reaction-detail overlay as a viewport-clamped fixed layer so it never expands chat scroll width or causes horizontal scrolling.
+  - Compute reaction-detail placement and viewport-clamped fixed position in the same pass so the popover never flashes into a wrong intermediate spot.
+  - Auto-close the message reaction picker/detail overlay on scroll as well as outside click; temporary chat overlays should not linger.
+  - Keep the reaction-detail popover closer to the tray button than the picker and trim its spacing so it reads as a compact utility overlay.
+  - Position the reaction-detail popover from the clicked reaction button rect, not the whole tray, so the list can start from the button edge consistently.
+  - Do not recenter the reaction-detail popover for wide messages; long bubbles should still open the list from the clicked emoji button edge.
+  - Keep the hover reaction/pin actions tighter to each other and to the bubble edge, and keep the host pin affordance visible on long user messages as a disabled, tooltip-backed control when the pin limit blocks the action.
+  - Keep the reaction-detail popover centered on the clicked reaction chip with a tight vertical gap, then clamp only at the viewport edges; chip-centered placement stays stable for both short and wide messages.
+  - Replace the viewport `left/top` math for the reaction-detail list with a real absolute popover rendered under the clicked reaction chip wrapper; long-message behavior should come from trigger-relative DOM positioning, not fake page coordinates.
+  - Do not add a second centering transform on top of the clicked-chip wrapper anchor; once the popup is rendered as an absolute child of the chip wrapper, `left-0` / `right-0` on that wrapper is already the correct short-message anchor.
+  - Choose the detail popover side from real viewport room at click time (`start` if there is room on the right, `end` if there is room on the left, otherwise the larger side) instead of inheriting message alignment.
+  - Collapse the message-side react/pin icons into one shared hover shell with transparent inner buttons so the actions sit tighter and do not read as nested floating circles.
+  - Set the shared hover-action shell to `gap-1` so the react and pin icons have a deliberate but still compact separation.
