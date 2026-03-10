@@ -102,7 +102,8 @@ const Page = () => {
         console.log("Host has no stream - showing modal to prompt screen share");
         const newPlaylist = playlist.filter((item) => item.source !== "screen").map((item, index) => ({ ...item, selected: index === 0 }));
         dispatch(updateRoomInfo({ playlist: newPlaylist }));
-        // updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: newPlaylist } }).unwrap();
+        // * We will not going to update in the database so we can keep those data in case we require to debugg it
+        // updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: newPlaylist } }).unwrap();  
       }
     }
   }, [stream, isHost, roomState.playlist, dispatch, updateRoomByRoomId, roomState.roomId]);

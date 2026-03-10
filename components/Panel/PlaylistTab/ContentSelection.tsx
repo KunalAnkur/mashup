@@ -175,10 +175,11 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
         if (!isHost || !roomState.roomId) return;
         setIsSharingScreen(true);
         try {
-            if (stream) {
-                console.log("screen stream mediastream = [ContentSelection] handle share screen = ", stream);
-                handleStopScreenSharing();
-            }
+            // * Commented the below code. since this code was responsible to interuppting the screen share streaming
+            // if (stream) {
+            //     console.log("screen stream mediastream = [ContentSelection] handle share screen = ", stream);
+            //     handleStopScreenSharing();
+            // }
             const { mediaStream, screenType } = await helper.captureTabStream({
                 audioOnly: false,
                 preferredDisplaySurface: "tab",

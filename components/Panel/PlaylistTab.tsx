@@ -25,6 +25,8 @@ const PlaylistTab = () => {
     /**
      * * This playlistwithscreen var is here for cleaning up the screen 
      * * share playlist from the redux not from the database
+     * * The reason why we are not going to update to the database is because
+     * * we can keep it in case we need to debug the data.
      */
     const handleSelect = (id: string, source: "file" | "url" | "screen") => {
         console.log("handleSelect", id, source);
