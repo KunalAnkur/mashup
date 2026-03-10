@@ -19,7 +19,6 @@ const PlaylistTab = () => {
     const { broadcastPlaylist } = useRoomContext();
     const isHost = roomState.host;
     const t = useTranslations("panel.playlist");
-
     useEffect(() => {
         setPlaylist(playlistState);
     }, [playlistState]);

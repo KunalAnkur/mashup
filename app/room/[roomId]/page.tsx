@@ -8,8 +8,9 @@ import ReactionsContainer from "@/components/Panel/ReactionsContainer";
 import { UserInfo, useRoomContext } from "@/context/RoomContext";
 import ModalOnRoomCreate from "@/components/Modals/ModalOnRoomCreate";
 import { useDispatch } from "react-redux";
-import { setFocused } from "@/lib/store/slices/roomSlice";
-
+import { setFocused, updateRoomInfo } from "@/lib/store/slices/roomSlice";
+import { useMediaStreamContext } from "@/context/MediaStreamContext";
+import { useUpdateRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 const Page = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
@@ -90,6 +91,21 @@ const Page = () => {
     };
   }, [isJoined]);
 
+  // * This code block is for cleaning up the orphaned screen share data from the playlist
+  const { stream } = useMediaStreamContext();
+  const [updateRoomByRoomId] = useUpdateRoomByRoomIdMutation();
+  useEffect(() => {
+    if (!stream && isHost) {
+      const playlist = roomState.playlist;
+      const hasScreenShare = playlist.some((item) => item.source === "screen");
+      if (hasScreenShare) {
+        console.log("Host has no stream - showing modal to prompt screen share");
+        const newPlaylist = playlist.filter((item) => item.source !== "screen").map((item, index) => ({ ...item, selected: index === 0 }));
+        dispatch(updateRoomInfo({ playlist: newPlaylist }));
+        updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: newPlaylist } }).unwrap();
+      }
+    }
+  }, [stream, isHost, roomState.playlist, dispatch, updateRoomByRoomId, roomState.roomId]);
 
   return (
     <>
