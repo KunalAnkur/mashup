@@ -28,7 +28,7 @@ const roomSlice = createSlice({
       state.haveRoom = true;
       state.loading = false;
       state.roomId = data.room_id;
-      state.playlist = data.playlist.filter((item) => item.source !== "screen").map((item, index) => {
+      state.playlist = data.playlist.map((item, index) => {
         if (index === 0) {
           return { ...item, selected: true };
         }
