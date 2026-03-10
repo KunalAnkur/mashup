@@ -22,15 +22,23 @@ const PlaylistTab = () => {
     useEffect(() => {
         setPlaylist(playlistState);
     }, [playlistState]);
+    /**
+     * * This playlistwithscreen var is here for cleaning up the screen 
+     * * share playlist from the redux not from the database
+     */
     const handleSelect = (id: string, source: "file" | "url" | "screen") => {
         console.log("handleSelect", id, source);
         if (!isHost) return;
-        const newPlaylist = playlist.filter((item) => item.source !== "screen").map((item) => ({
+        const playlistWithScreen = playlist.filter((item) => item.source !== "screen").map((item) => ({
+            ...item,
+            selected: item.id === id,
+        }))
+        const newPlaylist = playlist.map((item) => ({
             ...item,
             selected: item.id === id,
         }));
         setPlaylist(newPlaylist);
-        dispatch(updateRoomInfo({ playlist: newPlaylist }));
+        dispatch(updateRoomInfo({ playlist: playlistWithScreen }));
         updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: newPlaylist } }).unwrap();
         broadcastPlaylist(newPlaylist);
     }
@@ -38,9 +46,10 @@ const PlaylistTab = () => {
     const handleAddPlaylistContent = (content: Playlist[], source: "file" | "url" | "screen") => {
         console.log("handleAddPlaylistContent", content);
         if (source === "screen") {
-            const playlistItems = [...content, ...playlistState.filter((item) => item.source !== "screen").map((item) => ({ ...item, selected: false }))];
+            const playlistWithScreen = [...content, ...playlistState.filter((item) => item.source !== "screen").map((item) => ({ ...item, selected: false }))];
+            const playlistItems = [...content, ...playlistState.map((item) => ({ ...item, selected: false }))];
             updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
-            dispatch(updateRoomInfo({ playlist: playlistItems }));
+            dispatch(updateRoomInfo({ playlist: playlistWithScreen }));
             setPlaylist(playlistItems);
             broadcastPlaylist(playlistItems);
         } else {
@@ -54,12 +63,15 @@ const PlaylistTab = () => {
 
     const handleScreenShareStopped = (id: string, source: "file" | "url" | "screen" = "screen") => {
         console.log("handleScreenShareStopped", id);
-        const filteredItems = playlistState.filter((item) => item.source !== "screen");
-        const playlistItems = filteredItems.map((item, index) => ({
+        const playlistWithScreen = playlistState.filter((item) => item.source !== "screen").map((item, index) => ({
+            ...item,
+            selected: index === 0
+        }))
+        const playlistItems = playlistState.map((item, index) => ({
             ...item,
             selected: index === 0
         }));
-        dispatch(updateRoomInfo({ playlist: playlistItems }));
+        dispatch(updateRoomInfo({ playlist: playlistWithScreen }));
         updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
         setPlaylist(playlistItems);
         broadcastPlaylist(playlistItems);
