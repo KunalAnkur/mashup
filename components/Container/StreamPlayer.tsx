@@ -326,6 +326,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
             if (itemChanged) {
                 pendingVideoReadyRef.current = false;
                 // Wait a bit for the video to start playing and tracks to become active
+                // ? Here also need to understand do we need time delay?
                 setTimeout(async () => {
                     const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
                     if (video && !video.paused) {
@@ -405,6 +406,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                         // after the video resumes, now that we allow resume after seek completes
                         
                         // Only handle pending if item actually changed (not from seek)
+                        // ? Need to understand do we really need this time interval
                         if (pendingVideoReadyRef.current && isHost) {
                             const currentItemId = activeItem?.id || null;
                             const itemChanged = lastInitializedItemIdRef.current !== currentItemId;
