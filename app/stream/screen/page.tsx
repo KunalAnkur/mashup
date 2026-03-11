@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/UI";
 import { FaCheckCircle, FaShare, FaDesktop, FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { RootState } from "@/lib/store";
-import { setPlaylist, setRefers, setScreenSharing } from "@/lib/store/slices/roomSlice";
+import { setRefers, setScreenSharing, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { helper } from "@/utils";
 import { showError } from "@/utils/toast";
@@ -268,6 +268,8 @@ const ScreenSharePage = () => {
         },
       };
       
+      // * Calling this for cleaning up the playlist so that only sceen sharing object
+      dispatch(updateRoomInfo({ playlist: [] }));
       // Save playlist and mark refer so AuthGuard can create the room
       dispatch(setScreenSharing(screenItem));
       dispatch(

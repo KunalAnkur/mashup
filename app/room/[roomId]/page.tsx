@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { setFocused, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { useUpdateRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
+import { useFileContext } from "@/context/FileContext";
 const Page = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
@@ -106,7 +107,55 @@ const Page = () => {
         // updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: newPlaylist } }).unwrap();  
       }
     }
-  }, [stream, isHost, roomState.playlist, dispatch, updateRoomByRoomId, roomState.roomId]);
+  }, [stream, isHost, roomState.playlist, dispatch, roomState.roomId]);
+
+  /**
+   * * The below code block is responsible for cleaning i.e when there is a playlist in the database for local file streaming
+   * * existed but it is not saved at all in the local storage access. So in that case because there is no reference of the actual files 
+   * * which are stored then we gonna remove those all unneccessary files present in the playlist tabs
+   * 
+   * !The above assumption was wrong because while creating the room for screenshare the old file data was already stored in 
+   * !playlist state so i just need to clean that up before creating a new room for screensharing so anymore below code block
+   * !we will going to comment it out
+   */
+  
+  // const { files } = useFileContext()
+  // useEffect(() => {
+  //   if (!isHost) return;
+  //   console.log("------- This is file stream checker -----");
+  //   const playlist = roomState.playlist;
+  //   const fileContents = playlist.filter(content => content.source === 'file');
+  //   // * This is basically a subset this prove whether all the file content are accessible in local storage or not.
+  //   // const isAllPlaylistFileSaved = fileContents.every(content => files.some(file => file.id === content.id));
+  //   const isAllPlaylistFileSaved = isSubsequenceById(files, fileContents)
+  //   console.log('stream checker', fileContents, files)
+  //   if (!isAllPlaylistFileSaved) {
+  //     const savedFilesId = files.map(file => file.id);
+  //     const existedFileContents = playlist.filter(content => (content.source === 'file' && savedFilesId.includes(content.id)));
+  //     const restContents = playlist.filter(content => content.source !== 'file');
+  //     const newPlaylist = [...restContents, ...existedFileContents].map((content, index) => ({
+  //         ...content,
+  //         selected: index === 0
+  //     }));
+  //     dispatch(updateRoomInfo({ playlist: newPlaylist }));
+  //   }
+
+  // }, [files, isHost, roomState.playlist, dispatch, updateRoomInfo])
+
+  // function isSubsequenceById(
+  //   arrA: any,
+  //   arrB: any
+  // ): boolean {
+  //   let j = 0;
+
+  //   for (let i = 0; i < arrA.length && j < arrB.length; i++) {
+  //     if (arrA[i].id === arrB[j].id) {
+  //       j++;
+  //     }
+  //   }
+
+  //   return j === arrB.length;
+  // }
 
   return (
     <>
