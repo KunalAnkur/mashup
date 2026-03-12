@@ -43,6 +43,7 @@ interface JoinResponse {
     room: RoomInformation;
     playlist?: Playlist[];
     users?: UserInfo[];
+    hostLeft?: boolean;
     existingProducers?: Record<string, any[]>;
     hostPlayback?: {
         playing: boolean;
@@ -162,7 +163,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setJoinResponse(response);
                 dispatch(setHostPlaybackPlaying(response.hostPlayback?.playing === true));
                 setParticipants(response.users || []);
-                setHostLeft(false);
+                setHostLeft(response.hostLeft === true);
                 setRoomClosed(false);
                 
                 // Track room joined
@@ -412,9 +413,15 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         if (!socket || !roomId) return;
 
-        const handleUsersUpdated = (data: { roomId: string; users: UserInfo[] }) => {
+        const handleUsersUpdated = (data: { roomId: string; users: UserInfo[]; hostLeft?: boolean }) => {
             if (data.roomId === roomId && Array.isArray(data.users)) {
                 setParticipants(data.users);
+                // !Commenting this now.. Because it does not look like it is usefull
+                // if (typeof data.hostLeft === "boolean") {
+                //     setHostLeft(data.hostLeft);
+                // } else {
+                //     setHostLeft(!data.users.some((user) => user.host));
+                // }
             }
         };
 

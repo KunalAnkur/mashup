@@ -26,7 +26,6 @@ const roomSlice = createSlice({
     setRoom: (state, action: PayloadAction<RoomCreateResponse>) => {
       const data = action.payload.data;
       state.haveRoom = true;
-      state.loading = false;
       state.roomId = data.room_id;
       state.playlist = data.playlist.map((item, index) => {
         if (index === 0) {
@@ -39,6 +38,7 @@ const roomSlice = createSlice({
       state.refer = false;
       state.watchTime = 0;
       state.hostPlayback.playing = false;
+      state.loading = false;
       // state.selectedIndex = data.playlist.findIndex((item) => item.selected) || 0;
     },
     exitRoom: (state) => {
