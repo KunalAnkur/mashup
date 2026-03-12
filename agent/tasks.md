@@ -4,27 +4,39 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 
 ## Current Step
 
-- Date: 2026-03-07
-- Active task: Task 3 + Task 9 (chat message delay and sender own-message delay)
-- Status: In progress (Task 1 and Task 2 completed)
-- Sub-update: Added optimistic message rendering and server-event reconciliation for chat sends.
-- Sub-update: Fixed multiline chat composer width shrink by enforcing `flex-1 min-w-0 w-full` input area and `flex-shrink-0` actions area.
-- Sub-update: Fixed composer wrap instability by making action buttons absolute and reserving right padding in input/textarea.
-- Sub-update: Reduced reserved right padding to bring text visually closer to composer action buttons.
-- Sub-update: Reverted absolute composer actions and restored balanced flex layout; added long-word wrapping (`break-all`) for textarea stability.
-- Sub-update: Restored compact composer height and centered icon/text alignment while keeping long-word wrapping.
-- Sub-update: Adjusted input/textarea line-height (`leading-5`) to center placeholder/text vertically.
-- Sub-update: Re-aligned composer to dev-branch baseline classes/structure and kept only `break-all` for long unbroken words.
-- Sub-update: Centralized generic username detection into shared `utils/chatName.ts` and removed duplicate logic from `useChat` + `ChatTab`.
-- Sub-update: Synced typing user payload type with optional `username` alias to avoid frontend type mismatch and IDE red underlines.
-- Sub-update: Fixed `resolveDisplayName` TS2322 by normalizing candidate to `string` before return (`(candidate ?? \"\").trim()`).
-- Localization note: No new UI text in this step (`tr/en/es` unchanged).
+- Date: 2026-03-12
+- Active task: Playlist tab action row + playlist card redesign.
+- Status: Implemented, awaiting manual verification.
+- Sub-update: Moved the 3 playlist CTA actions above the playlist list in a single compact row.
+- Sub-update: Simplified CTA styling into a calmer, minimal visual language intended to guide future playlist card design.
+- Sub-update: Moved playlist title/count below CTA row and directly above playlist cards.
+- Sub-update: Redesigned playlist cards toward a more minimal, low-fatigue UI with quieter surfaces.
+- Sub-update: Replaced left-side selected indicator with right-side playback badge behavior.
+- Sub-update: Bound selected card icon state to real playback state (`play` when paused, `pause` when actively playing).
+- Sub-update: Removed the extra thumbnail playback icon so selected-state feedback stays only on the right badge.
+- Sub-update: Updated agent workflow rule so future feature work should include sensible branch and commit suggestions.
+- Localization note: No new UI text in this step (`tr/en/es/ar` unchanged).
 
 Rules for execution:
 
 1. Do not start any task without your permission.
 2. Before coding, explain the planned implementation.
 3. After each change, provide meaningful `git add` and `git commit -m` suggestions.
+
+## 2026-03-12
+
+- Active task: Playlist panel refinement.
+- Scope:
+  - Reposition playlist CTA actions into a top toolbar.
+  - Redesign playlist cards in a more minimal, calmer visual style.
+  - Make selected-state action badge reflect real playback state instead of selection only.
+  - Keep git workflow ready with manual branch/commit suggestions for the user to run.
+- Testing reminder:
+  - Verify CTA row stays on one line across target panel sizes.
+  - Verify selected playlist card shows `pause` while video is playing and `play` while paused.
+  - Verify thumbnail no longer shows any playback icon.
+  - Verify changing selected playlist item updates the right-side badge immediately.
+  - Verify both sync and stream rooms reflect playback icon changes correctly for host and guest.
 # Costume Task Log
 
 - Active task: Task 4 (host pin message in chat with 180-char limit and top banner UI).
@@ -102,3 +114,8 @@ Rules for execution:
   - Choose the detail popover side from real viewport room at click time (`start` if there is room on the right, `end` if there is room on the left, otherwise the larger side) instead of inheriting message alignment.
   - Collapse the message-side react/pin icons into one shared hover shell with transparent inner buttons so the actions sit tighter and do not read as nested floating circles.
   - Set the shared hover-action shell to `gap-1` so the react and pin icons have a deliberate but still compact separation.
+  - Redesign screen-share playlist thumbnails from actual capture mode (`browser/tab`, `window`, `monitor/screen`) so the selected share type is obvious at a glance instead of using one generic broadcast tile.
+  - Keep screen-share thumbnail labels as simple text pills; remove decorative dots and extra translucent inner layers when they make the small thumbnail feel noisy.
+  - If the label background still feels visually loud in a tiny thumbnail, drop the label fill entirely and keep only the text.
+  - When labels need to stay visible, use a solid compact color block behind the text instead of translucent glass styling.
+  - If the cleanest result is to let the full thumbnail carry the mode, use a gradient thumbnail background with one simple icon + text row instead of a separate embedded label.

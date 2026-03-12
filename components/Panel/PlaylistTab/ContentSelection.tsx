@@ -1,10 +1,9 @@
 "use client";
 
-import { LuShare2, LuX } from "react-icons/lu";
+import { LuFolderPlus, LuLink2, LuPlus, LuScreenShare, LuX } from "react-icons/lu";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { useEffect, useRef, useState } from "react";
-import { LuPlus } from "react-icons/lu";
+import { useEffect, useState } from "react";
 import { validateUrl } from "@/components/Modals/UrlModalComponents";
 import { useFileContext } from "@/context/FileContext";
 import { ExtendedFile } from "@/utils/filePersistence";
@@ -12,15 +11,6 @@ import { helper } from "@/utils";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist, UrlMetadata } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
-
-interface Metadata {
-    title?: string;
-    description?: string;
-    thumbnail?: string;
-    author?: string;
-    link?: string;
-    siteName?: string;
-}
 
 type ContentSelectionProps = {
     onAddContent: (content: Playlist[], source: "file" | "url" | "screen") => void;
@@ -56,8 +46,6 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
         setUrlInput("");
         setUrlError("");
     }
-
-    
 
     const handleUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUrlInput(e.target.value);
@@ -151,8 +139,6 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
         }
     }
 
-
-    
     useEffect(() => {
         if (!stream) return;
         const videoTracks = stream.getVideoTracks();
@@ -333,67 +319,64 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
         }
     }
 
+    const toolbarButtons = [
+        {
+            key: "url",
+            label: t("addUrl"),
+            busyLabel: t("loading"),
+            disabled: isAddingUrls,
+            busy: isAddingUrls,
+            onClick: handleOpenAddUrlModal,
+            icon: <LuLink2 size={14} className="text-pink-400 md:w-4 md:h-4" />,
+            spinnerClassName: "border-pink-300/30 border-t-pink-300",
+        },
+        {
+            key: "files",
+            label: t("addFiles"),
+            busyLabel: t("loading"),
+            disabled: isAddingFiles,
+            busy: isAddingFiles,
+            onClick: handleAddFiles,
+            icon: <LuFolderPlus size={14} className="text-amber-300 md:w-4 md:h-4" />,
+            spinnerClassName: "border-amber-200/30 border-t-amber-200",
+        },
+        {
+            key: "screen",
+            label: t("shareScreen"),
+            busyLabel: t("sharing"),
+            disabled: isSharingScreen,
+            busy: isSharingScreen,
+            onClick: handleShareScreen,
+            icon: <LuScreenShare size={14} className="text-cyan-300 md:w-4 md:h-4" />,
+            spinnerClassName: "border-cyan-200/30 border-t-cyan-200",
+        },
+    ];
+
     return (
         <>
-        <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-white/5">
-            {isHost && (
-                <div className="flex flex-row md:flex-col gap-2 md:space-y-2">
+        {isHost && (
+            <div className="grid grid-cols-3 gap-2">
+                {toolbarButtons.map((button) => (
                     <button
-                        onClick={handleOpenAddUrlModal}
-                        disabled={isAddingUrls}
-                        className="flex-1 md:w-full flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-lg md:rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        key={button.key}
+                        onClick={button.onClick}
+                        disabled={button.disabled}
+                        className="flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl border border-white/10 px-2 py-2 text-center transition-all duration-200 hover:border-white/20 hover:bg-white/[0.03] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        {isAddingUrls ? (
-                            <>
-                                <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
-                                <span className="text-[10px] md:text-sm font-medium">{t("loading")}</span>
-                            </>
-                        ) : (
-                            <>
-                                <LuPlus size={12} className="md:w-4 md:h-4" />
-                                <span className="text-[10px] md:text-sm font-medium">{t("addUrl")}</span>
-                            </>
-                        )}
+                        <span className="flex h-5 w-5 items-center justify-center">
+                            {button.busy ? (
+                                <span className={`h-3.5 w-3.5 rounded-full border-2 animate-spin ${button.spinnerClassName}`} />
+                            ) : (
+                                button.icon
+                            )}
+                        </span>
+                        <span className="line-clamp-2 text-[10px] font-medium leading-tight text-white/90 md:text-[11px]">
+                            {button.busy ? button.busyLabel : button.label}
+                        </span>
                     </button>
-
-                    <button
-                        onClick={handleAddFiles}
-                        disabled={isAddingFiles}
-                        className="flex-1 md:w-full flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-lg md:rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isAddingFiles ? (
-                            <>
-                                <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
-                                <span className="text-[10px] md:text-sm font-medium">{t("loading")}</span>
-                            </>
-                        ) : (
-                            <>
-                                <LuPlus size={12} className="md:w-4 md:h-4" />
-                                <span className="text-[10px] md:text-sm font-medium">{t("addFiles")}</span>
-                            </>
-                        )}
-                    </button>
-
-                    <button
-                        onClick={handleShareScreen}
-                        disabled={isSharingScreen}
-                        className="flex-1 md:w-full flex items-center justify-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-rose-600/20 to-pink-600/20 hover:from-rose-600/30 hover:to-pink-600/30 border border-pink-500/30 hover:border-pink-500/50 text-pink-400 rounded-lg md:rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isSharingScreen ? (
-                            <>
-                                <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-pink-400/30 border-t-pink-400 rounded-full animate-spin" />
-                                <span className="text-[10px] md:text-sm font-medium">{t("sharing")}</span>
-                            </>
-                        ) : (
-                            <>
-                                <LuShare2 size={12} className="md:w-4 md:h-4" />
-                                <span className="text-[10px] md:text-sm font-medium">{t("shareScreen")}</span>
-                            </>
-                        )}
-                    </button>
-                </div>
-            )}
-        </div>
+                ))}
+            </div>
+        )}
             {showAddUrlModal && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"

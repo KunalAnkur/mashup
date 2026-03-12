@@ -121,6 +121,32 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Normalize optional strings before return (`(value ?? \"\").trim()`).
   - Keep helper function return contracts strict and explicit.
 - Follow-up action: Apply same pattern in other utility resolvers with optional inputs.
+
+## 2026-03-12 (Playlist Minimal UI Direction)
+
+- Date: 2026-03-12
+- Context: Playlist tab CTA row and playlist card redesign.
+- Error: Earlier playlist iterations felt visually noisy, overly bordered, and "AI-made" instead of calm and modern.
+- Root cause: Too many borders, layered badges, and decorative selection treatments created visual fatigue.
+- Prevention checklist:
+  - Prefer surface contrast, spacing, and depth over border-heavy differentiation.
+  - Keep playlist controls and cards in the same minimal visual language.
+  - For selected playlist rows, use one strong cue only; do not stack multiple competing indicators.
+  - Avoid left-side status clutter when the right-side action badge already communicates state.
+- Follow-up action: Reuse this calmer playlist visual language for future panel/list redesigns.
+
+## 2026-03-12 (Playback-Aware Playlist Badge)
+
+- Date: 2026-03-12
+- Context: Selected playlist card state icon.
+- Error: Showing state from `selected` alone was misleading because a selected video can be paused.
+- Root cause: UI selection state and playback state were treated as the same thing.
+- Prevention checklist:
+  - Keep playback-driven UI bound to real playback state, not only selected item state.
+  - Update local Redux playback state immediately on host play/pause as well as on socket sync events.
+  - When a playlist badge represents transport state, use `play/pause` semantics instead of generic "selected" affordances.
+  - Avoid duplicating the same playback cue on both thumbnail and badge; one clear location is easier to scan.
+- Follow-up action: Reuse `room.hostPlayback.playing` for future panel-level playback indicators.
 # Costume Lessons
 
 ## 2026-03-07 (Pinned Message UI + Sync)
@@ -189,3 +215,8 @@ Use this file to record mistakes, root causes, and prevention steps.
 - The correct side for a trigger-relative absolute popup should come from available viewport room at click time, not from message alignment. Decide `start` vs `end` from the clicked trigger rect, then let the popup stay absolute to that trigger wrapper.
 - For compact hover actions beside chat bubbles, one shared background shell with transparent inner buttons reads cleaner than giving each icon its own full dark pill; separate icon backgrounds exaggerate spacing and create a noisy nested look.
 - After collapsing bubble actions into one shared shell, tune spacing explicitly (`gap-1` here) instead of relying on fractional gaps; it keeps the cluster readable without recreating the old separated-pill look.
+- For screen-share items in the playlist, do not rely on one generic thumbnail; derive the real `displaySurface` mode from playlist metadata/context and give `tab`, `window`, and `screen` distinct thumbnail compositions so the user instantly recognizes what was shared.
+- In very small playlist thumbnails, label clarity matters more than decorative micro-details; if a dot plus translucent sub-layer starts to feel noisy, keep only the colored label pill and text.
+- For very small mode labels inside thumbnails, even a subtle translucent label fill can be too much; if the thumbnail already carries the mode visually, plain text is cleaner.
+- If plain text becomes too weak, the cleaner fallback is a solid compact label background, not a transparent/glassy one.
+- A stronger simplification for tiny media tiles is to move the mode indicator into the thumbnail itself: one clear gradient surface plus a single icon-text row can read cleaner than any separate label block.
