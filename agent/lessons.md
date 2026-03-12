@@ -145,6 +145,7 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Keep playback-driven UI bound to real playback state, not only selected item state.
   - Update local Redux playback state immediately on host play/pause as well as on socket sync events.
   - When a playlist badge represents transport state, use `play/pause` semantics instead of generic "selected" affordances.
+  - Avoid duplicating the same playback cue on both thumbnail and badge; one clear location is easier to scan.
 - Follow-up action: Reuse `room.hostPlayback.playing` for future panel-level playback indicators.
 # Costume Lessons
 

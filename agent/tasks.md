@@ -13,6 +13,7 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 - Sub-update: Redesigned playlist cards toward a more minimal, low-fatigue UI with quieter surfaces.
 - Sub-update: Replaced left-side selected indicator with right-side playback badge behavior.
 - Sub-update: Bound selected card icon state to real playback state (`play` when paused, `pause` when actively playing).
+- Sub-update: Removed the extra thumbnail playback icon so selected-state feedback stays only on the right badge.
 - Sub-update: Updated agent workflow rule so future feature work should include sensible branch and commit suggestions.
 - Localization note: No new UI text in this step (`tr/en/es/ar` unchanged).
 
@@ -33,6 +34,7 @@ Rules for execution:
 - Testing reminder:
   - Verify CTA row stays on one line across target panel sizes.
   - Verify selected playlist card shows `pause` while video is playing and `play` while paused.
+  - Verify thumbnail no longer shows any playback icon.
   - Verify changing selected playlist item updates the right-side badge immediately.
   - Verify both sync and stream rooms reflect playback icon changes correctly for host and guest.
 # Costume Task Log

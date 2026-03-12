@@ -55,18 +55,14 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
     const badgePlayButtonClass = source === "screen"
         ? "bg-cyan-200/15 text-cyan-50/90 shadow-[0_6px_16px_rgba(15,23,42,0.22)]"
         : "bg-white/14 text-white/92 shadow-[0_6px_16px_rgba(15,23,42,0.18)]";
-    const thumbPlayButtonClass = "bg-black/35 text-white/92 shadow-[0_6px_16px_rgba(15,23,42,0.24)] backdrop-blur-sm";
-    const renderPlaybackButton = (size: "thumb" | "badge") => {
-        const isThumb = size === "thumb";
+    const renderPlaybackButton = () => {
         const Icon = isPlaybackActive ? FaPause : FaPlay;
 
         return (
             <span
-                className={`flex flex-shrink-0 items-center justify-center rounded-full ${
-                    isThumb ? `${thumbPlayButtonClass} h-5 w-5` : `${badgePlayButtonClass} h-7 w-7`
-                }`}
+                className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full ${badgePlayButtonClass}`}
             >
-                <Icon size={isThumb ? 7 : 8} className={isPlaybackActive ? "" : "ml-[1px]"} />
+                <Icon size={8} className={isPlaybackActive ? "" : "ml-[1px]"} />
             </span>
         );
     };
@@ -143,17 +139,6 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                 </div>
             );
         }
-    };
-
-    // Render subtle state indicator on thumbnail
-    const renderThumbnailStatus = () => {
-        if (!isSelected || source === "screen") return null;
-
-        return (
-            <div className="absolute right-1.5 top-1.5">
-                {renderPlaybackButton("thumb")}
-            </div>
-        );
     };
 
     // Render metadata section
@@ -287,7 +272,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
 
         return (
             isSelected ? (
-                renderPlaybackButton("badge")
+                renderPlaybackButton()
             ) : (
                 <div
                     className="flex h-7 w-7 flex-shrink-0 self-center items-center justify-center rounded-full bg-white/[0.04] text-[10px] font-medium tabular-nums text-white/45"
@@ -329,7 +314,6 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
         `}
             >
                 {renderThumbnail()}
-                {source !== "url" || !isLoading ? renderThumbnailStatus() : null}
             </div>
 
             {/* Metadata */}
