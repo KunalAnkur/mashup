@@ -117,45 +117,48 @@ const Page = () => {
    * !The above assumption was wrong because while creating the room for screenshare the old file data was already stored in 
    * !playlist state so i just need to clean that up before creating a new room for screensharing so anymore below code block
    * !we will going to comment it out
+   * 
+   * * [Update]: Bringing this bottom code block again because it is usefull during the time When user did not given a permission of file editing
+   * * so in that case when user reload on room page. The empty orphaned playlist appears which need to be cleaned
    */
   
-  // const { files } = useFileContext()
-  // useEffect(() => {
-  //   if (!isHost) return;
-  //   console.log("------- This is file stream checker -----");
-  //   const playlist = roomState.playlist;
-  //   const fileContents = playlist.filter(content => content.source === 'file');
-  //   // * This is basically a subset this prove whether all the file content are accessible in local storage or not.
-  //   // const isAllPlaylistFileSaved = fileContents.every(content => files.some(file => file.id === content.id));
-  //   const isAllPlaylistFileSaved = isSubsequenceById(files, fileContents)
-  //   console.log('stream checker', fileContents, files)
-  //   if (!isAllPlaylistFileSaved) {
-  //     const savedFilesId = files.map(file => file.id);
-  //     const existedFileContents = playlist.filter(content => (content.source === 'file' && savedFilesId.includes(content.id)));
-  //     const restContents = playlist.filter(content => content.source !== 'file');
-  //     const newPlaylist = [...restContents, ...existedFileContents].map((content, index) => ({
-  //         ...content,
-  //         selected: index === 0
-  //     }));
-  //     dispatch(updateRoomInfo({ playlist: newPlaylist }));
-  //   }
+  const { files } = useFileContext()
+  useEffect(() => {
+    if (!isHost) return;
+    console.log("------- This is file stream checker -----");
+    const playlist = roomState.playlist;
+    const fileContents = playlist.filter(content => content.source === 'file');
+    // * This is basically a subset this prove whether all the file content are accessible in local storage or not.
+    // const isAllPlaylistFileSaved = fileContents.every(content => files.some(file => file.id === content.id));
+    const isAllPlaylistFileSaved = isSubsequenceById(files, fileContents);
+    console.log('===== Files & FilesContents ======', { files, fileContents, isAllPlaylistFileSaved })
+    // if (!isAllPlaylistFileSaved) {
+    //   const savedFilesId = files.map(file => file.id);
+    //   const existedFileContents = playlist.filter(content => (content.source === 'file' && savedFilesId.includes(content.id)));
+    //   const restContents = playlist.filter(content => content.source !== 'file');
+    //   const newPlaylist = [...restContents, ...existedFileContents].map((content, index) => ({
+    //       ...content,
+    //       selected: index === 0
+    //   }));
+    //   dispatch(updateRoomInfo({ playlist: newPlaylist }));
+    // }
 
-  // }, [files, isHost, roomState.playlist, dispatch, updateRoomInfo])
+  }, [files, isHost, roomState.playlist, dispatch, updateRoomInfo])
 
-  // function isSubsequenceById(
-  //   arrA: any,
-  //   arrB: any
-  // ): boolean {
-  //   let j = 0;
+  function isSubsequenceById(
+    arrA: any,
+    arrB: any
+  ): boolean {
+    let j = 0;
 
-  //   for (let i = 0; i < arrA.length && j < arrB.length; i++) {
-  //     if (arrA[i].id === arrB[j].id) {
-  //       j++;
-  //     }
-  //   }
+    for (let i = 0; i < arrA.length && j < arrB.length; i++) {
+      if (arrA[i].id === arrB[j].id) {
+        j++;
+      }
+    }
 
-  //   return j === arrB.length;
-  // }
+    return j === arrB.length;
+  }
 
   return (
     <>

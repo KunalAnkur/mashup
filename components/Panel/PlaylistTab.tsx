@@ -55,7 +55,7 @@ const PlaylistTab = () => {
             setPlaylist(playlistItems);
             broadcastPlaylist(playlistItems);
         } else {
-            const playlistItems = [...playlistState, ...content];
+            const playlistItems = playlistState.length ? [...playlistState, ...content] : [...playlistState, ...content].map((item, index) => ({ ...item, selected: index === 0 }));
             updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
             dispatch(updateRoomInfo({ playlist: playlistItems }));
             setPlaylist(playlistItems);
