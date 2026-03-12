@@ -2,9 +2,9 @@
 import React from "react";
 import { LuFilm, LuX } from "react-icons/lu";
 import { FaBroadcastTower, FaPause, FaPlay } from "react-icons/fa";
+import { FaDesktop, FaGlobe, FaWindowMaximize } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { getPlatformById, getUrlDisplayName, detectPlatform, getPlatformByLink } from "@/types/ModalTypes/urlUtils";
-import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 import { useFileContext } from "@/context/FileContext";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist } from "@/types/storeTypes";
@@ -20,6 +20,8 @@ interface PlaylistCardProps {
     onStop?: (id: string, source: "file" | "url" | "screen") => void;
     isLoading?: boolean;
 }
+
+type ScreenShareMode = "tab" | "window" | "screen" | "unknown";
 
 const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 B";
@@ -55,6 +57,33 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
     const badgePlayButtonClass = source === "screen"
         ? "bg-cyan-200/15 text-cyan-50/90 shadow-[0_6px_16px_rgba(15,23,42,0.22)]"
         : "bg-white/14 text-white/92 shadow-[0_6px_16px_rgba(15,23,42,0.18)]";
+
+    const getScreenShareMode = (): ScreenShareMode => {
+        const rawMode = metadata?.description?.split("-")[0]?.trim()?.toLowerCase() || screenType?.toLowerCase() || "";
+
+        if (rawMode === "tab" || rawMode === "browser") {
+            return "tab";
+        }
+
+        if (rawMode === "window") {
+            return "window";
+        }
+
+        if (rawMode === "monitor" || rawMode === "screen" || rawMode === "display") {
+            return "screen";
+        }
+
+        return "unknown";
+    };
+
+    const screenShareMode = source === "screen" ? getScreenShareMode() : "unknown";
+    const screenShareLabelMap: Record<ScreenShareMode, string> = {
+        tab: t("screenShareTab"),
+        window: t("screenShareWindow"),
+        screen: t("screenShareScreen"),
+        unknown: t("screenShareLive"),
+    };
+
     const renderPlaybackButton = () => {
         const Icon = isPlaybackActive ? FaPause : FaPlay;
 
@@ -64,6 +93,79 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             >
                 <Icon size={8} className={isPlaybackActive ? "" : "ml-[1px]"} />
             </span>
+        );
+    };
+
+    const renderScreenShareThumbnail = () => {
+        const surfaceClassMap: Record<ScreenShareMode, string> = {
+            tab: "bg-[linear-gradient(135deg,#34d399,#0f766e)]",
+            window: "bg-[linear-gradient(135deg,#a78bfa,#6d28d9)]",
+            screen: "bg-[linear-gradient(135deg,#7dd3fc,#0369a1)]",
+            unknown: "bg-[linear-gradient(135deg,#94a3b8,#334155)]",
+        };
+
+        const iconMap: Record<ScreenShareMode, React.ComponentType<{ className?: string; size?: number }>> = {
+            tab: FaGlobe,
+            window: FaWindowMaximize,
+            screen: FaDesktop,
+            unknown: FaBroadcastTower,
+        };
+
+        const label = screenShareLabelMap[screenShareMode];
+        const Icon = iconMap[screenShareMode];
+
+        if (screenShareMode === "tab") {
+            return (
+                <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${surfaceClassMap.tab}`}>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
+                    <div className="relative flex items-center gap-1.5 text-white">
+                        <Icon size={10} />
+                        <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                            {label}
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        if (screenShareMode === "window") {
+            return (
+                <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${surfaceClassMap.window}`}>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
+                    <div className="relative flex items-center gap-1.5 text-white">
+                        <Icon size={10} />
+                        <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                            {label}
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        if (screenShareMode === "screen") {
+            return (
+                <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${surfaceClassMap.screen}`}>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
+                    <div className="relative flex items-center gap-1.5 text-white">
+                        <Icon size={10} />
+                        <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                            {label}
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${surfaceClassMap.unknown}`}>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
+                <div className="relative flex items-center gap-1.5 text-white">
+                    <Icon size={10} />
+                    <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                        {label}
+                    </span>
+                </div>
+            </div>
         );
     };
 
@@ -104,15 +206,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
         }
 
         if (source === "screen") {
-            const defaultPlatform = STREAMING_PLATFORMS.find((p) => p.url === screenType);
-            return (
-                <div className="relative flex h-full w-full items-center justify-center bg-[#1b1b1f]" style={defaultPlatform?.bgStyle || {}}>
-                    <div className="absolute inset-0 bg-black/20" />
-                    <div className="relative text-white/85 text-lg md:text-2xl">
-                        {defaultPlatform?.logo || <FaBroadcastTower size={16} className="md:w-6 md:h-6" />}
-                    </div>
-                </div>
-            );
+            return renderScreenShareThumbnail();
         }
 
         if (source === "file") {
@@ -210,7 +304,9 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                             {platformName}
                         </p>
                     </div>
-                    <p className={`${secondaryTextClass} truncate`}>{t("screenSharingActive")}</p>
+                    <p className={`${secondaryTextClass} truncate`}>
+                        {screenShareLabelMap[screenShareMode]} • {t("screenSharingActive")}
+                    </p>
                 </>
             );
         }

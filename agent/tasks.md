@@ -114,3 +114,8 @@ Rules for execution:
   - Choose the detail popover side from real viewport room at click time (`start` if there is room on the right, `end` if there is room on the left, otherwise the larger side) instead of inheriting message alignment.
   - Collapse the message-side react/pin icons into one shared hover shell with transparent inner buttons so the actions sit tighter and do not read as nested floating circles.
   - Set the shared hover-action shell to `gap-1` so the react and pin icons have a deliberate but still compact separation.
+  - Redesign screen-share playlist thumbnails from actual capture mode (`browser/tab`, `window`, `monitor/screen`) so the selected share type is obvious at a glance instead of using one generic broadcast tile.
+  - Keep screen-share thumbnail labels as simple text pills; remove decorative dots and extra translucent inner layers when they make the small thumbnail feel noisy.
+  - If the label background still feels visually loud in a tiny thumbnail, drop the label fill entirely and keep only the text.
+  - When labels need to stay visible, use a solid compact color block behind the text instead of translucent glass styling.
+  - If the cleanest result is to let the full thumbnail carry the mode, use a gradient thumbnail background with one simple icon + text row instead of a separate embedded label.
