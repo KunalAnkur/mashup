@@ -121,6 +121,31 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Normalize optional strings before return (`(value ?? \"\").trim()`).
   - Keep helper function return contracts strict and explicit.
 - Follow-up action: Apply same pattern in other utility resolvers with optional inputs.
+
+## 2026-03-12 (Playlist Minimal UI Direction)
+
+- Date: 2026-03-12
+- Context: Playlist tab CTA row and playlist card redesign.
+- Error: Earlier playlist iterations felt visually noisy, overly bordered, and "AI-made" instead of calm and modern.
+- Root cause: Too many borders, layered badges, and decorative selection treatments created visual fatigue.
+- Prevention checklist:
+  - Prefer surface contrast, spacing, and depth over border-heavy differentiation.
+  - Keep playlist controls and cards in the same minimal visual language.
+  - For selected playlist rows, use one strong cue only; do not stack multiple competing indicators.
+  - Avoid left-side status clutter when the right-side action badge already communicates state.
+- Follow-up action: Reuse this calmer playlist visual language for future panel/list redesigns.
+
+## 2026-03-12 (Playback-Aware Playlist Badge)
+
+- Date: 2026-03-12
+- Context: Selected playlist card state icon.
+- Error: Showing state from `selected` alone was misleading because a selected video can be paused.
+- Root cause: UI selection state and playback state were treated as the same thing.
+- Prevention checklist:
+  - Keep playback-driven UI bound to real playback state, not only selected item state.
+  - Update local Redux playback state immediately on host play/pause as well as on socket sync events.
+  - When a playlist badge represents transport state, use `play/pause` semantics instead of generic "selected" affordances.
+- Follow-up action: Reuse `room.hostPlayback.playing` for future panel-level playback indicators.
 # Costume Lessons
 
 ## 2026-03-07 (Pinned Message UI + Sync)
