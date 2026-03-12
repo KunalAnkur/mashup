@@ -10,7 +10,6 @@ import ModalOnRoomCreate from "@/components/Modals/ModalOnRoomCreate";
 import { useDispatch } from "react-redux";
 import { setFocused, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
-import { useUpdateRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { useFileContext } from "@/context/FileContext";
 const Page = () => {
   const dispatch = useDispatch();
@@ -94,7 +93,6 @@ const Page = () => {
 
   // * This code block is for cleaning up the orphaned screen share data from the playlist
   const { stream } = useMediaStreamContext();
-  const [updateRoomByRoomId] = useUpdateRoomByRoomIdMutation();
   useEffect(() => {
     if (!stream && isHost) {
       const playlist = roomState.playlist;
@@ -122,43 +120,29 @@ const Page = () => {
    * * so in that case when user reload on room page. The empty orphaned playlist appears which need to be cleaned
    */
   
-  const { files } = useFileContext()
+  const { files, isInitialFilesLoaded } = useFileContext()
   useEffect(() => {
-    if (!isHost) return;
+    if (!isHost || !isInitialFilesLoaded) return;
     console.log("------- This is file stream checker -----");
     const playlist = roomState.playlist;
     const fileContents = playlist.filter(content => content.source === 'file');
+    if (!fileContents.length) return;
     // * This is basically a subset this prove whether all the file content are accessible in local storage or not.
     // const isAllPlaylistFileSaved = fileContents.every(content => files.some(file => file.id === content.id));
-    const isAllPlaylistFileSaved = isSubsequenceById(files, fileContents);
-    console.log('===== Files & FilesContents ======', { files, fileContents, isAllPlaylistFileSaved })
-    // if (!isAllPlaylistFileSaved) {
-    //   const savedFilesId = files.map(file => file.id);
-    //   const existedFileContents = playlist.filter(content => (content.source === 'file' && savedFilesId.includes(content.id)));
-    //   const restContents = playlist.filter(content => content.source !== 'file');
-    //   const newPlaylist = [...restContents, ...existedFileContents].map((content, index) => ({
-    //       ...content,
-    //       selected: index === 0
-    //   }));
-    //   dispatch(updateRoomInfo({ playlist: newPlaylist }));
-    // }
-
-  }, [files, isHost, roomState.playlist, dispatch, updateRoomInfo])
-
-  function isSubsequenceById(
-    arrA: any,
-    arrB: any
-  ): boolean {
-    let j = 0;
-
-    for (let i = 0; i < arrA.length && j < arrB.length; i++) {
-      if (arrA[i].id === arrB[j].id) {
-        j++;
-      }
+    const savedFileIds = new Set(files.map((file) => file.id));
+    const isAllPlaylistFileSaved = fileContents.every((content) => savedFileIds.has(content.id));
+    console.log('FileContext ===== Files & FilesContents ======', { files, fileContents, isAllPlaylistFileSaved })
+    if (!isAllPlaylistFileSaved) {
+      const existedFileContents = playlist.filter(content => (content.source === 'file' && savedFileIds.has(content.id)));
+      const restContents = playlist.filter(content => content.source !== 'file');
+      const newPlaylist = [...restContents, ...existedFileContents].map((content, index) => ({
+          ...content,
+          selected: index === 0
+      }));
+      dispatch(updateRoomInfo({ playlist: newPlaylist }));
     }
 
-    return j === arrB.length;
-  }
+  }, [files, isHost, isInitialFilesLoaded, roomState.playlist, dispatch])
 
   return (
     <>
