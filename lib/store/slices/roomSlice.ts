@@ -27,13 +27,15 @@ const roomSlice = createSlice({
       const data = action.payload.data;
       state.haveRoom = true;
       state.roomId = data.room_id;
-      state.playlist = data.playlist.map((item, index) => {
-        if (index === 0) {
-          return { ...item, selected: true };
-        }
-        return { ...item, selected: false };
-      }) || [];
       state.host = action.payload.authId === action.payload.data.user_id;
+      state.playlist = state.host
+        ? data.playlist.map((item, index) => {
+            if (index === 0) {
+              return { ...item, selected: true };
+            }
+            return { ...item, selected: false };
+          }) || []
+        : data.playlist;
       // Backend now uses type and source directly
       state.refer = false;
       state.watchTime = 0;
