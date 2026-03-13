@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useState } from "react";
 import { useGoogleOneTapLogin } from "@react-oauth/google";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
@@ -14,18 +13,20 @@ const GoogleOneTap = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [authProvider] = useAuthProviderMutation();
   const tToast = useTranslations("toast");
+  const isLocalOrigin =
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  const isOneTapEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_GOOGLE_ONE_TAP === "true" && !isLocalOrigin;
 
-  const handleOneTapSuccess = async (credentialResponse: any) => {
+  const handleOneTapSuccess = async (credentialResponse: { credential?: string }) => {
     try {
-      console.log("✅ Google One Tap success!");
-      
       const credential = credentialResponse.credential;
-      
+
       if (!credential) {
         throw new Error("No credential received");
       }
-      
-      // Decode JWT
+
       const base64Url = credential.split('.')[1];
       if (!base64Url) {
         throw new Error("Invalid credential format");
@@ -39,11 +40,6 @@ const GoogleOneTap = () => {
           .join('')
       );
       const userInfo = JSON.parse(jsonPayload);
-
-      console.log("User info decoded:", { 
-        email: userInfo.email, 
-        name: userInfo.name 
-      });
 
       const response = await authProvider({
         email: userInfo.email,
@@ -64,23 +60,35 @@ const GoogleOneTap = () => {
 
       trackLogin("google_one_tap");
       showSuccess(tToast("loginSuccessful"));
-    } catch (error: any) {
-      console.error("❌ Google One Tap authentication failed:", error);
-      const errorMessage = error?.data?.message || error?.message || tToast("authenticationFailed");
+    } catch (error: unknown) {
+      const errorMessage =
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof (error as { data?: { message?: string } }).data?.message === "string"
+          ? (error as { data?: { message?: string } }).data?.message || tToast("authenticationFailed")
+          : typeof error === "object" &&
+              error !== null &&
+              "message" in error &&
+              typeof (error as { message?: string }).message === "string"
+            ? (error as { message?: string }).message || tToast("authenticationFailed")
+            : tToast("authenticationFailed");
       showError(tToast("authenticationFailed"), errorMessage);
     }
   };
 
   const handleOneTapError = () => {
-    showError(tToast("authenticationFailed"));
+    // Ignore prompt-level failures. These are commonly caused by FedCM/privacy
+    // restrictions or OAuth origin configuration and should not break the app UI.
   };
 
   useGoogleOneTapLogin({
     onSuccess: handleOneTapSuccess,
     onError: handleOneTapError,
-    disabled: isAuthenticated,
+    disabled: isAuthenticated || !isOneTapEnabled,
     auto_select: false,
     cancel_on_tap_outside: false,
+    use_fedcm_for_prompt: false,
   });
 
   return null;
