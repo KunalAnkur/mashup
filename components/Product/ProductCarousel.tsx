@@ -1,82 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { useGetProductsQuery } from "@/lib/store/api/productApi";
 import {
-  LuChevronLeft,
-  LuChevronRight,
-  LuExternalLink,
-  LuSparkles,
-} from "react-icons/lu";
-import { CARD_ART_STYLES, CardArt, COPY_BY_PLACEMENT, Product, ProductCarouselProps, ProductPlacement } from "./type";
+  setProductError,
+  setProductLoading,
+  setProducts,
+} from "@/lib/store/slices/productSlice";
+import { CARD_ART_STYLES, COPY_BY_PLACEMENT, ProductCarouselProps } from "./type";
 import { ProductCard } from "./ProductCard";
 
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8989";
-
-
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function toStringValue(value: unknown): string {
-  if (typeof value === "string") return value;
-  if (typeof value === "number") return String(value);
-  return "";
-}
-
-function normalizeImageList(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => toStringValue(item).trim())
-      .filter((item) => item.length > 0);
-  }
-
-  const oneImage = toStringValue(value).trim();
-  return oneImage ? [oneImage] : [];
-}
-
-function normalizeProducts(payload: unknown): Product[] {
-  let rawProducts: unknown[] = [];
-
-  if (Array.isArray(payload)) {
-    rawProducts = payload;
-  } else if (isRecord(payload)) {
-    if (Array.isArray(payload.data)) {
-      rawProducts = payload.data;
-    } else if (isRecord(payload.data) && Array.isArray(payload.data.items)) {
-      rawProducts = payload.data.items;
-    } else if (Array.isArray(payload.items)) {
-      rawProducts = payload.items;
-    }
-  }
-
-  return rawProducts
-    .filter((item): item is Record<string, unknown> => isRecord(item))
-    .map((item) => ({
-      id: toStringValue(item.id),
-      name: toStringValue(item.name),
-      price: toStringValue(item.price),
-      images: normalizeImageList(item.images),
-      category: toStringValue(item.category),
-      badge: toStringValue(item.badge),
-      rating: toStringValue(item.rating),
-      meta: toStringValue(item.meta),
-      href: toStringValue(item.href),
-      surface: toStringValue(item.surface),
-      glow: toStringValue(item.glow),
-    }))
-    .filter((item) => item.id && item.name);
-}
-
-
-
 const ProductCarousel = ({ placement }: ProductCarouselProps) => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
+  const dispatch = useDispatch();
+  const products = useSelector((state: RootState) => state.product.items);
+  const isLoading = useSelector((state: RootState) => state.product.loading);
+  const productError = useSelector((state: RootState) => state.product.error);
+
+  const {
+    data: productData,
+    isLoading: queryLoading,
+    isFetching: queryFetching,
+    isError: queryIsError,
+  } = useGetProductsQuery();
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
@@ -91,40 +40,18 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
   const [canScrollNext, setCanScrollNext] = useState(false);
 
   useEffect(() => {
-    const abortController = new AbortController();
+    dispatch(setProductLoading(queryLoading || queryFetching));
+  }, [dispatch, queryLoading, queryFetching]);
 
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      setIsError(false);
+  useEffect(() => {
+    if (productData) {
+      dispatch(setProducts(productData));
+    }
+  }, [dispatch, productData]);
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/products`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          signal: abortController.signal,
-          cache: "no-store",
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch products");
-
-        const payload = (await response.json()) as unknown;
-        const normalizedProducts = normalizeProducts(payload);
-        setProducts(normalizedProducts);
-      } catch (error) {
-        if ((error as Error).name === "AbortError") return;
-        setIsError(true);
-        setProducts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProducts();
-
-    return () => abortController.abort();
-  }, []);
+  useEffect(() => {
+    dispatch(setProductError(queryIsError ? "Could not load products." : null));
+  }, [dispatch, queryIsError]);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -153,7 +80,7 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
       <div className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0" />
 
-        <div className="relative mb-3 flex items-center justify-between gap-3 ">
+        <div className="relative mb-3 flex items-center justify-between gap-3">
           <div>
             <h3 className="mt-1 text-[17px] font-semibold leading-tight text-white/90">
               {COPY_BY_PLACEMENT[placement].title}
@@ -222,8 +149,8 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
         <div className="relative mt-2 text-center text-[10px] text-white/45">
           {isLoading
             ? "Loading products..."
-            : isError
-              ? "Could not load products."
+            : productError
+              ? productError
               : products.length === 0
                 ? "No products available right now."
                 : "Live product feed connected."}

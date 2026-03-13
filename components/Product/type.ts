@@ -1,18 +1,8 @@
+import { Product as StoreProduct } from "@/types/storeTypes";
+
 export type ProductPlacement = "host-empty" | "viewer-waiting" | "host-left";
 
-export type Product = {
-  id: string;
-  name: string;
-  price: string;
-  images: string[];
-  category: string;
-  badge: string;
-  rating: string;
-  meta: string;
-  href: string;
-  surface: string;
-  glow: string;
-};
+export type Product = StoreProduct;
 
 export type ProductCarouselProps = {
   placement: ProductPlacement;
