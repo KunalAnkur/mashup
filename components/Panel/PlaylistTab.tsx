@@ -9,6 +9,7 @@ import { useUpdateRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useRoomContext } from "@/context/RoomContext";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { usePlaylistActions } from "@/hooks/usePlaylistActions";
 
 const PlaylistTab = () => {
     const dispatch = useDispatch();
@@ -17,6 +18,7 @@ const PlaylistTab = () => {
     const [playlist, setPlaylist] = useState<Playlist[]>(playlistState);
     const [updateRoomByRoomId] = useUpdateRoomByRoomIdMutation();
     const { broadcastPlaylist } = useRoomContext();
+    const { addPlaylistContent, handleScreenShareStopped: onScreenShareStoppedFromActions } = usePlaylistActions();
     const isHost = roomState.host;
     const t = useTranslations("panel.playlist");
     useEffect(() => {
@@ -47,40 +49,26 @@ const PlaylistTab = () => {
 
     const handleAddPlaylistContent = (content: Playlist[], source: "file" | "url" | "screen") => {
         console.log("handleAddPlaylistContent", content);
-        if (source === "screen") {
-            const playlistWithScreen = [...content, ...playlistState.filter((item) => item.source !== "screen").map((item) => ({ ...item, selected: false }))];
-            const playlistItems = [...content, ...playlistState.map((item) => ({ ...item, selected: false }))];
-            updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
-            dispatch(updateRoomInfo({ playlist: playlistWithScreen }));
-            setPlaylist(playlistItems);
-            broadcastPlaylist(playlistItems);
-        } else {
-            const playlistItems = playlistState.length ? [...playlistState, ...content] : [...playlistState, ...content].map((item, index) => ({ ...item, selected: index === 0 }));
-            updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
-            dispatch(updateRoomInfo({ playlist: playlistItems }));
-            setPlaylist(playlistItems);
-            broadcastPlaylist(playlistItems);
-        }
+        addPlaylistContent(content, source);
     }
 
     const handleScreenShareStopped = (id: string, source: "file" | "url" | "screen" = "screen") => {
         console.log("handleScreenShareStopped", id);
-        const playlistWithScreen = playlistState.filter((item) => item.source !== "screen").map((item, index) => ({
-            ...item,
-            selected: index === 0
-        }))
-        const playlistItems = playlistState.map((item, index) => ({
-            ...item,
-            selected: index === 0
-        }));
-        dispatch(updateRoomInfo({ playlist: playlistWithScreen }));
-        updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
-        setPlaylist(playlistItems);
-        broadcastPlaylist(playlistItems);
+        if (source !== "screen") return;
+        onScreenShareStoppedFromActions(id);
     }
     return (
-        <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between mb-3 md:mb-4 px-1">
+        <div className="flex h-full min-h-0 flex-col">
+            {isHost && (
+                <div className="mb-3">
+                    <ContentSelection
+                        onAddContent={handleAddPlaylistContent}
+                        onScreenShareStopped={handleScreenShareStopped}
+                    />
+                </div>
+            )}
+
+            <div className="mb-3 flex items-center justify-between gap-3 px-1">
                 <div className="flex items-center gap-1.5 md:gap-2">
                     <h3 className="text-white font-semibold text-xs md:text-sm">{t("title")}</h3>
                     <span className="text-gray-500 text-[10px] md:text-xs">
@@ -94,23 +82,28 @@ const PlaylistTab = () => {
                     </div>
                 )}
             </div>
-            <div className="flex-1 overflow-y-auto space-y-1.5 md:space-y-2 pr-1 custom-scrollbar">
-                {playlist.map((content, index) =>
-                    <PlaylistCard
-                        key={content.id}
-                        content={content}
-                        host={isHost}
-                        index={index}
-                        onSelect={handleSelect}
-                        onStop={handleScreenShareStopped}
-                        isLoading={false} />
+
+            <div className="flex-1 min-h-0">
+                {playlist.length ? (
+                    <div className="flex h-full flex-col gap-1.5 overflow-y-auto pr-1 custom-scrollbar md:gap-2">
+                        {playlist.map((content, index) => (
+                            <PlaylistCard
+                                key={content.id}
+                                content={content}
+                                host={isHost}
+                                index={index}
+                                onSelect={handleSelect}
+                                onStop={handleScreenShareStopped}
+                                isLoading={false}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex h-full items-center justify-center px-4 text-center">
+                        <p className="text-xs text-gray-500 md:text-sm">{t("noVideos")}</p>
+                    </div>
                 )}
-
             </div>
-
-            {isHost && (
-                <ContentSelection onAddContent={handleAddPlaylistContent} onScreenShareStopped={handleScreenShareStopped} />
-            )}
         </div>
     );
 };
