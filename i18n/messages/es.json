@@ -110,7 +110,7 @@
       "profileSettings": "Configuración de Perfil",
       "name": "Nombre",
       "username": "Nombre de Usuario",
-      "emailAddress": "Dirección de Correo",
+      "emailAddress": "Correo",
       "emailCannotBeChanged": "El correo no se puede cambiar",
       "notSet": "No establecido",
       "enterName": "Ingresa tu nombre",
