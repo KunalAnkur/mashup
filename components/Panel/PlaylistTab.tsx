@@ -9,6 +9,7 @@ import { useUpdateRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useRoomContext } from "@/context/RoomContext";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { usePlaylistActions } from "@/hooks/usePlaylistActions";
 
 const PlaylistTab = () => {
     const dispatch = useDispatch();
@@ -17,6 +18,7 @@ const PlaylistTab = () => {
     const [playlist, setPlaylist] = useState<Playlist[]>(playlistState);
     const [updateRoomByRoomId] = useUpdateRoomByRoomIdMutation();
     const { broadcastPlaylist } = useRoomContext();
+    const { addPlaylistContent, handleScreenShareStopped: onScreenShareStoppedFromActions } = usePlaylistActions();
     const isHost = roomState.host;
     const t = useTranslations("panel.playlist");
     useEffect(() => {
@@ -47,36 +49,13 @@ const PlaylistTab = () => {
 
     const handleAddPlaylistContent = (content: Playlist[], source: "file" | "url" | "screen") => {
         console.log("handleAddPlaylistContent", content);
-        if (source === "screen") {
-            const playlistWithScreen = [...content, ...playlistState.filter((item) => item.source !== "screen").map((item) => ({ ...item, selected: false }))];
-            const playlistItems = [...content, ...playlistState.map((item) => ({ ...item, selected: false }))];
-            updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
-            dispatch(updateRoomInfo({ playlist: playlistWithScreen }));
-            setPlaylist(playlistItems);
-            broadcastPlaylist(playlistItems);
-        } else {
-            const playlistItems = playlistState.length ? [...playlistState, ...content] : [...playlistState, ...content].map((item, index) => ({ ...item, selected: index === 0 }));
-            updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
-            dispatch(updateRoomInfo({ playlist: playlistItems }));
-            setPlaylist(playlistItems);
-            broadcastPlaylist(playlistItems);
-        }
+        addPlaylistContent(content, source);
     }
 
     const handleScreenShareStopped = (id: string, source: "file" | "url" | "screen" = "screen") => {
         console.log("handleScreenShareStopped", id);
-        const playlistWithScreen = playlistState.filter((item) => item.source !== "screen").map((item, index) => ({
-            ...item,
-            selected: index === 0
-        }))
-        const playlistItems = playlistState.map((item, index) => ({
-            ...item,
-            selected: index === 0
-        }));
-        dispatch(updateRoomInfo({ playlist: playlistWithScreen }));
-        updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: playlistItems } }).unwrap();
-        setPlaylist(playlistItems);
-        broadcastPlaylist(playlistItems);
+        if (source !== "screen") return;
+        onScreenShareStoppedFromActions(id);
     }
     return (
         <div className="flex h-full min-h-0 flex-col">
