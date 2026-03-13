@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
@@ -28,10 +28,80 @@ import { useRoomContext } from "@/context/RoomContext";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomLinkCopied } from "@/lib/analytics";
+import { AnimatePresence, motion } from "framer-motion";
+
+const mobileTabRailClass =
+  "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
+const mobileTabButtonBaseClass =
+  "relative flex h-[30px] w-[30px] shrink-0 items-center justify-center overflow-hidden rounded-full p-1.5 text-white transition-colors duration-200";
+const desktopTabRailClass =
+  "relative grid w-full gap-1 rounded-full bg-white/[0.035] p-1.5";
+const desktopTabButtonBaseClass =
+  "relative inline-flex min-h-[30px] min-w-0 w-full items-center justify-center overflow-hidden rounded-full p-1.5 text-[14px] leading-none font-medium text-white transition-colors duration-200";
+const activeTabPillClass =
+  "bg-[linear-gradient(135deg,rgba(190,24,93,0.96)_0%,rgba(190,24,93,0.9)_38%,rgba(168,85,247,0.8)_100%)]";
+const activeTabPillTransition = {
+  type: "spring",
+  stiffness: 420,
+  damping: 34,
+  mass: 0.82,
+} as const;
+const tabContentTransition = {
+  type: "spring",
+  stiffness: 340,
+  damping: 32,
+  mass: 0.88,
+} as const;
+const swipeThreshold = 56;
+
+type SwipeAxis = "x" | "y" | null;
+type SwipeState = {
+  pointerId: number | null;
+  startX: number;
+  startY: number;
+  axis: SwipeAxis;
+  enabled: boolean;
+};
+
+const initialSwipeState: SwipeState = {
+  pointerId: null,
+  startX: 0,
+  startY: 0,
+  axis: null,
+  enabled: false,
+};
+
+const tabContentVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 36 : direction < 0 ? -36 : 0,
+    opacity: direction === 0 ? 1 : 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? -36 : direction < 0 ? 36 : 0,
+    opacity: direction === 0 ? 1 : 0,
+  }),
+};
+
+const isSwipeBlockedTarget = (target: EventTarget | null) => {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      "input, textarea, select, option, button, a, label, [role='button'], [role='link'], [contenteditable='true'], [data-no-tab-swipe='true']",
+    ),
+  );
+};
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
+  const [tabDirection, setTabDirection] = useState(0);
 
   const { leaveRoom, roomId } = useRoomContext();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -39,6 +109,7 @@ const Panel = () => {
   const roomState = useSelector((state: RootState) => state.room);
   const host = roomState.host;
   const dispatch = useDispatch();
+  const swipeStateRef = useRef<SwipeState>(initialSwipeState);
 
   const tToast = useTranslations("toast");
   const tPanel = useTranslations("panel");
@@ -57,6 +128,15 @@ const Panel = () => {
     });
   }, [roomState.playlist, host]);
 
+  const activeTabIndex = visibleTabs.indexOf(activeTab);
+
+  useEffect(() => {
+    if (visibleTabs.length > 0 && !visibleTabs.includes(activeTab)) {
+      setTabDirection(0);
+      setActiveTab(visibleTabs[0]);
+    }
+  }, [activeTab, visibleTabs]);
+
   const renderTabContent = (tab: Tabs) => {
     switch (tab) {
       case Tabs.PLAYLIST:
@@ -70,13 +150,13 @@ const Panel = () => {
     }
   };
 
-  const getTabIcon = (tab: Tabs) => {
+  const getTabIcon = (tab: Tabs, size = 18) => {
     switch (tab) {
-      case Tabs.CHAT: return <LuMessageCircle size={18} />;
-      case Tabs.PEOPLE: return <LuUsers size={18} />;
-      case Tabs.SETTINGS: return <LuSettings size={18} />;
-      case Tabs.PLAYLIST: return <LuListVideo size={18} />;
-      default: return <LuMessageCircle size={18} />;
+      case Tabs.CHAT: return <LuMessageCircle size={size} />;
+      case Tabs.PEOPLE: return <LuUsers size={size} />;
+      case Tabs.SETTINGS: return <LuSettings size={size} />;
+      case Tabs.PLAYLIST: return <LuListVideo size={size} />;
+      default: return <LuMessageCircle size={size} />;
     }
   };
 
@@ -87,6 +167,41 @@ const Panel = () => {
       case Tabs.SETTINGS: return tPanel("settings.title");
       case Tabs.PLAYLIST: return tPanel("playlist.title");
       default: return tab;
+    }
+  };
+
+  const getTabTone = (tab: Tabs) => {
+    switch (tab) {
+      case Tabs.CHAT:
+        return {
+          activePill: activeTabPillClass,
+          inactiveText: "text-white/46 hover:text-white/76",
+          icon: "text-fuchsia-200",
+        };
+      case Tabs.PEOPLE:
+        return {
+          activePill: activeTabPillClass,
+          inactiveText: "text-white/46 hover:text-white/76",
+          icon: "text-cyan-200",
+        };
+      case Tabs.SETTINGS:
+        return {
+          activePill: activeTabPillClass,
+          inactiveText: "text-white/46 hover:text-white/76",
+          icon: "text-amber-200",
+        };
+      case Tabs.PLAYLIST:
+        return {
+          activePill: activeTabPillClass,
+          inactiveText: "text-white/46 hover:text-white/76",
+          icon: "text-emerald-200",
+        };
+      default:
+        return {
+          activePill: activeTabPillClass,
+          inactiveText: "text-white/46 hover:text-white/76",
+          icon: "text-white",
+        };
     }
   };
 
@@ -118,6 +233,114 @@ const Panel = () => {
 
   const handleStay = () => {
     setShowLeaveConfirm(false);
+  };
+
+  const resetSwipeState = () => {
+    swipeStateRef.current = initialSwipeState;
+  };
+
+  const selectTab = (nextTab: Tabs) => {
+    if (nextTab === activeTab) {
+      return;
+    }
+
+    const nextIndex = visibleTabs.indexOf(nextTab);
+
+    if (nextIndex === -1) {
+      return;
+    }
+
+    setTabDirection(nextIndex > activeTabIndex ? 1 : -1);
+    setActiveTab(nextTab);
+  };
+
+  const shiftTab = (step: -1 | 1) => {
+    const nextTab = visibleTabs[activeTabIndex + step];
+
+    if (!nextTab) {
+      return;
+    }
+
+    selectTab(nextTab);
+  };
+
+  const handleContentPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if ((event.pointerType === "mouse" && event.button !== 0) || isSwipeBlockedTarget(event.target)) {
+      resetSwipeState();
+      return;
+    }
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+
+    swipeStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      axis: null,
+      enabled: true,
+    };
+  };
+
+  const handleContentPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const swipeState = swipeStateRef.current;
+
+    if (!swipeState.enabled || swipeState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - swipeState.startX;
+    const deltaY = event.clientY - swipeState.startY;
+
+    if (!swipeState.axis) {
+      if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
+        return;
+      }
+
+      swipeState.axis = Math.abs(deltaX) > Math.abs(deltaY) * 1.1 ? "x" : "y";
+
+      if (swipeState.axis === "y") {
+        resetSwipeState();
+        return;
+      }
+    }
+
+    if (swipeState.axis === "x") {
+      event.preventDefault();
+    }
+  };
+
+  const handleContentPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const swipeState = swipeStateRef.current;
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    if (!swipeState.enabled || swipeState.pointerId !== event.pointerId) {
+      resetSwipeState();
+      return;
+    }
+
+    const deltaX = event.clientX - swipeState.startX;
+    const deltaY = event.clientY - swipeState.startY;
+
+    if (
+      swipeState.axis === "x" &&
+      Math.abs(deltaX) > swipeThreshold &&
+      Math.abs(deltaX) > Math.abs(deltaY) * 1.1
+    ) {
+      shiftTab(deltaX < 0 ? 1 : -1);
+    }
+
+    resetSwipeState();
+  };
+
+  const handleContentPointerCancel = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    resetSwipeState();
   };
 
   return (
@@ -165,7 +388,7 @@ const Panel = () => {
         {/* MOBILE VIEW - Unified Compact Header (shown on mobile devices, even in landscape) */}
         {/* ============================================== */}
         {isMobile ? (
-        <div className="flex items-center justify-between gap-2 mb-2 w-full">
+        <div className="flex items-center justify-between gap-2 mb-3 w-full">
           {/* Left: Logo */}
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50"></div>
@@ -179,20 +402,27 @@ const Panel = () => {
           </div>
 
           {/* Center: Navigation Tabs (Icons Only) */}
-          <div className="flex items-center bg-zinc-800/40 backdrop-blur-xl rounded-xl p-1 gap-1 border border-white/5 overflow-x-auto scrollbar-hide">
+          <div className={mobileTabRailClass}>
             {visibleTabs.map((tab) => {
               const isActive = activeTab === tab;
+              const tabTone = getTabTone(tab);
               return (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`p-2 rounded-lg transition-all duration-200 relative
-                    ${isActive ? "text-white bg-white/10 shadow-sm" : "text-white/40 hover:text-white/70"}`}
+                  onClick={() => selectTab(tab)}
+                  className={`${mobileTabButtonBaseClass} ${
+                    isActive ? "text-white" : tabTone.inactiveText
+                  }`}
+                  aria-pressed={isActive}
                 >
-                  {getTabIcon(tab)}
-                  {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-lg pointer-events-none" />
-                  )}
+                  {isActive ? (
+                    <motion.span
+                      layoutId="panel-active-pill"
+                      className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
+                      transition={activeTabPillTransition}
+                    />
+                  ) : null}
+                  <span className={`relative z-10 ${isActive ? "" : "opacity-90"}`}>{getTabIcon(tab, 18)}</span>
                 </button>
               );
             })}
@@ -228,7 +458,7 @@ const Panel = () => {
         {/* DESKTOP VIEW - Original Layout (hidden on mobile devices, shown on desktop) */}
         {/* ============================================== */}
         {!isMobile ? (
-        <div className="hidden md:flex flex-col gap-4 mb-2">
+        <div className="hidden md:flex flex-col gap-3 mb-3">
           {/* Header Row */}
           <div className="flex items-center justify-between">
             <button className="flex items-center gap-2 group">
@@ -277,51 +507,65 @@ const Panel = () => {
           </div>
 
           {/* Desktop Tabs */}
-          <div className="flex items-center w-full justify-between pt-2 pb-1 overflow-x-auto scrollbar-hide">
-            {visibleTabs.map((tab) => {
-              const getTabGradient = (tabName: string) => {
-                switch (tabName) {
-                  case Tabs.CHAT: return "from-purple-500/20 via-pink-500/20 to-fuchsia-500/20";
-                  case Tabs.PEOPLE: return "from-blue-500/20 via-cyan-500/20 to-teal-500/20";
-                  case Tabs.SETTINGS: return "from-amber-500/20 via-orange-500/20 to-red-500/20";
-                  case Tabs.PLAYLIST: return "from-emerald-500/20 via-green-500/20 to-lime-500/20";
-                  default: return "from-zinc-800/20 via-zinc-700/20 to-zinc-800/20";
-                }
-              };
-              const getTabBorderGradient = (tabName: string) => {
-                switch (tabName) {
-                  case Tabs.CHAT: return "from-purple-600 via-pink-600 to-fuchsia-600";
-                  case Tabs.PEOPLE: return "from-blue-600 via-cyan-600 to-teal-600";
-                  case Tabs.SETTINGS: return "from-amber-600 via-orange-600 to-red-600";
-                  case Tabs.PLAYLIST: return "from-emerald-600 via-green-600 to-lime-600";
-                  default: return "from-rose-600 via-pink-600 to-fuchsia-600";
-                }
-              };
+          <div>
+            <div
+              className={desktopTabRailClass}
+              style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
+            >
+              {visibleTabs.map((tab) => {
+                const isActive = activeTab === tab;
+                const tabTone = getTabTone(tab);
 
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-2 font-medium text-sm transition-all duration-200 relative rounded-t-xl z-10 flex-shrink-0
-                              ${activeTab === tab ? "text-white" : "text-white/60 hover:text-white/80"}`}
-                >
-                  <span className="relative z-20 whitespace-nowrap">{getTabLabel(tab)}</span>
-                  {activeTab === tab && (
-                    <>
-                      <div className={`absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r ${getTabBorderGradient(tab)} rounded-full z-10`}></div>
-                      <div className={`absolute inset-0 bg-gradient-to-br ${getTabGradient(tab)} rounded-t-xl z-0`}></div>
-                    </>
-                  )}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => selectTab(tab)}
+                    className={`${desktopTabButtonBaseClass} ${
+                      isActive ? "text-white" : tabTone.inactiveText
+                    }`}
+                    aria-pressed={isActive}
+                  >
+                    {isActive ? (
+                      <motion.span
+                        layoutId="panel-active-pill"
+                        className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
+                        transition={activeTabPillTransition}
+                      />
+                    ) : null}
+                    <span className="relative z-10 whitespace-nowrap">{getTabLabel(tab)}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
         ) : null}
 
         {/* Content Area (Shared) */}
-        <div className="flex-1 overflow-hidden pt-2 md:pt-4">
-          {renderTabContent(activeTab)}
+        <div className="flex-1 overflow-hidden">
+          <div
+            className="h-full"
+            style={{ touchAction: "pan-y" }}
+            onPointerDown={handleContentPointerDown}
+            onPointerMove={handleContentPointerMove}
+            onPointerUp={handleContentPointerUp}
+            onPointerCancel={handleContentPointerCancel}
+          >
+            <AnimatePresence custom={tabDirection} initial={false} mode="wait">
+              <motion.div
+                key={activeTab}
+                custom={tabDirection}
+                variants={tabContentVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={tabContentTransition}
+                className="h-full"
+              >
+                {renderTabContent(activeTab)}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
