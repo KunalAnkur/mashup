@@ -13,13 +13,17 @@ import {
 } from "@/lib/store/slices/productSlice";
 import { CARD_ART_STYLES, COPY_BY_PLACEMENT, ProductCarouselProps } from "./type";
 import { ProductCard } from "./ProductCard";
+import { FiChevronUp } from "react-icons/fi";
+import { toggleBottomSheet } from "@/lib/store/slices/roomSlice";
 
 const ProductCarousel = ({ placement }: ProductCarouselProps) => {
   const dispatch = useDispatch();
   const products = useSelector((state: RootState) => state.product.items);
   const isLoading = useSelector((state: RootState) => state.product.loading);
   const productError = useSelector((state: RootState) => state.product.error);
-
+  const bottomSheetIsOpen = useSelector(
+    (state: RootState) => state.room.settings.bottomSheet
+  );
   const {
     data: productData,
     isLoading: queryLoading,
@@ -146,15 +150,30 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
           </div>
         ) : null}
 
-        <div className="relative mt-2 text-center text-[10px] text-white/45">
-          {isLoading
+        <div className="relative mt-2 text-center flex flex-col justify-center items-center text-[10px] text-white/45">
+          {/* {isLoading
             ? "Loading products..."
             : productError
               ? productError
               : products.length === 0
                 ? "No products available right now."
-                : "Live product feed connected."}
+                : "Live product feed connected."} */}
+          <button
+            type="button"
+            onClick={() => dispatch(toggleBottomSheet())}
+            className="flex flex-col items-center justify-center overflow-hidden transition"
+            aria-expanded={bottomSheetIsOpen}
+            aria-controls="product-bottom-sheet"
+          >
+            <FiChevronUp
+              size={18}
+              className={`relative transition-transform duration-300 ${!bottomSheetIsOpen ? "rotate-0" : "rotate-180"
+                }`}
+            />
+            see more
+          </button>
         </div>
+        
       </div>
     </section>
   );

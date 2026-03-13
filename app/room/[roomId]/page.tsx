@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { setFocused, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { useFileContext } from "@/context/FileContext";
+import ProductBottomSheet from "@/components/Product/ProductBottomSheet";
 const Page = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
@@ -196,6 +197,7 @@ const Page = () => {
           <PlayerWrapper fullscreenTargetRef={containerRef} />
           {/* Flying Emoji Animations - Inside fullscreen container to work in fullscreen mode */}
           <ReactionsContainer />
+          <ProductBottomSheet />
         </div>
         <div
           className={`

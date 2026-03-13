@@ -10,7 +10,8 @@ const initialState: RoomState = {
   refer: false,
   watchTime: 0,
   settings: {
-    panelCollapsed: false
+    panelCollapsed: false,
+    bottomSheet: false
   },
   loading: false,
   focused: false,
@@ -38,6 +39,7 @@ const roomSlice = createSlice({
       state.refer = false;
       state.watchTime = 0;
       state.hostPlayback.playing = false;
+      state.settings.bottomSheet = false;
       state.loading = false;
       // state.selectedIndex = data.playlist.findIndex((item) => item.selected) || 0;
     },
@@ -46,6 +48,7 @@ const roomSlice = createSlice({
       state.loading = false;
       state.roomId = null;
       state.hostPlayback.playing = false;
+      state.settings.bottomSheet = false;
       // state.event = action.payload;
     },
     setPlaylist: (state, action: PayloadAction<Playlist[]>) => {
@@ -85,6 +88,12 @@ const roomSlice = createSlice({
         ...action.payload,
       };
     },
+    setBottomSheet: (state, action: PayloadAction<boolean>) => {
+      state.settings.bottomSheet = action.payload;
+    },
+    toggleBottomSheet: (state) => {
+      state.settings.bottomSheet = !state.settings.bottomSheet;
+    },
 
     updateWatchTime: (state) => {
       state.watchTime++;
@@ -112,6 +121,8 @@ export const {
   exitRoom,
   setLoading,
   setPanelCollapsed,
+  setBottomSheet,
+  toggleBottomSheet,
   setRefers,
   updateRoomInfo,
   setFocused,
