@@ -21,8 +21,14 @@ const fieldLabelClass =
 const rowLabelClass = fieldLabelClass;
 const cardShellClass =
   "relative overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-4";
-const actionTileClass =
-  "flex min-h-[58px] items-center gap-1 rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.02))] px-2.5 py-2.5 text-left shadow-none backdrop-blur-xl transition-colors duration-200 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.025))]";
+const actionCardShellClass =
+  "relative overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-2";
+const actionCardButtonClass =
+  "relative w-full overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-2 text-left transition-colors duration-200 hover:border-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50";
+const actionPillClass =
+  "shrink-0 rounded-full bg-[linear-gradient(135deg,rgba(244,63,94,0.18),rgba(236,72,153,0.16),rgba(217,70,239,0.18))] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/[0.86] transition-colors duration-200 hover:text-white";
+const actionPillSuccessClass =
+  "shrink-0 rounded-full bg-emerald-400/14 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-300";
 const valueRowClass =
   "flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0";
 const valueBoxClass =
@@ -51,7 +57,6 @@ const SettingTab = () => {
   const tHome = useTranslations("home");
   const tToast = useTranslations("toast");
   const tCommon = useTranslations("common");
-  const tRoom = useTranslations("room");
   const tFeedback = useTranslations("feedback");
 
   const [copied, setCopied] = useState(false);
@@ -67,10 +72,6 @@ const SettingTab = () => {
     description: "",
     category: "bug" as "bug" | "feature" | "other",
   });
-  const guestPattern = /^guest(?:[\s_-]|$)/i;
-  const isGuestUser =
-    guestPattern.test(authState.user?.name?.trim() || "") ||
-    guestPattern.test(authState.user?.username?.trim() || "");
   const showEmailField = !authState.user?.isGuestUser;
 
   const roomUrl = roomId
@@ -309,53 +310,39 @@ const SettingTab = () => {
       <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         <div className="flex flex-col gap-5 pb-4">
           <section className={sectionClass}>
-            <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] gap-3">
-              <div className="space-y-1.5">
-                <p className={sectionLabelClass}>{t("roomLink")}</p>
-                <button
-                  onClick={handleCopyLink}
-                  disabled={!roomUrl || !roomId}
-                  className={`${actionTileClass} w-full disabled:cursor-not-allowed disabled:opacity-50`}
-                >
-                  <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+            <div className="space-y-1.5">
+              <p className={sectionLabelClass}>{t("roomLink")}</p>
+              <div className={actionCardShellClass}>
+                <div className="relative flex min-h-[48px] items-center justify-between gap-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-cyan-400/12 text-cyan-200">
+                      <LuLink size={14} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-medium leading-4 text-white">
+                        Invite friends
+                      </p>
+                      {roomId ? (
+                        <p className="mt-1 flex items-center gap-1 truncate text-[9px] leading-3 text-white/42">
+                          <span>{tHome("roomIdPlaceholder")}</span>
+                          <span className="font-mono">{roomId}</span>
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    disabled={!roomUrl || !roomId}
+                    className={`disabled:cursor-not-allowed disabled:opacity-50 ${
                       copied
-                        ? "bg-emerald-400/14 text-emerald-300"
-                        : "bg-cyan-400/12 text-cyan-200"
+                        ? actionPillSuccessClass
+                        : actionPillClass
                     }`}
                   >
-                    {copied ? <LuCheck size={14} /> : <LuLink size={14} />}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className={`truncate text-[13px] font-medium leading-4 ${copied ? "text-emerald-300" : "text-white"}`}>
-                      {copied ? t("linkCopied") : tRoom("copyInviteLink")}
-                    </p>
-                    {roomId ? (
-                      <p className="mt-0.5 flex items-center gap-1 truncate text-[9px] leading-3 text-white/42">
-                        <span>{tHome("roomIdPlaceholder")}</span>
-                        <span className="font-mono">{roomId}</span>
-                      </p>
-                    ) : null}
-                  </div>
-                </button>
-              </div>
-
-              <div className="space-y-1.5">
-                <p className={sectionLabelClass}>{tFeedback("title")}</p>
-                <button
-                  onClick={() => setIsFeedbackOpen(true)}
-                  className={`${actionTileClass} w-full`}
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-400/12 text-rose-200">
-                    <LuMessageSquare size={14} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium leading-4 text-white">{tFeedback("title")}</p>
-                    <p className="mt-0.5 truncate text-[9px] leading-3 text-white/42">
-                      {tFeedback("helpUsImprove")}
-                    </p>
-                  </div>
-                </button>
+                    {copied ? t("linkCopied") : "Copy Link"}
+                  </button>
+                </div>
               </div>
             </div>
           </section>
@@ -510,6 +497,28 @@ const SettingTab = () => {
                 ) : null}
               </div>
 
+            </div>
+          </section>
+
+          <section className={sectionClass}>
+            <div className="space-y-1.5">
+              <p className={sectionLabelClass}>{tFeedback("title")}</p>
+              <button
+                onClick={() => setIsFeedbackOpen(true)}
+                className={actionCardButtonClass}
+              >
+                <div className="relative flex min-h-[48px] items-center justify-between gap-2">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-rose-400/12 text-rose-200">
+                    <LuMessageSquare size={14} />
+                  </div>
+                  <p className="min-w-0 flex-1 truncate text-[13px] font-medium leading-4 text-white">
+                    {tFeedback("helpUsImprove")}
+                  </p>
+                  <span className={actionPillClass}>
+                    Give Feedback
+                  </span>
+                </div>
+              </button>
             </div>
           </section>
         </div>
