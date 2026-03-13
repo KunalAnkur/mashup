@@ -8,6 +8,7 @@ import getPlayerMessage from "@/utils/playerState";
 import { Playlist } from "@/types/storeTypes";
 import { ContentSelection } from "@/components/Panel/PlaylistTab/ContentSelection";
 import { usePlaylistActions } from "@/hooks/usePlaylistActions";
+import ProductCarousel from "@/components/Product/ProductCarousel";
 import * as constants from "@/constants";
 const logo = constants.assets.logo;
 
@@ -117,7 +118,7 @@ const HostLeftScreen = ({
     message: string;
     contentVisible: boolean;
 }) => (
-    <ScreenShell>
+    <ScreenShell bottom={<ProductCarousel placement="host-left" />}>
         <GlobalStyles />
         <FadeInContent visible={contentVisible}>
             {/* Logo mark with a subtle "ended" indicator */}
@@ -154,7 +155,7 @@ const HostEmptyPlaylistScreen = ({
     onAddContent: ReturnType<typeof usePlaylistActions>["addPlaylistContent"];
     onScreenShareStopped: ReturnType<typeof usePlaylistActions>["handleScreenShareStopped"];
 }) => (
-    <ScreenShell>
+    <ScreenShell bottom={<ProductCarousel placement="host-empty" />}>
         <GlobalStyles />
         <FadeInContent visible={contentVisible}>
             <BrandMark variant="idle" />
@@ -207,7 +208,7 @@ const ViewerWaitingScreen = ({
     contentVisible: boolean;
     isInitialized: boolean;
 }) => (
-    <ScreenShell>
+    <ScreenShell bottom={<ProductCarousel placement="viewer-waiting" />}>
         <GlobalStyles />
         <FadeInContent visible={contentVisible}>
             <BrandMark variant={isInitialized ? "active" : "idle"} />
@@ -231,9 +232,16 @@ const ViewerWaitingScreen = ({
 
 // ─── Shared UI Primitives ─────────────────────────────────────────────────────
 
-const ScreenShell = ({ children }: { children: React.ReactNode }) => (
-    <div className="sp-shell">
+const ScreenShell = ({
+    children,
+    bottom,
+}: {
+    children: React.ReactNode;
+    bottom?: React.ReactNode;
+}) => (
+    <div className={`sp-shell ${bottom ? "sp-shell--with-shelf" : ""}`}>
         {children}
+        {bottom ? <div className="sp-bottom-slot">{bottom}</div> : null}
     </div>
 );
 
@@ -301,6 +309,24 @@ const GlobalStyles = () => (
         display: flex; align-items: center; justify-content: center;
         overflow: hidden;
         font-family: -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
+    }
+    .sp-shell--with-shelf { padding-bottom: 178px; }
+    .sp-bottom-slot {
+        position: absolute;
+        left: 0; right: 0; bottom: 14px;
+        z-index: 15;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+    .sp-bottom-slot > * { pointer-events: auto; }
+    @media (max-width: 1024px) {
+        .sp-shell--with-shelf { padding-bottom: 164px; }
+        .sp-bottom-slot { bottom: 10px; }
+    }
+    @media (max-width: 640px) {
+        .sp-shell--with-shelf { padding-bottom: 146px; }
+        .sp-bottom-slot { bottom: 8px; }
     }
 
     /* ── Logo image ─────────────────────────────────────────────── */
