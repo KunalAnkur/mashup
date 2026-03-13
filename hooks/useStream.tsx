@@ -6,8 +6,6 @@ import { SocketEvent } from "@/types/socketEvents";
 import { showError } from "@/utils/toast";
 import { RootState } from "@/lib/store";
 import { useDispatch, useSelector } from "react-redux";
-import { helper } from "@/utils";
-import { setHostPlaybackPlaying } from "@/lib/store/slices/roomSlice";
 
 interface UseStreamParams {
     roomId: string | null;
@@ -139,7 +137,6 @@ export const useStream = ({
         if (isSeekingRef.current || !isHost || !roomId) return;
         audioProducerRef.current?.pause();
         videoProducerRef.current?.pause();
-        dispatch(setHostPlaybackPlaying(false));
         socket?.emit(SocketEvent.STREAM_PAUSED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
     }, [dispatch, isHost, roomId, socket]);
@@ -158,7 +155,6 @@ export const useStream = ({
 
         if (audioProducerRef.current?.paused) audioProducerRef.current.resume();
         if (videoProducerRef.current?.paused) videoProducerRef.current.resume();
-        dispatch(setHostPlaybackPlaying(true));
         socket?.emit(SocketEvent.STREAM_RESUMED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: true });
     }, [dispatch, isHost, roomId, socket, areTracksEnded, replaceEndedTracks]);
