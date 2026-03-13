@@ -11,6 +11,9 @@ import { useRoomContext } from "@/context/RoomContext";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { usePlaylistActions } from "@/hooks/usePlaylistActions";
 
+const headerMetaClass =
+    "text-[10px] font-semibold uppercase tracking-[0.18em] text-white/[0.38]";
+
 const PlaylistTab = () => {
     const dispatch = useDispatch();
     const roomState = useSelector((state: RootState) => state.room);
@@ -68,15 +71,14 @@ const PlaylistTab = () => {
                 </div>
             )}
 
-            <div className="mb-3 flex items-center justify-between gap-3 px-1">
-                <div className="flex items-center gap-1.5 md:gap-2">
-                    <h3 className="text-white font-semibold text-xs md:text-sm">{t("title")}</h3>
-                    <span className="text-gray-500 text-[10px] md:text-xs">
-                        ({playlist.length} {playlist.length === 1 ? t("item") : t("items")})
+            <div className="mb-3 space-y-1.5">
+                <div className="flex px-1">
+                    <span className={headerMetaClass}>
+                        {t("title")} · {playlist.length} {playlist.length === 1 ? t("item") : t("items")}
                     </span>
                 </div>
                 {!isHost && (
-                    <div className="flex items-center gap-1 md:gap-1.5 text-[10px] md:text-xs text-gray-500">
+                    <div className="flex items-center justify-end gap-1 px-1 text-[10px] text-white/[0.34]">
                         <LuLock size={10} />
                         <span className="hidden sm:inline">{t("hostControls")}</span>
                     </div>
