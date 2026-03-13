@@ -161,16 +161,30 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
           <button
             type="button"
             onClick={() => dispatch(toggleBottomSheet())}
-            className="flex flex-col items-center justify-center overflow-hidden transition"
             aria-expanded={bottomSheetIsOpen}
             aria-controls="product-bottom-sheet"
+            className="group relative flex flex-col items-center justify-center gap-0.5 cursor-pointer"
           >
             <FiChevronUp
-              size={18}
-              className={`relative transition-transform duration-300 ${!bottomSheetIsOpen ? "rotate-0" : "rotate-180"
-                }`}
-            />
-            see more
+              size={20}
+              className={`
+              transition-transform duration-500 ease-in-out
+              ${bottomSheetIsOpen ? "rotate-180" : "rotate-0"}
+              ${!bottomSheetIsOpen ? "animate-bounce-subtle" : ""}
+              group-hover:scale-125
+              text-neutral-400 group-hover:text-white
+            `}
+                    />
+                    <span
+                      className={`
+              text-[11px] font-medium tracking-widest uppercase
+              transition-all duration-300
+              text-neutral-400 group-hover:text-white
+              ${!bottomSheetIsOpen ? "animate-pulse-soft" : "opacity-60"}
+            `}
+            >
+              {bottomSheetIsOpen ? "see less" : "see more"}
+            </span>
           </button>
         </div>
         

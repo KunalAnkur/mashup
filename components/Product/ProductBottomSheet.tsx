@@ -52,15 +52,21 @@ const ProductBottomSheet = () => {
         {isOpen && <button
           type="button"
           onClick={() => dispatch(toggleBottomSheet())}
-          className="w-fit flex items-center justify-between overflow-hidden transition"
           aria-expanded={isOpen}
           aria-controls="product-bottom-sheet"
+          className={`
+            w-8 h-8 flex items-center justify-center rounded-full cursor-pointer
+            transition-all duration-300
+            bg-neutral-800/30 hover:bg-neutral-900
+            shadow-sm hover:shadow-md
+          `}
         >
           <FiChevronUp
-            size={18}
-            className={`relative transition-transform duration-300 ${
-              !isOpen ? "rotate-0" : "rotate-180"
-            }`}
+            size={16}
+            className={`
+      transition-transform duration-300 ease-in-out text-neutral-100
+      ${isOpen ? "rotate-180" : "rotate-0"}
+    `}
           />
         </button>}
 

@@ -229,3 +229,14 @@ html {
     transform: translateY(0);
   }
 }
+
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0px);   opacity: 1;    }
+  40%       { transform: translateY(-5px);  opacity: 0.6;  }
+  60%       { transform: translateY(-3px);  opacity: 0.8;  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 1.8s ease-in-out infinite;
+}
