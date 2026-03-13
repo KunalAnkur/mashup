@@ -16,6 +16,7 @@ type PlayerWrapperProps = {
 const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   const roomState = useSelector((state: RootState) => state.room);
   const [content, setContent] = useState<Playlist | null>(null);
+  const [lastKnownType, setLastKnownType] = useState<RoomType>("stream");
   // const prevOnlyAudioRef = useRef<boolean | null>(null);
   const host = roomState.host;
   useEffect(() => {
@@ -24,7 +25,13 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     setContent(content ?? null);
   }, [roomState.playlist]);
 
-  const currentType = content?.type; // "stream" | "sync"
+  useEffect(() => {
+    if (content?.type) {
+      setLastKnownType(content.type);
+    }
+  }, [content?.type]);
+
+  const currentType = content?.type ?? lastKnownType; // "stream" | "sync"
   // Generate key for StreamPlayer based on host status and onlyAudio transitions
   // const getStreamPlayerKey = (): string => {
   //   // For non-host: check onlyAudio transitions
@@ -54,13 +61,6 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   //   }
   // }, [content?.onlyAudio]);
  // TODO: Need to fix this later. related to replace producer tracks from audio to audio and screen to file.
-  if (!content) return <StreamPlayerEmptyState
-    isHost={host}
-    roomType={currentType as RoomType}
-    hostLeft={roomState.host}
-    remoteStream={null}
-    isInitialized={false}
-  />;
   if (currentType === "stream") {
     return (
       <StreamPlayer
@@ -69,6 +69,14 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
       />
     );
   }
+
+  if (!content) return <StreamPlayerEmptyState
+    isHost={host}
+    roomType={currentType as RoomType}
+    hostLeft={roomState.host}
+    remoteStream={null}
+    isInitialized={false}
+  />;
 
   // Default to SyncPlayer when type is "sync" or undefined
   return (

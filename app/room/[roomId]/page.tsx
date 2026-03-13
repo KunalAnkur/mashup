@@ -155,10 +155,38 @@ const Page = () => {
         roomUrl={roomUrl}
         onJoinRoom={handleJoinRoom}
       />
-      <div ref={containerRef} className="flex flex-col md:flex-row h-screen bg-[#030712] relative overflow-hidden">
+      <div ref={containerRef} className="relative flex h-screen flex-col overflow-hidden bg-[#09090c] md:flex-row">
+        {/* Global room background vibe (player + panel) */}
+        <div className="pointer-events-none absolute inset-0 z-0">
+          <div className="absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.055)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,black_40%,transparent_100%)]" />
+
+          <svg
+            className="absolute inset-0 opacity-[0.035]"
+            xmlns="http://www.w3.org/2000/svg"
+            width="100%"
+            height="100%"
+          >
+            <filter id="room-noise">
+              <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" />
+              <feColorMatrix type="saturate" values="0" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#room-noise)" />
+          </svg>
+
+          <div className="absolute -top-20 -left-16 h-[360px] w-[360px] rounded-full blur-[80px] bg-[radial-gradient(circle,rgba(139,92,246,0.18)_0%,transparent_70%)] animate-pulse-glow" />
+          <div
+            className="absolute -bottom-16 -right-10 h-[300px] w-[300px] rounded-full blur-[80px] bg-[radial-gradient(circle,rgba(236,72,153,0.13)_0%,transparent_70%)] animate-pulse-glow"
+            style={{ animationDelay: "1.2s" }}
+          />
+          <div
+            className="absolute bottom-[10%] left-[28%] h-[240px] w-[240px] rounded-full blur-[80px] bg-[radial-gradient(circle,rgba(59,130,246,0.10)_0%,transparent_70%)] animate-pulse-glow"
+            style={{ animationDelay: "2.1s" }}
+          />
+        </div>
+
         <div
           className={`
-            bg-black transition-all duration-300 relative
+            relative z-10 bg-transparent transition-all duration-300
             ${roomState.settings.panelCollapsed 
               ? "flex-1 h-full w-full" 
               : "flex-1 h-[40vh] md:h-full w-full"
@@ -171,7 +199,7 @@ const Page = () => {
         </div>
         <div
           className={`
-            bg-zinc-800 overflow-hidden transition-all duration-300 ease-in-out
+            z-10 overflow-hidden bg-transparent transition-all duration-300 ease-in-out
             ${roomState.settings.panelCollapsed 
               ? "hidden" 
               : "flex flex-col h-[70vh] md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative"

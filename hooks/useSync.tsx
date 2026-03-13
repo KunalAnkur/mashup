@@ -3,7 +3,7 @@ import type ReactPlayer from "react-player";
 import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useDispatch } from "react-redux";
-import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
+import { setHostPlaybackPlaying, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { store } from "@/lib/store";
 import type { RootState } from "@/lib/store";
 import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
@@ -106,6 +106,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             }
 
             setIsPlaying(syncState.playing);
+            dispatch(setHostPlaybackPlaying(syncState.playing));
             pendingSyncRef.current = null;
             
             // Track sync started (first time sync is applied successfully)
@@ -129,6 +130,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
                     isApplyingRemoteStateRef.current = true;
                     playerRef.current.seekTo(pendingSyncRef.current.currentTime, "seconds");
                     setIsPlaying(pendingSyncRef.current.playing);
+                    dispatch(setHostPlaybackPlaying(pendingSyncRef.current.playing));
                     pendingSyncRef.current = null;
                     setTimeout(() => {
                         isApplyingRemoteStateRef.current = false;
@@ -139,7 +141,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             // No pending sync - request current state from host
             socket?.emit(SocketEvent.REQUEST_CURRENT_VIDEO, { roomId });
         }
-    }, [playerRef, isHost, roomId, socket, enabled]);
+    }, [playerRef, isHost, roomId, socket, enabled, dispatch]);
 
     // Safety net: request initial sync when joining (non-host only)
     useEffect(() => {
@@ -158,6 +160,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             if (isApplyingRemoteStateRef.current && !isHost) return;
             setIsPlaying(true);
             isPlayingRef.current = true;
+            dispatch(setHostPlaybackPlaying(true));
 
             // Track video started (first time only)
             if (!videoStartedTrackedRef.current && roomId) {
@@ -180,7 +183,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
                 socket.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: true });
             }
         },
-        [isHost, roomId, socket, getHostState, enabled]
+        [isHost, roomId, socket, getHostState, enabled, dispatch]
     );
 
     const onPause = useCallback(
@@ -189,13 +192,14 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             if (isApplyingRemoteStateRef.current && !isHost) return;
             setIsPlaying(false);
             isPlayingRef.current = false;
+            dispatch(setHostPlaybackPlaying(false));
 
             if (socket && roomId && isHost) {
                 socket.emit(SocketEvent.ONPAUSE, { roomId, videoState: getHostState() });
                 socket.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
             }
         },
-        [isHost, roomId, socket, getHostState, enabled]
+        [isHost, roomId, socket, getHostState, enabled, dispatch]
     );
 
     const onSeeked = useCallback(() => {

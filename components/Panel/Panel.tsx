@@ -121,13 +121,12 @@ const Panel = () => {
   };
 
   return (
-    <div className="relative flex flex-col h-full w-full bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] px-3 py-3 md:px-4 md:py-4 overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[#c026d3]/12 rounded-full blur-[120px] opacity-70" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#e11d48]/12 rounded-full blur-[120px] opacity-70" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#7c3aed]/8 rounded-full blur-[140px] opacity-50" />
-      </div>
+    <div className="relative flex flex-col h-full w-full bg-transparent px-3 py-3 md:px-4 md:py-4 overflow-hidden">
+      {/* Soft separator: subtle gradient line instead of a hard border */}
+      <div className="pointer-events-none absolute left-0 top-6 bottom-6 hidden w-px bg-gradient-to-b from-transparent via-white/20 to-transparent md:block" />
+      <div className="pointer-events-none absolute left-0 top-12 bottom-12 hidden w-px opacity-40 shadow-[0_0_14px_rgba(255,255,255,0.10)] md:block" />
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/12 to-transparent md:hidden" />
+      
 
       <div className="relative z-30 flex flex-col h-full w-full">
         {showLeaveConfirm && (
