@@ -42,6 +42,8 @@ const authSlice = createSlice({
         username: user.username,
         profile: user.profile || "",
         sessionId: user.session_id,
+        isEmailVerified: user.is_email_verified,
+        isGuestUser: user.guest_account
       };
 
       state.token = token;

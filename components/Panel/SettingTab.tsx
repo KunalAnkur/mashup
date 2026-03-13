@@ -71,7 +71,7 @@ const SettingTab = () => {
   const isGuestUser =
     guestPattern.test(authState.user?.name?.trim() || "") ||
     guestPattern.test(authState.user?.username?.trim() || "");
-  const showEmailField = authState.isAuthenticated && !isGuestUser && Boolean(email);
+  const showEmailField = authState.user?.isGuestUser;
 
   const roomUrl = roomId
     ? typeof window !== "undefined"
