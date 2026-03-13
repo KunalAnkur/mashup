@@ -1,13 +1,15 @@
 "use client";
 import React from "react";
-import { LuPlay, LuFilm, LuX } from "react-icons/lu";
-import { FaBroadcastTower } from "react-icons/fa";
+import { LuFilm, LuX } from "react-icons/lu";
+import { FaBroadcastTower, FaPause, FaPlay } from "react-icons/fa";
+import { FaDesktop, FaGlobe, FaWindowMaximize } from "react-icons/fa";
+import { useSelector } from "react-redux";
 import { getPlatformById, getUrlDisplayName, detectPlatform, getPlatformByLink } from "@/types/ModalTypes/urlUtils";
-import { STREAMING_PLATFORMS } from "@/constants/streamingPlatforms";
 import { useFileContext } from "@/context/FileContext";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { RootState } from "@/lib/store";
 
 
 interface PlaylistCardProps {
@@ -18,6 +20,8 @@ interface PlaylistCardProps {
     onStop?: (id: string, source: "file" | "url" | "screen") => void;
     isLoading?: boolean;
 }
+
+type ScreenShareMode = "tab" | "window" | "screen" | "unknown";
 
 const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 B";
@@ -35,8 +39,9 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
     onStop,
     isLoading = false,
 }) => {
-    const { source, selected: isPlaying, link, metadata } = content;
+    const { source, selected: isSelected, link, metadata } = content;
     const isClickable = source !== "screen" && host;
+    const hostPlaybackPlaying = useSelector((state: RootState) => state.room.hostPlayback.playing);
     const { files, getThumbnail } = useFileContext();
     const { screenType, stream, handleStopScreenSharing } = useMediaStreamContext();
     const t = useTranslations("panel.playlist");
@@ -45,6 +50,123 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
         if (isClickable && onSelect) {
             onSelect(content.id, source);
         }
+    };
+    const isPlaybackActive = isSelected && hostPlaybackPlaying;
+    const titleClass = isSelected ? "text-white/92" : "text-white/72";
+    const secondaryTextClass = `text-[9px] md:text-[10px] ${isSelected ? "text-white/48" : "text-white/38"}`;
+    const badgePlayButtonClass = source === "screen"
+        ? "bg-cyan-200/15 text-cyan-50/90 shadow-[0_6px_16px_rgba(15,23,42,0.22)]"
+        : "bg-white/14 text-white/92 shadow-[0_6px_16px_rgba(15,23,42,0.18)]";
+
+    const getScreenShareMode = (): ScreenShareMode => {
+        const rawMode = metadata?.description?.split("-")[0]?.trim()?.toLowerCase() || screenType?.toLowerCase() || "";
+
+        if (rawMode === "tab" || rawMode === "browser") {
+            return "tab";
+        }
+
+        if (rawMode === "window") {
+            return "window";
+        }
+
+        if (rawMode === "monitor" || rawMode === "screen" || rawMode === "display") {
+            return "screen";
+        }
+
+        return "unknown";
+    };
+
+    const screenShareMode = source === "screen" ? getScreenShareMode() : "unknown";
+    const screenShareLabelMap: Record<ScreenShareMode, string> = {
+        tab: t("screenShareTab"),
+        window: t("screenShareWindow"),
+        screen: t("screenShareScreen"),
+        unknown: t("screenShareLive"),
+    };
+
+    const renderPlaybackButton = () => {
+        const Icon = isPlaybackActive ? FaPause : FaPlay;
+
+        return (
+            <span
+                className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full ${badgePlayButtonClass}`}
+            >
+                <Icon size={8} className={isPlaybackActive ? "" : "ml-[1px]"} />
+            </span>
+        );
+    };
+
+    const renderScreenShareThumbnail = () => {
+        const surfaceClassMap: Record<ScreenShareMode, string> = {
+            tab: "bg-[linear-gradient(135deg,#34d399,#0f766e)]",
+            window: "bg-[linear-gradient(135deg,#a78bfa,#6d28d9)]",
+            screen: "bg-[linear-gradient(135deg,#7dd3fc,#0369a1)]",
+            unknown: "bg-[linear-gradient(135deg,#94a3b8,#334155)]",
+        };
+
+        const iconMap: Record<ScreenShareMode, React.ComponentType<{ className?: string; size?: number }>> = {
+            tab: FaGlobe,
+            window: FaWindowMaximize,
+            screen: FaDesktop,
+            unknown: FaBroadcastTower,
+        };
+
+        const label = screenShareLabelMap[screenShareMode];
+        const Icon = iconMap[screenShareMode];
+
+        if (screenShareMode === "tab") {
+            return (
+                <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${surfaceClassMap.tab}`}>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
+                    <div className="relative flex items-center gap-1.5 text-white">
+                        <Icon size={10} />
+                        <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                            {label}
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        if (screenShareMode === "window") {
+            return (
+                <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${surfaceClassMap.window}`}>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
+                    <div className="relative flex items-center gap-1.5 text-white">
+                        <Icon size={10} />
+                        <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                            {label}
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        if (screenShareMode === "screen") {
+            return (
+                <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${surfaceClassMap.screen}`}>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
+                    <div className="relative flex items-center gap-1.5 text-white">
+                        <Icon size={10} />
+                        <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                            {label}
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${surfaceClassMap.unknown}`}>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
+                <div className="relative flex items-center gap-1.5 text-white">
+                    <Icon size={10} />
+                    <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                        {label}
+                    </span>
+                </div>
+            </div>
+        );
     };
 
     // Render thumbnail based on card source
@@ -75,10 +197,8 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             }
 
             return (
-                <div
-                    className={`absolute inset-0 flex items-center justify-center ${platform?.iconBg || "bg-gradient-to-br from-pink-500 to-fuchsia-600"}`}
-                >
-                    <span className="text-white text-base md:text-lg">
+                <div className="absolute inset-0 flex items-center justify-center bg-white/[0.04]">
+                    <span className="text-white/75 text-base md:text-lg">
                         {platform?.smallIcon || <LuFilm className="text-white text-xs md:text-sm" />}
                     </span>
                 </div>
@@ -86,17 +206,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
         }
 
         if (source === "screen") {
-            const defaultPlatform = STREAMING_PLATFORMS.find((p) => p.url === screenType);
-            return (
-                <div
-                    className="w-full h-full flex items-center justify-center"
-                    style={defaultPlatform?.bgStyle || {}}
-                >
-                    <div className="text-white text-lg md:text-2xl">
-                        {defaultPlatform?.logo || <FaBroadcastTower size={16} className="md:w-6 md:h-6" />}
-                    </div>
-                </div>
-            );
+            return renderScreenShareThumbnail();
         }
 
         if (source === "file") {
@@ -118,37 +228,11 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                 );
             }
             return (
-                <div className="w-full h-full flex items-center justify-center">
-                    <LuFilm className="text-gray-500" size={16} />
+                <div className="flex h-full w-full items-center justify-center bg-white/[0.04]">
+                    <LuFilm className="text-white/45" size={16} />
                 </div>
             );
         }
-    };
-
-    // Render playing overlay
-    const renderPlayingOverlay = () => {
-        if (!isPlaying) return null;
-
-        if (source === "screen") {
-            return (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-0.5 md:gap-1">
-                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-pink-500 flex items-center justify-center">
-                            <FaBroadcastTower className="text-white" size={8} />
-                        </div>
-                        <div className="w-1 h-1 rounded-full bg-pink-500 animate-pulse" />
-                    </div>
-                </div>
-            );
-        }
-
-        return (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-pink-500 flex items-center justify-center">
-                    <LuPlay className="text-white ml-0.5" size={10} />
-                </div>
-            </div>
-        );
     };
 
     // Render metadata section
@@ -172,23 +256,17 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                     <>
                         <div className="flex items-center gap-1.5 md:gap-2">
                             <p
-                                className={`text-[11px] md:text-xs font-semibold line-clamp-1 leading-tight ${isPlaying ? "text-pink-400" : "text-gray-200"
-                                    }`}
+                                className={`text-[11px] md:text-xs font-normal line-clamp-1 leading-tight ${titleClass}`}
                             >
                                 {metadata.title || getUrlDisplayName(link)}
                             </p>
-                            {isPlaying && (
-                                <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                                    {t("playing")}
-                                </span>
-                            )}
                         </div>
                         {metadata.description && (
-                            <p className="text-gray-500 text-[9px] md:text-[10px] line-clamp-1 leading-tight">
+                            <p className="text-[9px] md:text-[10px] text-white/42 line-clamp-1 leading-tight">
                                 {metadata.description}
                             </p>
                         )}
-                        <div className="flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[10px] text-gray-500 mt-0.5">
+                        <div className={`mt-0.5 flex items-center gap-1 md:gap-1.5 ${secondaryTextClass}`}>
                             {metadata.author && (
                                 <span className="truncate max-w-[60px] md:max-w-[80px]">{metadata.author}</span>
                             )}
@@ -203,19 +281,13 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                 <>
                     <div className="flex items-center gap-1.5 md:gap-2">
                         <p
-                            className={`text-[11px] md:text-xs font-medium truncate ${isPlaying ? "text-pink-400" : "text-gray-200"
-                                }`}
+                            className={`text-[11px] md:text-xs font-normal truncate ${titleClass}`}
                         >
                             {getUrlDisplayName(link)}
                         </p>
-                        {isPlaying && (
-                            <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                                {t("playing")}
-                            </span>
-                        )}
                     </div>
                     {platform && (
-                        <p className="text-gray-500 text-[9px] md:text-[10px] truncate">{platform.name}</p>
+                        <p className={`${secondaryTextClass} truncate`}>{platform.name}</p>
                     )}
                 </>
             );
@@ -227,18 +299,14 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                 <>
                     <div className="flex items-center gap-1.5 md:gap-2">
                         <p
-                            className={`text-[11px] md:text-xs font-semibold line-clamp-1 leading-tight ${isPlaying ? "text-pink-400" : "text-gray-200"
-                                }`}
+                            className={`text-[11px] md:text-xs font-normal line-clamp-1 leading-tight ${titleClass}`}
                         >
                             {platformName}
                         </p>
-                        {isPlaying && (
-                            <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                                {t("streaming")}
-                            </span>
-                        )}
                     </div>
-                    <p className="text-gray-500 text-[9px] md:text-[10px] truncate">{t("screenSharingActive")}</p>
+                    <p className={`${secondaryTextClass} truncate`}>
+                        {screenShareLabelMap[screenShareMode]} • {t("screenSharingActive")}
+                    </p>
                 </>
             );
         }
@@ -251,18 +319,12 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                 <>
                     <div className="flex items-center gap-1.5 md:gap-2">
                         <p
-                            className={`text-[11px] md:text-xs font-semibold line-clamp-1 leading-tight ${isPlaying ? "text-pink-400" : "text-gray-200"
-                                }`}
+                            className={`text-[11px] md:text-xs font-normal line-clamp-1 leading-tight ${titleClass}`}
                         >
                             {metadata?.title || link}
                         </p>
-                        {isPlaying && (
-                            <span className="flex-shrink-0 px-1 md:px-1.5 py-0.5 text-[9px] md:text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
-                                {t("playing")}
-                            </span>
-                        )}
                     </div>
-                    <p className="text-gray-500 text-[9px] md:text-[10px] truncate">
+                    <p className={`${secondaryTextClass} truncate`}>
                         {file.size ? `${formatFileSize(file.size)} • ` : ""}{t("localFile")}
                     </p>
                 </>
@@ -283,10 +345,10 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             return (
                 <button
                     onClick={() => handleStop(content.id, source)}
-                    className="w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 group-hover:scale-110"
-                    title="Stop screen sharing"
+                    className="flex h-6 w-6 flex-shrink-0 self-center items-center justify-center rounded-full bg-black/20 text-white/45 transition-all duration-200 hover:bg-black/30 hover:text-white/78"
+                    title={t("stopScreenSharing")}
                 >
-                    <LuX size={10} className="md:w-3 md:h-3" />
+                    <LuX size={11} className="md:w-3 md:h-3" />
                 </button>
             );
         }
@@ -295,57 +357,63 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             return (
                 <div
                     className={`
-            w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
-            ${isPlaying ? "bg-pink-500/20 text-pink-400" : "bg-white/5 text-gray-500"}
+            flex h-6 w-6 flex-shrink-0 self-center items-center justify-center rounded-full text-xs
+            ${isSelected ? "bg-white/[0.1] text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" : "bg-white/[0.04] text-white/35"}
           `}
                 >
-                    <FaBroadcastTower size={10} className="md:w-3 md:h-3" />
+                    <FaBroadcastTower size={9} className="md:w-2.5 md:h-2.5" />
                 </div>
             );
         }
 
         return (
-            <div
-                className={`
-          w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] md:text-xs font-medium flex-shrink-0 self-center
-          ${isPlaying ? "bg-pink-500/20 text-pink-400" : "bg-white/5 text-gray-500 group-hover:bg-white/10"}
-        `}
-            >
-                {index + 1}
-            </div>
+            isSelected ? (
+                renderPlaybackButton()
+            ) : (
+                <div
+                    className="flex h-7 w-7 flex-shrink-0 self-center items-center justify-center rounded-full bg-white/[0.04] text-[10px] font-medium tabular-nums text-white/45"
+                >
+                    {index + 1}
+                </div>
+            )
         );
     };
 
     const CardWrapper = isClickable ? "button" : "div";
+    const cardClassName = `
+        group relative flex w-full shrink-0 items-center gap-2.5 overflow-hidden rounded-xl px-2.5 py-2 text-left transition-all duration-200
+        ${isSelected
+            ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.085),rgba(255,255,255,0.04))] shadow-[0_14px_34px_rgba(0,0,0,0.22)]"
+            : "bg-white/[0.015] hover:bg-white/[0.03]"}
+        ${isClickable ? "cursor-pointer" : "cursor-default"}
+      `;
 
     return (
         <CardWrapper
             onClick={handleClick}
-            disabled={isClickable && !host}
-            className={`
-        group w-full flex gap-2 md:gap-3 rounded-lg md:rounded-xl p-1.5 md:p-2 transition-all duration-200 h-[64px] md:h-[72px] shrink-0
-        ${isPlaying
-                    ? "bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30"
-                    : "bg-white/5 border border-transparent hover:bg-white/10 hover:border-white/10"}
-        ${isClickable ? "cursor-pointer" : "cursor-default"}
-        ${isClickable && !host ? "cursor-default" : ""}
-      `}
+            className={cardClassName}
         >
+            {isSelected && (
+                <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_42%)]"
+                />
+            )}
+
             {/* Thumbnail */}
             <div
                 className={`
-          relative w-16 h-11 md:w-20 md:h-13 rounded-md md:rounded-lg overflow-hidden shrink-0 self-center
-          ${isPlaying ? "ring-2 ring-pink-500/50" : ""}
-          ${source === "url" ? "bg-gradient-to-br from-[#1f1f23] to-[#27272a]" : ""}
-          ${source === "file" ? "bg-gradient-to-br from-zinc-700 to-zinc-800" : ""}
+          relative h-10 w-14 shrink-0 self-center overflow-hidden rounded-lg md:h-11 md:w-[72px]
+          ${isSelected
+              ? "bg-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+              : "bg-white/[0.03]"}
         `}
             >
                 {renderThumbnail()}
-                {source !== "url" || !isLoading ? renderPlayingOverlay() : null}
             </div>
 
             {/* Metadata */}
-            <div className="flex flex-col gap-0.5 md:gap-0.5 min-w-0 flex-1 justify-center overflow-hidden text-left">
+            <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 overflow-hidden text-left">
                 {renderMetadata()}
             </div>
 

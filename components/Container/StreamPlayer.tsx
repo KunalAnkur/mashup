@@ -138,16 +138,6 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
 
     
     // ============================================================================
-    // Initialization Effects
-    // ============================================================================
-
-    useEffect(() => {
-        if (isHost) return;
-        if (!isJoined) return;
-        initializeFromJoinResponse();
-    }, [isHost, isJoined, initializeFromJoinResponse]);
-    
-    // ============================================================================
     // Player Event Handlers
     // ============================================================================
     // const isVideoReadyRef = useRef(false);
@@ -277,23 +267,6 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         }
     }, [isHost, isJoined, handleVideoReady]);
     
-    // Handle pending initialization when isJoined becomes true
-    useEffect(() => {
-        if (!isHost || !isJoined || !pendingInitializationRef.current) return;
-        
-        console.log("[StreamPlayer] isJoined is now true, retrying pending initialization");
-        // Trigger initialization by calling handleVideoReady logic
-        // We'll manually trigger the video ready handler
-        const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
-        if (video) {
-            // Call the handler again now that we're joined
-            handleVideoReady();
-        } else {
-            // If video isn't ready yet, it will be called when video becomes ready
-            console.log("[StreamPlayer] Video element not ready yet, will initialize when ready");
-        }
-    }, [isHost, isJoined, handleVideoReady]);
-    
     const handleVideoEnded = useCallback(() => {
     
     }, []);
@@ -371,6 +344,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 hostLeft={hostLeft}
                 remoteStream={remoteStream}
                 isInitialized={isInitialized}
+                playlist={roomState.playlist}
             />
         );
     }
