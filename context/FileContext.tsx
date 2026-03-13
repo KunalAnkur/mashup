@@ -7,12 +7,9 @@ import {
     removeFileHandle,
     showFilePicker,
     clearFileHandles,
-    getAllFileHandles,
-    appendFileHandles,
     ExtendedFile,
 } from "@/utils/filePersistence";
 import { showInfo } from "@/utils/toast";
-import { nanoid } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 
@@ -29,6 +26,7 @@ type FileContextType = {
     isPersistenceSupported: boolean;
     requestFilePicker: (append?: boolean) => Promise<ExtendedFile[]>;
     showPermissionPrompt: () => void;
+    isInitialFilesLoaded: boolean;
 };
 
 const FileContext = createContext<FileContextType>({
@@ -40,6 +38,7 @@ const FileContext = createContext<FileContextType>({
     isPersistenceSupported: false,
     requestFilePicker: async () => [],
     showPermissionPrompt: () => { },
+    isInitialFilesLoaded: false,
 });
 
 export const FileProvider = ({ children }: { children: ReactNode }) => {
@@ -48,6 +47,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const thumbnailBlobsRef = useRef<Record<string, Blob>>({}); // Track Blobs for cleanup
     const processingRef = useRef<Set<string>>(new Set());
     const [isPersistenceSupported, setIsPersistenceSupported] = useState(false);
+    const [isInitialFilesLoaded, setIsInitialFilesLoaded] = useState(false);
     const permissionPromptShownRef = useRef(false);
     const playlist = useSelector((state: RootState) => state.room.playlist);
     // Check if File System Access API is supported
@@ -72,6 +72,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         const loadPersistedFiles = async () => {
             if (!isFileSystemAccessSupported()) {
                 filesLoadedRef.current = true;
+                setIsInitialFilesLoaded(true);
                 return;
             }
 
@@ -97,6 +98,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
                 console.error('FileContext: Error loading persisted files:', error);
             } finally {
                 filesLoadedRef.current = true;
+                setIsInitialFilesLoaded(true);
             }
         };
 
@@ -213,8 +215,13 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
             filesFromAPIRef.current = true;
 
             return newFiles;
-        } catch (error: any) {
-            if (error.name === 'AbortError') {
+        } catch (error: unknown) {
+            if (
+                typeof error === "object" &&
+                error !== null &&
+                "name" in error &&
+                (error as { name?: unknown }).name === "AbortError"
+            ) {
                 // User cancelled
                 return [];
             }
@@ -248,9 +255,15 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
             return;
         }
 
-        // Update local files state (remove the file)
-        const updatedFiles = files.filter((file) => file.id !== id);
-        setFiles(updatedFiles);
+        // Remove from persistence FIRST if supported
+        if (isFileSystemAccessSupported()) {
+            try {
+                await removeFileHandle(removedFile.id);
+                console.log(`removeFile: Removed file handle for ${removedFile.file.name} from IndexedDB`);
+            } catch (error) {
+                console.error("Error removing file from persistence:", error);
+            }
+        }
 
         const fileName = removedFile.file.name;
 
@@ -268,14 +281,11 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         delete thumbnailBlobsRef.current[fileName];
         processingRef.current.delete(fileName);
 
-        // Remove from persistence if supported
-        if (isFileSystemAccessSupported()) {
-            try {
-                await removeFileHandle(removedFile.id);
-            } catch (error) {
-                console.error("Error removing file from persistence:", error);
-            }
-        }
+        // Update local files state (remove the file) - do this LAST
+        // Mark that this is an update operation, not a replacement
+        skipClearOnNextSetRef.current = true;
+        const updatedFiles = files.filter((file) => file.id !== id);
+        setFiles(updatedFiles);
     };
 
     // Helper to check if a file is a video (by MIME type or extension)
@@ -343,14 +353,21 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
     // Track if files were set via File System Access API (to avoid double-clearing)
     const filesFromAPIRef = useRef(false);
+    // Track if we should skip clearing on next setFiles call (for updates like deletion)
+    const skipClearOnNextSetRef = useRef(false);
 
     // Enhanced setFiles that handles both persisted and non-persisted files
     const setFilesWithPersistence = async (newFiles: ExtendedFile[]) => {
+        // Check if we should skip clearing (e.g., during file removal)
+        const shouldSkipClear = skipClearOnNextSetRef.current;
+        skipClearOnNextSetRef.current = false; // Reset flag
+        
         // Clear all previously stored files when new files are selected
         // This ensures we only keep the latest selection
         // Note: If files come from File System Access API, they're already cleared in requestFilePicker
         // So we only need to clear here for traditional input files
-        if (isFileSystemAccessSupported() && newFiles.length > 0 && !filesFromAPIRef.current) {
+        // SKIP clearing if this is just an update operation (like file removal)
+        if (isFileSystemAccessSupported() && newFiles.length > 0 && !filesFromAPIRef.current && !shouldSkipClear) {
             try {
                 // Clear all persisted files from IndexedDB
                 await clearFileHandles();
@@ -393,6 +410,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
                 isPersistenceSupported,
                 requestFilePicker,
                 showPermissionPrompt,
+                isInitialFilesLoaded,
             }}
         >
             {children}

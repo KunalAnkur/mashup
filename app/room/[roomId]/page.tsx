@@ -10,7 +10,7 @@ import ModalOnRoomCreate from "@/components/Modals/ModalOnRoomCreate";
 import { useDispatch } from "react-redux";
 import { setFocused, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
-import { useUpdateRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
+import { useFileContext } from "@/context/FileContext";
 const Page = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
@@ -93,7 +93,6 @@ const Page = () => {
 
   // * This code block is for cleaning up the orphaned screen share data from the playlist
   const { stream } = useMediaStreamContext();
-  const [updateRoomByRoomId] = useUpdateRoomByRoomIdMutation();
   useEffect(() => {
     if (!stream && isHost) {
       const playlist = roomState.playlist;
@@ -106,7 +105,44 @@ const Page = () => {
         // updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: newPlaylist } }).unwrap();  
       }
     }
-  }, [stream, isHost, roomState.playlist, dispatch, updateRoomByRoomId, roomState.roomId]);
+  }, [stream, isHost, roomState.playlist, dispatch, roomState.roomId]);
+
+  /**
+   * * The below code block is responsible for cleaning i.e when there is a playlist in the database for local file streaming
+   * * existed but it is not saved at all in the local storage access. So in that case because there is no reference of the actual files 
+   * * which are stored then we gonna remove those all unneccessary files present in the playlist tabs
+   * 
+   * !The above assumption was wrong because while creating the room for screenshare the old file data was already stored in 
+   * !playlist state so i just need to clean that up before creating a new room for screensharing so anymore below code block
+   * !we will going to comment it out
+   * 
+   * * [Update]: Bringing this bottom code block again because it is usefull during the time When user did not given a permission of file editing
+   * * so in that case when user reload on room page. The empty orphaned playlist appears which need to be cleaned
+   */
+  
+  const { files, isInitialFilesLoaded } = useFileContext()
+  useEffect(() => {
+    if (!isHost || !isInitialFilesLoaded) return;
+    console.log("------- This is file stream checker -----");
+    const playlist = roomState.playlist;
+    const fileContents = playlist.filter(content => content.source === 'file');
+    if (!fileContents.length) return;
+    // * This is basically a subset this prove whether all the file content are accessible in local storage or not.
+    // const isAllPlaylistFileSaved = fileContents.every(content => files.some(file => file.id === content.id));
+    const savedFileIds = new Set(files.map((file) => file.id));
+    const isAllPlaylistFileSaved = fileContents.every((content) => savedFileIds.has(content.id));
+    console.log('FileContext ===== Files & FilesContents ======', { files, fileContents, isAllPlaylistFileSaved })
+    if (!isAllPlaylistFileSaved) {
+      const existedFileContents = playlist.filter(content => (content.source === 'file' && savedFileIds.has(content.id)));
+      const restContents = playlist.filter(content => content.source !== 'file');
+      const newPlaylist = [...restContents, ...existedFileContents].map((content, index) => ({
+          ...content,
+          selected: index === 0
+      }));
+      dispatch(updateRoomInfo({ playlist: newPlaylist }));
+    }
+
+  }, [files, isHost, isInitialFilesLoaded, roomState.playlist, dispatch])
 
   return (
     <>
