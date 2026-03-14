@@ -3,6 +3,52 @@ import { CARD_ART_STYLES, CardArt, Product } from "./type";
 import useEmblaCarousel from "embla-carousel-react";
 import { LuChevronLeft, LuChevronRight, LuExternalLink } from "react-icons/lu";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const LOCAL_IMAGE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
+
+const toRenderableImageUrl = (value: string): string => {
+    const raw = value.trim();
+    if (!raw || typeof window === "undefined") return raw;
+
+    let apiOrigin: string | null = null;
+    if (API_BASE_URL) {
+        try {
+            apiOrigin = new URL(API_BASE_URL).origin;
+        } catch {
+            apiOrigin = null;
+        }
+    }
+
+    if (raw.startsWith("//")) return `${window.location.protocol}${raw}`;
+    if (raw.startsWith("/")) {
+        return apiOrigin ? `${apiOrigin}${raw}` : `${window.location.origin}${raw}`;
+    }
+
+    const hasScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(raw);
+    if (!hasScheme) {
+        if (!apiOrigin) return raw;
+        return `${apiOrigin.replace(/\/$/, "")}/${raw.replace(/^\/+/, "")}`;
+    }
+
+    try {
+        const parsed = new URL(raw);
+        if (!LOCAL_IMAGE_HOSTS.has(parsed.hostname)) return parsed.toString();
+
+        if (apiOrigin) {
+            const target = new URL(apiOrigin);
+            parsed.protocol = target.protocol;
+            parsed.hostname = target.hostname;
+            parsed.port = target.port;
+            return parsed.toString();
+        }
+
+        parsed.hostname = window.location.hostname;
+        return parsed.toString();
+    } catch {
+        return raw;
+    }
+};
+
 export const ProductCard = ({
     product,
     art,
@@ -11,7 +57,10 @@ export const ProductCard = ({
     art: CardArt;
 }) => {
     const images = useMemo(
-        () => product.images.filter((url) => typeof url === "string" && url.trim()),
+        () =>
+            product.images
+                .filter((url) => typeof url === "string" && url.trim())
+                .map((url) => toRenderableImageUrl(url)),
         [product.images]
     );
     const [imageEmblaRef, imageEmblaApi] = useEmblaCarousel({
@@ -59,9 +108,9 @@ export const ProductCard = ({
     const badgeCls = badgeVariants[artIndex % 4] ?? badgeVariants[0];
 
     return (
-        <article className="group block overflow-hidden rounded-2xl border border-white/[0.09] bg-gradient-to-b from-white/[0.055] to-white/[0.018] transition-all duration-300 hover:-translate-y-[3px] hover:border-white/[0.18]">
+        <article className="group block w-full overflow-hidden rounded-lg border border-white/[0.09] bg-gradient-to-b from-white/[0.055] to-white/[0.018] transition-all duration-300 hover:-translate-y-[3px] hover:border-white/[0.18] md:rounded-2xl">
             {/* ── Hero ── */}
-            <div className="relative h-28 overflow-hidden border-b border-white/[0.07]">
+            <div className="relative h-[62px] overflow-hidden border-b border-white/[0.07] md:h-28">
                 <div className="absolute inset-0" style={{ background: art.hero }} />
                 <div className="absolute inset-0" style={{ background: art.glow }} />
 
@@ -88,20 +137,20 @@ export const ProductCard = ({
                 )}
 
                 {/* Bottom fade */}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/65 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/65 to-transparent" />
 
                 {/* Category pill */}
-                <div className="absolute left-2.5 top-2.5 rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-[10px] font-medium text-white/82 backdrop-blur-sm">
+                <div className="absolute left-2 top-2 rounded-full border border-white/20 bg-black/40 px-2 py-0.5 text-[8px] font-medium text-white/82 backdrop-blur-sm md:left-2.5 md:top-2.5 md:px-2.5 md:py-1 md:text-[10px]">
                     {product.category}
                 </div>
 
                 {/* Rating pill */}
-                <div className="absolute right-2.5 top-2.5 rounded-full bg-white/92 px-2 py-1 text-[10px] font-semibold text-black/80">
+                <div className="absolute right-2 top-2 rounded-full bg-white/92 px-1.5 py-0.5 text-[8.5px] font-semibold text-black/80 md:right-2.5 md:top-2.5 md:px-2 md:py-1 md:text-[10px]">
                     {product.rating} ★
                 </div>
 
                 {/* Deal badge — accent color matched to art */}
-                <div className={`absolute bottom-2.5 left-2.5 rounded-full border px-2.5 py-1 text-[9.5px] font-semibold tracking-wide backdrop-blur-sm ${badgeCls}`}>
+                <div className={`absolute bottom-2 left-2 rounded-full border px-2 py-0.5 text-[7.5px] font-semibold tracking-wide backdrop-blur-sm md:bottom-2.5 md:left-2.5 md:px-2.5 md:py-1 md:text-[9.5px] ${badgeCls}`}>
                     {product.badge}
                 </div>
 
@@ -112,7 +161,7 @@ export const ProductCard = ({
                             type="button"
                             onClick={() => imageEmblaApi?.scrollPrev()}
                             disabled={!canImagePrev}
-                            className="absolute left-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 transition hover:bg-black/55 disabled:opacity-30"
+                            className="absolute left-1.5 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 transition hover:bg-black/55 disabled:opacity-30 md:left-2 md:h-6 md:w-6"
                             aria-label="Previous image"
                         >
                             <LuChevronLeft size={12} />
@@ -121,12 +170,12 @@ export const ProductCard = ({
                             type="button"
                             onClick={() => imageEmblaApi?.scrollNext()}
                             disabled={!canImageNext}
-                            className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 transition hover:bg-black/55 disabled:opacity-30"
+                            className="absolute right-1.5 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white/90 transition hover:bg-black/55 disabled:opacity-30 md:right-2 md:h-6 md:w-6"
                             aria-label="Next image"
                         >
                             <LuChevronRight size={12} />
                         </button>
-                        <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1">
+                        <div className="absolute bottom-2 right-2 flex items-center gap-1 md:bottom-2.5 md:right-2.5">
                             {images.map((_, idx) => (
                                 <button
                                     key={`${product.id}-dot-${idx}`}
@@ -143,25 +192,25 @@ export const ProductCard = ({
             </div>
 
             {/* ── Body ── */}
-            <div className="bg-white/[0.025] px-3 py-2.5">
+            <div className="bg-white/[0.025] px-1.5 py-0.5 md:px-3 md:py-2.5">
                 <div className="flex items-baseline justify-between gap-2">
-                    <p className="line-clamp-1 text-[13px] font-medium text-white/92">
+                    <p className="line-clamp-1 text-[9.5px] font-medium text-white/92 md:text-[13px]">
                         {product.name}
                     </p>
                     {/* Price gets the purple→pink gradient accent */}
-                    <span className="shrink-0 bg-gradient-to-r from-violet-300 to-pink-300 bg-clip-text text-[13px] font-semibold text-transparent">
+                    <span className="shrink-0 bg-gradient-to-r from-violet-300 to-pink-300 bg-clip-text text-[9.5px] font-semibold text-transparent md:text-[13px]">
                         {product.price}
                     </span>
                 </div>
-                <div className="mt-1 flex items-center justify-between gap-2">
-                    <p className="line-clamp-1 text-[10px] text-white/38">{product.meta}</p>
+                <div className="mt-0.5 flex items-center justify-between gap-2 md:mt-1">
+                    <p className="line-clamp-1 text-[7.5px] text-white/38 md:text-[10px]">{product.meta}</p>
 
-                <a href={product.href} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 text-[10px] text-white/48 transition hover:text-white/90">
-                    View
-                    <LuExternalLink size={10} />
-                </a>
+                    <a href={product.href} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 text-[7.5px] text-white/48 transition hover:text-white/90 md:text-[10px]">
+                        View
+                        <LuExternalLink size={9} className="md:h-[10px] md:w-[10px]" />
+                    </a>
+                </div>
             </div>
-        </div>
-    </article >
-  );
+        </article>
+    );
 };

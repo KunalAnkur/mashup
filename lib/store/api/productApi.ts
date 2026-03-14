@@ -3,6 +3,7 @@ import { Product } from "@/types/storeTypes";
 import type { RootState } from "@/lib/store";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -14,15 +15,71 @@ function toStringValue(value: unknown): string {
   return "";
 }
 
+function getApiOrigin(): string | null {
+  if (!baseUrl) return null;
+  try {
+    return new URL(baseUrl).origin;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeImageUrl(value: string): string {
+  const raw = value.trim();
+  if (!raw) return "";
+
+  if (typeof window === "undefined") {
+    return raw;
+  }
+
+  const apiOrigin = getApiOrigin();
+
+  if (raw.startsWith("//")) {
+    return `${window.location.protocol}${raw}`;
+  }
+
+  if (raw.startsWith("/")) {
+    return apiOrigin ? `${apiOrigin}${raw}` : `${window.location.origin}${raw}`;
+  }
+
+  const hasScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(raw);
+  if (!hasScheme) {
+    if (!apiOrigin) return raw;
+    return `${apiOrigin.replace(/\/$/, "")}/${raw.replace(/^\/+/, "")}`;
+  }
+
+  try {
+    const parsed = new URL(raw);
+    if (!LOCAL_HOSTS.has(parsed.hostname)) return parsed.toString();
+
+    if (apiOrigin) {
+      const target = new URL(apiOrigin);
+      parsed.protocol = target.protocol;
+      parsed.hostname = target.hostname;
+      parsed.port = target.port;
+      return parsed.toString();
+    }
+
+    parsed.hostname = window.location.hostname;
+    if (!parsed.port && window.location.port) {
+      parsed.port = window.location.port;
+    }
+    return parsed.toString();
+  } catch {
+    return raw;
+  }
+}
+
 function normalizeImageList(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value
       .map((item) => toStringValue(item).trim())
+      .map((item) => normalizeImageUrl(item))
       .filter((item) => item.length > 0);
   }
 
   const oneImage = toStringValue(value).trim();
-  return oneImage ? [oneImage] : [];
+  return oneImage ? [normalizeImageUrl(oneImage)] : [];
 }
 
 function normalizeProducts(payload: unknown): Product[] {

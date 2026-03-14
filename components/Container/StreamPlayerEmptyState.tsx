@@ -10,7 +10,9 @@ import { ContentSelection } from "@/components/Panel/PlaylistTab/ContentSelectio
 import { usePlaylistActions } from "@/hooks/usePlaylistActions";
 import ProductCarousel from "@/components/Product/ProductCarousel";
 import * as constants from "@/constants";
-const logo = constants.assets.logo;
+const logo = constants.assets.logo192;
+import { useDispatch } from "react-redux";
+import { setPlayerActive } from "@/lib/store/slices/roomSlice";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,6 +48,13 @@ const StreamPlayerEmptyState = ({
 
     const isHostWithoutPlaylist = isHost && playlist.length === 0;
     const { addPlaylistContent, handleScreenShareStopped } = usePlaylistActions();
+    const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch(setPlayerActive(false));
+        return () => {
+            dispatch(setPlayerActive(true))
+        }
+    }, [dispatch, setPlayerActive])
     useEffect(() => {
         if (isHostWithoutPlaylist || (hostLeft && !isHost)) {
             setIsLoading(false);
@@ -85,7 +94,7 @@ const StreamPlayerEmptyState = ({
 // ─── Screen Components ────────────────────────────────────────────────────────
 
 const LoadingScreen = () => (
-    <ScreenShell>
+    <ScreenShell shellClassName="sp-shell--loading">
         <GlobalStyles />
         <div className="sp-loader">
             {/* Concentric scanner rings */}
@@ -124,7 +133,7 @@ const HostLeftScreen = ({
             {/* Logo mark with a subtle "ended" indicator */}
             <BrandMark variant="ended" />
 
-            <div className="sp-chip">Session ended</div>
+            <div className="sp-chip sp-chip--host-left">Session ended</div>
 
             <h2 className="sp-heading">
                 That was <span className="sp-accent">incredible.</span>
@@ -132,9 +141,9 @@ const HostLeftScreen = ({
 
             <p className="sp-body">{message || "The host has left the room."}</p>
 
-            <p className="sp-hint">Want to watch something else with friends?</p>
+            <p className="sp-hint sp-hint--host-left">Want to watch something else with friends?</p>
 
-            <Link href="/" className="sp-cta-btn">
+            <Link href="/" className="sp-cta-btn sp-cta-btn--host-left">
                 Create another room
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M12 5l7 7-7 7" />
@@ -165,7 +174,7 @@ const HostEmptyPlaylistScreen = ({
             </h2>
 
             <p className="sp-body">
-                Add a URL, upload files, or share your screen to start streaming.
+                Add a URL, file, or screen share to start streaming.
             </p>
 
             <div className="sp-content-sel">
@@ -219,13 +228,19 @@ const ViewerWaitingScreen = ({
 
             <p className="sp-body">
                 {isInitialized
-                    ? "You're connected and ready. The stream will begin shortly."
-                    : "The host hasn't started yet. You'll be connected automatically."}
+                    ? "You're connected and ready. The stream starts shortly."
+                    : "The host hasn't started yet. You'll connect automatically."}
             </p>
 
-            <AudioWave />
+            <div className="hidden md:block">
+                <AudioWave />
+            </div>
 
-            {isInitialized && <StatusPill variant="green" label="Ready to receive stream" />}
+            {isInitialized && (
+                <div className="hidden md:block">
+                    <StatusPill variant="green" label="Ready to receive stream" />
+                </div>
+            )}
         </FadeInContent>
     </ScreenShell>
 );
@@ -235,11 +250,13 @@ const ViewerWaitingScreen = ({
 const ScreenShell = ({
     children,
     bottom,
+    shellClassName,
 }: {
     children: React.ReactNode;
     bottom?: React.ReactNode;
+    shellClassName?: string;
 }) => (
-    <div className={`sp-shell ${bottom ? "sp-shell--with-shelf" : ""}`}>
+    <div className={`sp-shell ${bottom ? "sp-shell--with-shelf" : ""} ${shellClassName ?? ""}`}>
         {children}
         {bottom ? <div className="sp-bottom-slot">{bottom}</div> : null}
     </div>
@@ -308,7 +325,14 @@ const GlobalStyles = () => (
         background: transparent;
         display: flex; align-items: center; justify-content: center;
         overflow: hidden;
+        min-height: 0;
+        padding-left: 8px;
+        padding-right: 8px;
         font-family: -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
+    }
+    .sp-shell--loading {
+        align-items: center;
+        justify-content: center;
     }
     .sp-shell--with-shelf { padding-bottom: 178px; }
     .sp-bottom-slot {
@@ -321,12 +345,63 @@ const GlobalStyles = () => (
     }
     .sp-bottom-slot > * { pointer-events: auto; }
     @media (max-width: 1024px) {
-        .sp-shell--with-shelf { padding-bottom: 164px; }
+        .sp-shell--with-shelf { padding-bottom: 152px; }
         .sp-bottom-slot { bottom: 10px; }
     }
     @media (max-width: 640px) {
-        .sp-shell--with-shelf { padding-bottom: 146px; }
+        .sp-shell--with-shelf { padding-bottom: 168px; }
         .sp-bottom-slot { bottom: 8px; }
+    }
+    @media (max-width: 768px) {
+        .sp-shell.sp-shell--with-shelf {
+            align-items: center;
+            padding-top: 0;
+        }
+        .sp-shell--with-shelf .sp-content {
+            max-height: calc(100% - 4px);
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .sp-shell--with-shelf .sp-content::-webkit-scrollbar { display: none; }
+    }
+    @media (max-width: 480px) {
+        .sp-shell--with-shelf { padding-bottom: 160px; }
+        .sp-shell.sp-shell--with-shelf { padding-top: 0; }
+    }
+    @media (max-height: 760px) {
+        .sp-shell {
+            align-items: flex-start;
+            padding-top: 14px;
+        }
+        .sp-shell.sp-shell--loading {
+            align-items: center;
+            padding-top: 0;
+        }
+        .sp-shell.sp-shell--with-shelf {
+            align-items: center;
+            padding-top: 0;
+        }
+        .sp-shell--with-shelf { padding-bottom: 114px; }
+        .sp-content {
+            max-height: calc(100% - 6px);
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .sp-content::-webkit-scrollbar { display: none; }
+    }
+    @media (max-height: 640px) {
+        .sp-shell {
+            padding-top: 10px;
+        }
+        .sp-shell.sp-shell--loading {
+            padding-top: 0;
+        }
+        .sp-shell.sp-shell--with-shelf {
+            padding-top: 0;
+        }
+        .sp-shell--with-shelf { padding-bottom: 100px; }
     }
 
     /* ── Logo image ─────────────────────────────────────────────── */
@@ -389,7 +464,7 @@ const GlobalStyles = () => (
         position: relative; z-index: 10;
         display: flex; flex-direction: column;
         align-items: center; text-align: center;
-        padding: 0 28px; max-width: 360px;
+        padding: 0 28px; width: 100%; max-width: 360px; max-height: 100%;
         opacity: 0;
         transform: translateY(16px);
         transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
@@ -404,6 +479,7 @@ const GlobalStyles = () => (
         line-height: 1.25; letter-spacing: -.02em;
         color: rgba(255,255,255,.88);
         margin: 0 0 10px;
+        text-wrap: balance;
     }
     .sp-accent {
         background: linear-gradient(110deg, #c4b5fd 0%, #f9a8d4 60%, #a5f3fc 100%);
@@ -414,11 +490,120 @@ const GlobalStyles = () => (
         font-size: 13.5px; line-height: 1.65;
         color: rgba(255,255,255,.38);
         margin: 0 0 22px;
+        text-wrap: balance;
     }
     .sp-hint {
         font-size: 12.5px;
         color: rgba(255,255,255,.26);
         margin: 0 0 16px;
+        text-wrap: balance;
+    }
+    @media (max-width: 768px) {
+        .sp-brand {
+            display: none;
+        }
+        .sp-dot {
+            bottom: 4px; right: 4px;
+        }
+        .sp-content {
+            max-width: 340px;
+            padding: 0 18px;
+        }
+        .sp-heading {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        .sp-body {
+            font-size: 12.5px;
+            line-height: 1.58;
+            margin-bottom: 16px;
+        }
+        .sp-hint {
+            font-size: 11.5px;
+            margin-bottom: 12px;
+        }
+        .sp-shell--with-shelf .sp-brand {
+            width: 70px; height: 70px;
+            margin-bottom: 10px;
+        }
+        .sp-shell--with-shelf .sp-heading {
+            font-size: 17px;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+        .sp-shell--with-shelf .sp-body {
+            font-size: 11px;
+            line-height: 1.42;
+            margin-bottom: 8px;
+        }
+        .sp-shell--with-shelf .sp-hint {
+            font-size: 10px;
+            margin-bottom: 7px;
+        }
+    }
+    @media (max-width: 480px) {
+        .sp-brand {
+            width: 72px; height: 72px;
+            margin-bottom: 14px;
+        }
+        .sp-content {
+            max-width: 320px;
+            padding: 0 14px;
+        }
+        .sp-heading { font-size: 18px; }
+        .sp-body {
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        .sp-hint {
+            font-size: 11px;
+            margin-bottom: 10px;
+        }
+        .sp-shell--with-shelf .sp-brand {
+            width: 60px; height: 60px;
+            margin-bottom: 8px;
+        }
+        .sp-shell--with-shelf .sp-heading {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        .sp-shell--with-shelf .sp-body {
+            font-size: 10px;
+            margin-bottom: 7px;
+        }
+        .sp-shell--with-shelf .sp-hint {
+            font-size: 9.5px;
+            margin-bottom: 6px;
+        }
+    }
+    @media (max-height: 760px) {
+        .sp-brand {
+            width: 72px; height: 72px;
+            margin-bottom: 12px;
+        }
+        .sp-heading {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+        .sp-body {
+            margin-bottom: 10px;
+        }
+        .sp-hint {
+            margin-bottom: 8px;
+        }
+    }
+    @media (max-height: 640px) {
+        .sp-brand {
+            width: 64px; height: 64px;
+            margin-bottom: 10px;
+        }
+        .sp-heading { font-size: 16px; }
+        .sp-body {
+            font-size: 11.5px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
     }
 
     /* ── Chip ───────────────────────────────────────────────────── */
@@ -495,6 +680,97 @@ const GlobalStyles = () => (
 
     /* ── Content selection wrapper ──────────────────────────────── */
     .sp-content-sel { width: 100%; margin-top: 6px; }
+    @media (max-width: 768px) {
+        .sp-chip {
+            margin-bottom: 10px;
+            padding: 3px 10px;
+        }
+        .sp-cta-btn {
+            padding: 9px 18px;
+            font-size: 12.5px;
+        }
+        .sp-wave {
+            margin-bottom: 14px;
+        }
+        .sp-pill {
+            font-size: 11px;
+            padding: 5px 12px;
+        }
+        .sp-content-sel { margin-top: 4px; }
+        .sp-shell--with-shelf .sp-content-sel .grid { gap: 6px; }
+        .sp-shell--with-shelf .sp-content-sel .grid > button {
+            padding: 6px 4px;
+            border-radius: 10px;
+            gap: 4px;
+        }
+        .sp-shell--with-shelf .sp-content-sel .grid > button span:last-child {
+            font-size: 9px;
+            line-height: 1.1;
+        }
+        .sp-chip.sp-chip--host-left { display: none; }
+        .sp-hint.sp-hint--host-left { display: none; }
+        .sp-cta-btn.sp-cta-btn--host-left {
+            padding: 6px 10px;
+            border-radius: 8px;
+            gap: 5px;
+            font-size: 10.5px;
+            box-shadow: 0 0 0 1px rgba(255,255,255,.07) inset,
+                        0 6px 18px rgba(124,58,237,.22);
+        }
+        .sp-cta-btn.sp-cta-btn--host-left svg {
+            width: 12px;
+            height: 12px;
+        }
+    }
+    @media (max-width: 480px) {
+        .sp-pill {
+            font-size: 10px;
+            padding: 4px 10px;
+        }
+        .sp-shell--with-shelf .sp-content-sel .grid > button {
+            padding: 5px 3px;
+        }
+        .sp-shell--with-shelf .sp-content-sel .grid > button span:last-child {
+            font-size: 8.5px;
+        }
+        .sp-cta-btn.sp-cta-btn--host-left {
+            padding: 5px 9px;
+            border-radius: 7px;
+            gap: 4px;
+            font-size: 10px;
+        }
+        .sp-cta-btn.sp-cta-btn--host-left svg {
+            width: 11px;
+            height: 11px;
+        }
+    }
+    @media (max-height: 760px) {
+        .sp-chip {
+            margin-bottom: 8px;
+        }
+        .sp-cta-btn {
+            padding: 8px 14px;
+            font-size: 12px;
+        }
+        .sp-wave {
+            height: 22px;
+            margin-bottom: 10px;
+        }
+    }
+    @media (max-height: 640px) {
+        .sp-chip {
+            font-size: 9px;
+            padding: 3px 8px;
+        }
+        .sp-wave {
+            height: 18px;
+            margin-bottom: 8px;
+        }
+        .sp-pill {
+            font-size: 9.5px;
+            padding: 4px 9px;
+        }
+    }
 
     /* ─────────── LOADING SCREEN ──────────────────────────────── */
     .sp-loader {
@@ -560,6 +836,45 @@ const GlobalStyles = () => (
         font-size: 10.5px; font-weight: 600; letter-spacing: .12em;
         text-transform: uppercase; color: rgba(255,255,255,.22);
         margin: 0;
+    }
+    @media (max-width: 768px) {
+        .sp-loader { gap: 16px; }
+        .sp-rings {
+            width: 84px; height: 84px;
+        }
+        .sp-ring--1 {
+            width: 84px; height: 84px;
+        }
+        .sp-ring--2 {
+            width: 62px; height: 62px;
+        }
+        .sp-ring--3 {
+            width: 42px; height: 42px;
+        }
+        .sp-logo-wrap {
+            width: 32px; height: 32px;
+        }
+        .sp-progress { width: 106px; }
+    }
+    @media (max-width: 480px) {
+        .sp-loader { gap: 14px; }
+        .sp-rings {
+            width: 74px; height: 74px;
+        }
+        .sp-ring--1 {
+            width: 74px; height: 74px;
+        }
+        .sp-ring--2 {
+            width: 54px; height: 54px;
+        }
+        .sp-ring--3 {
+            width: 36px; height: 36px;
+        }
+        .sp-logo-wrap {
+            width: 28px; height: 28px;
+        }
+        .sp-progress { width: 92px; }
+        .sp-loading-label { font-size: 9.5px; }
     }
     `}</style>
 );

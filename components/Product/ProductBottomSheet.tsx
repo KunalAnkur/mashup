@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { FiChevronUp, FiShoppingBag } from "react-icons/fi";
+import { FiChevronUp } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useGetProductsQuery } from "@/lib/store/api/productApi";
@@ -45,19 +45,21 @@ const ProductBottomSheet = () => {
   }, [dispatch, queryIsError]);
 
   const productsForGrid = products.slice(0, 12);
+  const expandedSheetMaxHeight = "min(72vh, calc(100% - 2.5rem))";
+  const innerContentMaxHeight = "min(62vh, calc(100% - 2.5rem))";
 
   return (
-    <div className="pointer-events-none absolute w-full bottom-2 z-30 flex justify-end ">
-      <div className="pointer-events-auto w-full flex flex-col justify-center items-center">
+    <div className="pointer-events-none absolute inset-x-0 bottom-2 top-2 z-30 flex justify-end">
+      <div className="pointer-events-none flex h-full w-full flex-col items-center justify-end">
         {isOpen && <button
           type="button"
           onClick={() => dispatch(toggleBottomSheet())}
           aria-expanded={isOpen}
           aria-controls="product-bottom-sheet"
           className={`
-            w-8 h-8 flex items-center justify-center rounded-full cursor-pointer
+            pointer-events-auto flex h-7 w-7 items-center justify-center rounded-full cursor-pointer sm:h-8 sm:w-8
             transition-all duration-300
-            bg-neutral-800/30 hover:bg-neutral-900
+            bg-neutral-800 hover:bg-neutral-900
             shadow-sm hover:shadow-md
           `}
         >
@@ -72,13 +74,17 @@ const ProductBottomSheet = () => {
 
         <div
           id="product-bottom-sheet"
-          className={`mt-2 overflow-hidden w-full rounded-2xl  backdrop-blur-xl transition-all duration-300 ${
+          className={`pointer-events-auto mt-2 w-full overflow-hidden rounded-xl backdrop-blur-xl transition-all duration-300 sm:rounded-2xl ${
             isOpen
-              ? "max-h-[72vh] translate-y-0 border-white/12 opacity-100"
+              ? "translate-y-0 border-white/12 opacity-100"
               : "max-h-0 translate-y-2 border-transparent opacity-0"
           }`}
+          style={isOpen ? { maxHeight: expandedSheetMaxHeight } : undefined}
         >
-          <div className="relative max-h-[62vh] overflow-y-auto p-3">
+          <div
+            className="relative overflow-y-auto p-2.5 sm:p-3"
+            style={isOpen ? { maxHeight: innerContentMaxHeight } : undefined}
+          >
             
             {isLoading ? (
               <p className="relative text-xs text-white/65">Loading products...</p>
@@ -87,7 +93,7 @@ const ProductBottomSheet = () => {
             ) : productsForGrid.length === 0 ? (
               <p className="relative text-xs text-white/65">No products available right now.</p>
             ) : (
-              <div className="relative grid grid-cols-4 gap-3">
+              <div className="relative grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
                 {productsForGrid.map((product, index) => {
                   const art = CARD_ART_STYLES[index % CARD_ART_STYLES.length];
                   return (

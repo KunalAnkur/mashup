@@ -90,6 +90,7 @@ export type Playlist = {
 export type RoomSetting = {
   panelCollapsed: boolean
   bottomSheet: boolean
+  playerActive: boolean
 }
 
 /**

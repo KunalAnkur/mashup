@@ -145,6 +145,12 @@ const Page = () => {
 
   }, [files, isHost, isInitialFilesLoaded, roomState.playlist, dispatch])
 
+  const mobilePanelHeightClass = roomState.settings.bottomSheet
+    ? "h-[40vh]"
+    : roomState.settings.playerActive
+      ? "h-[80vh]"
+      : "h-[60vh]";
+
   return (
     <>
       {/* Modal */}
@@ -204,7 +210,7 @@ const Page = () => {
             z-10 overflow-hidden bg-transparent transition-all duration-300 ease-in-out
             ${roomState.settings.panelCollapsed 
               ? "hidden" 
-              : "flex flex-col h-[70vh] md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative"
+            : `flex flex-col ${mobilePanelHeightClass} md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative`
             }
           `}
         >

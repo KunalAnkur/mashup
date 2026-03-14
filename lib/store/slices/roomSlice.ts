@@ -11,7 +11,12 @@ const initialState: RoomState = {
   watchTime: 0,
   settings: {
     panelCollapsed: false,
-    bottomSheet: false
+    bottomSheet: false,
+    /** 
+     * *this playeractive represent whether the playerwrapper component is mounted or not.
+     * *This will handle the panel height accordingly
+    */
+    playerActive: true,
   },
   loading: false,
   focused: false,
@@ -96,7 +101,9 @@ const roomSlice = createSlice({
     toggleBottomSheet: (state) => {
       state.settings.bottomSheet = !state.settings.bottomSheet;
     },
-
+    setPlayerActive: (state, action: PayloadAction<boolean>) => {
+      state.settings.playerActive = action.payload;
+    },
     updateWatchTime: (state) => {
       state.watchTime++;
     },
@@ -125,6 +132,7 @@ export const {
   setPanelCollapsed,
   setBottomSheet,
   toggleBottomSheet,
+  setPlayerActive,
   setRefers,
   updateRoomInfo,
   setFocused,

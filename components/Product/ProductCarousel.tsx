@@ -19,8 +19,6 @@ import { toggleBottomSheet } from "@/lib/store/slices/roomSlice";
 const ProductCarousel = ({ placement }: ProductCarouselProps) => {
   const dispatch = useDispatch();
   const products = useSelector((state: RootState) => state.product.items);
-  const isLoading = useSelector((state: RootState) => state.product.loading);
-  const productError = useSelector((state: RootState) => state.product.error);
   const bottomSheetIsOpen = useSelector(
     (state: RootState) => state.room.settings.bottomSheet
   );
@@ -80,21 +78,21 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <section className="w-full max-w-[1210px] px-3 sm:px-6">
+    <section className="w-full max-w-[1210px] px-2 md:px-6">
       <div className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0" />
 
-        <div className="relative mb-3 flex items-center justify-between gap-3">
+        <div className="relative mb-1.5 flex items-center justify-between gap-2 md:mb-3 md:gap-3">
           <div>
-            <h3 className="mt-1 text-[17px] font-semibold leading-tight text-white/90">
+            <h3 className="mt-0.5 text-[11.5px] font-semibold leading-tight text-white/90 md:mt-1 md:text-[17px]">
               {COPY_BY_PLACEMENT[placement].title}
             </h3>
-            <p className="mt-0.5 text-[11px] text-white/45 sm:text-xs">
+            <p className="mt-0.5 text-[9px] text-white/45 max-[768px]:hidden md:text-xs">
               {COPY_BY_PLACEMENT[placement].subtitle}
             </p>
           </div>
 
-          <div className="hidden items-center gap-2 sm:flex">
+          <div className="hidden items-center gap-2 md:flex">
             <button
               type="button"
               onClick={scrollPrev}
@@ -117,13 +115,13 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
         </div>
 
         <div className="relative overflow-hidden" ref={emblaRef}>
-          <div className="-ml-2.5 flex touch-pan-y sm:-ml-3">
+          <div className="-ml-1.5 flex touch-pan-y md:-ml-3">
             {products.map((product, index) => {
               const art = CARD_ART_STYLES[index % CARD_ART_STYLES.length];
               return (
                 <div
                   key={`${product.id}-${index}`}
-                  className="min-w-0 flex-[0_0_70%] pl-2.5 sm:flex-[0_0_42%] sm:pl-3 lg:flex-[0_0_25%]"
+                  className="min-w-0 w-1/2 flex-none pl-1.5 md:w-2/5 md:pl-3 lg:w-1/4"
                 >
                   <ProductCard product={product} art={art} />
                 </div>
@@ -133,7 +131,7 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
         </div>
 
         {products.length > 0 ? (
-          <div className="mt-3 flex items-center justify-end gap-1.5">
+          <div className="mt-1.5 hidden items-center justify-end gap-1 md:mt-3 md:flex md:gap-1.5">
             {scrollSnaps.map((_, index) => (
               <button
                 key={index}
@@ -142,15 +140,15 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
                 onClick={() => emblaApi?.scrollTo(index)}
                 className={`h-2 rounded-full transition-all ${
                   index === selectedIndex
-                    ? "w-6 bg-white/90"
-                    : "w-2 bg-white/35 hover:bg-white/55"
+                    ? "w-5 bg-white/90 md:w-6"
+                    : "w-1.5 bg-white/35 hover:bg-white/55 md:w-2"
                 }`}
               />
             ))}
           </div>
         ) : null}
 
-        <div className="relative mt-2 text-center flex flex-col justify-center items-center text-[10px] text-white/45">
+        <div className="relative mt-3 flex flex-col items-center justify-center text-center text-[9px] text-white/45 md:mt-2 md:text-[10px]">
           {/* {isLoading
             ? "Loading products..."
             : productError
@@ -166,19 +164,21 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
             className="group relative flex flex-col items-center justify-center gap-0.5 cursor-pointer"
           >
             <FiChevronUp
-              size={20}
+              size={16}
               className={`
               transition-transform duration-500 ease-in-out
               ${bottomSheetIsOpen ? "rotate-180" : "rotate-0"}
               ${!bottomSheetIsOpen ? "animate-bounce-subtle" : ""}
               group-hover:scale-125
-              text-neutral-400 group-hover:text-white
+              text-neutral-400 group-hover:text-white md:h-5 md:w-5
             `}
                     />
                     <span
                       className={`
-              text-[11px] font-medium tracking-widest uppercase
+              text-[9px] font-medium tracking-widest uppercase md:text-[11px]
               transition-all duration-300
+              hidden
+              md:contents
               text-neutral-400 group-hover:text-white
               ${!bottomSheetIsOpen ? "animate-pulse-soft" : "opacity-60"}
             `}
