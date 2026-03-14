@@ -7,9 +7,11 @@ import {
   modalBalancedContentClass,
   Modal,
   ModalCloseButton,
+  ModalIconActionButton,
   modalBrandActionButtonClass,
   modalCornerCloseButtonClass,
   modalConfirmSurfaceClass,
+  modalSubtleCloseButtonClass,
 } from "@/components/UI";
 
 interface ModalOnRoomCreateProps {
@@ -39,8 +41,6 @@ const ModalOnRoomCreate = ({
       ? t("invitedBy", { host: hostUsername })
       : t("invitedToWatchParty");
   const heroSubtitle = isHost ? t("inviteFriendsToStart") : t("watchVideosTogether");
-  const shareButtonBaseClass =
-    "flex items-center justify-center rounded-lg bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 p-2 transition-all duration-200 backdrop-blur-xl md:p-2.5";
 
   // Extract roomId from roomUrl (e.g., /room/abc123 -> abc123)
   const roomId = roomUrl?.split('/room/')[1] || '';
@@ -182,14 +182,14 @@ const ModalOnRoomCreate = ({
   const ShareButtons = () => (
     <div className="grid grid-cols-5 gap-1.5 md:gap-2">
       {shareButtons.map((button) => (
-        <button
+        <ModalIconActionButton
           key={button.key}
           onClick={button.onClick}
-          className={`${shareButtonBaseClass} ${button.hoverClass}`}
-          aria-label={button.label}
+          className={button.hoverClass}
+          label={button.label}
         >
           {button.icon}
-        </button>
+        </ModalIconActionButton>
       ))}
     </div>
   );
@@ -204,7 +204,7 @@ const ModalOnRoomCreate = ({
       <div className="relative w-full">
         <ModalCloseButton
           onClick={onClose}
-          className={`${modalCornerCloseButtonClass} text-white/45 hover:text-white/82`}
+          className={`${modalCornerCloseButtonClass} ${modalSubtleCloseButtonClass}`}
           label={tCommon("close")}
         />
 

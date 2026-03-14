@@ -31,7 +31,8 @@ const panelTransition = { duration: 0.22, ease: "easeOut" as const };
 const focusableSelector =
   'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 const modalCloseButtonBaseClass =
-  "p-2 rounded-xl bg-transparent text-white/40 transition-colors duration-200 hover:bg-transparent hover:text-white";
+  "appearance-none border-0 p-2 rounded-xl bg-transparent text-white/40 outline-none ring-0 transition-colors duration-200 hover:bg-transparent hover:text-white focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0";
+const modalSubtleCloseButtonClass = "text-white/45 hover:text-white/82";
 const modalCornerCloseButtonClass =
   "absolute right-2.5 top-2.5 z-10 h-8 w-8 p-1.5 md:right-3 md:top-3";
 const modalHeaderBaseClass = "relative flex items-center justify-between gap-3 px-6 pt-6 pb-2";
@@ -40,6 +41,8 @@ const modalHeaderSubtitleClass =
   "text-[10px] font-semibold uppercase tracking-widest text-white/40";
 const modalActionButtonBaseClass =
   "flex-1 rounded-xl px-4 py-2.5 text-sm font-medium shadow-none transition-all duration-200";
+const modalIconActionButtonBaseClass =
+  "flex items-center justify-center rounded-lg bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 p-2 transition-all duration-200 backdrop-blur-xl md:p-2.5";
 const modalDiscardActionButtonClass =
   `${modalActionButtonBaseClass} bg-white/[0.045] text-white/92 hover:bg-white/[0.085]`;
 const modalBrandActionButtonClass =
@@ -86,6 +89,28 @@ const ModalCloseButton = ({
     {...props}
   >
     {icon}
+  </button>
+);
+
+interface ModalIconActionButtonProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type" | "aria-label"> {
+  label: string;
+  children: ReactNode;
+}
+
+const ModalIconActionButton = ({
+  className = "",
+  label,
+  children,
+  ...props
+}: ModalIconActionButtonProps) => (
+  <button
+    type="button"
+    aria-label={label}
+    className={[modalIconActionButtonBaseClass, className].filter(Boolean).join(" ")}
+    {...props}
+  >
+    {children}
   </button>
 );
 
@@ -339,10 +364,13 @@ const Modal = ({
 export default Modal;
 export {
   ModalCloseButton,
+  modalSubtleCloseButtonClass,
   modalCornerCloseButtonClass,
+  ModalIconActionButton,
   ModalHeader,
   ModalConfirmContent,
   modalActionButtonBaseClass,
+  modalIconActionButtonBaseClass,
   modalDiscardActionButtonClass,
   modalBrandActionButtonClass,
   modalConfirmActionButtonClass,

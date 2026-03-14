@@ -10,7 +10,9 @@ import AuthHeader from "./AuthHeader";
 import PageHeader from "./PageHeader";
 import Modal, {
   ModalCloseButton,
+  modalSubtleCloseButtonClass,
   modalCornerCloseButtonClass,
+  ModalIconActionButton,
   ModalHeader,
   ModalConfirmContent,
   modalBrandIconWrapClass,
@@ -22,6 +24,7 @@ import Modal, {
   modalConfirmMessageClass,
   modalConfirmSurfaceClass,
   modalBalancedContentClass,
+  modalIconActionButtonBaseClass,
   modalDiscardActionButtonClass,
 } from "./Modal";
 export {
@@ -37,7 +40,9 @@ export {
   PageHeader,
   Modal,
   ModalCloseButton,
+  modalSubtleCloseButtonClass,
   modalCornerCloseButtonClass,
+  ModalIconActionButton,
   ModalHeader,
   ModalConfirmContent,
   modalBrandIconWrapClass,
@@ -49,5 +54,6 @@ export {
   modalConfirmMessageClass,
   modalConfirmSurfaceClass,
   modalBalancedContentClass,
+  modalIconActionButtonBaseClass,
   modalDiscardActionButtonClass,
 };
