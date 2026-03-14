@@ -24,25 +24,31 @@ const PlaylistTab = () => {
     useEffect(() => {
         setPlaylist(playlistState);
     }, [playlistState]);
-    /**
-     * * This playlistwithscreen var is here for cleaning up the screen 
-     * * share playlist from the redux not from the database
-     * * The reason why we are not going to update to the database is because
-     * * we can keep it in case we need to debug the data.
-     */
+
     const handleSelect = (id: string, source: "file" | "url" | "screen") => {
         console.log("handleSelect", id, source);
         if (!isHost) return;
-        const playlistWithScreen = playlist.filter((item) => item.source !== "screen").map((item) => ({
-            ...item,
-            selected: item.id === id,
-        }))
-        const newPlaylist = playlist.map((item) => ({
+
+        // * UX rule: selecting file/url while screen-sharing should hide screen items from playlist tab.
+        const shouldRemoveScreenItems = source !== "screen";
+        const basePlaylist = shouldRemoveScreenItems
+            ? playlist.filter((item) => item.source !== "screen")
+            : playlist;
+
+        // * Build the exact playlist shape that host store, DB and guests should all share.
+        const newPlaylist = basePlaylist.map((item) => ({
             ...item,
             selected: item.id === id,
         }));
+
+        // ! Safety: if selected id is not present after filtering, keep one deterministic selected item.
+        if (newPlaylist.length && !newPlaylist.some((item) => item.selected)) {
+            newPlaylist[0] = { ...newPlaylist[0], selected: true };
+        }
+
+        // * Keep all destinations in sync with the same payload to avoid index drift on non-host clients.
         setPlaylist(newPlaylist);
-        dispatch(updateRoomInfo({ playlist: playlistWithScreen }));
+        dispatch(updateRoomInfo({ playlist: newPlaylist }));
         updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: newPlaylist } }).unwrap();
         broadcastPlaylist(newPlaylist);
     }
