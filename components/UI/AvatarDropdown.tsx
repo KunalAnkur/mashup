@@ -10,6 +10,10 @@ import { FcGoogle } from "react-icons/fc";
 import { IoLogOutOutline } from "react-icons/io5";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
+import Modal, {
+  ModalConfirmContent,
+  modalConfirmSurfaceClass,
+} from "./Modal";
 
 interface AvatarDropdownProps {
   size?: number;
@@ -173,38 +177,25 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
       )}
 
       {/* Logout Confirmation Modal - ALL onClick handlers REMOVED for testing */}
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]">
-          <div className="bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-lg md:rounded-2xl p-4 md:p-6 max-w-sm w-full mx-3 md:mx-4 shadow-2xl">
-            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-              <div className="p-1.5 md:p-2 rounded-lg md:rounded-xl bg-red-500/20">
-                <IoLogOutOutline className="text-red-400" size={18} />
-              </div>
-              <h3 className="text-white text-base md:text-lg font-bold font-parkinsans">
-                {tCommon("confirmLogout")}
-              </h3>
-            </div>
-            <p className="text-gray-400 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-              {tCommon("confirmLogoutMessage")}
-            </p>
-            <div className="flex gap-2 md:gap-3">
-              <button
-                onClick={handleLogoutCancel}
-                className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-white/5 hover:bg-white/10 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200"
-              >
-                {tCommon("cancel")}
-              </button>
-              <button
-                onClick={handleLogoutConfirm}
-                disabled={isLoggingOut}
-                className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoggingOut ? tCommon("loggingOut") : tCommon("logout")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showLogoutConfirm}
+        onClose={handleLogoutCancel}
+        closeOnBackdropClick={false}
+        closeOnEscape={false}
+        overlayClassName="logout-modal z-[9999]"
+        panelClassName={modalConfirmSurfaceClass}
+      >
+        <ModalConfirmContent
+          icon={<IoLogOutOutline size={18} className="text-current" />}
+          title={tCommon("confirmLogout")}
+          message={tCommon("confirmLogoutMessage")}
+          cancelLabel={tCommon("cancel")}
+          confirmLabel={isLoggingOut ? tCommon("loggingOut") : tCommon("logout")}
+          onCancel={handleLogoutCancel}
+          onConfirm={handleLogoutConfirm}
+          confirmDisabled={isLoggingOut}
+        />
+      </Modal>
 
     </div>
   );

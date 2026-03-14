@@ -12,6 +12,7 @@ import {
   ContentDivider,
   useDragAndDrop,
 } from "./DeviceModalComponents";
+import { Modal } from "@/components/UI";
 
 const DeviceModal: React.FC<DeviceModalProps> = ({
   open,
@@ -38,25 +39,18 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
     }
   };
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   const handlePlatformClick = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  // Early return if modal is closed
-  if (!open) return null;
-
   const showFileSelection = step === OnboardStep.FILE_SELECTION;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-      onClick={handleBackdropClick}
+    <Modal
+      open={open}
+      onClose={onClose}
+      overlayClassName="z-50 p-0"
+      panelClassName="h-full max-w-none"
     >
       <div
         className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden"
@@ -88,7 +82,7 @@ const DeviceModal: React.FC<DeviceModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

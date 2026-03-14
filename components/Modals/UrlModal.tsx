@@ -1,6 +1,5 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/lib/store";
+import { useDispatch } from "react-redux";
 import { setRefers } from "@/lib/store/slices/roomSlice";
 import { UrlModalProps } from "@/types/ModalTypes/urlModalProps";
 import { useRouter } from "next/navigation";
@@ -12,11 +11,11 @@ import {
   getPlatformById,
   getUrlDisplayName,
 } from "./UrlModalComponents";
+import { Modal } from "@/components/UI";
 
 const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const authState = useSelector((state: RootState) => state.auth);
 
   const {
     sourceUrlInput,
@@ -28,11 +27,6 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
     handleAddUrl,
     handleRemoveUrl,
   } = useUrlManagement();
-
-  // Event Handlers
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onClose();
-  };
 
   const handleOnSourceUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSourceUrlInput(e.target.value);
@@ -55,13 +49,12 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
     router.push("/sync");
   };
 
-  // Early return if modal is closed
-  if (!open) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-      onClick={handleBackdropClick}
+    <Modal
+      open={open}
+      onClose={onClose}
+      overlayClassName="z-50 p-0"
+      panelClassName="h-full max-w-none"
     >
       <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden">
         <UrlModalHeader onClose={onClose} />
@@ -91,7 +84,7 @@ const UrlModal: React.FC<UrlModalProps> = ({ open, onClose }) => {
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

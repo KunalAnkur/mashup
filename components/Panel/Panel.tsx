@@ -10,7 +10,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { exitRoom } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { AvatarDropdown } from "../UI";
+import {
+  AvatarDropdown,
+  Modal,
+  ModalConfirmContent,
+  modalConfirmSurfaceClass,
+} from "../UI";
 import Image from "next/image";
 import { isMobile } from "react-device-detect";
 import * as constants from "../../constants";
@@ -352,37 +357,24 @@ const Panel = () => {
       
 
       <div className="relative z-30 flex flex-col h-full w-full">
-        {showLeaveConfirm && (
-          <div className="leave-modal fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-xl md:rounded-2xl p-4 md:p-6 max-w-sm w-full mx-4 shadow-2xl">
-              <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-                <div className="p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
-                  <LuLogOut className="text-red-400" size={18} />
-                </div>
-                <h3 className="text-white text-base md:text-lg font-bold font-parkinsans">
-                  {tPanel("leaveParty")}
-                </h3>
-              </div>
-              <p className="text-white/70 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-                {tPanel("leavePartyMessage")}
-              </p>
-              <div className="flex gap-2 md:gap-3">
-                <button
-                  onClick={handleStay}
-                  className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200"
-                >
-                  {tPanel("stay")}
-                </button>
-                <button
-                  onClick={handleLeaveParty}
-                  className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
-                >
-                  {tPanel("leave")}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <Modal
+          open={showLeaveConfirm}
+          onClose={handleStay}
+          closeOnBackdropClick={false}
+          closeOnEscape={false}
+          overlayClassName="leave-modal z-50"
+          panelClassName={modalConfirmSurfaceClass}
+        >
+          <ModalConfirmContent
+            icon={<LuLogOut size={18} className="text-current" />}
+            title={tPanel("leaveParty")}
+            message={tPanel("leavePartyMessage")}
+            cancelLabel={tPanel("stay")}
+            confirmLabel={tPanel("leave")}
+            onCancel={handleStay}
+            onConfirm={handleLeaveParty}
+          />
+        </Modal>
 
         {/* ============================================== */}
         {/* MOBILE VIEW - Unified Compact Header (shown on mobile devices, even in landscape) */}

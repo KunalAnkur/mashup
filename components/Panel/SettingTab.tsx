@@ -12,6 +12,7 @@ import { validateUsername } from "@/utils/validation";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { useSubmitFeedbackMutation } from "@/lib/store/api/feedbackApi";
+import { Modal, ModalHeader } from "../UI";
 
 const sectionClass = "space-y-3";
 const sectionLabelClass =
@@ -227,26 +228,28 @@ const SettingTab = () => {
 
   return (
     <div className="flex h-full w-full flex-col gap-3 overflow-hidden">
-      {isFeedbackOpen && (
-        <div className="feedback-modal fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]">
-          <div className="relative w-full max-w-md mx-4 bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] rounded-[2rem] shadow-2xl overflow-hidden">
+      <Modal
+        open={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+        closeOnBackdropClick={false}
+        closeOnEscape={false}
+        overlayClassName="feedback-modal z-[9999]"
+        panelClassName="max-w-md overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] shadow-2xl"
+      >
+          <div className="relative w-full">
             <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[60px]" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-[60px]" />
 
-            <div className="relative px-6 pt-6 pb-2 flex justify-between items-center">
-              <div className="flex items-center gap-3">
+            <ModalHeader
+              icon={
                 <div className="p-2 rounded-xl bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
                   <LuMessageSquare className="text-rose-400" size={20} />
                 </div>
-                <div>
-                  <h3 className="text-white text-lg font-bold font-parkinsans">{tFeedback("title")}</h3>
-                  <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">{tFeedback("helpUsImprove")}</p>
-                </div>
-              </div>
-              <button onClick={() => setIsFeedbackOpen(false)} className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all">
-                <LuX size={20} />
-              </button>
-            </div>
+              }
+              title={tFeedback("title")}
+              subtitle={tFeedback("helpUsImprove")}
+              onClose={() => setIsFeedbackOpen(false)}
+            />
 
             <form onSubmit={handleFeedbackSubmit} className="relative p-6 space-y-5">
               <div className="flex p-1 bg-zinc-900/50 rounded-2xl">
@@ -303,8 +306,7 @@ const SettingTab = () => {
               </button>
             </form>
           </div>
-        </div>
-      )}
+      </Modal>
 
       {/* Room Settings */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">

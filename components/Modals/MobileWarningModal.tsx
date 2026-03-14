@@ -1,9 +1,7 @@
 "use client";
 
-import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { Modal } from "@/components/UI";
 import { FaDesktop, FaMobileAlt, FaExclamationTriangle } from "react-icons/fa";
-import { IoClose } from "react-icons/io5";
 
 interface MobileWarningModalProps {
   isOpen: boolean;
@@ -16,27 +14,14 @@ const MobileWarningModal = ({
   onClose,
   onContinue,
 }: MobileWarningModalProps) => {
-  if (typeof window === "undefined") return null;
-
-  return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="relative w-full max-w-sm bg-gradient-to-br from-zinc-900/95 via-zinc-800/95 to-zinc-900/95 backdrop-blur-2xl border border-zinc-700/50 rounded-2xl shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
+  return (
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      overlayClassName="z-[99999]"
+      panelClassName="max-w-sm overflow-hidden rounded-2xl border border-zinc-700/50 bg-gradient-to-br from-zinc-900/95 via-zinc-800/95 to-zinc-900/95 shadow-2xl"
+    >
+          <div className="relative w-full">
           
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-orange-500/5 to-yellow-500/5 pointer-events-none" />
  
@@ -138,13 +123,9 @@ const MobileWarningModal = ({
                 💡 Tip: Open this link on your computer for the best experience
               </p>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>,
-    document.body
+          </div>
+    </Modal>
   );
 };
 
 export default MobileWarningModal;
-

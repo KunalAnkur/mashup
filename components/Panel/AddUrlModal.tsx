@@ -1,5 +1,6 @@
 import React from "react";
-import { LuPlus, LuX } from "react-icons/lu";
+import { LuPlus } from "react-icons/lu";
+import { Modal, ModalHeader } from "../UI";
 
 interface AddUrlModalProps {
     isOpen: boolean;
@@ -22,33 +23,26 @@ export const AddUrlModal: React.FC<AddUrlModalProps> = ({
     onUrlInputKeyDown,
     onAddUrl,
 }) => {
-    if (!isOpen) return null;
-
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-            onClick={onClose}
+        <Modal
+            open={isOpen}
+            onClose={onClose}
+            overlayClassName="z-50"
+            panelClassName="max-w-md rounded-2xl border border-white/10 bg-gradient-to-br from-[#1f1f23] to-[#27272a] p-6 shadow-xl"
         >
-            <div
-                className="relative w-full max-w-md mx-4 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-6 shadow-xl border border-white/10"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
+            <div className="relative w-full">
+                <ModalHeader
+                    className="px-0 pt-0 pb-0 mb-6"
+                    icon={
                         <div className="bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-2 rounded-lg">
                             <LuPlus className="text-white text-lg" />
                         </div>
-                        <h3 className="text-xl font-bold text-white">Add Video URL</h3>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
-                        aria-label="Close"
-                    >
-                        <LuX size={20} />
-                    </button>
-                </div>
+                    }
+                    title="Add Video URL"
+                    titleClassName="text-xl"
+                    onClose={onClose}
+                    closeButtonClassName="rounded-lg text-gray-400 hover:bg-white/10 hover:text-white"
+                />
 
                 {/* Input Section */}
                 <div className="space-y-4">
@@ -100,7 +94,6 @@ export const AddUrlModal: React.FC<AddUrlModalProps> = ({
                     </div>
                 </div>
             </div>
-        </div>
+        </Modal>
     );
 };
-

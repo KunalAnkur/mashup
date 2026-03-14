@@ -8,6 +8,22 @@ import Input from "./Input";
 import Notification from "./Notification";
 import AuthHeader from "./AuthHeader";
 import PageHeader from "./PageHeader";
+import Modal, {
+  ModalCloseButton,
+  modalCornerCloseButtonClass,
+  ModalHeader,
+  ModalConfirmContent,
+  modalBrandIconWrapClass,
+  modalBrandIconClass,
+  modalBrandTitleClass,
+  modalBrandActionButtonClass,
+  modalConfirmActionButtonClass,
+  modalConfirmHeaderClass,
+  modalConfirmMessageClass,
+  modalConfirmSurfaceClass,
+  modalBalancedContentClass,
+  modalDiscardActionButtonClass,
+} from "./Modal";
 export {
   Avatar,
   AvatarDropdown,
@@ -19,4 +35,19 @@ export {
   Notification,
   AuthHeader,
   PageHeader,
+  Modal,
+  ModalCloseButton,
+  modalCornerCloseButtonClass,
+  ModalHeader,
+  ModalConfirmContent,
+  modalBrandIconWrapClass,
+  modalBrandIconClass,
+  modalBrandTitleClass,
+  modalBrandActionButtonClass,
+  modalConfirmActionButtonClass,
+  modalConfirmHeaderClass,
+  modalConfirmMessageClass,
+  modalConfirmSurfaceClass,
+  modalBalancedContentClass,
+  modalDiscardActionButtonClass,
 };

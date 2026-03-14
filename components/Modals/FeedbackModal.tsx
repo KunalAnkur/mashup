@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { LuX, LuSend, LuSparkles, LuMessageSquare } from "react-icons/lu";
+import { LuSend, LuMessageSquare } from "react-icons/lu";
 import { useSubmitFeedbackMutation } from "@/lib/store/api/feedbackApi";
 import { showSuccess, showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { Modal, ModalHeader } from "@/components/UI";
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -17,7 +18,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
   const [loading, setLoading] = useState(false);
   const roomState = useSelector((state: RootState) => state.room);
   const authState = useSelector((state: RootState) => state.auth);
-  const [submitFeedback] =useSubmitFeedbackMutation();
+  const [submitFeedback] = useSubmitFeedbackMutation();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -50,38 +51,36 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
       } else {
         showError(tCommon("error"), tToast("pleaseLogin"));
       }
-    } catch (err: any) {
+    } catch {
       showError(tCommon("error"), tToast("couldNotSendFeedback"));
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="feedback-modal fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="relative w-full max-w-md bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518]  rounded-[2rem] shadow-2xl overflow-hidden animate-slide-up">
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      overlayClassName="feedback-modal z-[99999]"
+      panelClassName="max-w-md overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] shadow-2xl"
+    >
+      <div className="relative w-full animate-slide-up">
         
         {/* Dynamic Background Glows (Matching Panel Style) */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[60px]" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-[60px]" />
 
-        {/* Header */}
-        <div className="relative px-6 pt-6 pb-2 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 ">
+        <ModalHeader
+          icon={
+            <div className="p-2 rounded-xl bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
               <LuMessageSquare className="text-rose-400" size={20} />
             </div>
-            <div>
-              <h3 className="text-white text-lg font-bold font-parkinsans">{tFeedback("title")}</h3>
-              <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">{tFeedback("helpUsImprove")}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all">
-            <LuX size={20} />
-          </button>
-        </div>
+          }
+          title={tFeedback("title")}
+          subtitle={tFeedback("helpUsImprove")}
+          onClose={onClose}
+        />
 
         <form onSubmit={handleSubmit} className="relative p-6 space-y-5">
           {/* Category Chips - Matching Tab Style */}
@@ -90,7 +89,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
               <button
                 key={cat}
                 type="button"
-                onClick={() => setFormData({ ...formData, category: cat as any })}
+                onClick={() => setFormData({ ...formData, category: cat })}
                 className={`flex-1 py-2 text-[11px] font-bold capitalize transition-all duration-300 rounded-xl ${
                   formData.category === cat 
                     ? "bg-gradient-to-r from-rose-500/20 to-fuchsia-500/20 text-white " 
@@ -140,7 +139,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
           </button>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 };
 
