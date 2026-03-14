@@ -1,6 +1,6 @@
 "use client";
 
-import { LuFolderPlus, LuLink2, LuPlus, LuScreenShare } from "react-icons/lu";
+import { LuFolderPlus, LuLink2, LuScreenShare } from "react-icons/lu";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useEffect, useState } from "react";
@@ -11,7 +11,7 @@ import { helper } from "@/utils";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist, UrlMetadata } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
-import { Modal, ModalHeader } from "@/components/UI";
+import { AddUrlModal } from "../AddUrlModal";
 
 type ContentSelectionProps = {
     onAddContent: (content: Playlist[], source: "file" | "url" | "screen") => void;
@@ -383,75 +383,16 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                 ))}
             </div>
         )}
-            <Modal
-                open={showAddUrlModal}
+            <AddUrlModal
+                isOpen={showAddUrlModal}
+                urlInput={urlInput}
+                urlError={urlError}
+                isAdding={isAddingUrls}
                 onClose={handleCloseAddUrlModal}
-                overlayClassName="z-50"
-                panelClassName="max-w-md rounded-2xl border border-white/10 bg-gradient-to-br from-[#1f1f23] to-[#27272a] p-6 shadow-xl"
-            >
-                    <div className="relative w-full">
-                        <ModalHeader
-                            className="px-0 pt-0 pb-0 mb-6"
-                            icon={
-                                <div className="bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-2 rounded-lg">
-                                    <LuPlus className="text-white text-lg" />
-                                </div>
-                            }
-                            title={t("addVideoUrl")}
-                            titleClassName="text-xl"
-                            onClose={handleCloseAddUrlModal}
-                            closeButtonClassName="rounded-lg text-gray-400 hover:bg-white/10 hover:text-white"
-                        />
-
-                        <div className="space-y-4">
-                            <div>
-                                <input
-                                    type="text"
-                                    placeholder={t("enterUrl")}
-                                    value={urlInput}
-                                    onChange={handleUrlInputChange}
-                                    onKeyDown={handleUrlInputKeyDown}
-                                    className="w-full rounded-xl bg-white/5 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
-                                    disabled={isAddingUrls}
-                                    autoFocus
-                                />
-                                {urlError && (
-                                    <p className="mt-2 text-sm text-red-400 flex items-center gap-1.5">
-                                        <span>⚠️</span>
-                                        <span>{urlError}</span>
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    onClick={handleCloseAddUrlModal}
-                                    disabled={isAddingUrls}
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-medium text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {tCommon("cancel")}
-                                </button>
-                                <button
-                                    onClick={handleAddUrl}
-                                    disabled={isAddingUrls || !urlInput.trim() || !!urlError}
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {isAddingUrls ? (
-                                        <>
-                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            <span>{t("adding")}</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <LuPlus size={16} />
-                                            <span>{t("addUrl")}</span>
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-            </Modal>
+                onUrlInputChange={handleUrlInputChange}
+                onUrlInputKeyDown={handleUrlInputKeyDown}
+                onAddUrl={handleAddUrl}
+            />
         </>
     );
 };

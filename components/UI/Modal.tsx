@@ -12,6 +12,12 @@ import {
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { LuX } from "react-icons/lu";
+import {
+  movmashModalGradientStopsClass,
+  movmashModalIconWrapClass,
+  movmashModalSoftIconWrapClass,
+  movmashModalTitleGradientClass,
+} from "./modalTheme";
 
 interface ModalProps {
   open: boolean;
@@ -46,7 +52,7 @@ const modalIconActionButtonBaseClass =
 const modalDiscardActionButtonClass =
   `${modalActionButtonBaseClass} bg-white/[0.045] text-white/92 hover:bg-white/[0.085]`;
 const modalBrandActionButtonClass =
-  `${modalActionButtonBaseClass} bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 text-white hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500`;
+  `${modalActionButtonBaseClass} bg-gradient-to-r ${movmashModalGradientStopsClass} text-white`;
 const modalConfirmActionButtonClass =
   `${modalActionButtonBaseClass} bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white hover:from-red-500 hover:via-rose-500 hover:to-pink-500`;
 const modalConfirmSurfaceClass =
@@ -54,10 +60,20 @@ const modalConfirmSurfaceClass =
 const modalBalancedContentClass = "px-4 py-4 md:px-5 md:py-5";
 const modalConfirmHeaderClass = "mb-2 px-0 pt-0 pb-0 md:mb-3";
 const modalConfirmMessageClass = "mb-3 text-xs leading-relaxed text-white/70 md:mb-4 md:text-sm";
+const modalFormHeaderClass = "mb-4 px-0 pt-0 pb-0 md:mb-5";
+const modalFormBodyClass = "space-y-4 px-4 pb-4 pt-0 md:px-5 md:pb-5";
+const modalFormActionsClass = "flex gap-3 pt-2";
+const modalTextFieldClass =
+  "w-full rounded-xl border-0 bg-white/[0.045] px-4 py-3 text-sm text-white outline-none ring-0 transition-[background-color] duration-200 placeholder:text-gray-500 focus:bg-white/[0.06] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0";
+const modalErrorTextClass = "mt-2 flex items-center gap-1.5 text-sm text-red-400";
 const modalBrandTitleClass =
-  "bg-gradient-to-r from-red-200 via-rose-100 to-pink-200 bg-clip-text text-transparent";
+  `bg-gradient-to-r ${movmashModalTitleGradientClass} bg-clip-text text-transparent`;
+const modalAccentTitleClass =
+  `bg-gradient-to-r ${movmashModalTitleGradientClass} bg-clip-text text-transparent`;
 const modalBrandIconWrapClass =
-  "flex h-9 w-9 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#5b1d2c] via-[#6f2234] to-[#522234] text-rose-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(41,10,20,0.22)]";
+  `flex h-9 w-9 items-center justify-center rounded-[14px] ${movmashModalIconWrapClass}`;
+const modalAccentIconWrapClass =
+  `flex h-9 w-9 items-center justify-center rounded-[14px] ${movmashModalSoftIconWrapClass}`;
 const modalBrandIconClass = "text-current";
 
 const getFocusableElements = (container: HTMLElement | null) => {
@@ -378,7 +394,14 @@ export {
   modalBalancedContentClass,
   modalConfirmHeaderClass,
   modalConfirmMessageClass,
+  modalFormHeaderClass,
+  modalFormBodyClass,
+  modalFormActionsClass,
+  modalTextFieldClass,
+  modalErrorTextClass,
   modalBrandTitleClass,
+  modalAccentTitleClass,
   modalBrandIconWrapClass,
+  modalAccentIconWrapClass,
   modalBrandIconClass,
 };
