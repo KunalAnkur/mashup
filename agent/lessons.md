@@ -218,6 +218,19 @@ Use this file to record mistakes, root causes, and prevention steps.
 - For screen-share items in the playlist, do not rely on one generic thumbnail; derive the real `displaySurface` mode from playlist metadata/context and give `tab`, `window`, and `screen` distinct thumbnail compositions so the user instantly recognizes what was shared.
 - In very small playlist thumbnails, label clarity matters more than decorative micro-details; if a dot plus translucent sub-layer starts to feel noisy, keep only the colored label pill and text.
 - For very small mode labels inside thumbnails, even a subtle translucent label fill can be too much; if the thumbnail already carries the mode visually, plain text is cleaner.
+
+## 2026-03-15 (Unused Modal Cleanup Audit)
+
+- Date: 2026-03-15
+- Context: Removing legacy modal files after introducing shared modal flows.
+- Error: Old wrapper modals can look "safe to keep" but leave stale imports, state, or commented JSX behind, especially in entry-point screens.
+- Root cause: Component-tree migration finished, but dead wrapper files and their support types were not deleted immediately.
+- Prevention checklist:
+  - Use import search first; do not delete by filename guess alone.
+  - Distinguish between dead wrapper files and still-active component folders used by newer pages.
+  - After deleting a UI file, remove related state, handlers, comments, and prop types in the entry points.
+  - Run a focused smoke test on the screen that previously referenced the removed modal.
+- Follow-up action: Apply the same audit pattern whenever a reusable component replaces inline or legacy modal wrappers.
 - If plain text becomes too weak, the cleaner fallback is a solid compact label background, not a transparent/glassy one.
 - A stronger simplification for tiny media tiles is to move the mode indicator into the thumbnail itself: one clear gradient surface plus a single icon-text row can read cleaner than any separate label block.
 

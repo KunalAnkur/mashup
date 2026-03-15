@@ -13,9 +13,10 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - `Feedback` modal extracted from `SettingTab` into its own shared modal component.
   - Shared modal color tokens moved into `components/UI/modalTheme.ts`.
   - Modal workflow/design rules consolidated in `AGENTS.md`.
+  - Removed dead legacy modal wrappers that were no longer imported (`DeviceModal`, `UrlModal`, `MobileWarningModal`) after verifying active flows use the newer component trees directly.
 - Current focus:
   - Finish `Feedback` modal UX polish with inline validation and consistent action sizing.
-  - Audit remaining modal-heavy flows such as `DeviceModal` and `UrlModal`.
+  - Keep source-selection and remaining modal entry points free of stale imports/state after legacy wrapper cleanup.
   - Keep agent docs aligned so there is one clear source of truth for rules vs lessons vs backlog.
 - Testing reminder:
   - Verify `Settings` tab opens without runtime errors.
