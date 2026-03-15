@@ -274,7 +274,7 @@ const PlayerOverlay = () => {
         <div className="flex gap-2 md:gap-3">
          
           <button
-            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 rounded-full transition-all font-medium text-white text-xs md:text-sm cursor-pointer"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-black/45 text-white/90 backdrop-blur-sm transition-transform active:scale-95"
             onClick={handleTogglePanelExpand}
           >
             {isMobile ? (

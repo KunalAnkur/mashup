@@ -108,6 +108,7 @@ const VideoPlayer = ({
     const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
     const seekDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wasPlayingBeforeSeek = useRef(false);
+    const isSeekingRef = useRef(false);
 
     const resumePlaybackIfNeeded = useCallback(() => {
         if (!autoResumeOnFullscreenExit) return;
@@ -139,8 +140,13 @@ const VideoPlayer = ({
 
     // Controls visibility
     const startInactivityTimer = () => {
+        if (isSeekingRef.current) return;
         clearTimeout(inactivityTimerRef.current!);
-        inactivityTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+        inactivityTimerRef.current = setTimeout(() => {
+            if (!isSeekingRef.current) {
+                setShowControls(false);
+            }
+        }, 5000);
     };
 
     const handleUserActivity = () => {
@@ -156,8 +162,9 @@ const VideoPlayer = ({
     }, [controls]);
 
     // Player controls
+    const isPlayDisabled = disableControls.includes(ControlComponents.PLAY);
     const togglePlay = () => {
-        if (disableControls.includes(ControlComponents.PLAY)) return;
+        if (isPlayDisabled) return;
         const newPlaying = !playing;
         setPlaying(newPlaying);
 
@@ -195,7 +202,6 @@ const VideoPlayer = ({
 
     const toggleFullscreen = () => {
         if (disableControls.includes(ControlComponents.FULLSCREEN)) return;
-        
         // For mobile browsers, use native video element fullscreen
         if (isMobile && playerRef.current) {
             const videoElement = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
@@ -296,7 +302,12 @@ const VideoPlayer = ({
 
     const handleSeekStart = () => {
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
-        
+        isSeekingRef.current = true;
+        if (controls) {
+            if (!showControls) setShowControls(true);
+            clearTimeout(inactivityTimerRef.current!);
+        }
+
         wasPlayingBeforeSeek.current = playing;
         
         // Only pause on seek start if disableSeekPauseResume is false
@@ -321,6 +332,8 @@ const VideoPlayer = ({
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
         onSeekEnd?.();
+        isSeekingRef.current = false;
+        if (controls) startInactivityTimer();
         
         // Only resume on seek end if disableSeekPauseResume is false
         if (!disableSeekPauseResume) {
@@ -409,6 +422,7 @@ const VideoPlayer = ({
                 }`}
             onMouseMove={controls ? handleUserActivity : undefined}
             onMouseEnter={controls ? handleUserActivity : undefined}
+            onTouchStart={controls ? handleUserActivity : undefined}
         >
             <div
                 className={`${false ? "w-full h-full" : "h-full w-full"
@@ -461,7 +475,7 @@ const VideoPlayer = ({
                     />
                 )}
 
-                {!hideControls.includes(ControlComponents.OVERLAY) && <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} />}
+                {!hideControls.includes(ControlComponents.OVERLAY) && <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} disablePlay={isPlayDisabled}  />}
 
                 {controls && (
                     <ControlBar
@@ -483,6 +497,7 @@ const VideoPlayer = ({
                         onFullscreenToggle={toggleFullscreen}
                         formatTime={formatVideoTime}
                         hideControls={hideControls}
+                        onUserActivity={handleUserActivity}
                     />
                 )}
             </div>

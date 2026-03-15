@@ -148,7 +148,7 @@ const Page = () => {
   const mobilePanelHeightClass = roomState.settings.bottomSheet
     ? "h-[40vh]"
     : roomState.settings.playerActive
-      ? "h-[80vh]"
+      ? "h-[75vh]"
       : "h-[60vh]";
 
   return (
