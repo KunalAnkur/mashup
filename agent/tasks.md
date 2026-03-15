@@ -5,7 +5,7 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 ## Current Step
 
 - Date: 2026-03-15
-- Active task: Panel/room modal standardization plus agent doc synchronization.
+- Active task: Panel component tasks, after finishing modal cleanup and moving deferred refactors into agent docs.
 - Status: In progress.
 - Completed in this workstream:
   - Shared modal shell/tokens standardized in `components/UI/Modal.tsx`.
@@ -14,15 +14,18 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Shared modal color tokens moved into `components/UI/modalTheme.ts`.
   - Modal workflow/design rules consolidated in `AGENTS.md`.
   - Removed dead legacy modal wrappers that were no longer imported (`DeviceModal`, `UrlModal`, `MobileWarningModal`) after verifying active flows use the newer component trees directly.
+  - Removed dead leaf components/export entries left behind inside `DeviceModalComponents` and `UrlModalComponents` after wrapper cleanup.
+- Deferred out of this branch:
+  - Rename `DeviceModalComponents` / `UrlModalComponents` into non-modal full-page naming.
+  - Rename `hooks/ModalHooks/*` if they stay shared beyond modal flows.
+  - Do any broader architecture cleanup around `stream` / `sync` page component ownership in a separate refactor branch.
 - Current focus:
-  - Finish `Feedback` modal UX polish with inline validation and consistent action sizing.
-  - Keep source-selection and remaining modal entry points free of stale imports/state after legacy wrapper cleanup.
-  - Keep agent docs aligned so there is one clear source of truth for rules vs lessons vs backlog.
+  - Work on panel component tasks in this branch.
+  - Keep modal cleanup changes limited to safe dead-code removal only.
+  - Keep agent docs aligned so deferred refactors do not stay only in chat history.
 - Testing reminder:
-  - Verify `Settings` tab opens without runtime errors.
-  - Verify `Leave`, `Logout`, `Invite`, `Add URL`, and `Feedback` modals share the intended spacing and action language.
-  - Verify field-level modal validation appears inline after submit and not behind modal overlays.
-  - Verify toast remains only for success/global/backend cases in form modals.
+  - Re-run modal smoke tests only when a panel task touches shared modal code.
+  - Keep dead-code cleanup verified with focused import search and local lint before moving on.
 
 Rules for execution:
 

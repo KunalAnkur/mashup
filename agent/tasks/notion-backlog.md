@@ -16,3 +16,4 @@
 - [ ] Evaluate/support `window.showOpenFilePicker`.
 - [ ] Improve tab-only sharing flow.
 - [ ] `UrlModal` unsupported-link UX: disable the primary button and show a tooltip on hover instead of extra helper text below the input.
+- [ ] Separate refactor branch: rename `DeviceModalComponents`, `UrlModalComponents`, and `hooks/ModalHooks` to match their current full-page/shared responsibilities.

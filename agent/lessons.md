@@ -228,6 +228,7 @@ Use this file to record mistakes, root causes, and prevention steps.
 - Prevention checklist:
   - Use import search first; do not delete by filename guess alone.
   - Distinguish between dead wrapper files and still-active component folders used by newer pages.
+  - After wrapper deletion, audit the component folder again for dead leaf exports/components; the first cleanup pass often only removes the outer shell.
   - After deleting a UI file, remove related state, handlers, comments, and prop types in the entry points.
   - Run a focused smoke test on the screen that previously referenced the removed modal.
 - Follow-up action: Apply the same audit pattern whenever a reusable component replaces inline or legacy modal wrappers.
