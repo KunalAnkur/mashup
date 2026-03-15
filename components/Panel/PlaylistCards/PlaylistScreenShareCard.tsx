@@ -2,6 +2,7 @@ import React from "react";
 import { LuX } from "react-icons/lu";
 import { FaBroadcastTower } from "react-icons/fa";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { panelCardSurfaceClass } from "../panelCardStyles";
 
 interface PlaylistScreenShareCardProps {
     platformName: string;
@@ -20,13 +21,14 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
     onStop,
     isHost,
 }) => {
+    const t = useTranslations("panel.playlist");
     return (
         <div
             className={`
                 w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0 relative group
                 ${isPlaying
                     ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
-                    : 'bg-white/5 border border-transparent'
+                    : `${panelCardSurfaceClass} border border-transparent`
                 }
             `}
         >
@@ -97,4 +99,3 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
         </div>
     );
 };
-

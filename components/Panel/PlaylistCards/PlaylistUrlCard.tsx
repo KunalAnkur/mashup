@@ -3,6 +3,10 @@ import { LuPlay, LuFilm } from "react-icons/lu";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
 import { getPlatformById, getUrlDisplayName } from "@/types/ModalTypes/urlUtils";
 import { useTranslations } from "@/i18n/I18nProvider";
+import {
+    panelCardHoverSurfaceClass,
+    panelCardSurfaceClass,
+} from "../panelCardStyles";
 
 interface PlaylistUrlCardProps {
     url: AddedUrl;
@@ -21,6 +25,7 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
     isLoading = false,
     onSelect,
 }) => {
+    const t = useTranslations("panel.playlist");
     const platform = getPlatformById(url.platformId);
     const hasMetadata = url.metadata && (url.metadata.title || url.metadata.thumbnail);
 
@@ -32,7 +37,7 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
                 group w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0
                 ${isPlaying
                     ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
-                    : 'bg-white/5 border border-transparent hover:bg-white/10 hover:border-white/10'
+                    : `${panelCardSurfaceClass} border border-transparent ${isHost ? panelCardHoverSurfaceClass : ""}`
                 }
                 ${!isHost ? 'cursor-default' : 'cursor-pointer'}
             `}
@@ -148,4 +153,3 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
         </button>
     );
 };
-
