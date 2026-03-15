@@ -14,6 +14,18 @@ import Modal, {
   modalConfirmSurfaceClass,
 } from "./Modal";
 
+const dropdownSurfaceClass =
+  "absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-2xl bg-[linear-gradient(180deg,rgba(33,33,39,0.96),rgba(24,24,30,0.96))] shadow-[0_18px_48px_rgba(0,0,0,0.38)] backdrop-blur-2xl md:w-60";
+const dropdownContentClass = "flex flex-col gap-0.5 p-2";
+const dropdownUserCardClass =
+  "flex items-center gap-2.5 rounded-xl px-2.5 py-2";
+const dropdownMetaTextClass = "text-[9px] md:text-[10px] text-white/42";
+const dropdownDividerClass = "h-px w-full bg-white/8";
+const dropdownLogoutButtonClass =
+  "flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-white/80 transition-all duration-200 hover:bg-rose-500/10 hover:text-white";
+const dropdownLogoutIconClass =
+  "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#571b24] via-[#7a1f34] to-[#5d1b34] text-rose-200 leading-none";
+
 interface AvatarDropdownProps {
   size?: number;
   className?: string;
@@ -110,49 +122,48 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1.5 md:mt-2 w-64 md:w-72 bg-gradient-to-br from-[#1f1f23] to-[#27272a] border border-white/10 rounded-lg md:rounded-xl shadow-2xl z-50 overflow-hidden">
-          {/* User Info Section */}
-          <div className="p-3 md:p-4 border-b border-white/10">
-            <div className="flex items-center gap-2.5 md:gap-3">
+        <div className={`${dropdownSurfaceClass} z-50`}>
+          <div className={dropdownContentClass}>
+            {/* User Info Section */}
+            <div className={dropdownUserCardClass}>
               <Avatar
                 url={getAvatarUrl()}
                 alt={getUserDisplayName()}
-                size={40}
+                size={30}
                 isDefault={!user?.profile}
               />
-              <div className="flex-1 min-w-0">
-                <h3 className="text-white font-semibold text-xs md:text-sm truncate font-parkinsans">
+              <div className="flex min-w-0 flex-1 flex-col justify-center">
+                <h3 className="truncate font-parkinsans text-[11px] font-semibold text-white md:text-xs">
                   {getUserDisplayName()}
                 </h3>
                 {user?.email && (
-                  <p className="text-gray-400 text-[10px] md:text-xs truncate mt-0.5">
+                  <p className={`${dropdownMetaTextClass} mt-0.5 truncate`}>
                     {user.email}
                   </p>
                 )}
                 {!isAuthenticated && (
-                  <p className="text-gray-400 text-[10px] md:text-xs mt-0.5">
+                  <p className={`${dropdownMetaTextClass} mt-0.5`}>
                     Not authenticated
-                  </p>
-                )}
-                {user?.profile && (
-                  <p className="mt-1 md:mt-1.5 text-green-400 text-[10px] md:text-xs font-medium">
-                    Google Account
                   </p>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Menu Items */}
-          <div className="p-1.5 md:p-2">
+            {/* Menu Items */}
+            <div className={dropdownDividerClass} />
             <button
               onClick={handleLogoutClick}
-              className="w-full flex items-center gap-2 md:gap-3 px-2.5 md:px-3 py-2 md:py-2.5 text-left text-gray-300 hover:bg-white/5 hover:text-white rounded-lg transition-all duration-200 group"
+              className={dropdownLogoutButtonClass}
             >
-              <div className="p-1 md:p-1.5 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 transition-colors">
-                <IoLogOutOutline size={14} className="text-red-400 md:w-4 md:h-4" />
+              <div className={dropdownLogoutIconClass}>
+                <IoLogOutOutline
+                  size={13}
+                  className="block md:h-[13px] md:w-[13px]"
+                />
               </div>
-              <span className="text-xs md:text-sm font-medium">{tCommon("logout")}</span>
+              <p className="min-w-0 text-[11px] font-medium md:text-xs">
+                {tCommon("logout")}
+              </p>
             </button>
           </div>
         </div>
