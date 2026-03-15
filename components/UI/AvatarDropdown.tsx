@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store/index";
@@ -35,6 +35,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownMenuId = useId();
   const dispatch = useDispatch();
   const { user, isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth
@@ -44,7 +45,35 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const tCommon = useTranslations("common");
   const showEmailField = !user?.isGuestUser;
 
-  // ALL useEffects REMOVED FOR TESTING - no event listeners at all
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handlePointerDownOutside = (event: PointerEvent) => {
+      if (
+        dropdownRef.current &&
+        event.target instanceof Node &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDownOutside);
+    document.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDownOutside);
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [isOpen]);
 
   // Determine avatar URL with fallbacks
   const getAvatarUrl = () => {
@@ -105,7 +134,11 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
     <div className="relative inline-block" ref={dropdownRef}>
       {/* Avatar Button */}
       <button
+        type="button"
         onClick={toggleDropdown}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        aria-controls={dropdownMenuId}
         className={`cursor-pointer transition-transform hover:scale-105 block leading-none relative ${className}`}
       >
         <Avatar
@@ -123,7 +156,12 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className={`${dropdownSurfaceClass} z-50`}>
+        <div
+          id={dropdownMenuId}
+          role="menu"
+          aria-label="Account menu"
+          className={`${dropdownSurfaceClass} z-50`}
+        >
           <div className={dropdownContentClass}>
             {/* User Info Section */}
             <div className={dropdownUserCardClass}>
@@ -153,7 +191,9 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
             {/* Menu Items */}
             <div className={dropdownDividerClass} />
             <button
+              type="button"
               onClick={handleLogoutClick}
+              role="menuitem"
               className={dropdownLogoutButtonClass}
             >
               <div className={dropdownLogoutIconClass}>
