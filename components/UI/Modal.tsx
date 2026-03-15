@@ -61,11 +61,19 @@ const modalConfirmSurfaceClass =
 const modalBalancedContentClass = "px-4 py-4 md:px-5 md:py-5";
 const modalConfirmHeaderClass = "mb-2 px-0 pt-0 pb-0 md:mb-3";
 const modalConfirmMessageClass = "mb-3 text-xs leading-relaxed text-white/70 md:mb-4 md:text-sm";
-const modalFormHeaderClass = "mb-4 px-0 pt-0 pb-0 md:mb-5";
+const modalFormHeaderClass = "mb-4 px-0 pt-0 pb-0";
 const modalFormBodyClass = "space-y-4 px-4 pb-4 pt-0 md:px-5 md:pb-5";
 const modalFormActionsClass = "flex gap-3 pt-2";
 const modalTextFieldClass =
   "w-full rounded-xl border-0 bg-white/[0.045] px-4 py-3 text-sm text-white outline-none ring-0 transition-[background-color] duration-200 placeholder:text-gray-500 focus:bg-white/[0.06] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0";
+const modalTextAreaClass =
+  `${modalTextFieldClass} min-h-[112px] resize-none`;
+const modalSegmentedControlClass =
+  "flex rounded-xl bg-white/[0.045] p-1";
+const modalSegmentedControlButtonClass =
+  "flex-1 rounded-[10px] px-3 py-2 text-[11px] font-semibold capitalize text-white/42 transition-colors duration-200 hover:text-white/68";
+const modalSegmentedControlButtonActiveClass =
+  "bg-[linear-gradient(135deg,rgba(244,63,94,0.18),rgba(236,72,153,0.16),rgba(217,70,239,0.18))] text-white";
 const modalErrorTextClass = "mt-2 flex items-center gap-1.5 text-sm text-red-400";
 const modalBrandTitleClass =
   `bg-gradient-to-r ${movmashModalTitleGradientClass} bg-clip-text text-transparent`;
@@ -401,6 +409,10 @@ export {
   modalFormBodyClass,
   modalFormActionsClass,
   modalTextFieldClass,
+  modalTextAreaClass,
+  modalSegmentedControlClass,
+  modalSegmentedControlButtonClass,
+  modalSegmentedControlButtonActiveClass,
   modalErrorTextClass,
   modalBrandTitleClass,
   modalAccentTitleClass,

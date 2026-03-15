@@ -3,6 +3,7 @@
 - Before suggesting any `git add` or `git commit` commands, run `git status --short`.
 - Group commit suggestions logically by changed files and purpose instead of suggesting one broad commit by default.
 - Do not suggest commit commands immediately after a change; first ask the user whether the work is finished and whether they like the result.
+- If suggesting `git add .`, make sure the commit message covers all staged changes. If the commit message is narrower than the full diff, suggest scoped `git add` commands instead of `git add .`.
 - After each meaningful UI/code change, provide the relevant test command(s) and short manual test steps.
 - If the user asks to work step by step, make one bounded change at a time, then stop for feedback before moving to the next visual revision.
 - When the user says “note to yourself” for a project-specific workflow/design rule, record it here if it should persist for later turns in this repo.

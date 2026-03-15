@@ -16,7 +16,12 @@ import {
   modalErrorTextClass,
   modalFormBodyClass,
   modalFormHeaderClass,
+  modalSegmentedControlButtonActiveClass,
+  modalSegmentedControlButtonClass,
+  modalSegmentedControlClass,
   modalSubtleCloseButtonClass,
+  modalTextAreaClass,
+  modalTextFieldClass,
 } from "@/components/UI";
 
 interface FeedbackModalProps {
@@ -118,17 +123,16 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
         />
 
         <form onSubmit={handleSubmit} className={modalFormBodyClass}>
-          {/* Category Chips - Matching Tab Style */}
-          <div className="flex p-1 bg-zinc-900/50 rounded-2xl ">
+          <div className={modalSegmentedControlClass}>
             {(["bug", "feature", "other"] as const).map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setFormData({ ...formData, category: cat })}
-                className={`flex-1 py-2 text-[11px] font-bold capitalize transition-all duration-300 rounded-xl ${
+                className={`${modalSegmentedControlButtonClass} ${
                   formData.category === cat 
-                    ? "bg-gradient-to-r from-rose-500/20 to-fuchsia-500/20 text-white " 
-                    : "text-white/40 hover:text-white/60"
+                    ? modalSegmentedControlButtonActiveClass
+                    : ""
                 }`}
               >
                 {tFeedback(`category.${cat}`)}
@@ -141,7 +145,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
               <input
                 type="text"
                 placeholder={tFeedback("topic")}
-                className="w-full rounded-xl bg-zinc-800/20 px-4 py-3 text-sm font-medium text-white outline-none transition-all placeholder:text-white/30 focus:outline-none"
+                className={modalTextFieldClass}
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 aria-invalid={Boolean(titleError)}
@@ -158,7 +162,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
               <textarea
                 placeholder={tFeedback("descriptionPlaceholder")}
                 rows={4}
-                className="w-full resize-none rounded-xl bg-zinc-800/20 px-4 py-3 text-sm font-medium text-white outline-none transition-all placeholder:text-white/30 focus:outline-none"
+                className={modalTextAreaClass}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 aria-invalid={Boolean(descriptionError)}
