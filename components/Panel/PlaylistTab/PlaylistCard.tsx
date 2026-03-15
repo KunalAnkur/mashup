@@ -98,7 +98,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             <span
                 className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full ${badgePlayButtonClass}`}
             >
-                <Icon size={8} className={isPlaybackActive ? "" : "ml-[1px]"} />
+                <Icon size={10} className={isPlaybackActive ? "" : "ml-[1px]"} />
             </span>
         );
     };

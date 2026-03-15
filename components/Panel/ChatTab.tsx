@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
-import { FaArrowCircleUp, FaSmile } from "react-icons/fa";
-import { MdCelebration, MdOutlineCelebration, MdOutlinePushPin, MdPushPin } from "react-icons/md";
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
+import { LuArrowUp, LuPin, LuSmile } from "react-icons/lu";
+import { MdCelebration, MdOutlineCelebration } from "react-icons/md";
 import dynamic from "next/dynamic";
 import { useChatContext } from "@/context/ChatContext";
 import { useRoomContext } from "@/context/RoomContext";
@@ -120,7 +120,6 @@ const isOnlyEmojis = (text: string): boolean => {
   return textWithoutEmojis.length === 0 && text.trim().length > 0;
 };
 
-const SCROLL_BOTTOM_THRESHOLD = 64;
 const PIN_MESSAGE_CHAR_LIMIT = 180;
 const MESSAGE_REACTION_PICKER_APPROX_HEIGHT = 52;
 const MESSAGE_REACTION_DETAILS_APPROX_WIDTH = 208;
@@ -149,7 +148,6 @@ const ChatTab = () => {
     Record<string, MessageActionPlacement>
   >({});
   const [messageInput, setMessageInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastMessageCountRef = useRef(0);
   const shouldAutoScrollRef = useRef(true);
@@ -530,14 +528,14 @@ const ChatTab = () => {
     return availableBottom > availableTop ? "bottom" : "top";
   };
 
-  const updateMessageReactionPlacement = (messageId: string) => {
+  const updateMessageReactionPlacement = useCallback((messageId: string) => {
     setActiveReactionPlacement(
       resolveMessageOverlayPlacement(
         messageId,
         MESSAGE_REACTION_PICKER_APPROX_HEIGHT
       )
     );
-  };
+  }, []);
 
   const handleReactionPickerToggle = (messageId: string) => {
     setActiveReactionDetails(null);
@@ -612,7 +610,7 @@ const ChatTab = () => {
       window.removeEventListener("resize", handleViewportChange);
       containerElement?.removeEventListener("scroll", handleViewportChange);
     };
-  }, [activeReactionMessageId, messageActionPlacements]);
+  }, [activeReactionMessageId, messageActionPlacements, updateMessageReactionPlacement]);
 
   useEffect(() => {
     if (!activeReactionMessageId && !activeReactionDetails) return;
@@ -764,7 +762,7 @@ const ChatTab = () => {
             className="flex h-6.5 w-6.5 items-center justify-center rounded-full text-white/70 transition-colors duration-150 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             title={t("reactToMessage")}
           >
-            <FaSmile size={11} />
+            <LuSmile size={11} />
           </button>
           {showPinAction && (
           <button
@@ -780,7 +778,7 @@ const ChatTab = () => {
             } ${canPinMessage ? "" : "disabled:opacity-55"}`}
             title={pinButtonTitle}
           >
-            <MdOutlinePushPin size={11} className="md:h-3 md:w-3" />
+            <LuPin size={12} className="rotate-[18deg] md:h-[13px] md:w-[13px]" />
           </button>
           )}
         </div>
@@ -832,7 +830,7 @@ const ChatTab = () => {
               } disabled:opacity-50 disabled:cursor-not-allowed`}
               title={isHost ? t("unpinMessage") : t("pinnedMessage")}
             >
-              <MdPushPin size={12} className="rotate-[28deg] md:w-[13px] md:h-[13px]" />
+              <LuPin size={13} className="rotate-[18deg] md:w-[14px] md:h-[14px]" />
             </button>
           </div>
         </div>
@@ -1362,7 +1360,7 @@ const ChatTab = () => {
             ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
             : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
             }`}></div>
-          <FaSmile size={18} className="relative md:w-5 md:h-5" />
+          <LuSmile size={18} className="relative md:w-5 md:h-5" />
         </button>
 
         {/* Send Button - Show only when input has text */}
@@ -1373,7 +1371,7 @@ const ChatTab = () => {
             className="relative p-1.5 md:p-2 rounded-lg md:rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-lg md:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <FaArrowCircleUp size={18} className="relative md:w-5 md:h-5" />
+            <LuArrowUp size={18} className="relative md:w-5 md:h-5" />
           </button>
         )}
       </div>
