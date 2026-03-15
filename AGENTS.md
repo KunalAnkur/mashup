@@ -38,6 +38,13 @@
 - For destructive confirm modals, keep the confirm action danger-oriented, but header/icon branding may use the shared Movmash brand palette when that matches the approved design direction.
 - Before changing modal input visuals in future steps, get user confirmation first if the change is a design revision rather than a bug fix.
 
+# Layout And Alignment Rules
+
+- For alignment work, prefer structural layout utilities such as `flex`, `grid`, `items-*`, `justify-*`, `self-*`, and `gap-*` before reaching for ad hoc margin/padding tweaks.
+- Keep sibling alignment consistent by putting items inside a shared layout wrapper instead of offsetting one side with extra left/right spacing.
+- Use padding mainly for container insets and section breathing room; use layout utilities for internal alignment.
+- When tightening or balancing UI spacing, prefer shared wrapper spacing and `gap-*` over scattered one-off `ml-*`, `mr-*`, `mt-*`, or `mb-*` fixes.
+
 # Future UI TODOs
 
 - `UrlModal`: for unsupported links, disable the primary add button instead of keeping it clickable. On hover over the disabled button, show a tooltip explaining that the link is not supported, so we can remove extra helper/info text below the input.

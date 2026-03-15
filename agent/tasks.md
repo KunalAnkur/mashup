@@ -19,6 +19,7 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Rename `DeviceModalComponents` / `UrlModalComponents` into non-modal full-page naming.
   - Rename `hooks/ModalHooks/*` if they stay shared beyond modal flows.
   - Do any broader architecture cleanup around `stream` / `sync` page component ownership in a separate refactor branch.
+  - Do an app-wide layout consistency pass in a separate branch: replace ad hoc alignment/spacing with shared `flex`/`grid`/`items-*`/`justify-*`/`gap-*` driven layouts wherever possible.
 - Current focus:
   - Work on panel component tasks in this branch.
   - Keep modal cleanup changes limited to safe dead-code removal only.
