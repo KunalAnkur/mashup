@@ -111,7 +111,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
       onPlay={onPlay}
       onProgress={captureWatchTime}
       onPause={onPause}
-      onSeekEnd={onSeeked}
+      onSeekEnd={(seekTime) => onSeeked(seekTime)}
       onReady={handleReady}
       hasVideoTrack={hasVideoTrack}
       fullscreenTargetRef={fullscreenTargetRef}

@@ -14,7 +14,7 @@ interface ControlBarProps {
   fullscreen: boolean;
   onSeekTo: (percent: number) => void;
   onSeekStart: () => void;
-  onSeekEnd: () => void;
+  onSeekEnd: (seekTime?: number, seekPercent?: number) => void;
   onPlayPause: () => void;
   onMuteToggle: () => void;
   onVolumeChange: (volume: number) => void;

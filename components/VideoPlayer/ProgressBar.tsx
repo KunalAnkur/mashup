@@ -8,7 +8,7 @@ interface ProgressBarProps {
     isBuffering: boolean;
     seekTo: (percent: number) => void;
     handleSeekStart: () => void;
-    handleSeekEnd: () => void;
+    handleSeekEnd: (seekTime?: number, seekPercent?: number) => void;
     duration: number;
     showTime?: boolean;
     showFullscreen?: boolean;
@@ -70,14 +70,18 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
     const stopDrag = useCallback(() => {
         if (!isDragging) return;
-        handleSeekEnd();
+        const finalPercent = dragPercent;
+        if (finalPercent !== null) {
+            seekTo(finalPercent);
+        }
+        const finalSeekTime = finalPercent !== null ? duration * (finalPercent / 100) : undefined;
+        handleSeekEnd(finalSeekTime, finalPercent ?? undefined);
         setIsDragging(false);
         setHoverPosition(null);
         if (dragPercent !== null) {
-            seekTo(dragPercent);
             setDragPercent(null);
         }
-    }, [dragPercent, handleSeekEnd, isDragging, seekTo]);
+    }, [dragPercent, duration, handleSeekEnd, isDragging, seekTo]);
 
     const onDrag = useCallback((event: PointerEvent) => {
         if (!isDragging) return;

@@ -37,7 +37,7 @@ type VideoPlayerProps = {
     onMute?: (muted: boolean) => void;
     onSeek?: (progress: number) => void;
     onSeekStart?: () => void;
-    onSeekEnd?: () => void;
+    onSeekEnd?: (seekTime?: number, seekPercent?: number) => void;
     onDuration?: (duration: number) => void;
     onFullscreenChange?: (isFullscreen: boolean) => void;
     onReady?: () => void;
@@ -107,8 +107,10 @@ const VideoPlayer = ({
     const playerContainerRef = useRef<HTMLDivElement>(null);
     const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
     const seekDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const progressResumeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wasPlayingBeforeSeek = useRef(false);
     const isSeekingRef = useRef(false);
+    const ignoreProgressRef = useRef(false);
 
     const resumePlaybackIfNeeded = useCallback(() => {
         if (!autoResumeOnFullscreenExit) return;
@@ -295,7 +297,9 @@ const VideoPlayer = ({
 
     // Progress and seeking
     const handleProgress = (state: { played: number; loaded: number }) => {
-        setProgress(state.played * 100);
+        if (!ignoreProgressRef.current) {
+            setProgress(state.played * 100);
+        }
         setBuffered(state.loaded * 100);
         onProgress?.();
     };
@@ -303,6 +307,11 @@ const VideoPlayer = ({
     const handleSeekStart = () => {
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         isSeekingRef.current = true;
+        ignoreProgressRef.current = true;
+        if (progressResumeRef.current) {
+            clearTimeout(progressResumeRef.current);
+            progressResumeRef.current = null;
+        }
         if (controls) {
             if (!showControls) setShowControls(true);
             clearTimeout(inactivityTimerRef.current!);
@@ -328,12 +337,16 @@ const VideoPlayer = ({
         onSeek?.(percent);
     };
 
-    const handleSeekEnd = () => {
+    const handleSeekEnd = (seekTime?: number, seekPercent?: number) => {
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
-        onSeekEnd?.();
+        onSeekEnd?.(seekTime, seekPercent);
         isSeekingRef.current = false;
         if (controls) startInactivityTimer();
+        progressResumeRef.current = setTimeout(() => {
+            ignoreProgressRef.current = false;
+            progressResumeRef.current = null;
+        }, 250);
         
         // Only resume on seek end if disableSeekPauseResume is false
         if (!disableSeekPauseResume) {
