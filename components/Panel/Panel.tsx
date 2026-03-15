@@ -484,9 +484,9 @@ const Panel = () => {
                   <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors" />
                 )}
                 {copied && (
-                  <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl animate-fade-in">
+                  <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-zinc-900 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl">
                     {tCommon("linkCopied")}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-900"></div>
                   </div>
                 )}
               </PanelHeaderActionButton>
