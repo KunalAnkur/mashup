@@ -148,7 +148,7 @@ const VideoPlayer = ({
             if (!isSeekingRef.current) {
                 setShowControls(false);
             }
-        }, 500000);
+        }, 5000);
     };
 
     const handleUserActivity = () => {
