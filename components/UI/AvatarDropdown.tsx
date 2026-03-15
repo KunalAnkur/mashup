@@ -42,6 +42,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
   const tToast = useTranslations("toast");
   const tCommon = useTranslations("common");
+  const showEmailField = !user?.isGuestUser;
 
   // ALL useEffects REMOVED FOR TESTING - no event listeners at all
 
@@ -136,7 +137,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                 <h3 className="truncate font-parkinsans text-[11px] font-semibold text-white md:text-xs">
                   {getUserDisplayName()}
                 </h3>
-                {user?.email && (
+                {showEmailField && user?.email && (
                   <p className={`${dropdownMetaTextClass} mt-0.5 truncate`}>
                     {user.email}
                   </p>
