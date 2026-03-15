@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { LuX } from "react-icons/lu";
 import {
+  dangerModalIconWrapClass,
   movmashModalGradientStopsClass,
   movmashModalIconWrapClass,
   movmashModalSoftIconWrapClass,
@@ -72,6 +73,8 @@ const modalAccentTitleClass =
   `bg-gradient-to-r ${movmashModalTitleGradientClass} bg-clip-text text-transparent`;
 const modalBrandIconWrapClass =
   `flex h-9 w-9 items-center justify-center rounded-[14px] ${movmashModalIconWrapClass}`;
+const modalDangerIconWrapClass =
+  `flex h-9 w-9 items-center justify-center rounded-[14px] ${dangerModalIconWrapClass}`;
 const modalAccentIconWrapClass =
   `flex h-9 w-9 items-center justify-center rounded-[14px] ${movmashModalSoftIconWrapClass}`;
 const modalBrandIconClass = "text-current";
@@ -212,7 +215,7 @@ const ModalConfirmContent = ({
   <div className="w-full">
     <ModalHeader
       className={[modalConfirmHeaderClass, headerClassName].filter(Boolean).join(" ")}
-      icon={<div className={modalBrandIconWrapClass}>{icon}</div>}
+      icon={<div className={modalDangerIconWrapClass}>{icon}</div>}
       title={title}
       titleClassName={[modalBrandTitleClass, "text-base md:text-lg", titleClassName].filter(Boolean).join(" ")}
     />

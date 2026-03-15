@@ -220,3 +220,53 @@ Use this file to record mistakes, root causes, and prevention steps.
 - For very small mode labels inside thumbnails, even a subtle translucent label fill can be too much; if the thumbnail already carries the mode visually, plain text is cleaner.
 - If plain text becomes too weak, the cleaner fallback is a solid compact label background, not a transparent/glassy one.
 - A stronger simplification for tiny media tiles is to move the mode indicator into the thumbnail itself: one clear gradient surface plus a single icon-text row can read cleaner than any separate label block.
+
+## 2026-03-15 (Shared Modal System Direction)
+
+- Date: 2026-03-15
+- Context: Room/panel modal cleanup across `Leave`, `Logout`, `Invite`, `Add URL`, and `Feedback`.
+- Error: Modal UI drifted over time: duplicated markup, different spacing systems, different close behavior, different action sizing, and repeated gradient strings.
+- Root cause: Modal surface/action/header decisions were being made locally in each modal instead of through shared tokens and reusable modal primitives.
+- Prevention checklist:
+  - Keep modal shell, close button, action buttons, spacing, and shared color tokens centralized.
+  - Extract repeated confirm/form modal structures before styling more variants.
+  - If two room-flow modals look similar, do not maintain two separate local markup systems.
+  - Prefer one token file for frequently reused modal brand colors instead of repeating gradient strings inline.
+- Follow-up action: Keep `components/UI/Modal.tsx` and `components/UI/modalTheme.ts` as the modal source of truth and route future modal cleanup through them first.
+
+## 2026-03-15 (Refactor Smoke Test After Extraction)
+
+- Date: 2026-03-15
+- Context: `Feedback` modal extraction from `SettingTab` to `components/Modals/FeedbackModal.tsx`.
+- Error: `Settings` tab crashed with `ReferenceError: tFeedback is not defined`.
+- Root cause: The modal extraction removed a translation hook from `SettingTab` while the tab still referenced `tFeedback` in the feedback card area.
+- Prevention checklist:
+  - After extracting a component, search the original file for any remaining references to removed hooks/variables/imports.
+  - Run lint after the refactor.
+  - Smoke test the directly affected screen/tab, not only the extracted component file.
+- Follow-up action: Treat runtime smoke testing of the touched view as required after UI extraction/refactors.
+
+## 2026-03-15 (Form Modal Validation UX)
+
+- Date: 2026-03-15
+- Context: `Feedback` modal validation and toast layering under overlay.
+- Error: Field-validation toast appeared behind the modal overlay and gave poor guidance about which field was wrong.
+- Root cause: Field-specific validation was using global toast instead of inline form messaging inside the modal.
+- Prevention checklist:
+  - Show field-level validation errors next to their fields inside the form modal.
+  - Reserve toast for success, login requirements, and general/backend errors.
+  - Reveal inline validation only after submit intent when that produces a calmer UX.
+- Follow-up action: Apply the same inline-after-submit validation pattern to future form modals unless the UX explicitly needs live validation.
+
+## 2026-03-15 (Agent Doc Drift)
+
+- Date: 2026-03-15
+- Context: `AGENTS.md`, `agent/rules.md`, `agent/tasks.md`, and backlog review.
+- Error: Durable workflow rules, current-step logs, and product backlog items drifted apart and started contradicting each other.
+- Root cause: Different agent docs accumulated updates at different times without a clear source-of-truth model.
+- Prevention checklist:
+  - Keep `AGENTS.md` as the durable workflow/UI rule source of truth.
+  - Keep `agent/rules.md` as a concise mirror, not a competing rule set.
+  - Keep `agent/tasks.md` focused on current work and status, not old "current step" snapshots.
+  - Keep backlog items separate from execution notes and remove duplicate sections.
+- Follow-up action: Audit agent docs when the active workstream changes significantly so stale guidance does not pile up.

@@ -9,3 +9,6 @@ export const movmashModalIconWrapClass =
 
 export const movmashModalSoftIconWrapClass =
   "bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]";
+
+export const dangerModalIconWrapClass =
+  "bg-gradient-to-br from-[#571b24] via-[#7a1f34] to-[#5d1b34] text-rose-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(35,8,14,0.22)]";

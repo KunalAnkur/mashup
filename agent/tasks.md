@@ -4,24 +4,31 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 
 ## Current Step
 
-- Date: 2026-03-12
-- Active task: Playlist tab action row + playlist card redesign.
-- Status: Implemented, awaiting manual verification.
-- Sub-update: Moved the 3 playlist CTA actions above the playlist list in a single compact row.
-- Sub-update: Simplified CTA styling into a calmer, minimal visual language intended to guide future playlist card design.
-- Sub-update: Moved playlist title/count below CTA row and directly above playlist cards.
-- Sub-update: Redesigned playlist cards toward a more minimal, low-fatigue UI with quieter surfaces.
-- Sub-update: Replaced left-side selected indicator with right-side playback badge behavior.
-- Sub-update: Bound selected card icon state to real playback state (`play` when paused, `pause` when actively playing).
-- Sub-update: Removed the extra thumbnail playback icon so selected-state feedback stays only on the right badge.
-- Sub-update: Updated agent workflow rule so future feature work should include sensible branch and commit suggestions.
-- Localization note: No new UI text in this step (`tr/en/es/ar` unchanged).
+- Date: 2026-03-15
+- Active task: Panel/room modal standardization plus agent doc synchronization.
+- Status: In progress.
+- Completed in this workstream:
+  - Shared modal shell/tokens standardized in `components/UI/Modal.tsx`.
+  - `Leave`, `Logout`, `Invite room`, and `Add URL` modal flows moved toward one shared modal system.
+  - `Feedback` modal extracted from `SettingTab` into its own shared modal component.
+  - Shared modal color tokens moved into `components/UI/modalTheme.ts`.
+  - Modal workflow/design rules consolidated in `AGENTS.md`.
+- Current focus:
+  - Finish `Feedback` modal UX polish with inline validation and consistent action sizing.
+  - Audit remaining modal-heavy flows such as `DeviceModal` and `UrlModal`.
+  - Keep agent docs aligned so there is one clear source of truth for rules vs lessons vs backlog.
+- Testing reminder:
+  - Verify `Settings` tab opens without runtime errors.
+  - Verify `Leave`, `Logout`, `Invite`, `Add URL`, and `Feedback` modals share the intended spacing and action language.
+  - Verify field-level modal validation appears inline after submit and not behind modal overlays.
+  - Verify toast remains only for success/global/backend cases in form modals.
 
 Rules for execution:
 
 1. Do not start any task without your permission.
 2. Before coding, explain the planned implementation.
-3. After each change, provide meaningful `git add` and `git commit -m` suggestions.
+3. After each meaningful change, provide test steps.
+4. Only suggest commit commands after checking `git status --short` and after the user confirms the change is finished.
 
 ## 2026-03-12
 
@@ -119,3 +126,16 @@ Rules for execution:
   - If the label background still feels visually loud in a tiny thumbnail, drop the label fill entirely and keep only the text.
   - When labels need to stay visible, use a solid compact color block behind the text instead of translucent glass styling.
   - If the cleanest result is to let the full thumbnail carry the mode, use a gradient thumbnail background with one simple icon + text row instead of a separate embedded label.
+
+## 2026-03-15
+
+- Active task: Modal system cleanup in room/panel flows.
+- Scope:
+  - Standardize modal surface, spacing, close buttons, cancel/confirm actions, and shared brand tokens.
+  - Remove duplicated modal markup where the same room flow has both inline modal markup and a reusable component.
+  - Move field-level validation errors inside form modals instead of relying on toast notifications.
+  - Keep `AGENTS.md`, `agent/rules.md`, `agent/tasks.md`, `agent/lessons.md`, and backlog roles clearly separated.
+- Testing reminder:
+  - Verify `Settings` tab and `Feedback` modal open without runtime errors after extraction/refactors.
+  - Verify `Add URL` modal still validates and submits correctly after being routed through the shared component.
+  - Verify destructive modals keep danger confirm actions but remain visually consistent with the shared modal system.

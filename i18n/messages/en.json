@@ -286,6 +286,8 @@
     "helpUsImprove": "Help us improve",
     "topic": "Topic",
     "descriptionPlaceholder": "Tell us what's on your mind...",
+    "topicMinLength": "Enter at least 3 characters for the topic.",
+    "descriptionMinLength": "Enter at least 10 characters for the description.",
     "sendFeedback": "Send Feedback",
     "category": {
       "bug": "Bug",

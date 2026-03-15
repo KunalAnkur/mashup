@@ -6,6 +6,16 @@
 - After each meaningful UI/code change, provide the relevant test command(s) and short manual test steps.
 - If the user asks to work step by step, make one bounded change at a time, then stop for feedback before moving to the next visual revision.
 - When the user says “note to yourself” for a project-specific workflow/design rule, record it here if it should persist for later turns in this repo.
+- After refactors or component extraction, verify that no stale references/import removals are left behind. Smoke test the directly affected screen/tab to avoid runtime `ReferenceError` issues.
+
+# Agent Doc Roles
+
+- `AGENTS.md` is the source of truth for durable workflow rules, UI/system standards, and persistent repo-specific instructions.
+- `agent/rules.md` should stay as a concise mirror of the active execution rules and must not contradict `AGENTS.md`.
+- `agent/tasks.md` should track the current active workstream, recent implementation status, and verification reminders. It should not keep stale "current step" notes after focus changes.
+- `agent/lessons.md` should store mistakes, root causes, prevention rules, and notable design/engineering lessons learned from shipped or attempted work.
+- `agent/tasks/notion-backlog.md` should stay as a product/backlog list, not as a duplicate execution log.
+- When these files drift, prefer consolidating duplicate guidance and updating the file that matches the note's purpose instead of copying the same content into all files.
 
 # Modal Standardization Rules
 
@@ -16,6 +26,8 @@
 - Modal close buttons should stay minimal: no hover background fill, no unnecessary outline/ring styling, and hover should mainly change icon color.
 - Modal action buttons should default to no shadow unless there is a clear approved reason to add one.
 - Modal inputs should follow a minimal path by default: no visible border, no heavy outline, and only a subtle focus treatment.
+- Prefer inline validation messaging inside form modals for field-level input errors; reserve toast notifications for success states and general/backend errors.
+- In form modals, if an error belongs to a specific field, show it near that field instead of using a toast. Use toast only when the message is not tied to one field or when it is a success/global state.
 - Modal panels should avoid unnecessary outer borders when the shared modal surface already defines the look.
 - Prefer balanced top/bottom spacing in modal content. Do not let ad hoc header padding create awkward empty space.
 - Keep modal UI minimal and avoid overdesign: no extra decorative layers, outlines, hover fills, or nested backgrounds without a clear reason.

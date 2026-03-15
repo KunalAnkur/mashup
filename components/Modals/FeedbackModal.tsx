@@ -6,7 +6,18 @@ import { LuSend, LuMessageSquare } from "react-icons/lu";
 import { useSubmitFeedbackMutation } from "@/lib/store/api/feedbackApi";
 import { showSuccess, showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
-import { Modal, ModalHeader } from "@/components/UI";
+import {
+  Modal,
+  ModalHeader,
+  modalAccentIconWrapClass,
+  modalAccentTitleClass,
+  modalBrandActionButtonClass,
+  modalConfirmSurfaceClass,
+  modalErrorTextClass,
+  modalFormBodyClass,
+  modalFormHeaderClass,
+  modalSubtleCloseButtonClass,
+} from "@/components/UI";
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -14,24 +25,50 @@ interface FeedbackModalProps {
   roomId?: string | null;
 }
 
+const initialFormData = {
+  title: "",
+  description: "",
+  category: "bug" as "bug" | "feature" | "other",
+};
+
 const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
   const [loading, setLoading] = useState(false);
   const roomState = useSelector((state: RootState) => state.room);
   const authState = useSelector((state: RootState) => state.auth);
   const [submitFeedback] = useSubmitFeedbackMutation();
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "bug" as "bug" | "feature" | "other",
-  });
+  const [formData, setFormData] = useState(initialFormData);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const tToast = useTranslations("toast");
   const tCommon = useTranslations("common");
   const tFeedback = useTranslations("feedback");
 
+  const getTitleError = (value: string) => (
+    value.trim().length < 3 ? tFeedback("topicMinLength") : ""
+  );
+
+  const getDescriptionError = (value: string) => (
+    value.trim().length < 10 ? tFeedback("descriptionMinLength") : ""
+  );
+
+  const titleError = hasSubmitted ? getTitleError(formData.title) : "";
+  const descriptionError = hasSubmitted ? getDescriptionError(formData.description) : "";
+
+  const handleClose = () => {
+    setLoading(false);
+    setHasSubmitted(false);
+    setFormData(initialFormData);
+    onClose();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.title.length < 3 || formData.description.length < 10) {
-      showError(tToast("invalidInput"), tToast("fillFieldsCorrectly"));
+
+    const nextTitleError = getTitleError(formData.title);
+    const nextDescriptionError = getDescriptionError(formData.description);
+
+    setHasSubmitted(true);
+
+    if (nextTitleError || nextDescriptionError) {
       return;
     }
 
@@ -46,8 +83,7 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
         });
       
         showSuccess(tToast("feedbackSent"));
-        onClose();
-        setFormData({ title: "", description: "", category: "bug" });
+        handleClose();
       } else {
         showError(tCommon("error"), tToast("pleaseLogin"));
       }
@@ -61,28 +97,27 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
   return (
     <Modal
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
+      closeOnBackdropClick={false}
+      closeOnEscape={false}
       overlayClassName="feedback-modal z-[99999]"
-      panelClassName="max-w-md overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] shadow-2xl"
+      panelClassName={`${modalConfirmSurfaceClass} max-w-md`}
     >
-      <div className="relative w-full animate-slide-up">
-        
-        {/* Dynamic Background Glows (Matching Panel Style) */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[60px]" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-[60px]" />
-
+      <div className="w-full">
         <ModalHeader
+          className={modalFormHeaderClass}
           icon={
-            <div className="p-2 rounded-xl bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
-              <LuMessageSquare className="text-rose-400" size={20} />
+            <div className={modalAccentIconWrapClass}>
+              <LuMessageSquare size={18} />
             </div>
           }
           title={tFeedback("title")}
-          subtitle={tFeedback("helpUsImprove")}
-          onClose={onClose}
+          titleClassName={`${modalAccentTitleClass} text-base md:text-lg`}
+          onClose={handleClose}
+          closeButtonClassName={modalSubtleCloseButtonClass}
         />
 
-        <form onSubmit={handleSubmit} className="relative p-6 space-y-5">
+        <form onSubmit={handleSubmit} className={modalFormBodyClass}>
           {/* Category Chips - Matching Tab Style */}
           <div className="flex p-1 bg-zinc-900/50 rounded-2xl ">
             {(["bug", "feature", "other"] as const).map((cat) => (
@@ -102,40 +137,54 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
           </div>
 
           <div className="space-y-4">
-            <input
-              type="text"
-              placeholder={tFeedback("topic")}
-              className="w-full bg-zinc-800/20  rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all font-medium"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
+            <div>
+              <input
+                type="text"
+                placeholder={tFeedback("topic")}
+                className="w-full rounded-xl bg-zinc-800/20 px-4 py-3 text-sm font-medium text-white outline-none transition-all placeholder:text-white/30 focus:outline-none"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                aria-invalid={Boolean(titleError)}
+                aria-describedby={titleError ? "feedback-title-error" : undefined}
+              />
+              {titleError ? (
+                <p id="feedback-title-error" className={modalErrorTextClass}>
+                  {titleError}
+                </p>
+              ) : null}
+            </div>
 
-            <textarea
-              placeholder={tFeedback("descriptionPlaceholder")}
-              rows={4}
-              className="w-full bg-zinc-800/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all resize-none font-medium"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
+            <div>
+              <textarea
+                placeholder={tFeedback("descriptionPlaceholder")}
+                rows={4}
+                className="w-full resize-none rounded-xl bg-zinc-800/20 px-4 py-3 text-sm font-medium text-white outline-none transition-all placeholder:text-white/30 focus:outline-none"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                aria-invalid={Boolean(descriptionError)}
+                aria-describedby={descriptionError ? "feedback-description-error" : undefined}
+              />
+              {descriptionError ? (
+                <p id="feedback-description-error" className={modalErrorTextClass}>
+                  {descriptionError}
+                </p>
+              ) : null}
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="group relative w-full py-4 bg-gradient-to-r from-rose-600 to-fuchsia-600 hover:from-rose-500 hover:to-fuchsia-500 text-white font-bold text-sm rounded-2xl transition-all duration-300 shadow-lg shadow-rose-500/20 overflow-hidden active:scale-95 disabled:opacity-50"
+            className={`${modalBrandActionButtonClass} flex w-full items-center justify-center gap-2 font-semibold disabled:cursor-not-allowed disabled:opacity-50`}
           >
-            <div className="relative z-10 flex items-center justify-center gap-2">
-              {loading ? (
-                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <LuSend size={18} />
-                  <span>{tFeedback("sendFeedback")}</span>
-                </>
-              )}
-            </div>
-            {/* Glossy light effect from chat bubbles */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            {loading ? (
+               <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            ) : (
+              <>
+                <LuSend size={18} />
+                <span>{tFeedback("sendFeedback")}</span>
+              </>
+            )}
           </button>
         </form>
       </div>
