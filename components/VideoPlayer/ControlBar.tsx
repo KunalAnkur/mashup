@@ -37,7 +37,7 @@ export const ControlBar = ({
 
   return (
     <div
-      className={`absolute inset-x-0 bottom-0 z-30 px-3 pb-2 pt-4 transition-all duration-300 ease-out sm:px-4 sm:pb-4 sm:pt-10 ${controlsVisibility}`}
+      className={`absolute inset-x-0 bottom-0 z-30 px-3 pb-2 transition-all duration-300 ease-out sm:px-4 sm:pb-9 ${controlsVisibility}`}
     >
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/65 via-black/25 to-transparent sm:h-32" />
 

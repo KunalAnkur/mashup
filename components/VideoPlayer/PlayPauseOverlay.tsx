@@ -75,7 +75,7 @@ export const PlayPauseOverlay = ({
             className="absolute left-0 right-0 top-0 inset-0 z-10 flex h-full items-center justify-center p-4"
         >
             {!playing && !disablePlay && (
-                <div className={`${playButtonPadding} cursor-pointer rounded-full bg-black/45 text-white/90 backdrop-blur-sm`}>
+                <div className={`${playButtonPadding} cursor-pointer rounded-full bg-black/45 shadow-[0_8px_22px_rgba(0,0,0,0.35)] text-white/90 backdrop-blur-lg`}>
                     <FaPlay size={playIconSize} className="translate-x-[2px] text-white" />
                 </div>
             )}

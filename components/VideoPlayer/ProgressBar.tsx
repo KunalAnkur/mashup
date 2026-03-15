@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { isMobile } from "react-device-detect";
 import { formatVideoTime } from "@/utils/timeFormatter";
-
+import { CgArrowsExpandLeft, CgCompressLeft } from "react-icons/cg";
 interface ProgressBarProps {
     progress: number;
     buffered: number;
@@ -152,7 +152,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             {showTopRow && (
                 <div className={`flex items-center ${topRowJustify}`}>
                     {showTime && (
-                        <div className="rounded-md bg-black/45 px-2 py-0.5 text-[12px] font-medium text-white/90 backdrop-blur-sm">
+                        <div className="rounded-md bg-black/30 px-2 py-0.5 text-[12px] font-medium text-white/90 backdrop-blur-sm">
                             <span className="tabular-nums">{currentTime}</span>
                             <span className="mx-1 text-white/50">/</span>
                             <span className="tabular-nums text-white/70">{totalTime}</span>
@@ -166,39 +166,13 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                             onPointerDown={handleFullscreenPointerDown}
                             title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
                             aria-label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
-                            className="flex h-7 w-7 items-center justify-center rounded-full bg-black/45 text-white/90 backdrop-blur-sm transition-transform active:scale-95"
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-transform active:scale-95"
                         >
-                            <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                className="h-4 w-4"
-                            >
                                 {fullscreen ? (
-                                    <>
-                                        <path d="M10 4H4v6" />
-                                        <path d="m4 4 7 7" />
-                                        <path d="M14 20h6v-6" />
-                                        <path d="m20 20-7-7" />
-                                        <path d="M14 4h6v6" />
-                                        <path d="m20 4-7 7" />
-                                        <path d="M10 20H4v-6" />
-                                        <path d="m4 20 7-7" />
-                                    </>
+                                    <CgCompressLeft size={13} />
                                 ) : (
-                                    <>
-                                        <path d="M8 4H4v4" />
-                                        <path d="M4 4l6 6" />
-                                        <path d="M16 20h4v-4" />
-                                        <path d="m20 20-6-6" />
-                                        <path d="M16 4h4v4" />
-                                        <path d="m20 4-6 6" />
-                                        <path d="M8 20H4v-4" />
-                                        <path d="m4 20 6-6" />
-                                    </>
+                                    <CgArrowsExpandLeft size={13} />
                                 )}
-                            </svg>
                         </button>
                     )}
                 </div>
