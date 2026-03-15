@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store/index";
 import { logout } from "@/lib/store/slices/authSlice";
 import { useLogoutMutation } from "@/lib/store/api/authApi";
-import { FcGoogle } from "react-icons/fc";
 import { IoLogOutOutline } from "react-icons/io5";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
@@ -103,13 +102,6 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           isDefault={!isAuthenticated || !user?.profile}
         />
 
-        {/* Google OAuth indicator */}
-        {isAuthenticated && user?.profile && (
-          <div className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-white rounded-full p-0.5 md:p-1 shadow-md z-10">
-            <FcGoogle size={10} className="md:w-3 md:h-3" />
-          </div>
-        )}
-
         {/* Dropdown indicator */}
         {isOpen && (
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 rounded-full"></div>
@@ -122,19 +114,12 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           {/* User Info Section */}
           <div className="p-3 md:p-4 border-b border-white/10">
             <div className="flex items-center gap-2.5 md:gap-3">
-              <div className="relative">
-                <Avatar
-                  url={getAvatarUrl()}
-                  alt={getUserDisplayName()}
-                  size={40}
-                  isDefault={!user?.profile}
-                />
-                {user?.profile && (
-                  <div className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-0.5">
-                    <FcGoogle size={8} className="md:w-2.5 md:h-2.5" />
-                  </div>
-                )}
-              </div>
+              <Avatar
+                url={getAvatarUrl()}
+                alt={getUserDisplayName()}
+                size={40}
+                isDefault={!user?.profile}
+              />
               <div className="flex-1 min-w-0">
                 <h3 className="text-white font-semibold text-xs md:text-sm truncate font-parkinsans">
                   {getUserDisplayName()}
@@ -150,12 +135,9 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                   </p>
                 )}
                 {user?.profile && (
-                  <div className="flex items-center gap-1 mt-1 md:mt-1.5">
-                    <FcGoogle size={8} className="md:w-2.5 md:h-2.5" />
-                    <span className="text-green-400 text-[10px] md:text-xs font-medium">
-                      Google Account
-                    </span>
-                  </div>
+                  <p className="mt-1 md:mt-1.5 text-green-400 text-[10px] md:text-xs font-medium">
+                    Google Account
+                  </p>
                 )}
               </div>
             </div>

@@ -34,6 +34,7 @@ import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { AnimatePresence, motion } from "framer-motion";
+import PanelHeaderActionButton from "./PanelHeaderActionButton";
 
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
@@ -387,8 +388,8 @@ const Panel = () => {
             <Image
               src={constants.assets.logo}
               alt="Logo"
-              width={28}
-              height={28}
+              width={18}
+              height={18}
               className="relative"
             />
           </div>
@@ -423,23 +424,25 @@ const Panel = () => {
           {/* Right: Actions (Link, Leave, Avatar) */}
           <div className="flex items-center gap-1.5">
             {/* Copy Link */}
-            <button
+            <PanelHeaderActionButton
               onClick={handleCopyLink}
-              className="relative p-2 rounded-xl bg-white/5 border border-white/5 text-white/60 hover:text-white transition-all"
+              className="bg-white/5 text-white/60 hover:text-white"
+              aria-label={tPanel("copyLink")}
             >
-              {copied ? <LuCheck size={16} className="text-green-400" /> : <LuLink size={16} />}
-            </button>
+              {copied ? <LuCheck size={15} className="text-green-400" /> : <LuLink size={15} />}
+            </PanelHeaderActionButton>
 
             {/* Leave */}
-            <button
+            <PanelHeaderActionButton
               onClick={handleLeaveClick}
-              className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:text-red-300 transition-all"
+              className="bg-red-500/10 text-red-400 hover:text-red-300"
+              aria-label={tPanel("leaveParty")}
             >
-              <LuLogOut size={16} />
-            </button>
+              <LuLogOut size={15} />
+            </PanelHeaderActionButton>
 
             <div className="pl-0.5">
-              <AvatarDropdown size={30} />
+              <AvatarDropdown size={28} />
             </div>
           </div>
         </div>
@@ -453,31 +456,32 @@ const Panel = () => {
         <div className="hidden md:flex flex-col gap-3 mb-3">
           {/* Header Row */}
           <div className="flex items-center justify-between">
-            <button className="flex items-center gap-2 group">
+            <div className="flex items-center gap-2">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50"></div>
                 <Image
                   src={constants.assets.logo}
                   alt="Logo"
-                  width={28}
-                  height={28}
+                  width={18}
+                  height={18}
                   className="relative"
                 />
               </div>
-              <h2 className="text-base font-bold text-white font-parkinsans group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-rose-400 group-hover:via-pink-400 group-hover:to-fuchsia-400 transition-all duration-300">
+              <h2 className="text-base font-bold text-white font-parkinsans">
                 Movmash
               </h2>
-            </button>
+            </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <PanelHeaderActionButton
                 onClick={handleCopyLink}
-                className="relative p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group z-40"
+                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40"
+                aria-label={tPanel("copyLink")}
               >
                 {copied ? (
-                  <LuCheck size={18} className="text-green-400 transition-colors" />
+                  <LuCheck size={16} className="text-green-400 transition-colors" />
                 ) : (
-                  <LuLink size={18} className="text-white/70 group-hover:text-white transition-colors" />
+                  <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors" />
                 )}
                 {copied && (
                   <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl animate-fade-in">
@@ -485,16 +489,17 @@ const Panel = () => {
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
                   </div>
                 )}
-              </button>
+              </PanelHeaderActionButton>
 
-              <button
+              <PanelHeaderActionButton
                 onClick={handleLeaveClick}
-                className="p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:border-red-500/30 border border-zinc-600/15 text-white/70 hover:text-red-400 transition-all duration-200"
+                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
+                aria-label={tPanel("leaveParty")}
               >
-                <LuLogOut size={18} />
-              </button>
+                <LuLogOut size={16} />
+              </PanelHeaderActionButton>
 
-              <AvatarDropdown size={36} />
+              <AvatarDropdown size={34} />
             </div>
           </div>
 
