@@ -9,7 +9,7 @@ import AudioVisualizer from "@/components/VideoPlayer/AudioVisualizer";
 import { SourceProps } from "react-player/base";
 import { FileConfig } from "react-player/file";
 import { formatVideoTime } from "@/utils/timeFormatter";
-
+import { FaVolumeMute } from "react-icons/fa"
 type IOSVideoElement = HTMLVideoElement & {
     webkitEnterFullscreen?: () => void;
     webkitDisplayingFullscreen?: boolean;
@@ -46,6 +46,7 @@ type VideoPlayerProps = {
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
     loop?: boolean;
+    hasUserInteracted?: boolean;
     fullscreenTargetRef?: React.RefObject<HTMLElement>;
     children?: ReactNode;
     className?: string;
@@ -78,6 +79,7 @@ const VideoPlayer = ({
     onProgress,
     controls = true,
     loop = false,
+    hasUserInteracted = true,
     playerRef: externalPlayerRef,
     fullscreenTargetRef,
     className,
@@ -111,6 +113,7 @@ const VideoPlayer = ({
     const wasPlayingBeforeSeek = useRef(false);
     const isSeekingRef = useRef(false);
     const ignoreProgressRef = useRef(false);
+    const userMutedRef = useRef(false);
 
     const resumePlaybackIfNeeded = useCallback(() => {
         if (!autoResumeOnFullscreenExit) return;
@@ -135,7 +138,6 @@ const VideoPlayer = ({
 
     // Sync with external props
     useEffect(() => setPlaying(externalPlaying), [externalPlaying]);
-    useEffect(() => setMuted(externalMuted), [externalMuted]);
     useEffect(() => setVolume(externalVolume), [externalVolume]);
     useEffect(() => setProgress(externalProgress), [externalProgress]);
     useEffect(() => setDuration(externalDuration), [externalDuration]);
@@ -156,6 +158,40 @@ const VideoPlayer = ({
         startInactivityTimer();
     };
 
+    const shouldShowUnmuteOverlay = muted && (!hasUserInteracted || isMobile);
+    const showPlayerControls = controls && !shouldShowUnmuteOverlay;
+
+    const handleUnmuteOverlayClick = useCallback(() => {
+        setMuted(false);
+        onMute?.(false);
+        setVolume(1);
+        onVolumeChange?.(1);
+        if (!playing) {
+            // setPlaying(true);
+            onPlay?.("play");
+        }
+        handleUserActivity();
+    }, [handleUserActivity, onMute, onPlay, onVolumeChange, playing]);
+
+    // * Here we are managing the interaction basicallu to enable the mute or unmute stuff
+    useEffect(() => {
+        if (!shouldShowUnmuteOverlay) return;
+
+        const handleGlobalInteraction = (event: Event) => {
+            if ("isTrusted" in event && !event.isTrusted) return;
+            handleUnmuteOverlayClick();
+        };
+
+        window.addEventListener("click", handleGlobalInteraction);
+        window.addEventListener("touchstart", handleGlobalInteraction, { passive: true });
+        window.addEventListener("keydown", handleGlobalInteraction);
+
+        return () => {
+            window.removeEventListener("click", handleGlobalInteraction);
+            window.removeEventListener("touchstart", handleGlobalInteraction);
+            window.removeEventListener("keydown", handleGlobalInteraction);
+        };
+    }, [handleUnmuteOverlayClick, shouldShowUnmuteOverlay]);
     useEffect(() => {
         if (controls) {
             startInactivityTimer();
@@ -478,6 +514,22 @@ const VideoPlayer = ({
 
                 {/* NOTE: UI Overlay component */}
                 {children}
+
+                {shouldShowUnmuteOverlay && (
+                    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                        <button
+                            type="button"
+                            onClick={handleUnmuteOverlayClick}
+                            className="flex flex-col items-center gap-2 text-center text-white/90"
+                            aria-label={isMobile ? "Tap to unmute" : "Click to unmute"}
+                        >
+                            <FaVolumeMute size={25}/>
+                            <span className="text-sm font-semibold">
+                                {isMobile ? "Tap to unmute" : "Click to unmute"}
+                            </span>
+                        </button>
+                    </div>
+                )}
                 
                 {/* Audio Visualizer - only show when there's no video track (audio-only content) */}
                 {externalHasVideoTrack === false && (
@@ -488,9 +540,16 @@ const VideoPlayer = ({
                     />
                 )}
 
-                {!hideControls.includes(ControlComponents.OVERLAY) && <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} disablePlay={isPlayDisabled}  />}
+                {!shouldShowUnmuteOverlay && !hideControls.includes(ControlComponents.OVERLAY) && (
+                    <PlayPauseOverlay
+                        playing={playing}
+                        onToggle={togglePlay}
+                        onDoubleClick={toggleFullscreen}
+                        disablePlay={isPlayDisabled}
+                    />
+                )}
 
-                {controls && (
+                {showPlayerControls && (
                     <ControlBar
                         showControls={showControls}
                         progress={progress}

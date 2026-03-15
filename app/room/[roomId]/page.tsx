@@ -154,14 +154,14 @@ const Page = () => {
   return (
     <>
       {/* Modal */}
-      <ModalOnRoomCreate
+      {/* <ModalOnRoomCreate
         isHost={isHost}
         hostUsername={hostUsername}
         showModal={showModal}
         onClose={handleCloseModal}
         roomUrl={roomUrl}
         onJoinRoom={handleJoinRoom}
-      />
+      /> */}
       <div ref={containerRef} className="relative flex h-screen flex-col overflow-hidden bg-[#09090c] md:flex-row">
         {/* Global room background vibe (player + panel) */}
         <div className="pointer-events-none absolute inset-0 z-0">
