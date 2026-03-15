@@ -388,8 +388,8 @@ const Panel = () => {
             <Image
               src={constants.assets.logo}
               alt="Logo"
-              width={18}
-              height={18}
+              width={26}
+              height={26}
               className="relative"
             />
           </div>
@@ -462,8 +462,8 @@ const Panel = () => {
                 <Image
                   src={constants.assets.logo}
                   alt="Logo"
-                  width={18}
-                  height={18}
+                  width={26}
+                  height={26}
                   className="relative"
                 />
               </div>
@@ -499,7 +499,7 @@ const Panel = () => {
                 <LuLogOut size={16} />
               </PanelHeaderActionButton>
 
-              <AvatarDropdown size={34} />
+              <AvatarDropdown size={28} />
             </div>
           </div>
 
