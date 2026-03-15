@@ -88,18 +88,20 @@ const PlayerControls = ({
             {hasRightPill && (
                 <div className="flex items-center gap-2 rounded-2xl bg-black/30 px-2 py-1 backdrop-blur-lg shadow-[0_8px_22px_rgba(0,0,0,0.35)]">
                     {showVolume && (
-                        <div className="group/vol flex items-center gap-2">
-                            <CtrlBtn onClick={onMuteToggle} title={muted ? "Unmute" : "Mute"}>
-                                {muted ? <FaVolumeMute size={18} /> : <FaVolumeUp size={18} />}
-                            </CtrlBtn>
-
-                            <div className="relative hidden h-[2px] w-0 overflow-hidden cursor-pointer rounded-full bg-white/35 transition-[width] duration-200 ease-in-out group-hover/vol:w-16 md:block">
-                                <div
-                                    className="absolute inset-y-0 left-0 rounded-full bg-white"
-                                    style={{ width: `${muted ? 0 : volume * 100}%` }}
-                                >
-                                    <div className="absolute right-0 top-1/2 h-2 w-2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white" />
+                        <div className="group/vol flex items-center hover:pl-2 gap-2">
+                            <div className="relative hidden h-4 w-0 cursor-pointer items-center overflow-hidden transition-[width] duration-200 ease-in-out group-hover/vol:w-16 md:flex">
+                                {/* Track background */}
+                                <div className="absolute inset-x-0 top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-white/35">
+                                    {/* Fill */}
+                                    <div
+                                        className="absolute inset-y-0 left-0 rounded-full bg-white"
+                                        style={{ width: `${muted ? 0 : volume * 100}%` }}
+                                    >
+                                        {/* Thumb dot */}
+                                        <div className="absolute right-0 top-1/2 h-2 w-2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white" />
+                                    </div>
                                 </div>
+                                {/* Full-height input for easy grabbing */}
                                 <input
                                     type="range"
                                     min="0"
@@ -111,6 +113,9 @@ const PlayerControls = ({
                                     aria-label="Volume"
                                 />
                             </div>
+                            <CtrlBtn onClick={onMuteToggle} title={muted ? "Unmute" : "Mute"}>
+                                {muted ? <FaVolumeMute size={18} /> : <FaVolumeUp size={18} />}
+                            </CtrlBtn>
                         </div>
                     )}
 
