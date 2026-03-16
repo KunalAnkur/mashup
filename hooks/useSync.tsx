@@ -198,7 +198,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         [isHost, roomId, socket, getHostState, enabled, dispatch]
     );
 
-    const onSeeked = useCallback(() => {
+    const onSeeked = useCallback((seekTimeOverride?: number) => {
         if (!socket || !roomId || !isHost || !enabled) {
             console.warn(`[useSync] onSeeked called but conditions not met:`, {
                 socket: !!socket,
@@ -220,18 +220,45 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
                 !isNaN(currentTime) &&
                 isFinite(currentTime) &&
                 currentTime >= 0;
+            const hasOverride =
+                typeof seekTimeOverride === "number" &&
+                !isNaN(seekTimeOverride) &&
+                isFinite(seekTimeOverride) &&
+                seekTimeOverride >= 0;
+            const diff = hasOverride && typeof currentTime === "number" && isFinite(currentTime)
+                ? Math.abs(currentTime - seekTimeOverride)
+                : null;
 
             console.log(`[useSync] checkTime attempt ${attempt}/${max}:`, {
                 currentTime,
                 isValidTime,
+                seekTimeOverride,
+                diff,
                 state,
                 playerRefExists: !!playerRef.current,
                 playerCurrentTime: playerRef.current?.getCurrentTime?.(),
             });
 
+            if (hasOverride && diff !== null && diff > 0.5 && attempt < max) {
+                // Player hasn't updated yet; retry before sending stale time.
+                seekTimeoutRef.current = setTimeout(() => checkTime(attempt + 1, max), 100);
+                return;
+            }
+
+            const resolvedState =
+                hasOverride && diff !== null && diff > 0.5
+                    ? { ...state, currentTime: seekTimeOverride }
+                    : state;
+            const resolvedTime = resolvedState.currentTime;
+            const isResolvedValid =
+                typeof resolvedTime === "number" &&
+                !isNaN(resolvedTime) &&
+                isFinite(resolvedTime) &&
+                resolvedTime >= 0;
+
             // Always send if we have a valid number (including 0) or max attempts reached
-            if (isValidTime || attempt >= max) {
-                socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: state });
+            if (isResolvedValid || attempt >= max) {
+                socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: resolvedState });
                 seekTimeoutRef.current = null;
             } else {
                 // Retry after a short delay to let player update

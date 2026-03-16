@@ -541,8 +541,7 @@ const Panel = () => {
         {/* Content Area (Shared) */}
         <div className="flex-1 overflow-hidden">
           <div
-            className="h-full"
-            style={{ touchAction: "pan-y" }}
+            className="h-full touch-pan-y select-none"
             onPointerDown={handleContentPointerDown}
             onPointerMove={handleContentPointerMove}
             onPointerUp={handleContentPointerUp}

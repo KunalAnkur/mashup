@@ -15,9 +15,10 @@ import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
+    setFocus?: () => void;
 };
 
-const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
+const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
     const authState = useSelector((state: RootState) => state.auth);
     const playerRef = useRef<ReactPlayer>(null);
@@ -32,6 +33,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const videoStartedTrackedRef = useRef(false); // Track if video_started was already tracked
     const syncStartedTrackedRef = useRef(false); // Track if sync_started was already tracked
     const pendingInitializationRef = useRef(false);
+    const autoStoppedForMissingSourceRef = useRef(false);
     
     const { isJoined, roomType, isHost, hostLeft, roomId, captureWatchTime } = useRoomContext();
     
@@ -121,6 +123,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         onSeekEnd,
         onPlay: streamOnPlay,
         onPause,
+        stopStream,
     } = useStream({
         roomId: roomState.roomId,
         getStream, // Source-agnostic! useStream doesn't care where this comes from
@@ -326,6 +329,24 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         }
     }, [isHost, isInitialized, hostLeft]);
 
+    useEffect(() => {
+        if (!isHost || !isInitialized) return;
+
+        const hasNoActiveItem = !activeItem;
+        const screenShareEnded = activeItem?.source === "screen" && !isScreenSharing;
+        const shouldStop = hasNoActiveItem || screenShareEnded;
+
+        if (!shouldStop) {
+            autoStoppedForMissingSourceRef.current = false;
+            return;
+        }
+
+        if (autoStoppedForMissingSourceRef.current) return;
+        autoStoppedForMissingSourceRef.current = true;
+
+        stopStream(hasNoActiveItem ? "playlist-empty" : "screen-share-ended");
+    }, [isHost, isInitialized, activeItem, isScreenSharing, stopStream]);
+
     // ============================================================================
     // Render
     // ============================================================================
@@ -416,9 +437,11 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                     hostLeft: hostLeft,
                     paused: isPaused
                 }).muted}
+                hasUserInteracted={roomState.focused}
                 onPlay={onPlay}
                 onPause={onPause}
                 hasVideoTrack={!activeItem?.onlyAudio}
+                onMute={setFocus}
                 disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
                 hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
                 autoResumeOnFullscreenExit={!isHost}

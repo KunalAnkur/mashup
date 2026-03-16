@@ -1,21 +1,84 @@
+import { KeyboardEvent, MouseEvent, useEffect, useRef } from "react";
+import { isMobile } from "react-device-detect";
 import { FaPlay } from "react-icons/fa";
-
+/**
+ *  *The native onDoubleClick handler has a critical flaw: it still fires onClick before onDoubleClick. So with the native approach:
+ *  *First click → onClick fires → play/pause toggles
+ *  *Second click → onClick fires again → play/pause toggles back
+ *  *Then onDoubleClick fires → fullscreen toggles
+ */
 interface PlayPauseOverlayProps {
     playing: boolean;
     onToggle: () => void;
     onDoubleClick: () => void;
+    disablePlay?: boolean;
 }
 
-export const PlayPauseOverlay = ({ playing, onToggle, onDoubleClick }: PlayPauseOverlayProps) => (
-    <div
-        onClick={onToggle}
-        onDoubleClick={onDoubleClick}
-        className={`absolute top-0 left-0 right-0 p-4 h-full inset-0 flex items-center justify-center z-10`}
-    >
-        {!playing && (
-            <div className="p-6 bg-white/20 backdrop-blur-md rounded-full cursor-pointer">
-                <FaPlay size={32} className="text-white translate-x-[2px]" />
-            </div>
-        )}
-    </div>
-);
+export const PlayPauseOverlay = ({
+    playing,
+    onToggle,
+    onDoubleClick,
+    disablePlay = false
+}: PlayPauseOverlayProps) => {
+    const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => {
+        return () => {
+            if (clickTimerRef.current) {
+                clearTimeout(clickTimerRef.current);
+                clickTimerRef.current = null;
+            }
+        };
+    }, []);
+
+    const clearClickTimer = () => {
+        if (clickTimerRef.current) {
+            clearTimeout(clickTimerRef.current);
+            clickTimerRef.current = null;
+        }
+    };
+    const handleSingleAction = () => {
+        if (disablePlay) return;
+        onToggle();
+    };
+    const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+
+        if (event.detail === 2) {
+            clearClickTimer();
+            onDoubleClick();
+            return;
+        }
+
+        clearClickTimer();
+        clickTimerRef.current = setTimeout(() => {
+            handleSingleAction();
+            clickTimerRef.current = null;
+        }, 220);
+    };
+    const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            event.stopPropagation();
+            handleSingleAction();
+        }
+    };
+    const isMobileDevice = isMobile;
+    const playButtonPadding = isMobileDevice ? "p-4" : "p-6";
+    const playIconSize = isMobileDevice ? 22 : 32;
+    
+    return (
+        <button
+            onClick={handleClick}
+            onKeyDown={handleKeyDown}
+            
+            // onDoubleClick={onDoubleClick}
+            className="absolute left-0 right-0 top-0 inset-0 z-10 flex h-full items-center justify-center p-4"
+        >
+            {!playing && !disablePlay && (
+                <div className={`${playButtonPadding} cursor-pointer rounded-full bg-black/45 shadow-[0_8px_22px_rgba(0,0,0,0.35)] text-white/90 backdrop-blur-lg`}>
+                    <FaPlay size={playIconSize} className="translate-x-[2px] text-white" />
+                </div>
+            )}
+        </button>
+    );
+};

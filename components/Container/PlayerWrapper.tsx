@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import SyncPlayer from "./SyncPlayer";
 import StreamPlayer from "./StreamPlayer";
@@ -8,6 +8,7 @@ import { Playlist } from "@/types/storeTypes";
 import { useEffect, useState, useRef } from "react";
 import StreamPlayerEmptyState from "./StreamPlayerEmptyState";
 import { RoomType } from "@/context/RoomContext";
+import { setFocused } from "@/lib/store/slices/roomSlice";
 
 type PlayerWrapperProps = {
   fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -15,6 +16,7 @@ type PlayerWrapperProps = {
 
 const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   const roomState = useSelector((state: RootState) => state.room);
+  const dispatch = useDispatch();
   const [content, setContent] = useState<Playlist | null>(null);
   const [lastKnownType, setLastKnownType] = useState<RoomType>("stream");
   // const prevOnlyAudioRef = useRef<boolean | null>(null);
@@ -66,6 +68,7 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
       <StreamPlayer
         key={currentType}
         fullscreenTargetRef={fullscreenTargetRef}
+        setFocus={() => dispatch(setFocused(true))}
       />
     );
   }
@@ -83,6 +86,7 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     <SyncPlayer
       key={content.id}
       fullscreenTargetRef={fullscreenTargetRef}
+      setFocus={() => dispatch(setFocused(true))}
     />
   );
 };

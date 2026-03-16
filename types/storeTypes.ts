@@ -58,6 +58,27 @@ export interface RoomState {
     playing: boolean;
   };
 }
+
+export interface Product {
+  id: string;
+  name: string;
+  price: string;
+  images: string[];
+  category: string;
+  badge: string;
+  rating: string;
+  meta: string;
+  href: string;
+  surface: string;
+  glow: string;
+}
+
+export interface ProductState {
+  items: Product[];
+  loading: boolean;
+  error: string | null;
+}
+
 export type Playlist = {
   id: string;
   type: "stream" | "sync";
@@ -70,6 +91,8 @@ export type Playlist = {
 
 export type RoomSetting = {
   panelCollapsed: boolean
+  bottomSheet: boolean
+  playerActive: boolean
 }
 
 /**

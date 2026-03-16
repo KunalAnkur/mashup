@@ -17,6 +17,7 @@ import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { RootState } from "@/lib/store";
+import { FaPause, FaPlay } from "react-icons/fa";
 
 
 interface PlaylistCardProps {
@@ -92,7 +93,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
     };
 
     const renderPlaybackButton = () => {
-        const Icon = isPlaybackActive ? LuPause : LuPlay;
+        const Icon = isPlaybackActive ? FaPause : FaPlay;
 
         return (
             <span

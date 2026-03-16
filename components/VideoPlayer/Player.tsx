@@ -9,7 +9,7 @@ import AudioVisualizer from "@/components/VideoPlayer/AudioVisualizer";
 import { SourceProps } from "react-player/base";
 import { FileConfig } from "react-player/file";
 import { formatVideoTime } from "@/utils/timeFormatter";
-
+import { FaVolumeMute } from "react-icons/fa"
 type IOSVideoElement = HTMLVideoElement & {
     webkitEnterFullscreen?: () => void;
     webkitDisplayingFullscreen?: boolean;
@@ -37,7 +37,7 @@ type VideoPlayerProps = {
     onMute?: (muted: boolean) => void;
     onSeek?: (progress: number) => void;
     onSeekStart?: () => void;
-    onSeekEnd?: () => void;
+    onSeekEnd?: (seekTime?: number, seekPercent?: number) => void;
     onDuration?: (duration: number) => void;
     onFullscreenChange?: (isFullscreen: boolean) => void;
     onReady?: () => void;
@@ -46,6 +46,7 @@ type VideoPlayerProps = {
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
     loop?: boolean;
+    hasUserInteracted?: boolean;
     fullscreenTargetRef?: React.RefObject<HTMLElement>;
     children?: ReactNode;
     className?: string;
@@ -78,6 +79,7 @@ const VideoPlayer = ({
     onProgress,
     controls = true,
     loop = false,
+    hasUserInteracted = true,
     playerRef: externalPlayerRef,
     fullscreenTargetRef,
     className,
@@ -107,7 +109,11 @@ const VideoPlayer = ({
     const playerContainerRef = useRef<HTMLDivElement>(null);
     const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
     const seekDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const progressResumeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wasPlayingBeforeSeek = useRef(false);
+    const isSeekingRef = useRef(false);
+    const ignoreProgressRef = useRef(false);
+    const userMutedRef = useRef(false);
 
     const resumePlaybackIfNeeded = useCallback(() => {
         if (!autoResumeOnFullscreenExit) return;
@@ -132,15 +138,19 @@ const VideoPlayer = ({
 
     // Sync with external props
     useEffect(() => setPlaying(externalPlaying), [externalPlaying]);
-    useEffect(() => setMuted(externalMuted), [externalMuted]);
     useEffect(() => setVolume(externalVolume), [externalVolume]);
     useEffect(() => setProgress(externalProgress), [externalProgress]);
     useEffect(() => setDuration(externalDuration), [externalDuration]);
 
     // Controls visibility
     const startInactivityTimer = () => {
+        if (isSeekingRef.current) return;
         clearTimeout(inactivityTimerRef.current!);
-        inactivityTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+        inactivityTimerRef.current = setTimeout(() => {
+            if (!isSeekingRef.current) {
+                setShowControls(false);
+            }
+        }, 5000);
     };
 
     const handleUserActivity = () => {
@@ -148,6 +158,40 @@ const VideoPlayer = ({
         startInactivityTimer();
     };
 
+    const shouldShowUnmuteOverlay = muted && (!hasUserInteracted || isMobile);
+    const showPlayerControls = controls && !shouldShowUnmuteOverlay;
+
+    const handleUnmuteOverlayClick = useCallback(() => {
+        setMuted(false);
+        onMute?.(false);
+        setVolume(1);
+        onVolumeChange?.(1);
+        if (!playing) {
+            // setPlaying(true);
+            onPlay?.("play");
+        }
+        handleUserActivity();
+    }, [handleUserActivity, onMute, onPlay, onVolumeChange, playing]);
+
+    // * Here we are managing the interaction basicallu to enable the mute or unmute stuff
+    useEffect(() => {
+        if (!shouldShowUnmuteOverlay) return;
+
+        const handleGlobalInteraction = (event: Event) => {
+            if ("isTrusted" in event && !event.isTrusted) return;
+            handleUnmuteOverlayClick();
+        };
+
+        window.addEventListener("click", handleGlobalInteraction);
+        window.addEventListener("touchstart", handleGlobalInteraction, { passive: true });
+        window.addEventListener("keydown", handleGlobalInteraction);
+
+        return () => {
+            window.removeEventListener("click", handleGlobalInteraction);
+            window.removeEventListener("touchstart", handleGlobalInteraction);
+            window.removeEventListener("keydown", handleGlobalInteraction);
+        };
+    }, [handleUnmuteOverlayClick, shouldShowUnmuteOverlay]);
     useEffect(() => {
         if (controls) {
             startInactivityTimer();
@@ -156,8 +200,9 @@ const VideoPlayer = ({
     }, [controls]);
 
     // Player controls
+    const isPlayDisabled = disableControls.includes(ControlComponents.PLAY);
     const togglePlay = () => {
-        if (disableControls.includes(ControlComponents.PLAY)) return;
+        if (isPlayDisabled) return;
         const newPlaying = !playing;
         setPlaying(newPlaying);
 
@@ -195,7 +240,6 @@ const VideoPlayer = ({
 
     const toggleFullscreen = () => {
         if (disableControls.includes(ControlComponents.FULLSCREEN)) return;
-        
         // For mobile browsers, use native video element fullscreen
         if (isMobile && playerRef.current) {
             const videoElement = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
@@ -289,14 +333,26 @@ const VideoPlayer = ({
 
     // Progress and seeking
     const handleProgress = (state: { played: number; loaded: number }) => {
-        setProgress(state.played * 100);
+        if (!ignoreProgressRef.current) {
+            setProgress(state.played * 100);
+        }
         setBuffered(state.loaded * 100);
         onProgress?.();
     };
 
     const handleSeekStart = () => {
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
-        
+        isSeekingRef.current = true;
+        ignoreProgressRef.current = true;
+        if (progressResumeRef.current) {
+            clearTimeout(progressResumeRef.current);
+            progressResumeRef.current = null;
+        }
+        if (controls) {
+            if (!showControls) setShowControls(true);
+            clearTimeout(inactivityTimerRef.current!);
+        }
+
         wasPlayingBeforeSeek.current = playing;
         
         // Only pause on seek start if disableSeekPauseResume is false
@@ -317,10 +373,16 @@ const VideoPlayer = ({
         onSeek?.(percent);
     };
 
-    const handleSeekEnd = () => {
+    const handleSeekEnd = (seekTime?: number, seekPercent?: number) => {
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
-        onSeekEnd?.();
+        onSeekEnd?.(seekTime, seekPercent);
+        isSeekingRef.current = false;
+        if (controls) startInactivityTimer();
+        progressResumeRef.current = setTimeout(() => {
+            ignoreProgressRef.current = false;
+            progressResumeRef.current = null;
+        }, 250);
         
         // Only resume on seek end if disableSeekPauseResume is false
         if (!disableSeekPauseResume) {
@@ -409,6 +471,7 @@ const VideoPlayer = ({
                 }`}
             onMouseMove={controls ? handleUserActivity : undefined}
             onMouseEnter={controls ? handleUserActivity : undefined}
+            onTouchStart={controls ? handleUserActivity : undefined}
         >
             <div
                 className={`${false ? "w-full h-full" : "h-full w-full"
@@ -451,6 +514,22 @@ const VideoPlayer = ({
 
                 {/* NOTE: UI Overlay component */}
                 {children}
+
+                {shouldShowUnmuteOverlay && (
+                    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                        <button
+                            type="button"
+                            onClick={handleUnmuteOverlayClick}
+                            className="flex flex-col items-center gap-2 text-center text-white/90"
+                            aria-label={isMobile ? "Tap to unmute" : "Click to unmute"}
+                        >
+                            <FaVolumeMute size={25}/>
+                            <span className="text-sm font-semibold">
+                                {isMobile ? "Tap to unmute" : "Click to unmute"}
+                            </span>
+                        </button>
+                    </div>
+                )}
                 
                 {/* Audio Visualizer - only show when there's no video track (audio-only content) */}
                 {externalHasVideoTrack === false && (
@@ -461,9 +540,16 @@ const VideoPlayer = ({
                     />
                 )}
 
-                {!hideControls.includes(ControlComponents.OVERLAY) && <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} />}
+                {!shouldShowUnmuteOverlay && !hideControls.includes(ControlComponents.OVERLAY) && (
+                    <PlayPauseOverlay
+                        playing={playing}
+                        onToggle={togglePlay}
+                        onDoubleClick={toggleFullscreen}
+                        disablePlay={isPlayDisabled}
+                    />
+                )}
 
-                {controls && (
+                {showPlayerControls && (
                     <ControlBar
                         showControls={showControls}
                         progress={progress}
@@ -483,6 +569,7 @@ const VideoPlayer = ({
                         onFullscreenToggle={toggleFullscreen}
                         formatTime={formatVideoTime}
                         hideControls={hideControls}
+                        onUserActivity={handleUserActivity}
                     />
                 )}
             </div>
