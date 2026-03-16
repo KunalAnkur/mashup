@@ -5,8 +5,12 @@
 - Do not suggest commit commands immediately after a change; first ask the user whether the work is finished and whether they like the result.
 - If suggesting `git add .`, make sure the commit message covers all staged changes. If the commit message is narrower than the full diff, suggest scoped `git add` commands instead of `git add .`.
 - After each meaningful UI/code change, provide the relevant test command(s) and short manual test steps.
+- Before starting each UI-facing step, tell the user exactly which screen/component/flow to compare in the app so they can visually verify before and after.
+- After each UI-facing step, repeat those exact check locations as a short manual verification list.
+- When giving UI verification, describe it as step-by-step app navigation: which page to open, which component to locate, which visual properties to compare, and which interaction state to try.
 - If the user asks to work step by step, make one bounded change at a time, then stop for feedback before moving to the next visual revision.
 - When the user says “note to yourself” for a project-specific workflow/design rule, record it here if it should persist for later turns in this repo.
+- During visual cleanup and class unification, preserve existing interaction behavior such as hover-revealed timestamps, tooltips, contextual actions, and disclosure states. Remove only the decorative layer you intend to remove, not the state hook that drives related behavior.
 - After refactors or component extraction, verify that no stale references/import removals are left behind. Smoke test the directly affected screen/tab to avoid runtime `ReferenceError` issues.
 - Before deleting "unused" files, verify real imports/usages first and then clean up stale state, handlers, comments, and support types in the entry points that previously referenced them.
 - If the user explicitly defers a refactor or architecture cleanup to another branch, record it in the agent docs/backlog immediately and stop treating it as in-scope for the current branch.
@@ -44,6 +48,8 @@
 - Keep sibling alignment consistent by putting items inside a shared layout wrapper instead of offsetting one side with extra left/right spacing.
 - Use padding mainly for container insets and section breathing room; use layout utilities for internal alignment.
 - When tightening or balancing UI spacing, prefer shared wrapper spacing and `gap-*` over scattered one-off `ml-*`, `mr-*`, `mt-*`, or `mb-*` fixes.
+- When a shared surface token already defines the panel/popover/card look, prefer using it directly instead of stacking extra shadow, border, or blur utilities on top unless the extra layer creates a clearly intentional distinction.
+- In class unification work, remove redundant visual add-ons from consumers before creating new tokens for them. Favor one unified surface treatment over multiple slightly different layered versions.
 
 # Future UI TODOs
 
