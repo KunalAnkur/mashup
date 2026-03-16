@@ -12,6 +12,15 @@ interface PlaylistScreenShareCardProps {
     isHost: boolean;
 }
 
+const playlistScreenShareThumbnailClass =
+    "relative w-20 h-13 rounded-lg overflow-hidden shrink-0 flex items-center justify-center";
+const playlistScreenSharePlayingBadgeClass =
+    "flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded";
+const playlistScreenShareStopButtonClass =
+    "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 group-hover:scale-110";
+const playlistScreenShareIdleBadgeClass =
+    "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center";
+
 export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = ({
     platformName,
     platformLogo,
@@ -34,7 +43,7 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
             {/* Platform Logo */}
             <div
                 className={`
-                    relative w-20 h-13 rounded-lg overflow-hidden shrink-0 flex items-center justify-center
+                    ${playlistScreenShareThumbnailClass}
                     ${isPlaying ? 'ring-2 ring-pink-500/50' : ''}
                 `}
                 style={platformBgStyle}
@@ -65,7 +74,7 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
                         {platformName}
                     </p>
                     {isPlaying && (
-                        <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                        <span className={playlistScreenSharePlayingBadgeClass}>
                             {t("streaming")}
                         </span>
                     )}
@@ -79,14 +88,14 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
             {isHost && onStop ? (
                 <button
                     onClick={onStop}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 group-hover:scale-110"
+                    className={playlistScreenShareStopButtonClass}
                     title={t("stopScreenSharing")}
                 >
                     <LuX size={12} />
                 </button>
             ) : (
                 <div className={`
-                    w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+                    ${playlistScreenShareIdleBadgeClass}
                     ${isPlaying
                         ? 'bg-pink-500/20 text-pink-400'
                         : 'bg-white/5 text-gray-500'
