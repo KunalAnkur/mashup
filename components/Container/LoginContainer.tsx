@@ -15,12 +15,16 @@ import { showError, showSuccess } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackLogin, trackSignup } from "@/lib/analytics";
 import Image from "next/image";
+import { zincGlassStrongBorderedSurfaceClass } from "@/components/UI/classTokens";
 
 
 type Prop = {
   setContainer?: (container: "login" | "signup") => void | null;
   isModel?: boolean;
 };
+
+const guestContinueButtonClass =
+  "w-full bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed";
 
 const LoginContainer = ({ setContainer }: Prop) => {
   const router = useRouter();
@@ -83,7 +87,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl rounded-3xl p-8 md:p-10 shadow-xl w-full max-w-md mx-auto border border-zinc-600/15">
+    <div className={`${zincGlassStrongBorderedSurfaceClass} rounded-3xl p-8 md:p-10 shadow-xl w-full max-w-md mx-auto`}>
       <div className="flex flex-col items-center gap-7">
         {/* Logo and Welcome Section */}
         <header className="flex flex-col items-center gap-4 w-full">
@@ -131,7 +135,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
           <Button
             name={isGuestProcessing || isGuestLoading ? "Creating account..." : "Continue as Guest"}
             icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className="w-full bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={guestContinueButtonClass}
             onClick={handleContinueAsGuest}
             disabled={isGuestProcessing || isGuestLoading}
           />

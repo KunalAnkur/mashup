@@ -2,6 +2,7 @@ import React from "react";
 import { FaTimes, FaVideo, FaPlay } from "react-icons/fa";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
 import { Platform } from "@/types/ModalTypes/urlPlatformTypes";
+import { zincGlassSoftInsetSurfaceClass } from "@/components/UI/classTokens";
 import { zincGlassInteractiveHoverSurfaceClass } from "@/components/UI/classTokens";
 
 interface UrlCardProps {
@@ -20,7 +21,7 @@ const UrlCardThumbnail: React.FC<{
   platform: Platform | undefined;
   showPlayIcon: boolean;
 }> = ({ isLoading, thumbnail, title, platform, showPlayIcon }) => (
-  <div className="relative w-14 h-9 sm:w-16 sm:h-10 md:w-[72px] md:h-[44px] lg:w-20 lg:h-13 rounded-md sm:rounded-lg overflow-hidden shrink-0 bg-gradient-to-br from-zinc-800/15 to-zinc-700/15 backdrop-blur-sm border border-zinc-600/20">
+  <div className={`relative w-14 h-9 sm:w-16 sm:h-10 md:w-[72px] md:h-[44px] lg:w-20 lg:h-13 rounded-md sm:rounded-lg overflow-hidden shrink-0 ${zincGlassSoftInsetSurfaceClass}`}>
     {isLoading ? (
       <div className="absolute inset-0 flex items-center justify-center bg-zinc-700/20 animate-pulse">
         <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 border-2 border-zinc-500/30 border-t-purple-500/60 rounded-full animate-spin"></div>

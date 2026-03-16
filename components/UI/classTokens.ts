@@ -10,8 +10,20 @@ export const movmashProminentCtaClass =
 export const zincGlassSurfaceClass =
   "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15";
 
+export const zincGlassMutedSurfaceClass =
+  "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10";
+
+export const zincGlassFaintSurfaceClass =
+  "bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5";
+
 export const zincGlassBlurredSurfaceClass =
   `${zincGlassSurfaceClass} backdrop-blur-xl`;
+
+export const zincGlassMutedBlurredSurfaceClass =
+  `${zincGlassMutedSurfaceClass} backdrop-blur-xl`;
+
+export const zincGlassFaintBlurredSurfaceClass =
+  `${zincGlassFaintSurfaceClass} backdrop-blur-xl`;
 
 export const zincGlassBorderedSurfaceClass =
   `${zincGlassBlurredSurfaceClass} border border-zinc-600/15`;
@@ -25,5 +37,11 @@ export const zincGlassInteractiveHoverSurfaceClass =
 export const zincGlassStrongBorderedSurfaceClass =
   "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15";
 
+export const zincGlassSoftInsetSurfaceClass =
+  "bg-gradient-to-br from-zinc-800/15 to-zinc-700/15 backdrop-blur-sm border border-zinc-600/20";
+
 export const purpleAccentIconSurfaceClass =
   "bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center";
+
+export const purplePinkAccentIconSurfaceClass =
+  "bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center";

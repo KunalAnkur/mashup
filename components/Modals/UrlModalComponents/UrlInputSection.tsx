@@ -34,6 +34,9 @@ interface UrlInputSectionProps {
   isEntering?: boolean;
 }
 
+const urlInputCancelButtonClass =
+  "flex-1 rounded-lg md:rounded-xl flex items-center justify-center gap-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 transition-all duration-200 font-medium";
+
 export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
   sourceUrlInput,
   onSourceUrlChange,
@@ -114,7 +117,7 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
         <div className="flex  gap-2 sm:gap-3 shrink-0">
           <Button
             onClick={onCancel}
-            className="flex-1 rounded-lg md:rounded-xl flex items-center justify-center gap-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 transition-all duration-200 font-medium"
+            className={urlInputCancelButtonClass}
             name={tCommon("cancel")}
           />
           <Button

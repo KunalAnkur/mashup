@@ -12,6 +12,10 @@ import { ImSpinner2 } from "react-icons/im";
 import { showError, showSuccess } from "@/utils/toast";
 import { trackLogin, trackSignup } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
+import {
+  zincGlassFaintBlurredSurfaceClass,
+  zincGlassFaintSurfaceClass,
+} from "@/components/UI/classTokens";
 
 type LoginDropdownProps = {
   onClose?: () => void;
@@ -71,7 +75,7 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
   };
 
   return (
-    <div className="border border-zinc-600/10 absolute -top-2 right-0 mt-2 w-[300px] bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-2xl rounded-xl p-4 shadow-lg">
+    <div className={`border border-zinc-600/10 absolute -top-2 right-0 mt-2 w-[300px] ${zincGlassFaintSurfaceClass} backdrop-blur-2xl rounded-xl p-4 shadow-lg`}>
       <div className="flex flex-col gap-3">
         {/* Google Button */}
         <GoogleButton
@@ -93,7 +97,7 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
         <Button
           name={isGuestProcessing || isGuestLoading ? tCommon("creatingAccount") : tCommon("continueAsGuest")}
           icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-          className="w-full py-3 rounded-xl bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-xl border border-zinc-600/10 hover:from-purple-600/15 hover:via-pink-600/15 hover:to-fuchsia-600/15 hover:border-purple-500/25 text-white text-sm px-4 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`w-full py-3 rounded-xl ${zincGlassFaintBlurredSurfaceClass} border border-zinc-600/10 hover:from-purple-600/15 hover:via-pink-600/15 hover:to-fuchsia-600/15 hover:border-purple-500/25 text-white text-sm px-4 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
           onClick={handleContinueAsGuest}
           disabled={isGuestProcessing || isGuestLoading}
         />
@@ -103,4 +107,3 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
 };
 
 export default LoginDropdown;
-

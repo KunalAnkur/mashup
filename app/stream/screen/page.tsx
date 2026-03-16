@@ -15,7 +15,10 @@ import type { Playlist } from "@/types/storeTypes";
 import {
   movmashProminentCtaClass,
   purpleAccentIconSurfaceClass,
+  purplePinkAccentIconSurfaceClass,
+  zincGlassBorderedSurfaceClass,
   zincGlassInteractiveHoverSurfaceClass,
+  zincGlassMutedBlurredSurfaceClass,
   zincGlassStrongBorderedSurfaceClass,
 } from "@/components/UI/classTokens";
 
@@ -26,10 +29,8 @@ const SCREEN_SHARE_STYLE = {
   },
 };
 
-const streamAccentIconSurfaceClass =
-  "bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30";
 const streamStepBadgeClass =
-  `w-10 h-10 sm:w-12 sm:h-12 rounded-full ${streamAccentIconSurfaceClass} flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 sm:mb-4`;
+  `w-10 h-10 sm:w-12 sm:h-12 rounded-full ${purplePinkAccentIconSurfaceClass} flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 sm:mb-4`;
 
 const ScreenSharePage = () => {
   const router = useRouter();
@@ -340,7 +341,7 @@ const ScreenSharePage = () => {
               {/* Main Action Section */}
               <div className={`flex flex-col gap-4 sm:gap-5 md:gap-6 ${zincGlassStrongBorderedSurfaceClass} rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8`}>
                 <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-                  <div className={`flex-shrink-0 inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl ${streamAccentIconSurfaceClass}`}>
+                  <div className={`flex-shrink-0 inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl ${purplePinkAccentIconSurfaceClass}`}>
                     <FaDesktop className="text-lg sm:text-xl text-white" />
                   </div>
                   <div className="flex-1 flex flex-col text-center sm:text-left">
@@ -415,7 +416,7 @@ const ScreenSharePage = () => {
               </div>
 
               {/* Quick Tips - Hidden on very small screens */}
-              <div className="hidden sm:block p-4 sm:p-5 md:p-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-lg sm:rounded-xl">
+              <div className={`hidden sm:block p-4 sm:p-5 md:p-6 ${zincGlassBorderedSurfaceClass} rounded-lg sm:rounded-xl`}>
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className="shrink-0 mt-0.5 sm:mt-1">
                     <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${purpleAccentIconSurfaceClass}`}>
@@ -496,7 +497,7 @@ const ScreenSharePage = () => {
               {/* Post-Preview Action Section - Below Video */}
               <div className={`flex flex-col gap-4 sm:gap-5 md:gap-6 ${zincGlassStrongBorderedSurfaceClass} rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6`}>
                 {/* Audio-only toggle */}
-                <div className="flex items-center justify-center p-3 sm:p-4 bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 backdrop-blur-xl border border-purple-500/20 rounded-lg sm:rounded-xl">
+                <div className={`flex items-center justify-center p-3 sm:p-4 ${zincGlassMutedBlurredSurfaceClass} border border-purple-500/20 rounded-lg sm:rounded-xl`}>
                   <label className="flex items-center gap-3 sm:gap-4 cursor-pointer group">
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       {audioOnly ? (
