@@ -10,7 +10,13 @@ const initialState: RoomState = {
   refer: false,
   watchTime: 0,
   settings: {
-    panelCollapsed: false
+    panelCollapsed: false,
+    bottomSheet: false,
+    /** 
+     * *this playeractive represent whether the playerwrapper component is mounted or not.
+     * *This will handle the panel height accordingly
+    */
+    playerActive: true,
   },
   loading: false,
   focused: false,
@@ -27,17 +33,20 @@ const roomSlice = createSlice({
       const data = action.payload.data;
       state.haveRoom = true;
       state.roomId = data.room_id;
-      state.playlist = data.playlist.map((item, index) => {
-        if (index === 0) {
-          return { ...item, selected: true };
-        }
-        return { ...item, selected: false };
-      }) || [];
       state.host = action.payload.authId === action.payload.data.user_id;
+      state.playlist = state.host
+        ? data.playlist.map((item, index) => {
+            if (index === 0) {
+              return { ...item, selected: true };
+            }
+            return { ...item, selected: false };
+          }) || []
+        : data.playlist;
       // Backend now uses type and source directly
       state.refer = false;
       state.watchTime = 0;
       state.hostPlayback.playing = false;
+      state.settings.bottomSheet = false;
       state.loading = false;
       // state.selectedIndex = data.playlist.findIndex((item) => item.selected) || 0;
     },
@@ -46,6 +55,7 @@ const roomSlice = createSlice({
       state.loading = false;
       state.roomId = null;
       state.hostPlayback.playing = false;
+      state.settings.bottomSheet = false;
       // state.event = action.payload;
     },
     setPlaylist: (state, action: PayloadAction<Playlist[]>) => {
@@ -85,7 +95,15 @@ const roomSlice = createSlice({
         ...action.payload,
       };
     },
-
+    setBottomSheet: (state, action: PayloadAction<boolean>) => {
+      state.settings.bottomSheet = action.payload;
+    },
+    toggleBottomSheet: (state) => {
+      state.settings.bottomSheet = !state.settings.bottomSheet;
+    },
+    setPlayerActive: (state, action: PayloadAction<boolean>) => {
+      state.settings.playerActive = action.payload;
+    },
     updateWatchTime: (state) => {
       state.watchTime++;
     },
@@ -112,6 +130,9 @@ export const {
   exitRoom,
   setLoading,
   setPanelCollapsed,
+  setBottomSheet,
+  toggleBottomSheet,
+  setPlayerActive,
   setRefers,
   updateRoomInfo,
   setFocused,

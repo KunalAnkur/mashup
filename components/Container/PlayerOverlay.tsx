@@ -5,9 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useChatContext } from "@/context/ChatContext";
-import { BsFillChatSquareFill } from "react-icons/bs";
-import { FiChevronsLeft, FiX, FiChevronDown } from "react-icons/fi";
-import { FiChevronsRight } from "react-icons/fi";
+import { FiX, FiChevronDown } from "react-icons/fi";
+import { FaAngleRight } from "react-icons/fa";
 import { FaPaperPlane } from "react-icons/fa";
 import { RootState } from "@/lib/store";
 import { ChatMessage, ReactionType } from "@/types/chatTypes";
@@ -274,22 +273,22 @@ const PlayerOverlay = () => {
         <div className="flex gap-2 md:gap-3">
          
           <button
-            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 rounded-full transition-all font-medium text-white text-xs md:text-sm cursor-pointer"
+            className="rounded-2xl flex justify-center items-center bg-black/45 h-7 w-7 sm:h-fit sm:w-fit sm:p-4 backdrop-blur-sm sm:backdrop-blur-lg shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
             onClick={handleTogglePanelExpand}
           >
             {isMobile ? (
               // On mobile: show up arrow when panel is collapsed (to open it), down arrow when open (to close it)
               panelCollapsed ? (
-                <FiChevronDown size={18} className="md:w-5 md:h-5 rotate-180" />
+                <FiChevronDown size={15} className="md:w-5 md:h-5 transition rotate-180" />
               ) : (
-                <FiChevronDown size={18} className="md:w-5 md:h-5" />
+                <FiChevronDown size={15} className="md:w-5 md:h-5 transition" />
               )
             ) : (
               // On desktop: show left/right arrows
               panelCollapsed ? (
-                <FiChevronsLeft size={20} />
+                  <FaAngleRight size={20} className="transition rotate-180" />
               ) : (
-                <FiChevronsRight size={20} />
+                  <FaAngleRight size={20} className="transition" />
               )
             )}
           </button>

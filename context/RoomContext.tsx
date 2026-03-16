@@ -369,6 +369,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             const state = store.getState() as RootState;
             const playlist = state.room.playlist || [];
             if (!playlist.length) return;
+            if (selectedIndex < 0 || selectedIndex >= playlist.length) return;
+
+            const currentSelectedIndex = playlist.findIndex((item) => item.selected);
+            if (currentSelectedIndex === selectedIndex) return;
 
             const updated = playlist.map((item, idx) => ({
                 ...item,

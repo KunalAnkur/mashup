@@ -24,6 +24,8 @@ export const usePlaylistActions = () => {
     (playlistForStore: Playlist[], playlistForBroadcast: Playlist[] = playlistForStore) => {
       if (!isHost || !roomId) return;
 
+      // * Single sync path:
+      // * 1) host redux state, 2) persisted playlist, 3) socket broadcast to guests.
       dispatch(updateRoomInfo({ playlist: playlistForStore }));
       void updateRoomByRoomId({ roomId, body: { playlist: playlistForBroadcast } }).unwrap();
       broadcastPlaylist(playlistForBroadcast);
@@ -36,18 +38,14 @@ export const usePlaylistActions = () => {
       if (!isHost || !roomId) return;
 
       if (source === "screen") {
+        // * Keep only one screen entry at the top and clear selected flags on remaining items.
         const playlistWithScreen = [
           ...content,
           ...playlist
             .filter((item) => item.source !== "screen")
             .map((item) => ({ ...item, selected: false })),
         ];
-        const playlistItems = [
-          ...content,
-          ...playlist.map((item) => ({ ...item, selected: false })),
-        ];
-
-        syncPlaylist(playlistWithScreen, playlistItems);
+        syncPlaylist(playlistWithScreen, playlistWithScreen);
         return;
       }
 
@@ -68,19 +66,27 @@ export const usePlaylistActions = () => {
       void streamId;
       if (!isHost || !roomId) return;
 
-      const playlistWithScreen = playlist
+      // * Preserve currently selected non-screen item when screen entries are removed.
+      const selectedNonScreenId =
+        playlist.find((item) => item.selected && item.source !== "screen")?.id ||
+        playlist.find((item) => item.source !== "screen")?.id ||
+        null;
+
+      // * Drop all screen items from shared playlist state.
+      const playlistWithoutScreen = playlist
         .filter((item) => item.source !== "screen")
-        .map((item, index) => ({
+        .map((item) => ({
           ...item,
-          selected: index === 0,
+          selected: selectedNonScreenId ? item.id === selectedNonScreenId : false,
         }));
 
-      const playlistItems = playlist.map((item, index) => ({
-        ...item,
-        selected: index === 0,
-      }));
+      // ! Always keep exactly one selected item when any non-screen item exists.
+      if (playlistWithoutScreen.length && !playlistWithoutScreen.some((item) => item.selected)) {
+        playlistWithoutScreen[0] = { ...playlistWithoutScreen[0], selected: true };
+      }
 
-      syncPlaylist(playlistWithScreen, playlistItems);
+      // * Apply the same payload locally and to guests to keep selection/index consistent.
+      syncPlaylist(playlistWithoutScreen, playlistWithoutScreen);
     },
     [isHost, roomId, playlist, syncPlaylist]
   );
