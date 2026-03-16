@@ -1,6 +1,10 @@
 import React from "react";
 import { LuPlay, LuFilm } from "react-icons/lu";
 import { useTranslations } from "@/i18n/I18nProvider";
+import {
+    panelCardHoverSurfaceClass,
+    panelCardSurfaceClass,
+} from "../panelCardStyles";
 
 interface PlaylistFileCardProps {
     file: File;
@@ -36,7 +40,7 @@ export const PlaylistFileCard: React.FC<PlaylistFileCardProps> = ({
                 group w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0
                 ${isPlaying
                     ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
-                    : 'bg-white/5 border border-transparent hover:bg-white/10 hover:border-white/10'
+                    : `${panelCardSurfaceClass} border border-transparent ${isHost ? panelCardHoverSurfaceClass : ""}`
                 }
                 ${!isHost ? 'cursor-default' : 'cursor-pointer'}
             `}
@@ -105,4 +109,3 @@ export const PlaylistFileCard: React.FC<PlaylistFileCardProps> = ({
         </button>
     );
 };
-

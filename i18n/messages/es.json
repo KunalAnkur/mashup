@@ -286,6 +286,8 @@
     "helpUsImprove": "Ayúdanos a mejorar",
     "topic": "Tema",
     "descriptionPlaceholder": "Cuéntanos qué piensas...",
+    "topicMinLength": "Ingresa al menos 3 caracteres para el tema.",
+    "descriptionMinLength": "Ingresa al menos 10 caracteres para la descripción.",
     "sendFeedback": "Enviar Comentarios",
     "category": {
       "bug": "Error",

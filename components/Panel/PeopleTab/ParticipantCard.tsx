@@ -2,9 +2,10 @@
 
 import { LuCrown } from "react-icons/lu";
 import Avatar from "@/components/UI/Avatar";
+import { panelCardSurfaceClass } from "../panelCardStyles";
 
 const participantCardClass =
-  "relative overflow-hidden rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.02))] px-3 py-3";
+  `relative overflow-hidden rounded-2xl px-3 py-3 ${panelCardSurfaceClass}`;
 const currentUserBadgeClass =
   "inline-flex items-center whitespace-nowrap rounded-full bg-rose-400/10 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-rose-200";
 const hostBadgeClass =

@@ -1,4 +1,3 @@
-export { UrlModalHeader } from "./UrlModalHeader";
 export { SupportedPlatformsGrid } from "./SupportedPlatformsGrid";
 export { UrlInputSection } from "./UrlInputSection";
 export { UrlCard } from "./UrlCard";

@@ -63,7 +63,7 @@ const StreamFilesPage = () => {
     router.push("/");
   };
 
-  const handleScreenShareClick = (platformName: string) => {
+  const handleScreenShareClick = () => {
     router.push(`/stream/screen`);
   };
 
@@ -142,4 +142,3 @@ const StreamFilesPage = () => {
 };
 
 export default StreamFilesPage;
-

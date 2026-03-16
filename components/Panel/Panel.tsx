@@ -10,7 +10,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { exitRoom } from "@/lib/store/slices/roomSlice";
 import { RootState } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { AvatarDropdown } from "../UI";
+import {
+  AvatarDropdown,
+  Modal,
+  ModalConfirmContent,
+  modalConfirmSurfaceClass,
+} from "../UI";
 import Image from "next/image";
 import { isMobile } from "react-device-detect";
 import * as constants from "../../constants";
@@ -29,6 +34,7 @@ import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { AnimatePresence, motion } from "framer-motion";
+import PanelHeaderActionButton from "./PanelHeaderActionButton";
 
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
@@ -352,37 +358,24 @@ const Panel = () => {
       
 
       <div className="relative z-30 flex flex-col h-full w-full">
-        {showLeaveConfirm && (
-          <div className="leave-modal fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-xl md:rounded-2xl p-4 md:p-6 max-w-sm w-full mx-4 shadow-2xl">
-              <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-                <div className="p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-red-500/20 via-rose-500/20 to-pink-500/20 backdrop-blur-sm border border-red-500/30">
-                  <LuLogOut className="text-red-400" size={18} />
-                </div>
-                <h3 className="text-white text-base md:text-lg font-bold font-parkinsans">
-                  {tPanel("leaveParty")}
-                </h3>
-              </div>
-              <p className="text-white/70 text-xs md:text-sm mb-4 md:mb-6 leading-relaxed">
-                {tPanel("leavePartyMessage")}
-              </p>
-              <div className="flex gap-2 md:gap-3">
-                <button
-                  onClick={handleStay}
-                  className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200"
-                >
-                  {tPanel("stay")}
-                </button>
-                <button
-                  onClick={handleLeaveParty}
-                  className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs md:text-sm font-medium rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-red-500/25"
-                >
-                  {tPanel("leave")}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <Modal
+          open={showLeaveConfirm}
+          onClose={handleStay}
+          closeOnBackdropClick={false}
+          closeOnEscape={false}
+          overlayClassName="leave-modal z-50"
+          panelClassName={modalConfirmSurfaceClass}
+        >
+          <ModalConfirmContent
+            icon={<LuLogOut size={18} className="text-current" />}
+            title={tPanel("leaveParty")}
+            message={tPanel("leavePartyMessage")}
+            cancelLabel={tPanel("stay")}
+            confirmLabel={tPanel("leave")}
+            onCancel={handleStay}
+            onConfirm={handleLeaveParty}
+          />
+        </Modal>
 
         {/* ============================================== */}
         {/* MOBILE VIEW - Unified Compact Header (shown on mobile devices, even in landscape) */}
@@ -395,8 +388,8 @@ const Panel = () => {
             <Image
               src={constants.assets.logo}
               alt="Logo"
-              width={28}
-              height={28}
+              width={26}
+              height={26}
               className="relative"
             />
           </div>
@@ -431,23 +424,25 @@ const Panel = () => {
           {/* Right: Actions (Link, Leave, Avatar) */}
           <div className="flex items-center gap-1.5">
             {/* Copy Link */}
-            <button
+            <PanelHeaderActionButton
               onClick={handleCopyLink}
-              className="relative p-2 rounded-xl bg-white/5 border border-white/5 text-white/60 hover:text-white transition-all"
+              className="bg-white/5 text-white/60 hover:text-white"
+              aria-label={tPanel("copyLink")}
             >
-              {copied ? <LuCheck size={16} className="text-green-400" /> : <LuLink size={16} />}
-            </button>
+              {copied ? <LuCheck size={15} className="text-green-400" /> : <LuLink size={15} />}
+            </PanelHeaderActionButton>
 
             {/* Leave */}
-            <button
+            <PanelHeaderActionButton
               onClick={handleLeaveClick}
-              className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:text-red-300 transition-all"
+              className="bg-red-500/10 text-red-400 hover:text-red-300"
+              aria-label={tPanel("leaveParty")}
             >
-              <LuLogOut size={16} />
-            </button>
+              <LuLogOut size={15} />
+            </PanelHeaderActionButton>
 
             <div className="pl-0.5">
-              <AvatarDropdown size={30} />
+              <AvatarDropdown size={28} />
             </div>
           </div>
         </div>
@@ -461,48 +456,50 @@ const Panel = () => {
         <div className="hidden md:flex flex-col gap-3 mb-3">
           {/* Header Row */}
           <div className="flex items-center justify-between">
-            <button className="flex items-center gap-2 group">
+            <div className="flex items-center gap-2">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50"></div>
                 <Image
                   src={constants.assets.logo}
                   alt="Logo"
-                  width={28}
-                  height={28}
+                  width={26}
+                  height={26}
                   className="relative"
                 />
               </div>
-              <h2 className="text-base font-bold text-white font-parkinsans group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-rose-400 group-hover:via-pink-400 group-hover:to-fuchsia-400 transition-all duration-300">
+              <h2 className="text-base font-bold text-white font-parkinsans">
                 Movmash
               </h2>
-            </button>
+            </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <PanelHeaderActionButton
                 onClick={handleCopyLink}
-                className="relative p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group z-40"
+                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40"
+                aria-label={tPanel("copyLink")}
               >
                 {copied ? (
-                  <LuCheck size={18} className="text-green-400 transition-colors" />
+                  <LuCheck size={16} className="text-green-400 transition-colors" />
                 ) : (
-                  <LuLink size={18} className="text-white/70 group-hover:text-white transition-colors" />
+                  <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors" />
                 )}
                 {copied && (
-                  <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl animate-fade-in">
+                  <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-zinc-900 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl">
                     {tCommon("linkCopied")}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-900"></div>
                   </div>
                 )}
-              </button>
+              </PanelHeaderActionButton>
 
-              <button
+              <PanelHeaderActionButton
                 onClick={handleLeaveClick}
-                className="p-2 rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:border-red-500/30 border border-zinc-600/15 text-white/70 hover:text-red-400 transition-all duration-200"
+                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
+                aria-label={tPanel("leaveParty")}
               >
-                <LuLogOut size={18} />
-              </button>
+                <LuLogOut size={16} />
+              </PanelHeaderActionButton>
 
-              <AvatarDropdown size={36} />
+              <AvatarDropdown size={28} />
             </div>
           </div>
 

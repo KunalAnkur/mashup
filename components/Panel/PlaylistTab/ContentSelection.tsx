@@ -1,6 +1,6 @@
 "use client";
 
-import { LuFolderPlus, LuLink2, LuPlus, LuScreenShare, LuX } from "react-icons/lu";
+import { LuFolderPlus, LuLink2, LuScreenShare } from "react-icons/lu";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import { helper } from "@/utils";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist, UrlMetadata } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { AddUrlModal } from "../AddUrlModal";
 
 type ContentSelectionProps = {
     onAddContent: (content: Playlist[], source: "file" | "url" | "screen") => void;
@@ -26,7 +27,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
     const [urlInput, setUrlInput] = useState("");
     const [urlError, setUrlError] = useState("");
     const authState = useSelector((state: RootState) => state.auth);
-    const { stream, setStream, setScreenType, handleStopScreenSharing } = useMediaStreamContext();
+    const { stream, setStream, setScreenType } = useMediaStreamContext();
     const t = useTranslations("sync");
     const tCommon = useTranslations("common");
     const tToast = useTranslations("toast");
@@ -154,7 +155,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
             });
         });
         console.log("stream", stream);
-    }, [stream]);
+    }, [onScreenShareStopped, stream]);
 
     const handleShareScreen = async () => {
         console.log("handleShareScreen");
@@ -307,12 +308,17 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
             // call the function here with all playlist items
             onAddContent(playlistEntries, "url");
             handleCloseAddUrlModal();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("error", error);
-            const errorMessage = 
-                error?.message || 
-                error?.error ||
-                tToast("failedToAddUrl");
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : typeof error === "object" &&
+                        error !== null &&
+                        "error" in error &&
+                        typeof (error as { error?: string }).error === "string"
+                      ? (error as { error?: string }).error || tToast("failedToAddUrl")
+                      : tToast("failedToAddUrl");
             setUrlError(errorMessage);
         } finally {
             setIsAddingUrls(false);
@@ -377,81 +383,16 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                 ))}
             </div>
         )}
-            {showAddUrlModal && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-                    onClick={handleCloseAddUrlModal}
-                >
-                    <div
-                        className="relative w-full max-w-md mx-4 bg-gradient-to-br from-[#1f1f23] to-[#27272a] rounded-2xl p-6 shadow-xl border border-white/10"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 p-2 rounded-lg">
-                                    <LuPlus className="text-white text-lg" />
-                                </div>
-                                <h3 className="text-xl font-bold text-white">{t("addVideoUrl")}</h3>
-                            </div>
-                            <button
-                                onClick={handleCloseAddUrlModal}
-                                className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
-                                aria-label="Close"
-                            >
-                                <LuX size={20} />
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <input
-                                    type="text"
-                                    placeholder={t("enterUrl")}
-                                    value={urlInput}
-                                    onChange={handleUrlInputChange}
-                                    onKeyDown={handleUrlInputKeyDown}
-                                    className="w-full rounded-xl bg-white/5 text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
-                                    disabled={isAddingUrls}
-                                    autoFocus
-                                />
-                                {urlError && (
-                                    <p className="mt-2 text-sm text-red-400 flex items-center gap-1.5">
-                                        <span>⚠️</span>
-                                        <span>{urlError}</span>
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    onClick={handleCloseAddUrlModal}
-                                    disabled={isAddingUrls}
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white font-medium text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {tCommon("cancel")}
-                                </button>
-                                <button
-                                    onClick={handleAddUrl}
-                                    disabled={isAddingUrls || !urlInput.trim() || !!urlError}
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {isAddingUrls ? (
-                                        <>
-                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            <span>{t("adding")}</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <LuPlus size={16} />
-                                            <span>{t("addUrl")}</span>
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <AddUrlModal
+                isOpen={showAddUrlModal}
+                urlInput={urlInput}
+                urlError={urlError}
+                isAdding={isAddingUrls}
+                onClose={handleCloseAddUrlModal}
+                onUrlInputChange={handleUrlInputChange}
+                onUrlInputKeyDown={handleUrlInputKeyDown}
+                onAddUrl={handleAddUrl}
+            />
         </>
     );
 };

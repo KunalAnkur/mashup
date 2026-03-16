@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ReactionType } from "@/types/chatTypes";
-import { FaPlus, FaTimes, FaThumbtack } from "react-icons/fa";
+import { LuPin, LuPlus, LuX } from "react-icons/lu";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ReactionPickerProps {
@@ -125,7 +125,7 @@ const ReactionPicker = ({
         whileTap={{ scale: 0.95 }}
         title="Add more reactions"
       >
-        {isOpen ? <FaTimes size={16} /> : <FaPlus size={16} />}
+        {isOpen ? <LuX size={16} /> : <LuPlus size={16} />}
       </motion.button>
 
       {/* Picker Modal */}
@@ -149,7 +149,7 @@ const ReactionPicker = ({
                   onClick={() => setIsOpen(false)}
                   className="text-gray-400 hover:text-white transition-colors p-1 hover:bg-white/10 rounded"
                 >
-                  <FaTimes size={12} />
+                  <LuX size={12} />
                 </button>
               </div>
 
@@ -201,7 +201,7 @@ const ReactionPicker = ({
                           animate={{ scale: 1 }}
                           className="absolute -top-1 -right-1 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full p-1 shadow-lg"
                         >
-                          <FaThumbtack size={6} className="text-white" />
+                          <LuPin size={6} className="text-white" />
                         </motion.div>
                       )}
                     </motion.button>

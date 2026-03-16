@@ -286,6 +286,8 @@
     "helpUsImprove": "ساعدنا على التحسين",
     "topic": "الموضوع",
     "descriptionPlaceholder": "أخبرنا بما يدور في ذهنك...",
+    "topicMinLength": "أدخل 3 أحرف على الأقل للموضوع.",
+    "descriptionMinLength": "أدخل 10 أحرف على الأقل للوصف.",
     "sendFeedback": "إرسال الملاحظات",
     "category": {
       "bug": "خطأ",

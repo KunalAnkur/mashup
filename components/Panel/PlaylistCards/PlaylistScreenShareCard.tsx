@@ -1,7 +1,7 @@
 import React from "react";
-import { LuX } from "react-icons/lu";
-import { FaBroadcastTower } from "react-icons/fa";
+import { LuRadioTower, LuX } from "react-icons/lu";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { panelCardSurfaceClass } from "../panelCardStyles";
 
 interface PlaylistScreenShareCardProps {
     platformName: string;
@@ -20,13 +20,14 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
     onStop,
     isHost,
 }) => {
+    const t = useTranslations("panel.playlist");
     return (
         <div
             className={`
                 w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0 relative group
                 ${isPlaying
                     ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
-                    : 'bg-white/5 border border-transparent'
+                    : `${panelCardSurfaceClass} border border-transparent`
                 }
             `}
         >
@@ -47,7 +48,7 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         <div className="flex flex-col items-center gap-1">
                             <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
-                                <FaBroadcastTower className="text-white" size={10} />
+                                <LuRadioTower className="text-white" size={10} />
                             </div>
                             <div className="w-1 h-1 rounded-full bg-pink-500 animate-pulse"></div>
                         </div>
@@ -91,10 +92,9 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
                         : 'bg-white/5 text-gray-500'
                     }
                 `}>
-                    <FaBroadcastTower size={12} />
+                    <LuRadioTower size={12} />
                 </div>
             )}
         </div>
     );
 };
-
