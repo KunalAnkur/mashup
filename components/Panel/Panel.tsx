@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
@@ -17,7 +17,6 @@ import {
   modalConfirmSurfaceClass,
 } from "../UI";
 import Image from "next/image";
-import { isMobile } from "react-device-detect";
 import * as constants from "../../constants";
 // Added icons for tabs and new feedback icon
 import {
@@ -35,6 +34,7 @@ import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { AnimatePresence, motion } from "framer-motion";
 import PanelHeaderActionButton from "./PanelHeaderActionButton";
+import useEmblaCarousel from "embla-carousel-react";
 
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
@@ -52,13 +52,6 @@ const activeTabPillTransition = {
   damping: 34,
   mass: 0.82,
 } as const;
-const tabContentTransition = {
-  type: "spring",
-  stiffness: 340,
-  damping: 32,
-  mass: 0.88,
-} as const;
-const swipeThreshold = 56;
 
 type SwipeAxis = "x" | "y" | null;
 type SwipeState = {
@@ -77,37 +70,18 @@ const initialSwipeState: SwipeState = {
   enabled: false,
 };
 
-const tabContentVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? 36 : direction < 0 ? -36 : 0,
-    opacity: direction === 0 ? 1 : 0,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-  },
-  exit: (direction: number) => ({
-    x: direction > 0 ? -36 : direction < 0 ? 36 : 0,
-    opacity: direction === 0 ? 1 : 0,
-  }),
-};
 
-const isSwipeBlockedTarget = (target: EventTarget | null) => {
-  if (!(target instanceof Element)) {
-    return false;
-  }
 
-  return Boolean(
-    target.closest(
-      "input, textarea, select, option, button, a, label, [role='button'], [role='link'], [contenteditable='true'], [data-no-tab-swipe='true']",
-    ),
-  );
-};
 
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
   const [tabDirection, setTabDirection] = useState(0);
+  const [tabEmblaRef, tabEmblaApi] = useEmblaCarousel({
+    align: "start",
+    dragFree: false,
+    containScroll: "trimSnaps",
+  });
 
   const { leaveRoom, roomId } = useRoomContext();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
@@ -136,12 +110,45 @@ const Panel = () => {
 
   const activeTabIndex = visibleTabs.indexOf(activeTab);
 
+  const onTabSelect = useCallback(() => {
+    if (!tabEmblaApi) return;
+    const selectedIndex = tabEmblaApi.selectedScrollSnap();
+    const nextTab = visibleTabs[selectedIndex];
+    if (!nextTab) return;
+    const nextDirection =
+      selectedIndex === activeTabIndex ? 0 : selectedIndex > activeTabIndex ? 1 : -1;
+    setTabDirection(nextDirection);
+    setActiveTab(nextTab);
+  }, [tabEmblaApi, visibleTabs, activeTabIndex]);
+
   useEffect(() => {
     if (visibleTabs.length > 0 && !visibleTabs.includes(activeTab)) {
       setTabDirection(0);
       setActiveTab(visibleTabs[0]);
+      if (tabEmblaApi) {
+        tabEmblaApi.scrollTo(0);
+      }
     }
-  }, [activeTab, visibleTabs]);
+  }, [activeTab, visibleTabs, tabEmblaApi]);
+
+  useEffect(() => {
+    if (!tabEmblaApi) return;
+    onTabSelect();
+    tabEmblaApi.on("select", onTabSelect);
+    tabEmblaApi.on("reInit", onTabSelect);
+    return () => {
+      tabEmblaApi.off("select", onTabSelect);
+      tabEmblaApi.off("reInit", onTabSelect);
+    };
+  }, [tabEmblaApi, onTabSelect]);
+
+  useEffect(() => {
+    if (!tabEmblaApi) return;
+    if (activeTabIndex === -1) return;
+    if (tabEmblaApi.selectedScrollSnap() !== activeTabIndex) {
+      tabEmblaApi.scrollTo(activeTabIndex);
+    }
+  }, [tabEmblaApi, activeTabIndex]);
 
   const renderTabContent = (tab: Tabs) => {
     switch (tab) {
@@ -241,113 +248,27 @@ const Panel = () => {
     setShowLeaveConfirm(false);
   };
 
-  const resetSwipeState = () => {
-    swipeStateRef.current = initialSwipeState;
-  };
 
   const selectTab = (nextTab: Tabs) => {
-    if (nextTab === activeTab) {
-      return;
-    }
-
     const nextIndex = visibleTabs.indexOf(nextTab);
 
     if (nextIndex === -1) {
       return;
     }
 
-    setTabDirection(nextIndex > activeTabIndex ? 1 : -1);
-    setActiveTab(nextTab);
-  };
-
-  const shiftTab = (step: -1 | 1) => {
-    const nextTab = visibleTabs[activeTabIndex + step];
-
-    if (!nextTab) {
-      return;
+    if (nextTab !== activeTab) {
+      setTabDirection(nextIndex > activeTabIndex ? 1 : -1);
+      setActiveTab(nextTab);
     }
 
-    selectTab(nextTab);
-  };
-
-  const handleContentPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if ((event.pointerType === "mouse" && event.button !== 0) || isSwipeBlockedTarget(event.target)) {
-      resetSwipeState();
-      return;
-    }
-
-    event.currentTarget.setPointerCapture(event.pointerId);
-
-    swipeStateRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      axis: null,
-      enabled: true,
-    };
-  };
-
-  const handleContentPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    const swipeState = swipeStateRef.current;
-
-    if (!swipeState.enabled || swipeState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    const deltaX = event.clientX - swipeState.startX;
-    const deltaY = event.clientY - swipeState.startY;
-
-    if (!swipeState.axis) {
-      if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
-        return;
-      }
-
-      swipeState.axis = Math.abs(deltaX) > Math.abs(deltaY) * 1.1 ? "x" : "y";
-
-      if (swipeState.axis === "y") {
-        resetSwipeState();
-        return;
-      }
-    }
-
-    if (swipeState.axis === "x") {
-      event.preventDefault();
+    if (tabEmblaApi) {
+      tabEmblaApi.scrollTo(nextIndex);
     }
   };
 
-  const handleContentPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    const swipeState = swipeStateRef.current;
 
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
 
-    if (!swipeState.enabled || swipeState.pointerId !== event.pointerId) {
-      resetSwipeState();
-      return;
-    }
 
-    const deltaX = event.clientX - swipeState.startX;
-    const deltaY = event.clientY - swipeState.startY;
-
-    if (
-      swipeState.axis === "x" &&
-      Math.abs(deltaX) > swipeThreshold &&
-      Math.abs(deltaX) > Math.abs(deltaY) * 1.1
-    ) {
-      shiftTab(deltaX < 0 ? 1 : -1);
-    }
-
-    resetSwipeState();
-  };
-
-  const handleContentPointerCancel = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-
-    resetSwipeState();
-  };
 
   return (
     <div className="relative flex flex-col h-full w-full bg-transparent px-3 py-3 md:px-4 md:py-4 overflow-hidden">
@@ -380,8 +301,7 @@ const Panel = () => {
         {/* ============================================== */}
         {/* MOBILE VIEW - Unified Compact Header (shown on mobile devices, even in landscape) */}
         {/* ============================================== */}
-        {isMobile ? (
-        <div className="flex items-center justify-between gap-2 mb-3 w-full">
+        <div className="flex items-center  justify-between gap-2 mb-3 w-full md:hidden">
           {/* Left: Logo */}
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50"></div>
@@ -394,36 +314,39 @@ const Panel = () => {
             />
           </div>
 
-          {/* Center: Navigation Tabs (Icons Only) */}
-          <div className={mobileTabRailClass}>
-            {visibleTabs.map((tab) => {
-              const isActive = activeTab === tab;
-              const tabTone = getTabTone(tab);
-              return (
-                <button
-                  key={tab}
-                  onClick={() => selectTab(tab)}
-                  className={`${mobileTabButtonBaseClass} ${
-                    isActive ? "text-white" : tabTone.inactiveText
-                  }`}
-                  aria-pressed={isActive}
-                >
-                  {isActive ? (
-                    <motion.span
-                      layoutId="panel-active-pill"
-                      className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
-                      transition={activeTabPillTransition}
-                    />
-                  ) : null}
-                  <span className={`relative z-10 ${isActive ? "" : "opacity-90"}`}>{getTabIcon(tab, 18)}</span>
-                </button>
-              );
-            })}
-          </div>
+          {/* Center: Navigation Tabs - Move to right side */}
+          
 
           {/* Right: Actions (Link, Leave, Avatar) */}
           <div className="flex items-center gap-1.5">
             {/* Copy Link */}
+            <div className={mobileTabRailClass}>
+              {visibleTabs.map((tab) => {
+                const isActive = activeTab === tab;
+                const tabTone = getTabTone(tab);
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => selectTab(tab)}
+                    className={`${mobileTabButtonBaseClass} ${isActive ? "text-white" : tabTone.inactiveText
+                      }`}
+                    aria-pressed={isActive}
+                  >
+                    {isActive ? (
+                      <motion.span
+                        layoutId="panel-active-pill"
+                        className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
+                        transition={activeTabPillTransition}
+                      />
+                    ) : null}
+                    <span className={`relative z-10 ${isActive ? "" : "opacity-90"}`}>
+                      {getTabIcon(tab, 18)}
+                    </span>
+                    <span className="sr-only">{getTabLabel(tab)}</span>
+                  </button>
+                );
+              })}
+            </div>
             <PanelHeaderActionButton
               onClick={handleCopyLink}
               className="bg-white/5 text-white/60 hover:text-white"
@@ -446,121 +369,105 @@ const Panel = () => {
             </div>
           </div>
         </div>
-        ) : null}
 
 
         {/* ============================================== */}
         {/* DESKTOP VIEW - Original Layout (hidden on mobile devices, shown on desktop) */}
         {/* ============================================== */}
-        {!isMobile ? (
         <div className="hidden md:flex flex-col gap-3 mb-3">
-          {/* Header Row */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50"></div>
-                <Image
-                  src={constants.assets.logo}
-                  alt="Logo"
-                  width={26}
-                  height={26}
-                  className="relative"
-                />
+            {/* Header Row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50"></div>
+                  <Image
+                    src={constants.assets.logo}
+                    alt="Logo"
+                    width={26}
+                    height={26}
+                    className="relative"
+                  />
+                </div>
+                <h2 className="text-base font-bold text-white font-parkinsans">
+                  Movmash
+                </h2>
               </div>
-              <h2 className="text-base font-bold text-white font-parkinsans">
-                Movmash
-              </h2>
+
+              <div className="flex items-center gap-2">
+                <PanelHeaderActionButton
+                  onClick={handleCopyLink}
+                  className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40"
+                  aria-label={tPanel("copyLink")}
+                >
+                  {copied ? (
+                    <LuCheck size={16} className="text-green-400 transition-colors" />
+                  ) : (
+                    <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors" />
+                  )}
+                  {copied && (
+                    <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-zinc-900 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl">
+                      {tCommon("linkCopied")}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-900"></div>
+                    </div>
+                  )}
+                </PanelHeaderActionButton>
+
+                <PanelHeaderActionButton
+                  onClick={handleLeaveClick}
+                  className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
+                  aria-label={tPanel("leaveParty")}
+                >
+                  <LuLogOut size={16} />
+                </PanelHeaderActionButton>
+
+                <AvatarDropdown size={28} />
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <PanelHeaderActionButton
-                onClick={handleCopyLink}
-                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40"
-                aria-label={tPanel("copyLink")}
+            {/* Desktop Tabs */}
+            <div>
+              <div
+                className={desktopTabRailClass}
+                style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
               >
-                {copied ? (
-                  <LuCheck size={16} className="text-green-400 transition-colors" />
-                ) : (
-                  <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors" />
-                )}
-                {copied && (
-                  <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-zinc-900 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl">
-                    {tCommon("linkCopied")}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-900"></div>
-                  </div>
-                )}
-              </PanelHeaderActionButton>
+                {visibleTabs.map((tab) => {
+                  const isActive = activeTab === tab;
+                  const tabTone = getTabTone(tab);
 
-              <PanelHeaderActionButton
-                onClick={handleLeaveClick}
-                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
-                aria-label={tPanel("leaveParty")}
-              >
-                <LuLogOut size={16} />
-              </PanelHeaderActionButton>
-
-              <AvatarDropdown size={28} />
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => selectTab(tab)}
+                      className={`${desktopTabButtonBaseClass} ${
+                        isActive ? "text-white" : tabTone.inactiveText
+                      }`}
+                      aria-pressed={isActive}
+                    >
+                      {isActive ? (
+                        <motion.span
+                          layoutId="panel-active-pill"
+                          className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
+                          transition={activeTabPillTransition}
+                        />
+                      ) : null}
+                      <span className="relative z-10 whitespace-nowrap">{getTabLabel(tab)}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-
-          {/* Desktop Tabs */}
-          <div>
-            <div
-              className={desktopTabRailClass}
-              style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
-            >
-              {visibleTabs.map((tab) => {
-                const isActive = activeTab === tab;
-                const tabTone = getTabTone(tab);
-
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => selectTab(tab)}
-                    className={`${desktopTabButtonBaseClass} ${
-                      isActive ? "text-white" : tabTone.inactiveText
-                    }`}
-                    aria-pressed={isActive}
-                  >
-                    {isActive ? (
-                      <motion.span
-                        layoutId="panel-active-pill"
-                        className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
-                        transition={activeTabPillTransition}
-                      />
-                    ) : null}
-                    <span className="relative z-10 whitespace-nowrap">{getTabLabel(tab)}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         </div>
-        ) : null}
 
         {/* Content Area (Shared) */}
         <div className="flex-1 overflow-hidden">
-          <div
-            className="h-full touch-pan-y select-none"
-            onPointerDown={handleContentPointerDown}
-            onPointerMove={handleContentPointerMove}
-            onPointerUp={handleContentPointerUp}
-            onPointerCancel={handleContentPointerCancel}
-          >
-            <AnimatePresence custom={tabDirection} initial={false} mode="wait">
-              <motion.div
-                key={activeTab}
-                custom={tabDirection}
-                variants={tabContentVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={tabContentTransition}
-                className="h-full"
-              >
-                {renderTabContent(activeTab)}
-              </motion.div>
-            </AnimatePresence>
+          <div className="h-full overflow-hidden" ref={tabEmblaRef}>
+            <div className="flex h-full touch-pan-y select-none">
+              {visibleTabs.map((tab) => (
+                <div key={tab} className="min-w-0 flex-[0_0_100%] h-full">
+                  {renderTabContent(tab)}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
