@@ -395,7 +395,7 @@ const PlayerOverlay = () => {
             onChange={(e) => setReplyText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a reply..."
-            className="w-full bg-transparent rounded-xl pl-4 pr-12 py-1.5 text-white text-sm placeholder:text-white/40 transition-all outline-none"
+            className="w-full bg-transparent rounded-xl pl-4 pr-12 py-1.5 text-white text-base placeholder:text-white/40 transition-all outline-none"
             disabled={isSending}
           />
           <button
