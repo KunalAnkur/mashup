@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useChatContext } from "@/context/ChatContext";
-import { BsFillChatSquareFill } from "react-icons/bs";
 import { FiChevronsLeft, FiX, FiChevronDown } from "react-icons/fi";
 import { FiChevronsRight } from "react-icons/fi";
 import { FaPaperPlane } from "react-icons/fa";
@@ -16,6 +15,16 @@ import AnimatedReaction from "../Panel/AnimatedReaction";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { isMobile } from "react-device-detect";
+import {
+  zincGlassBlurredSurfaceClass,
+  zincGlassBorderedSurfaceClass,
+} from "@/components/UI/classTokens";
+
+declare global {
+  interface Window {
+    __currentUser?: RootState["auth"]["user"];
+  }
+}
 
 const PlayerOverlay = () => {
   const dispatch = useDispatch();
@@ -80,8 +89,8 @@ const PlayerOverlay = () => {
     }
     
     // Store current user info globally for OverlayMessageBubble to access
-    if (typeof window !== 'undefined') {
-      (window as any).__currentUser = user;
+    if (typeof window !== "undefined") {
+      window.__currentUser = user;
     }
   }, [messages, user]);
 
@@ -264,7 +273,14 @@ const PlayerOverlay = () => {
     dispatch(setPanelCollapsed({ panelCollapsed: newPanelCollapsedState }));
   };
 
-  const handleToggleChat = () => {};
+  const playerOverlayPanelToggleButtonClass =
+    `flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 ${zincGlassBorderedSurfaceClass} hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 rounded-full transition-all font-medium text-white text-xs md:text-sm cursor-pointer`;
+  const playerOverlayClearAllButtonClass =
+    `flex items-center gap-1.5 px-3 py-1.5 ${zincGlassBlurredSurfaceClass} hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:border-red-500/30 rounded-lg text-white/70 hover:text-white text-xs font-medium transition-all duration-200`;
+  const playerOverlayRoundedGlassClass =
+    `${zincGlassBlurredSurfaceClass} rounded-2xl`;
+  const playerOverlaySendButtonClass =
+    "absolute right-2 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 rounded-lg p-2 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-purple-500/30 shadow-lg shadow-purple-500/20";
 
 
   return (
@@ -274,7 +290,7 @@ const PlayerOverlay = () => {
         <div className="flex gap-2 md:gap-3">
          
           <button
-            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 rounded-full transition-all font-medium text-white text-xs md:text-sm cursor-pointer"
+            className={playerOverlayPanelToggleButtonClass}
             onClick={handleTogglePanelExpand}
           >
             {isMobile ? (
@@ -307,7 +323,7 @@ const PlayerOverlay = () => {
                 <div className="flex justify-end mb-2">
                   <button
                     onClick={handleClearAllMessages}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:border-red-500/30  rounded-lg text-white/70 hover:text-white text-xs font-medium transition-all duration-200"
+                    className={playerOverlayClearAllButtonClass}
                     title="Clear all messages"
                   >
                     <FiX size={14} />
@@ -362,7 +378,7 @@ const PlayerOverlay = () => {
       className="flex flex-col  pointer-events-auto w-[280px]"
     >
       {/* Reactions - Glassmorphism Container */}
-      <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl rounded-2xl p-2 mb-2">
+      <div className={`${playerOverlayRoundedGlassClass} p-2 mb-2`}>
         <div className="flex items-center justify-center gap-2">
           {pinnedReactions.map((emoji) => (
             <AnimatedReaction
@@ -386,7 +402,7 @@ const PlayerOverlay = () => {
       {/* Input with Send Button Inside - Glassmorphism Container */}
       <form
         onSubmit={handleSendReply}
-        className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl rounded-2xl"
+        className={playerOverlayRoundedGlassClass}
       >
         <div className="relative flex items-center p-2">
           <input
@@ -402,7 +418,7 @@ const PlayerOverlay = () => {
           <button
             type="submit"
             disabled={!replyText.trim() || isSending}
-            className="absolute right-2 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 rounded-lg p-2 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-purple-500/30 shadow-lg shadow-purple-500/20"
+            className={playerOverlaySendButtonClass}
           >
             <FaPaperPlane size={12} />
           </button>
