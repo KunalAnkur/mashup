@@ -17,12 +17,13 @@ import Modal, {
 const dropdownSurfaceClass =
   "absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-2xl bg-[linear-gradient(180deg,rgba(33,33,39,0.96),rgba(24,24,30,0.96))] shadow-[0_18px_48px_rgba(0,0,0,0.38)] backdrop-blur-2xl md:w-60";
 const dropdownContentClass = "flex flex-col gap-0.5 p-2";
-const dropdownUserCardClass =
-  "flex items-center gap-2.5 rounded-xl px-2.5 py-2";
+const dropdownRowBaseClass = "flex items-center gap-2.5 rounded-xl px-2.5 py-2";
+const dropdownUserCardClass = dropdownRowBaseClass;
 const dropdownMetaTextClass = "text-[9px] md:text-[10px] text-white/42";
 const dropdownDividerClass = "h-px w-full bg-white/8";
+const dropdownPrimaryLabelTextClass = "text-[11px] md:text-xs";
 const dropdownLogoutButtonClass =
-  "flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-white/80 transition-all duration-200 hover:bg-rose-500/10 hover:text-white";
+  `${dropdownRowBaseClass} w-full text-left text-white/80 transition-all duration-200 hover:bg-rose-500/10 hover:text-white`;
 const dropdownLogoutIconClass =
   "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#571b24] via-[#7a1f34] to-[#5d1b34] text-rose-200 leading-none";
 
@@ -172,7 +173,9 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                 isDefault={!user?.profile}
               />
               <div className="flex min-w-0 flex-1 flex-col justify-center">
-                <h3 className="truncate font-parkinsans text-[11px] font-semibold text-white md:text-xs">
+                <h3
+                  className={`truncate font-parkinsans font-semibold text-white ${dropdownPrimaryLabelTextClass}`}
+                >
                   {getUserDisplayName()}
                 </h3>
                 {showEmailField && user?.email && (
@@ -202,7 +205,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                   className="block md:h-[13px] md:w-[13px]"
                 />
               </div>
-              <p className="min-w-0 text-[11px] font-medium md:text-xs">
+              <p className={`min-w-0 font-medium ${dropdownPrimaryLabelTextClass}`}>
                 {tCommon("logout")}
               </p>
             </button>
@@ -210,7 +213,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
         </div>
       )}
 
-      {/* Logout Confirmation Modal - ALL onClick handlers REMOVED for testing */}
+      {/* Logout Confirmation Modal */}
       <Modal
         open={showLogoutConfirm}
         onClose={handleLogoutCancel}
