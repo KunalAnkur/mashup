@@ -3,64 +3,83 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
-import {
-  useInactiveMyRoomMutation,
-  useUpdateRoomMutation,
-} from "@/lib/store/api/roomApi";
 import { useUpdateProfileMutation } from "@/lib/store/api/userApi";
-import { exitRoom } from "@/lib/store/slices/roomSlice";
 import { updateProfile as updateProfileAction } from "@/lib/store/slices/authSlice";
-import { LuCheck, LuLink, LuLogOut, LuPencil, LuUser, LuMail } from "react-icons/lu";
+import { LuCheck, LuLink, LuPencil, LuMessageSquare, LuSend, LuX } from "react-icons/lu";
 import { showError, showSuccess } from "@/utils/toast";
 import { useRoomContext } from "@/context/RoomContext";
 import { validateUsername } from "@/utils/validation";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { useSubmitFeedbackMutation } from "@/lib/store/api/feedbackApi";
+
+const sectionClass = "space-y-3";
+const sectionLabelClass =
+  "px-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/[0.34]";
+const fieldLabelClass =
+  "text-[9px] font-semibold uppercase tracking-[0.12em] text-white/[0.36]";
+const rowLabelClass = fieldLabelClass;
+const cardShellClass =
+  "relative overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-4";
+const actionCardShellClass =
+  "relative overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-2";
+const actionCardButtonClass =
+  "relative w-full overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-2 text-left transition-colors duration-200 hover:border-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50";
+const actionPillClass =
+  "shrink-0 rounded-full bg-[linear-gradient(135deg,rgba(244,63,94,0.18),rgba(236,72,153,0.16),rgba(217,70,239,0.18))] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/[0.86] transition-colors duration-200 hover:text-white";
+const actionPillSuccessClass =
+  "shrink-0 rounded-full bg-emerald-400/14 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-300";
+const valueRowClass =
+  "flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0";
+const valueBoxClass =
+  "flex min-w-0 items-center gap-2 rounded-xl border border-white/[0.06] bg-transparent px-3 h-10";
+const inputCardClass =
+  "flex min-w-0 items-center gap-2 rounded-xl border border-white/[0.07] bg-transparent px-3 h-10 transition-colors duration-200 focus-within:border-pink-400/26";
+const textInputClass =
+  "settings-input min-w-0 flex-1 appearance-none bg-transparent text-sm leading-5 text-white placeholder:text-gray-500 outline-none";
+const rowActionButtonClass =
+  "flex h-5 w-5 shrink-0 items-center justify-center transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-30";
+const rowEditButtonClass = `${rowActionButtonClass} text-white/42 hover:text-white`;
+const rowConfirmButtonClass = `${rowActionButtonClass} text-emerald-300 hover:text-emerald-200`;
+const rowCancelButtonClass = `${rowActionButtonClass} text-rose-300 hover:text-rose-200`;
+
+type EditableField = "name" | "username";
 
 const SettingTab = () => {
-  const host = useSelector((state: RootState) => state.room.host);
   const roomId = useSelector((state: RootState) => state.room.roomId);
+  const roomState = useSelector((state: RootState) => state.room);
+  const authState = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const { updateUserName } = useRoomContext();
-  const [inactiveMyRoomApi] = useInactiveMyRoomMutation();
-  const [updateRoom] = useUpdateRoomMutation();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+  const [submitFeedback] = useSubmitFeedbackMutation();
   const t = useTranslations("panel.settings");
+  const tHome = useTranslations("home");
   const tToast = useTranslations("toast");
   const tCommon = useTranslations("common");
+  const tFeedback = useTranslations("feedback");
 
-  const [isPlaying, setIsPlaying] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-  const [roomName, setRoomName] = useState("My Party Room");
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [isSavingName, setIsSavingName] = useState(false);
-  
-  // Profile update states
-  const authState = useSelector((state: RootState) => state.auth);
   const [name, setName] = useState<string>(authState.user?.name || "");
   const [username, setUsername] = useState<string>(authState.user?.username || "");
   const [email, setEmail] = useState<string>(authState.user?.email || "");
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [activeEditField, setActiveEditField] = useState<EditableField | null>(null);
   const [usernameError, setUsernameError] = useState<string>("");
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackForm, setFeedbackForm] = useState({
+    title: "",
+    description: "",
+    category: "bug" as "bug" | "feature" | "other",
+  });
+  const showEmailField = !authState.user?.isGuestUser;
 
-  // Construct room URL
   const roomUrl = roomId
     ? typeof window !== "undefined"
       ? `${window.location.origin}/room/${roomId}`
       : ""
     : "";
 
-  // Handle video play/pause (host only)
-  const handlePlayPause = () => {
-    if (host) {
-      setIsPlaying(!isPlaying);
-      // TODO: Emit socket event to control video
-      console.log(isPlaying ? "Pausing video" : "Playing video");
-    }
-  };
-
-  // Handle copy room link
   const handleCopyLink = () => {
     if (roomUrl && roomId) {
       navigator.clipboard.writeText(roomUrl);
@@ -70,37 +89,35 @@ const SettingTab = () => {
     }
   };
 
-  // Handle rename room
-  const handleRenameRoom = async () => {
-    if (!roomId || !host) return;
-
-    setIsSavingName(true);
-    try {
-      await updateRoom({
-        id: roomId,
-        body: { name: roomName },
-      }).unwrap();
-      setIsEditingName(false);
-      showSuccess(tToast("roomNameUpdated"));
-    } catch (error) {
-      console.error("Failed to rename room:", error);
-      showError(tToast("failedToRename"), tToast("tryAgain"));
-    } finally {
-      setIsSavingName(false);
+  const handleStartFieldEdit = (field: EditableField) => {
+    if (activeEditField && activeEditField !== field) {
+      return;
     }
+
+    if (field === "name") {
+      setName(authState.user?.name || "");
+    }
+
+    if (field === "username") {
+      setUsername(authState.user?.username || "");
+      setUsernameError("");
+    }
+
+    setActiveEditField(field);
   };
 
-  // Handle leave party
-  const handleLeaveParty = async () => {
-    try {
-      await inactiveMyRoomApi().unwrap();
-    } catch (error) {
-      console.error("Failed to leave room:", error);
-    } finally {
-      dispatch(exitRoom());
-      setShowLeaveConfirm(false);
-      window.location.href = "/";
+  const handleCancelFieldEdit = (field: EditableField) => {
+    if (field === "name") {
+      setName(authState.user?.name || "");
     }
+
+    if (field === "username") {
+      setUsername(authState.user?.username || "");
+      setUsernameError("");
+    }
+
+    setEmail(authState.user?.email || "");
+    setActiveEditField(null);
   };
 
   const handleUpdateProfile = async () => {
@@ -153,12 +170,22 @@ const SettingTab = () => {
       await updateUserName(result.data?.username || username.trim(), result.data?.name || name.trim(), result.data?.picture || authState.user?.profile || "");
 
       showSuccess(tToast("profileUpdated"));
-      setIsEditingProfile(false);
-    } catch (error: any) {
+      setActiveEditField(null);
+    } catch (error: unknown) {
       console.error("Failed to update profile:", error);
-      const errorMessage = error?.data?.message || error?.message || "Failed to update profile";
+      const errorMessage =
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof (error as { data?: { message?: string } }).data?.message === "string"
+          ? (error as { data?: { message?: string } }).data?.message || "Failed to update profile"
+          : typeof error === "object" &&
+              error !== null &&
+              "message" in error &&
+              typeof (error as { message?: string }).message === "string"
+            ? (error as { message?: string }).message || "Failed to update profile"
+            : "Failed to update profile";
 
-      // Check if it's a username already exists error
       if (errorMessage.toLowerCase().includes("username already exists") ||
         errorMessage.toLowerCase().includes("already exists")) {
         setUsernameError(tToast("usernameTaken"));
@@ -168,190 +195,337 @@ const SettingTab = () => {
     }
   };
 
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (feedbackForm.title.length < 3 || feedbackForm.description.length < 10) {
+      showError(tToast("invalidInput"), tToast("fillFieldsCorrectly"));
+      return;
+    }
+
+    setFeedbackLoading(true);
+    try {
+      if (!authState.isAuthenticated) {
+        showError(tCommon("error"), tToast("pleaseLogin"));
+        return;
+      }
+
+      await submitFeedback({
+        ...feedbackForm,
+        room_id: roomId || undefined,
+        room_details: roomState,
+      }).unwrap();
+
+      showSuccess(tToast("feedbackSent"));
+      setIsFeedbackOpen(false);
+      setFeedbackForm({ title: "", description: "", category: "bug" });
+    } catch {
+      showError(tCommon("error"), tToast("couldNotSendFeedback"));
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full w-full gap-3 md:gap-4 overflow-x-hidden">
-    
+    <div className="flex h-full w-full flex-col gap-3 overflow-hidden">
+      {isFeedbackOpen && (
+        <div className="feedback-modal fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]">
+          <div className="relative w-full max-w-md mx-4 bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] rounded-[2rem] shadow-2xl overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[60px]" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-[60px]" />
 
-      {/* Room Settings */}
-      <div className="flex-1 flex flex-col gap-3 md:gap-4 overflow-y-auto overflow-x-hidden pr-1 md:pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-        {/* Profile Update Section */}
-        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-3 md:space-y-4 min-w-0">
-          <div className="flex items-center gap-1.5 md:gap-2">
-            <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
-              <LuUser className="text-purple-400" size={14} />
+            <div className="relative px-6 pt-6 pb-2 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
+                  <LuMessageSquare className="text-rose-400" size={20} />
+                </div>
+                <div>
+                  <h3 className="text-white text-lg font-bold font-parkinsans">{tFeedback("title")}</h3>
+                  <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">{tFeedback("helpUsImprove")}</p>
+                </div>
+              </div>
+              <button onClick={() => setIsFeedbackOpen(false)} className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all">
+                <LuX size={20} />
+              </button>
             </div>
-            <h3 className="text-white font-semibold text-xs md:text-sm font-parkinsans">
-              {t("profileSettings")}
-            </h3>
-          </div>
 
-          {/* Profile Fields */}
-          <div className="space-y-2.5 md:space-y-3">
-            {/* Name Field */}
-            <div className="space-y-1 md:space-y-1.5">
-              <label className="text-[10px] md:text-xs text-white/70 font-medium">{t("name")}</label>
-              {isEditingProfile ? (
+            <form onSubmit={handleFeedbackSubmit} className="relative p-6 space-y-5">
+              <div className="flex p-1 bg-zinc-900/50 rounded-2xl">
+                {(["bug", "feature", "other"] as const).map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setFeedbackForm({ ...feedbackForm, category: cat })}
+                    className={`flex-1 py-2 text-[11px] font-bold capitalize transition-all duration-300 rounded-xl ${
+                      feedbackForm.category === cat
+                        ? "bg-gradient-to-r from-rose-500/20 to-fuchsia-500/20 text-white"
+                        : "text-white/40 hover:text-white/60"
+                    }`}
+                  >
+                    {tFeedback(`category.${cat}`)}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-4">
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg text-white text-xs md:text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-colors"
-                  placeholder={t("enterName")}
-                  disabled={isUpdatingProfile}
+                  placeholder={tFeedback("topic")}
+                  className="w-full bg-zinc-800/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all font-medium"
+                  value={feedbackForm.title}
+                  onChange={(e) => setFeedbackForm({ ...feedbackForm, title: e.target.value })}
                 />
-              ) : (
-                <div className="px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
-                  <p className="text-white text-xs md:text-sm">{name || t("notSet")}</p>
-                </div>
-              )}
-            </div>
 
-            {/* Username Field */}
-            <div className="space-y-1 md:space-y-1.5">
-              <label className="text-[10px] md:text-xs text-white/70 font-medium">{t("username")}</label>
-              {isEditingProfile ? (
-                <div className="space-y-1">
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => {
-                      const newUsername = e.target.value;
-                      setUsername(newUsername);
-                      
-                      // Real-time validation
-                      if (newUsername.trim()) {
-                        const validation = validateUsername(newUsername);
-                        if (!validation.valid) {
-                          setUsernameError(validation.error || "");
-                        } else {
-                          setUsernameError("");
-                        }
-                      } else {
-                        setUsernameError("");
-                      }
-                    }}
-                    className={`w-full px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border rounded-lg text-white text-xs md:text-sm placeholder:text-white/40 focus:outline-none focus:ring-2 transition-colors ${
-                      usernameError 
-                        ? "focus:ring-red-500/50 border-red-500/30" 
-                        : "focus:ring-purple-500/50 border-zinc-600/15"
+                <textarea
+                  placeholder={tFeedback("descriptionPlaceholder")}
+                  rows={4}
+                  className="w-full bg-zinc-800/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all resize-none font-medium"
+                  value={feedbackForm.description}
+                  onChange={(e) => setFeedbackForm({ ...feedbackForm, description: e.target.value })}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={feedbackLoading}
+                className="group relative w-full py-4 bg-gradient-to-r from-rose-600 to-fuchsia-600 hover:from-rose-500 hover:to-fuchsia-500 text-white font-bold text-sm rounded-2xl transition-all duration-300 shadow-lg shadow-rose-500/20 overflow-hidden active:scale-95 disabled:opacity-50"
+              >
+                <div className="relative z-10 flex items-center justify-center gap-2">
+                  {feedbackLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <LuSend size={18} />
+                      <span>{tFeedback("sendFeedback")}</span>
+                    </>
+                  )}
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Room Settings */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <div className="flex flex-col gap-5 pb-4">
+          <section className={sectionClass}>
+            <div className="space-y-1.5">
+              <p className={sectionLabelClass}>{t("roomLink")}</p>
+              <div className={actionCardShellClass}>
+                <div className="relative flex min-h-[48px] items-center justify-between gap-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-cyan-400/12 text-cyan-200">
+                      <LuLink size={14} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-medium leading-4 text-white">
+                        Invite friends
+                      </p>
+                      {roomId ? (
+                        <p className="mt-1 flex items-center gap-1 truncate text-[9px] leading-3 text-white/42">
+                          <span>{tHome("roomIdPlaceholder")}</span>
+                          <span className="font-mono">{roomId}</span>
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    disabled={!roomUrl || !roomId}
+                    className={`disabled:cursor-not-allowed disabled:opacity-50 ${
+                      copied
+                        ? actionPillSuccessClass
+                        : actionPillClass
                     }`}
-                    placeholder={t("enterUsername")}
-                    disabled={isUpdatingProfile}
-                  />
-                  {usernameError && (
-                    <p className="text-red-400 text-[10px] md:text-xs font-medium px-1">{usernameError}</p>
-                  )}
-                  {!usernameError && username.trim() && (
-                    <p className="text-white/50 text-[10px] md:text-xs px-1">{t("usernameRules")}</p>
-                  )}
+                  >
+                    {copied ? t("linkCopied") : "Copy Link"}
+                  </button>
                 </div>
-              ) : (
-                <div className="px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
-                  <p className="text-white text-xs md:text-sm">{username || t("notSet")}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Email Field - Read Only */}
-            <div className="space-y-1 md:space-y-1.5">
-              <label className="text-[10px] md:text-xs text-white/70 font-medium flex items-center gap-1">
-                <LuMail size={10} />
-                {t("emailAddress")}
-              </label>
-              <div className="px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg min-w-0">
-                <p className="text-white text-xs md:text-sm truncate" title={email || t("notSet")}>
-                  {email || t("notSet")}
-                </p>
-                <p className="text-white/50 text-[10px] md:text-xs mt-1">{t("emailCannotBeChanged")}</p>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Action Buttons */}
-          {isEditingProfile ? (
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => {
-                  setIsEditingProfile(false);
-                  // Reset to original values
-                  setName(authState.user?.name || "");
-                  setUsername(authState.user?.username || "");
-                  setEmail(authState.user?.email || "");
-                  setUsernameError("");
-                }}
-                className="flex-1 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-white text-xs md:text-sm font-medium rounded-lg transition-all duration-200"
-                disabled={isUpdatingProfile}
-              >
-                {tCommon("cancel")}
-              </button>
-              <button
-                onClick={handleUpdateProfile}
-                disabled={isUpdatingProfile || !name.trim() || !username.trim() || !!usernameError}
-                className="flex-1 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-xs md:text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isUpdatingProfile ? tCommon("saving") : t("saveChanges")}
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsEditingProfile(true)}
-              className="w-full px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 text-purple-400 text-xs md:text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 md:gap-2"
-            >
-              <LuPencil size={12} />
-              {t("editProfile")}
-            </button>
-          )}
-        </div>
-
-       
-
-        {/* Copy Room Link */}
-        <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl p-3 md:p-4 space-y-2.5 md:space-y-3 min-w-0">
-          <div className="flex items-center gap-1.5 md:gap-2">
-            <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30">
-              <LuLink className="text-purple-400" size={14} />
-            </div>
-            <h3 className="text-white font-semibold text-xs md:text-sm font-parkinsans">
-              {t("roomLink")}
-            </h3>
-          </div>
-
-          <div className="flex items-center gap-1.5 md:gap-2">
-            <div className="flex-1 px-2.5 md:px-3 py-1.5 md:py-2 bg-black/10 backdrop-blur-xl border border-zinc-600/15 rounded-lg">
-              <p className="text-white/70 text-[10px] md:text-xs truncate">
-                {roomUrl || t("noRoomLink")}
-              </p>
-            </div>
-            <button
-              onClick={handleCopyLink}
-              className="relative p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 transition-all duration-200 group z-40"
-            >
-              {copied ? (
-                <LuCheck
-                  size={18}
-                  className="text-green-400 transition-colors"
-                />
-              ) : (
-                <LuLink
-                  size={18}
-                  className="text-white/70 group-hover:text-white transition-colors"
-                />
-              )}
-              {copied && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl animate-fade-in">
-                  {t("linkCopied")}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-800/15"></div>
+          {/* Profile Update Section */}
+          <section className={sectionClass}>
+            <p className={sectionLabelClass}>{t("profileSettings")}</p>
+            <div className={cardShellClass}>
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,114,182,0.08),transparent_26%),radial-gradient(circle_at_bottom_left,rgba(56,189,248,0.06),transparent_24%)]" />
+              <div className="relative">
+                <div className={valueRowClass}>
+                  <label className={rowLabelClass}>{t("name")}</label>
+                  {activeEditField === "name" ? (
+                    <div className={inputCardClass}>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className={textInputClass}
+                        placeholder={t("enterName")}
+                        disabled={isUpdatingProfile}
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={handleUpdateProfile}
+                        className={rowConfirmButtonClass}
+                        disabled={isUpdatingProfile || !name.trim()}
+                        aria-label={t("saveChanges")}
+                      >
+                        <LuCheck size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCancelFieldEdit("name")}
+                        className={rowCancelButtonClass}
+                        disabled={isUpdatingProfile}
+                        aria-label={tCommon("cancel")}
+                      >
+                        <LuX size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={valueBoxClass}>
+                      <p className="min-w-0 flex-1 truncate text-sm text-white/82">{name || t("notSet")}</p>
+                      <button
+                        type="button"
+                        onClick={() => handleStartFieldEdit("name")}
+                        className={rowEditButtonClass}
+                        disabled={Boolean(activeEditField)}
+                        aria-label={tCommon("edit")}
+                      >
+                        <LuPencil size={14} />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </button>
-          </div>
-        </div>
 
-       
+                <div className={valueRowClass}>
+                  <label className={rowLabelClass}>{t("username")}</label>
+                  {activeEditField === "username" ? (
+                    <div className="space-y-1.5">
+                      <div
+                        className={`${inputCardClass} ${
+                          usernameError ? "border-red-500/30" : ""
+                        }`}
+                      >
+                        <input
+                          type="text"
+                          value={username}
+                          onChange={(e) => {
+                            const newUsername = e.target.value;
+                            setUsername(newUsername);
+
+                            if (newUsername.trim()) {
+                              const validation = validateUsername(newUsername);
+                              if (!validation.valid) {
+                                setUsernameError(validation.error || "");
+                              } else {
+                                setUsernameError("");
+                              }
+                            } else {
+                              setUsernameError("");
+                            }
+                          }}
+                          className={textInputClass}
+                          placeholder={t("enterUsername")}
+                          disabled={isUpdatingProfile}
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={handleUpdateProfile}
+                          className={rowConfirmButtonClass}
+                          disabled={isUpdatingProfile || !username.trim() || !!usernameError}
+                          aria-label={t("saveChanges")}
+                        >
+                          <LuCheck size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleCancelFieldEdit("username")}
+                          className={rowCancelButtonClass}
+                          disabled={isUpdatingProfile}
+                          aria-label={tCommon("cancel")}
+                        >
+                          <LuX size={16} />
+                        </button>
+                      </div>
+                      {usernameError ? (
+                        <p className="px-1 text-[11px] font-medium text-red-400">{usernameError}</p>
+                      ) : username.trim() ? (
+                        <p className="px-1 text-[11px] text-gray-500">{t("usernameRules")}</p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className={valueBoxClass}>
+                      <p className="min-w-0 flex-1 truncate text-sm text-white/82">{username || t("notSet")}</p>
+                      <button
+                        type="button"
+                        onClick={() => handleStartFieldEdit("username")}
+                        className={rowEditButtonClass}
+                        disabled={Boolean(activeEditField)}
+                        aria-label={tCommon("edit")}
+                      >
+                        <LuPencil size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {showEmailField ? (
+                  <div className={`${valueRowClass} group relative`}>
+                    <label className={`${rowLabelClass} text-white/[0.18]`}>
+                      {t("emailAddress")}
+                    </label>
+                    <div
+                      id="settings-email-tooltip"
+                      className="pointer-events-none absolute right-0 top-[10px] z-10 rounded-lg border border-white/[0.06] bg-[#141418]/95 px-2.5 py-1.5 text-[10px] font-medium leading-4 text-white/62 opacity-0 translate-y-1 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100"
+                    >
+                      {t("emailCannotBeChanged")}
+                    </div>
+                    <div
+                      className={`${valueBoxClass} cursor-not-allowed border-white/[0.04] text-white/40`}
+                      aria-label={`${email}. ${t("emailCannotBeChanged")}`}
+                      aria-describedby="settings-email-tooltip"
+                      tabIndex={0}
+                    >
+                      <p className="min-w-0 flex-1 truncate text-sm text-white/40">{email}</p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+            </div>
+          </section>
+
+          <section className={sectionClass}>
+            <div className="space-y-1.5">
+              <p className={sectionLabelClass}>{tFeedback("title")}</p>
+              <button
+                onClick={() => setIsFeedbackOpen(true)}
+                className={actionCardButtonClass}
+              >
+                <div className="relative flex min-h-[48px] items-center justify-between gap-2">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-rose-400/12 text-rose-200">
+                    <LuMessageSquare size={14} />
+                  </div>
+                  <p className="min-w-0 flex-1 truncate text-[13px] font-medium leading-4 text-white">
+                    {tFeedback("helpUsImprove")}
+                  </p>
+                  <span className={actionPillClass}>
+                    Give Feedback
+                  </span>
+                </div>
+              </button>
+            </div>
+          </section>
+        </div>
       </div>
 
 
-      <style jsx>{`
+      <style jsx global>{`
         @keyframes fade-in {
           from {
             opacity: 0;
@@ -380,6 +554,16 @@ const SettingTab = () => {
 
         .animate-scale-in {
           animation: scale-in 0.2s ease-out;
+        }
+
+        .settings-input:-webkit-autofill,
+        .settings-input:-webkit-autofill:hover,
+        .settings-input:-webkit-autofill:focus {
+          -webkit-text-fill-color: #ffffff;
+          caret-color: #ffffff;
+          -webkit-box-shadow: 0 0 0 1000px rgba(15, 15, 18, 0.18) inset;
+          box-shadow: 0 0 0 1000px rgba(15, 15, 18, 0.18) inset;
+          transition: background-color 9999s ease-in-out 0s;
         }
       `}</style>
     </div>

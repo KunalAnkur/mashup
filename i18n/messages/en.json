@@ -114,7 +114,7 @@
       "profileSettings": "Profile Settings",
       "name": "Name",
       "username": "Username",
-      "emailAddress": "Email Address",
+      "emailAddress": "Email",
       "emailCannotBeChanged": "Email cannot be changed",
       "notSet": "Not set",
       "enterName": "Enter your name",

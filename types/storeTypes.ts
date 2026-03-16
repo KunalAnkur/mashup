@@ -15,6 +15,8 @@ export type User = {
   username?: string;
   /** Session identifier */
   sessionId?: string;
+  isEmailVerified: boolean;
+  isGuestUser: boolean;
 };
 /** Metadata for a URL in the playlist */
 export interface UrlMetadata {

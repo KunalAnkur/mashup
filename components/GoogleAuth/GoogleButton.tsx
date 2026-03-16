@@ -15,7 +15,6 @@ type Props = {
 const GoogleButton = ({ onSuccess, onError, name }: Props) => {
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) =>{ 
-      console.log(tokenResponse.access_token)
       const userInfo = await axios
         .get('https://www.googleapis.com/oauth2/v3/userinfo',
           {
