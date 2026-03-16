@@ -10,6 +10,17 @@ interface ReactionPickerProps {
   onReactionsChange: (reactions: ReactionType[]) => void;
 }
 
+const reactionPickerTriggerButtonClass =
+  "relative flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200";
+const reactionPickerSurfaceClass =
+  "fixed bottom-[120px] right-6 z-[200] overflow-hidden rounded-2xl border border-white/10 bg-[#1f1f23] shadow-2xl reaction-picker-container";
+const reactionPickerHeaderFooterClass =
+  "border-white/10 bg-gradient-to-br from-[#1f1f23] to-[#27272a]";
+const reactionPickerCategoryButtonClass =
+  "rounded-lg px-2.5 py-1 text-[10px] font-medium whitespace-nowrap transition-all";
+const reactionPickerEmojiButtonClass =
+  "relative flex aspect-square items-center justify-center rounded-lg text-xl transition-all";
+
 // All available Microsoft Fluent animated emojis for reactions (60 popular ones)
 const ALL_REACTIONS: { emoji: ReactionType; name: string; category: string }[] =
   [
@@ -116,7 +127,7 @@ const ReactionPicker = ({
       {/* Plus Button - Minimal Design */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`relative w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
+        className={`${reactionPickerTriggerButtonClass} ${
           isOpen
             ? "text-pink-400 bg-pink-500/10"
             : "text-gray-400 hover:text-pink-400 hover:bg-white/5"
@@ -136,11 +147,11 @@ const ReactionPicker = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-[120px] right-6 bg-[#1f1f23] rounded-2xl shadow-2xl border border-white/10 overflow-hidden z-[200] reaction-picker-container"
+            className={reactionPickerSurfaceClass}
             style={{ minWidth: "280px" }}
           >
             {/* Header */}
-            <div className="px-3 py-2.5 border-b border-white/10 bg-gradient-to-br from-[#1f1f23] to-[#27272a]">
+            <div className={`border-b px-3 py-2.5 ${reactionPickerHeaderFooterClass}`}>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-white font-semibold text-xs">
                   Pin Reactions ({pinnedReactions.length}/6)
@@ -159,7 +170,7 @@ const ReactionPicker = ({
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-medium whitespace-nowrap transition-all ${
+                    className={`${reactionPickerCategoryButtonClass} ${
                       selectedCategory === category
                         ? "bg-pink-500/20 text-pink-400"
                         : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
@@ -183,7 +194,7 @@ const ReactionPicker = ({
                       key={reaction.emoji}
                       onClick={() => canPin && togglePin(reaction.emoji)}
                       disabled={!canPin}
-                      className={`relative aspect-square rounded-lg flex items-center justify-center text-xl transition-all ${
+                      className={`${reactionPickerEmojiButtonClass} ${
                         pinned
                           ? "bg-gradient-to-br from-pink-500/20 to-pink-600/20 ring-2 ring-pink-500/50"
                           : canPin
@@ -211,7 +222,7 @@ const ReactionPicker = ({
             </div>
 
             {/* Footer */}
-            <div className="px-3 py-2 border-t border-white/10 bg-gradient-to-br from-[#1f1f23] to-[#27272a]">
+            <div className={`border-t px-3 py-2 ${reactionPickerHeaderFooterClass}`}>
               <p className="text-[10px] text-gray-400 text-center">
                 Click to pin/unpin • Max 6 reactions
               </p>

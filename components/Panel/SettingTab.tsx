@@ -12,19 +12,24 @@ import { validateUsername } from "@/utils/validation";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 import FeedbackModal from "@/components/Modals/FeedbackModal";
+import {
+  panelFramedCardClass,
+  panelMetaMutedLabelClass,
+  panelTabRootClass,
+  panelTabScrollAreaClass,
+} from "./panelCardStyles";
 
 const sectionClass = "space-y-3";
-const sectionLabelClass =
-  "px-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/[0.34]";
+const sectionLabelClass = panelMetaMutedLabelClass;
 const fieldLabelClass =
   "text-[9px] font-semibold uppercase tracking-[0.12em] text-white/[0.36]";
 const rowLabelClass = fieldLabelClass;
 const cardShellClass =
-  "relative overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-4";
+  `${panelFramedCardClass} px-3.5 py-4`;
 const actionCardShellClass =
-  "relative overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-2";
+  `${panelFramedCardClass} px-3.5 py-2`;
 const actionCardButtonClass =
-  "relative w-full overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-2 text-left transition-colors duration-200 hover:border-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50";
+  `${panelFramedCardClass} w-full px-3.5 py-2 text-left transition-colors duration-200 hover:border-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50`;
 const actionPillClass =
   "shrink-0 rounded-full bg-[linear-gradient(135deg,rgba(244,63,94,0.18),rgba(236,72,153,0.16),rgba(217,70,239,0.18))] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/[0.86] transition-colors duration-200 hover:text-white";
 const actionPillSuccessClass =
@@ -188,7 +193,7 @@ const SettingTab = () => {
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-3 overflow-hidden">
+    <div className={panelTabRootClass}>
       <FeedbackModal
         isOpen={isFeedbackOpen}
         onClose={() => setIsFeedbackOpen(false)}
@@ -196,7 +201,7 @@ const SettingTab = () => {
       />
 
       {/* Room Settings */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className={panelTabScrollAreaClass}>
         <div className="flex flex-col gap-5 pb-4">
           <section className={sectionClass}>
             <div className="space-y-1.5">

@@ -7,11 +7,15 @@ import {
     purplePinkAccentIconSurfaceClass,
     zincGlassBorderedSurfaceClass,
 } from "@/components/UI/classTokens";
+import { panelTabRootClass } from "./panelCardStyles";
 
 const sourceTabCardClass =
     `${zincGlassBorderedSurfaceClass} rounded-2xl p-8 max-w-md w-full`;
 const sourceTabButtonClass =
     "w-full px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-purple-500/25";
+const sourceTabCenterLayoutClass = "flex h-full flex-col items-center justify-center gap-4";
+const sourceTabTitleClass = "mb-2 text-lg font-semibold text-white";
+const sourceTabDescriptionClass = "text-sm text-white/60";
 
 const SourceTab = () => {
     const { setStream } = useMediaStreamContext();
@@ -36,8 +40,8 @@ const SourceTab = () => {
         }
     };
     return (
-        <div className="flex flex-col h-full w-full p-4">
-            <div className="flex flex-col items-center justify-center h-full gap-4">
+        <div className={`${panelTabRootClass} p-4`}>
+            <div className={sourceTabCenterLayoutClass}>
                 <div className={sourceTabCardClass}>
                     <div className="flex flex-col items-center gap-4 text-center">
                         <div className={`w-16 h-16 rounded-full ${purplePinkAccentIconSurfaceClass}`}>
@@ -46,8 +50,8 @@ const SourceTab = () => {
                             </svg>
                         </div>
                         <div>
-                            <h3 className="text-white font-semibold text-lg mb-2">{tStream("screenShare")}</h3>
-                            <p className="text-white/60 text-sm">{tStream("screenShareDescription")}</p>
+                            <h3 className={sourceTabTitleClass}>{tStream("screenShare")}</h3>
+                            <p className={sourceTabDescriptionClass}>{tStream("screenShareDescription")}</p>
                         </div>
                         <button
                             className={sourceTabButtonClass}

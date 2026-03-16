@@ -137,6 +137,34 @@ type ActiveReactionDetails = {
   popupAlign: "start" | "end";
 } | null;
 
+const chatMessageReactionGroupsClass =
+  "inline-flex max-w-full flex-wrap items-center justify-end gap-1 rounded-full bg-zinc-950/85 px-1.5 py-1 shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-md";
+const chatMessageActionsBubbleClass =
+  "pointer-events-auto flex items-center gap-2 rounded-full bg-zinc-950/88 p-1 shadow-lg backdrop-blur-xl transition-opacity duration-150 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100";
+const chatStatusBannerBaseClass =
+  "relative px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl rounded-lg md:rounded-xl overflow-hidden";
+const chatStatusBannerRowClass = "relative flex items-center gap-1.5 md:gap-2";
+const chatComposerIconButtonClass =
+  "relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group";
+const chatComposerAccentOverlayClass =
+  "absolute inset-0 rounded-lg md:rounded-xl transition-opacity duration-200";
+const chatMessageAvatarBaseClass =
+  "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white text-xs md:text-sm font-bold shadow-xl border-2 border-white/20";
+const chatMessageAvatarImageClass =
+  "relative w-8 h-8 md:w-10 md:h-10 rounded-full object-cover shadow-xl border-2 border-white/20 ring-2 ring-white/5";
+const chatMessageUserNameClass =
+  "font-semibold text-xs md:text-sm text-transparent bg-clip-text bg-gradient-to-r tracking-tight truncate max-w-[120px] md:max-w-[180px]";
+const chatMessageBubbleBaseClass =
+  "relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl";
+const chatMessageTextClass =
+  "text-white/95 text-xs md:text-sm leading-relaxed break-words whitespace-pre-wrap font-medium";
+const chatMessageTimestampClass =
+  "w-full text-right text-white/50 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none";
+const chatSystemMessageTimestampClass =
+  "absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-medium text-gray-500/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100";
+const chatInputFieldBaseClass =
+  "flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed font-medium";
+
 const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);
   const [showReactions, setShowReactions] = useState(true);
@@ -688,7 +716,7 @@ const ChatTab = () => {
           isDetailsOpen ? "z-40" : "z-10"
         }`}
       >
-        <div className="inline-flex max-w-full flex-wrap items-center justify-end gap-1 rounded-full bg-zinc-950/85 px-1.5 py-1 shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-md">
+        <div className={chatMessageReactionGroupsClass}>
           {reactionGroups.map((group) => (
             <div
               key={`${message.id}-${group.emoji}`}
@@ -755,7 +783,7 @@ const ChatTab = () => {
             : "left-full top-1/2 ml-1 -translate-y-1/2"
         }`}
       >
-        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-zinc-950/88 p-1 shadow-lg backdrop-blur-xl transition-opacity duration-150 opacity-100 md:opacity-0 md:group-hover/message:opacity-100 md:group-focus-within/message:opacity-100">
+        <div className={chatMessageActionsBubbleClass}>
           <button
             type="button"
             onClick={() => handleReactionPickerToggle(message.id)}
@@ -790,8 +818,8 @@ const ChatTab = () => {
   return (
     <div className="flex flex-col h-full w-full gap-2 md:gap-3 overflow-visible">
       {!isConnected && (
-        <div className="relative px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-yellow-500/20 rounded-lg md:rounded-xl overflow-hidden">
-          <div className="relative flex items-center gap-1.5 md:gap-2">
+        <div className={`${chatStatusBannerBaseClass} border border-yellow-500/20`}>
+          <div className={chatStatusBannerRowClass}>
             <div className="relative">
               <div className="absolute inset-0 bg-yellow-400/20 rounded-full animate-ping"></div>
               <div className="relative w-1.5 h-1.5 md:w-2 md:h-2 bg-yellow-400 rounded-full"></div>
@@ -802,8 +830,8 @@ const ChatTab = () => {
       )}
 
       {isLoading && (
-        <div className="relative px-3 md:px-4 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-blue-500/20 rounded-lg md:rounded-xl overflow-hidden">
-          <div className="relative flex items-center gap-1.5 md:gap-2">
+        <div className={`${chatStatusBannerBaseClass} border border-blue-500/20`}>
+          <div className={chatStatusBannerRowClass}>
             <div className="relative">
               <div className="absolute inset-0 bg-blue-400/20 rounded-full animate-pulse"></div>
               <div className="relative w-1.5 h-1.5 md:w-2 md:h-2 bg-blue-400 rounded-full"></div>
@@ -1000,7 +1028,7 @@ const ChatTab = () => {
                       )}
                     </span>
                   </div>
-                  <span className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 text-gray-500/60 text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                  <span className={chatSystemMessageTimestampClass}>
                     {formatChatTime(msg.timestamp)}
                   </span>
                 </div>
@@ -1056,7 +1084,7 @@ const ChatTab = () => {
                         <img
                           src={msg.userProfile}
                           alt={displayUserName}
-                          className="relative w-8 h-8 md:w-10 md:h-10 rounded-full object-cover shadow-xl border-2 border-white/20 ring-2 ring-white/5"
+                          className={chatMessageAvatarImageClass}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = "none";
@@ -1066,14 +1094,14 @@ const ChatTab = () => {
                           }}
                         />
                         <div
-                          className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white text-xs md:text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 hidden`}
+                          className={`${chatMessageAvatarBaseClass} hidden bg-gradient-to-br ${userColor.bg}`}
                         >
                           {displayUserName.charAt(0).toUpperCase()}
                         </div>
                       </>
                     ) : (
                       <div
-                        className={`relative w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white text-xs md:text-sm font-bold shadow-xl bg-gradient-to-br ${userColor.bg} border-2 border-white/20 ring-2 ring-white/5`}
+                        className={`relative ${chatMessageAvatarBaseClass} bg-gradient-to-br ${userColor.bg} ring-2 ring-white/5`}
                       >
                         {displayUserName.charAt(0).toUpperCase()}
                       </div>
@@ -1092,7 +1120,7 @@ const ChatTab = () => {
                 {!isGroupedMessage && (
                   <div className="flex items-baseline gap-1.5 md:gap-2 min-w-0 w-full">
                     <span
-                      className={`font-semibold text-xs md:text-sm text-transparent bg-clip-text bg-gradient-to-r ${userColor.gradient} tracking-tight truncate max-w-[120px] md:max-w-[180px]`}
+                      className={`${chatMessageUserNameClass} ${userColor.gradient}`}
                       title={displayUserName}
                     >
                       {displayUserName}
@@ -1160,20 +1188,18 @@ const ChatTab = () => {
                     <div className={`pointer-events-none absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-xl md:rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
 
                     <div
-                      className={`relative px-2.5 md:px-3 py-2 md:py-2.5 transition-all duration-200 backdrop-blur-xl ${isGroupedMessage
+                      className={`${chatMessageBubbleBaseClass} ${isGroupedMessage
                           ? "rounded-lg md:rounded-xl mt-0"
-                          : isCurrentUser
-                            ? "rounded-xl md:rounded-2xl rounded-tl-sm"
-                            : "rounded-xl md:rounded-2xl rounded-tl-sm"
+                          : "rounded-xl md:rounded-2xl rounded-tl-sm"
                         } ${isCurrentUser
                           ? `bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 `
                           : "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 "
                         }`}
                     >
-                      <p className="text-white/95 text-xs md:text-sm leading-relaxed break-words whitespace-pre-wrap font-medium">
+                      <p className={chatMessageTextClass}>
                         {msg.message}
                       </p>
-                      <div className="w-full text-right text-white/50 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                      <div className={chatMessageTimestampClass}>
                         {formatChatTime(msg.timestamp)}
                       </div>
                     </div>
@@ -1299,7 +1325,7 @@ const ChatTab = () => {
             onKeyDown={handleKeyDown}
             disabled={!isJoined || isLoading}
             enterKeyHint="send"
-            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className={chatInputFieldBaseClass}
           />
         ) : (
           <textarea
@@ -1310,7 +1336,7 @@ const ChatTab = () => {
             onKeyDown={handleKeyDown}
             disabled={!isJoined || isLoading}
             rows={1}
-            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none overflow-y-auto max-h-[240px] font-medium break-all"
+            className={`${chatInputFieldBaseClass} resize-none overflow-y-auto max-h-[240px] break-all`}
             style={{
               minHeight: "20px",
               maxHeight: "240px",
@@ -1327,7 +1353,7 @@ const ChatTab = () => {
         {!messageInput.trim() && (
           <button
             onClick={() => setShowReactions(!showReactions)}
-            className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showReactions
+            className={`${chatComposerIconButtonClass} ${showReactions
               ? "text-rose-400"
               : "text-white/50 hover:text-rose-400"
               }`}
@@ -1348,15 +1374,15 @@ const ChatTab = () => {
           </button>
         )}
 
-        <button
-          data-emoji-button
-          onClick={() => setShowEmojis(!showEmojis)}
-          className={`relative p-1.5 md:p-2 rounded-lg md:rounded-xl transition-all duration-200 group ${showEmojis
+          <button
+            data-emoji-button
+            onClick={() => setShowEmojis(!showEmojis)}
+            className={`${chatComposerIconButtonClass} ${showEmojis
             ? "text-pink-400"
             : "text-white/70 hover:text-pink-400"
             }`}
-        >
-          <div className={`absolute inset-0 rounded-lg md:rounded-xl transition-all duration-200 ${showEmojis
+          >
+          <div className={`${chatComposerAccentOverlayClass} ${showEmojis
             ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
             : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
             }`}></div>
@@ -1368,9 +1394,9 @@ const ChatTab = () => {
           <button
             onClick={handleSendMessage}
             disabled={!isJoined || isLoading}
-            className="relative p-1.5 md:p-2 rounded-lg md:rounded-xl text-white/70 hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+            className={`${chatComposerIconButtonClass} text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 rounded-lg md:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className={`${chatComposerAccentOverlayClass} bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 opacity-0 group-hover:opacity-100`}></div>
             <LuArrowUp size={18} className="relative md:w-5 md:h-5" />
           </button>
         )}
