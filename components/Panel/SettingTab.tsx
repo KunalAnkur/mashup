@@ -5,13 +5,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useUpdateProfileMutation } from "@/lib/store/api/userApi";
 import { updateProfile as updateProfileAction } from "@/lib/store/slices/authSlice";
-import { LuCheck, LuLink, LuPencil, LuMessageSquare, LuSend, LuX } from "react-icons/lu";
+import { LuCheck, LuLink, LuPencil, LuMessageSquare, LuX } from "react-icons/lu";
 import { showError, showSuccess } from "@/utils/toast";
 import { useRoomContext } from "@/context/RoomContext";
 import { validateUsername } from "@/utils/validation";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
-import { useSubmitFeedbackMutation } from "@/lib/store/api/feedbackApi";
+import FeedbackModal from "@/components/Modals/FeedbackModal";
 
 const sectionClass = "space-y-3";
 const sectionLabelClass =
@@ -47,12 +47,10 @@ type EditableField = "name" | "username";
 
 const SettingTab = () => {
   const roomId = useSelector((state: RootState) => state.room.roomId);
-  const roomState = useSelector((state: RootState) => state.room);
   const authState = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const { updateUserName } = useRoomContext();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
-  const [submitFeedback] = useSubmitFeedbackMutation();
   const t = useTranslations("panel.settings");
   const tHome = useTranslations("home");
   const tToast = useTranslations("toast");
@@ -66,12 +64,6 @@ const SettingTab = () => {
   const [activeEditField, setActiveEditField] = useState<EditableField | null>(null);
   const [usernameError, setUsernameError] = useState<string>("");
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const [feedbackLoading, setFeedbackLoading] = useState(false);
-  const [feedbackForm, setFeedbackForm] = useState({
-    title: "",
-    description: "",
-    category: "bug" as "bug" | "feature" | "other",
-  });
   const showEmailField = !authState.user?.isGuestUser;
 
   const roomUrl = roomId
@@ -195,116 +187,13 @@ const SettingTab = () => {
     }
   };
 
-  const handleFeedbackSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (feedbackForm.title.length < 3 || feedbackForm.description.length < 10) {
-      showError(tToast("invalidInput"), tToast("fillFieldsCorrectly"));
-      return;
-    }
-
-    setFeedbackLoading(true);
-    try {
-      if (!authState.isAuthenticated) {
-        showError(tCommon("error"), tToast("pleaseLogin"));
-        return;
-      }
-
-      await submitFeedback({
-        ...feedbackForm,
-        room_id: roomId || undefined,
-        room_details: roomState,
-      }).unwrap();
-
-      showSuccess(tToast("feedbackSent"));
-      setIsFeedbackOpen(false);
-      setFeedbackForm({ title: "", description: "", category: "bug" });
-    } catch {
-      showError(tCommon("error"), tToast("couldNotSendFeedback"));
-    } finally {
-      setFeedbackLoading(false);
-    }
-  };
-
   return (
     <div className="flex h-full w-full flex-col gap-3 overflow-hidden">
-      {isFeedbackOpen && (
-        <div className="feedback-modal fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]">
-          <div className="relative w-full max-w-md mx-4 bg-gradient-to-br from-[#151518] via-[#1a1a1d] to-[#151518] rounded-[2rem] shadow-2xl overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-[60px]" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-[60px]" />
-
-            <div className="relative px-6 pt-6 pb-2 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-fuchsia-500/20">
-                  <LuMessageSquare className="text-rose-400" size={20} />
-                </div>
-                <div>
-                  <h3 className="text-white text-lg font-bold font-parkinsans">{tFeedback("title")}</h3>
-                  <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold">{tFeedback("helpUsImprove")}</p>
-                </div>
-              </div>
-              <button onClick={() => setIsFeedbackOpen(false)} className="p-2 rounded-xl hover:bg-white/5 text-white/40 hover:text-white transition-all">
-                <LuX size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleFeedbackSubmit} className="relative p-6 space-y-5">
-              <div className="flex p-1 bg-zinc-900/50 rounded-2xl">
-                {(["bug", "feature", "other"] as const).map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setFeedbackForm({ ...feedbackForm, category: cat })}
-                    className={`flex-1 py-2 text-[11px] font-bold capitalize transition-all duration-300 rounded-xl ${
-                      feedbackForm.category === cat
-                        ? "bg-gradient-to-r from-rose-500/20 to-fuchsia-500/20 text-white"
-                        : "text-white/40 hover:text-white/60"
-                    }`}
-                  >
-                    {tFeedback(`category.${cat}`)}
-                  </button>
-                ))}
-              </div>
-
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder={tFeedback("topic")}
-                  className="w-full bg-zinc-800/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all font-medium"
-                  value={feedbackForm.title}
-                  onChange={(e) => setFeedbackForm({ ...feedbackForm, title: e.target.value })}
-                />
-
-                <textarea
-                  placeholder={tFeedback("descriptionPlaceholder")}
-                  rows={4}
-                  className="w-full bg-zinc-800/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:outline-none focus:border-rose-500/30 transition-all resize-none font-medium"
-                  value={feedbackForm.description}
-                  onChange={(e) => setFeedbackForm({ ...feedbackForm, description: e.target.value })}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={feedbackLoading}
-                className="group relative w-full py-4 bg-gradient-to-r from-rose-600 to-fuchsia-600 hover:from-rose-500 hover:to-fuchsia-500 text-white font-bold text-sm rounded-2xl transition-all duration-300 shadow-lg shadow-rose-500/20 overflow-hidden active:scale-95 disabled:opacity-50"
-              >
-                <div className="relative z-10 flex items-center justify-center gap-2">
-                  {feedbackLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <LuSend size={18} />
-                      <span>{tFeedback("sendFeedback")}</span>
-                    </>
-                  )}
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+        roomId={roomId}
+      />
 
       {/* Room Settings */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">

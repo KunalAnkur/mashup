@@ -286,6 +286,8 @@
     "helpUsImprove": "Gelişmemize yardımcı olun",
     "topic": "Konu",
     "descriptionPlaceholder": "Bize düşüncelerinizi söyleyin...",
+    "topicMinLength": "Konu için en az 3 karakter girin.",
+    "descriptionMinLength": "Açıklama için en az 10 karakter girin.",
     "sendFeedback": "Geri Bildirim Gönder",
     "category": {
       "bug": "Hata",

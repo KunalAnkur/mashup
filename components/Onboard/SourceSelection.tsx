@@ -3,13 +3,10 @@
 import { FaBroadcastTower, FaSync } from "react-icons/fa";
 import { Button, Logo } from "../UI";
 import { useState, useCallback } from "react";
-import Image from "next/image";
 import { ImSpinner2 } from "react-icons/im";
 
 import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
-import { isMobile } from "react-device-detect";
-import MobileWarningModal from "@/components/Modals/MobileWarningModal";
 import { trackCTAClicked } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 
@@ -19,30 +16,18 @@ const SourceSelection = () => {
   const [roomId, setRoomId] = useState<string>("");
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [joinError, setJoinError] = useState<string>("");
-  const [showMobileWarning, setShowMobileWarning] = useState(false);
   const router = useRouter();
   const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
 
-  // Navigate to stream - shows warning on mobile
   const handleOnUploadSelection = useCallback(() => {
     trackCTAClicked("stream");
-    // if (isMobile) {
-    //   setShowMobileWarning(true);
-    // } else {
-      router.push("/stream");
-    // }
-  }, [ router]);
+    router.push("/stream");
+  }, [router]);
 
   // Navigate to sync - no warning needed (works on mobile)
   const handleOnURLSelection = useCallback(() => {
     trackCTAClicked("sync");
     router.push("/sync");
-  }, [router]);
-
-  // Handle continuing after mobile warning (only for stream)
-  const handleMobileWarningContinue = useCallback(() => {
-    setShowMobileWarning(false);
-    router.push("/stream");
   }, [router]);
 
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +75,7 @@ const SourceSelection = () => {
     } finally {
       // setIsJoining(false);
     }
-  }, [roomId, isJoining, getRoomByRoomId, router]);
+  }, [roomId, isJoining, getRoomByRoomId, router, t]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !isJoinDisabled && !isJoining) {
@@ -100,13 +85,6 @@ const SourceSelection = () => {
 
   return (
     <>
-      {/* Mobile Warning Modal - Only for Stream */}
-      {/* <MobileWarningModal
-        isOpen={showMobileWarning}
-        onClose={() => setShowMobileWarning(false)}
-        onContinue={handleMobileWarningContinue}
-      /> */}
-      
       <div className="w-full h-full flex flex-col items-center justify-center bg-transparent px-4 pt-20 sm:pt-6 pb-6 overflow-hidden sm:overflow-y-auto overflow-x-hidden">
         <div className="w-full max-w-lg flex flex-col items-center gap-3 sm:gap-4 md:gap-5 my-auto">
           {/* LOGO & BRAND - Hidden on mobile (shown in header instead) */}

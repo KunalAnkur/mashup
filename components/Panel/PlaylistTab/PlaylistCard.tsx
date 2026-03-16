@@ -1,8 +1,15 @@
 "use client";
 import React from "react";
-import { LuFilm, LuX } from "react-icons/lu";
-import { FaBroadcastTower, FaPause, FaPlay } from "react-icons/fa";
-import { FaDesktop, FaGlobe, FaWindowMaximize } from "react-icons/fa";
+import {
+    LuAppWindow,
+    LuFilm,
+    LuGlobe,
+    LuMonitor,
+    LuPause,
+    LuPlay,
+    LuRadioTower,
+    LuX,
+} from "react-icons/lu";
 import { useSelector } from "react-redux";
 import { getPlatformById, getUrlDisplayName, detectPlatform, getPlatformByLink } from "@/types/ModalTypes/urlUtils";
 import { useFileContext } from "@/context/FileContext";
@@ -85,13 +92,13 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
     };
 
     const renderPlaybackButton = () => {
-        const Icon = isPlaybackActive ? FaPause : FaPlay;
+        const Icon = isPlaybackActive ? LuPause : LuPlay;
 
         return (
             <span
                 className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full ${badgePlayButtonClass}`}
             >
-                <Icon size={8} className={isPlaybackActive ? "" : "ml-[1px]"} />
+                <Icon size={10} className={isPlaybackActive ? "" : "ml-[1px]"} />
             </span>
         );
     };
@@ -105,10 +112,10 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
         };
 
         const iconMap: Record<ScreenShareMode, React.ComponentType<{ className?: string; size?: number }>> = {
-            tab: FaGlobe,
-            window: FaWindowMaximize,
-            screen: FaDesktop,
-            unknown: FaBroadcastTower,
+            tab: LuGlobe,
+            window: LuAppWindow,
+            screen: LuMonitor,
+            unknown: LuRadioTower,
         };
 
         const label = screenShareLabelMap[screenShareMode];
@@ -361,7 +368,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             ${isSelected ? "bg-white/[0.1] text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" : "bg-white/[0.04] text-white/35"}
           `}
                 >
-                    <FaBroadcastTower size={9} className="md:w-2.5 md:h-2.5" />
+                    <LuRadioTower size={9} className="md:w-2.5 md:h-2.5" />
                 </div>
             );
         }
