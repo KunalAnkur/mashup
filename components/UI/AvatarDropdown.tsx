@@ -13,19 +13,19 @@ import Modal, {
   ModalConfirmContent,
   modalConfirmSurfaceClass,
 } from "./Modal";
+import {
+  appDropdownLabelClass,
+  appDropdownMetaTextClass,
+} from "./classTokens";
+import {
+  DropdownActionRow,
+  DropdownDivider,
+  DropdownPanel,
+  DropdownRow,
+} from "./DropdownPrimitives";
 
-const dropdownSurfaceClass =
-  "absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-2xl bg-[linear-gradient(180deg,rgba(33,33,39,0.96),rgba(24,24,30,0.96))] shadow-[0_18px_48px_rgba(0,0,0,0.38)] backdrop-blur-2xl md:w-60";
-const dropdownContentClass = "flex flex-col gap-0.5 p-2";
-const dropdownRowBaseClass = "flex items-center gap-2.5 rounded-xl px-2.5 py-2";
-const dropdownUserCardClass = dropdownRowBaseClass;
-const dropdownMetaTextClass = "text-[9px] md:text-[10px] text-white/42";
-const dropdownDividerClass = "h-px w-full bg-white/8";
-const dropdownPrimaryLabelTextClass = "text-[11px] md:text-xs";
-const dropdownLogoutButtonClass =
-  `${dropdownRowBaseClass} w-full text-left text-white/80 transition-all duration-200 hover:bg-rose-500/10 hover:text-white`;
 const dropdownLogoutIconClass =
-  "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#571b24] via-[#7a1f34] to-[#5d1b34] text-rose-200 leading-none";
+  "bg-gradient-to-br from-[#571b24] via-[#7a1f34] to-[#5d1b34] text-rose-200";
 
 interface AvatarDropdownProps {
   size?: number;
@@ -157,60 +157,55 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div
+        <DropdownPanel
           id={dropdownMenuId}
           role="menu"
           aria-label="Account menu"
-          className={`${dropdownSurfaceClass} z-50`}
+          className="z-50"
         >
-          <div className={dropdownContentClass}>
-            {/* User Info Section */}
-            <div className={dropdownUserCardClass}>
-              <Avatar
-                url={getAvatarUrl()}
-                alt={getUserDisplayName()}
-                size={30}
-                isDefault={!user?.profile}
-              />
-              <div className="flex min-w-0 flex-1 flex-col justify-center">
-                <h3
-                  className={`truncate font-parkinsans font-semibold text-white ${dropdownPrimaryLabelTextClass}`}
-                >
-                  {getUserDisplayName()}
-                </h3>
-                {showEmailField && user?.email && (
-                  <p className={`${dropdownMetaTextClass} mt-0.5 truncate`}>
-                    {user.email}
-                  </p>
-                )}
-                {!isAuthenticated && (
-                  <p className={`${dropdownMetaTextClass} mt-0.5`}>
-                    Not authenticated
-                  </p>
-                )}
-              </div>
+          {/* User Info Section */}
+          <DropdownRow>
+            <Avatar
+              url={getAvatarUrl()}
+              alt={getUserDisplayName()}
+              size={30}
+              isDefault={!user?.profile}
+            />
+            <div className="flex min-w-0 flex-1 flex-col justify-center">
+              <h3
+                className={`truncate font-parkinsans font-semibold text-white ${appDropdownLabelClass}`}
+              >
+                {getUserDisplayName()}
+              </h3>
+              {showEmailField && user?.email && (
+                <p className={`${appDropdownMetaTextClass} mt-0.5 truncate`}>
+                  {user.email}
+                </p>
+              )}
+              {!isAuthenticated && (
+                <p className={`${appDropdownMetaTextClass} mt-0.5`}>
+                  Not authenticated
+                </p>
+              )}
             </div>
+          </DropdownRow>
 
-            {/* Menu Items */}
-            <div className={dropdownDividerClass} />
-            <button
-              type="button"
-              onClick={handleLogoutClick}
-              role="menuitem"
-              className={dropdownLogoutButtonClass}
-            >
-              <div className={dropdownLogoutIconClass}>
-                <IoLogOutOutline
-                  size={13}
-                  className="block md:h-[13px] md:w-[13px]"
-                />
-              </div>
-              <p className={`min-w-0 font-medium ${dropdownPrimaryLabelTextClass}`}>
-                {tCommon("logout")}
-              </p>
-            </button>
-          </div>
-        </div>
+          {/* Menu Items */}
+          <DropdownDivider />
+          <DropdownActionRow
+            onClick={handleLogoutClick}
+            role="menuitem"
+            variant="danger"
+            iconChipClassName={dropdownLogoutIconClass}
+            icon={
+              <IoLogOutOutline
+                size={13}
+                className="block md:h-[13px] md:w-[13px]"
+              />
+            }
+            label={tCommon("logout")}
+          />
+        </DropdownPanel>
       )}
 
       {/* Logout Confirmation Modal */}

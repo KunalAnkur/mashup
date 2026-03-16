@@ -1,7 +1,5 @@
 "use client";
 import { useState } from "react";
-import { Button } from "../UI";
-import GoogleButton from "../GoogleAuth/GoogleButton";
 import {
   useAuthProviderMutation,
   useContinueAsGuestMutation,
@@ -9,27 +7,60 @@ import {
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
 import { ImSpinner2 } from "react-icons/im";
+import { FcGoogle } from "react-icons/fc";
+import { LuUserRound } from "react-icons/lu";
+import { useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 import { showError, showSuccess } from "@/utils/toast";
 import { trackLogin, trackSignup } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 import {
-  zincGlassFaintBlurredSurfaceClass,
-  zincGlassFaintSurfaceClass,
-} from "@/components/UI/classTokens";
+  DropdownActionRow,
+  DropdownDivider,
+  DropdownPanel,
+} from "@/components/UI/DropdownPrimitives";
+
+const loginDropdownGuestButtonClass = "disabled:cursor-not-allowed disabled:opacity-50";
+const loginDropdownGoogleIconClass = "bg-white/8 text-white";
+const loginDropdownGuestIconClass =
+  "bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 text-pink-100";
 
 type LoginDropdownProps = {
   onClose?: () => void;
 };
 
+type GoogleAuthUserInfo = {
+  email: string;
+  name: string;
+  picture: string;
+  sub: string;
+};
+
 const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
   const dispatch = useDispatch();
   const [authProvider] = useAuthProviderMutation();
-  const [continueAsGuest, { isLoading: isGuestLoading }] = useContinueAsGuestMutation();
+  const [continueAsGuest, { isLoading: isGuestLoading }] =
+    useContinueAsGuestMutation();
   const [isGuestProcessing, setIsGuestProcessing] = useState(false);
   const tToast = useTranslations("toast");
   const tCommon = useTranslations("common");
 
-  const handleGoogleAuthSuccess = async (userInfo: any) => {
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      const userInfo = await axios.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        }
+      );
+      handleGoogleAuthSuccess(userInfo.data);
+    },
+    onError: () => {
+      console.log("Google authentication failed");
+    },
+  });
+
+  const handleGoogleAuthSuccess = async (userInfo: GoogleAuthUserInfo) => {
     try {
       const response = await authProvider({
         email: userInfo.email,
@@ -65,9 +96,20 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
       trackSignup("guest", "home"); // Auto-detects external source (reddit, tiktok, etc.) or falls back to "home"
       showSuccess(tToast("welcomeGuest"));
       if (onClose) onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Guest signup failed:", error);
-      const errorMessage = error?.data?.message || error?.message || "Failed to continue as guest";
+      const errorMessage =
+        error && typeof error === "object"
+          ? "data" in error &&
+            error.data &&
+            typeof error.data === "object" &&
+            "message" in error.data &&
+            typeof error.data.message === "string"
+            ? error.data.message
+            : "message" in error && typeof error.message === "string"
+              ? error.message
+              : "Failed to continue as guest"
+          : "Failed to continue as guest";
       showError("Guest signup failed", errorMessage);
     } finally {
       setIsGuestProcessing(false);
@@ -75,34 +117,37 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
   };
 
   return (
-    <div className={`border border-zinc-600/10 absolute -top-2 right-0 mt-2 w-[300px] ${zincGlassFaintSurfaceClass} backdrop-blur-2xl rounded-xl p-4 shadow-lg`}>
-      <div className="flex flex-col gap-3">
+    <DropdownPanel>
         {/* Google Button */}
-        <GoogleButton
-          name={tCommon("continueWithGoogle")}
-          onSuccess={handleGoogleAuthSuccess}
-          onError={() => {
-            console.log("Google authentication failed");
-          }}
+        <DropdownActionRow
+          onClick={() => googleLogin()}
+          iconChipClassName={loginDropdownGoogleIconClass}
+          icon={<FcGoogle size={16} />}
+          label={tCommon("continueWithGoogle")}
         />
 
-        {/* Separator */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-px bg-zinc-600/15"></div>
-          <span className="text-xs text-white/50">{tCommon("or")}</span>
-          <div className="flex-1 h-px bg-zinc-600/15"></div>
-        </div>
+        <DropdownDivider />
 
         {/* Continue as Guest Button */}
-        <Button
-          name={isGuestProcessing || isGuestLoading ? tCommon("creatingAccount") : tCommon("continueAsGuest")}
-          icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-          className={`w-full py-3 rounded-xl ${zincGlassFaintBlurredSurfaceClass} border border-zinc-600/10 hover:from-purple-600/15 hover:via-pink-600/15 hover:to-fuchsia-600/15 hover:border-purple-500/25 text-white text-sm px-4 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed`}
+        <DropdownActionRow
+          className={loginDropdownGuestButtonClass}
           onClick={handleContinueAsGuest}
           disabled={isGuestProcessing || isGuestLoading}
+          iconChipClassName={loginDropdownGuestIconClass}
+          icon={
+            isGuestProcessing || isGuestLoading ? (
+              <ImSpinner2 className="animate-spin" size={14} />
+            ) : (
+              <LuUserRound size={14} />
+            )
+          }
+          label={
+            isGuestProcessing || isGuestLoading
+              ? tCommon("creatingAccount")
+              : tCommon("continueAsGuest")
+          }
         />
-      </div>
-    </div>
+    </DropdownPanel>
   );
 };
 
