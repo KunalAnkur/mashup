@@ -17,6 +17,7 @@ import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { RootState } from "@/lib/store";
+import { appPulseSurfaceClass } from "@/components/UI/classTokens";
 
 
 interface PlaylistCardProps {
@@ -264,7 +265,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             if (isLoading) {
                 return (
                     <div className="space-y-1 md:space-y-1.5">
-                        <div className="h-3 md:h-3.5 bg-white/10 rounded animate-pulse w-3/4" />
+                        <div className={`h-3 md:h-3.5 w-3/4 ${appPulseSurfaceClass}`} />
                         <div className="h-2 md:h-2.5 bg-white/5 rounded w-1/2 animate-pulse" />
                     </div>
                 );

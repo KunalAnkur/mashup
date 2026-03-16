@@ -1,6 +1,7 @@
 import React from "react";
 import { LuPlay, LuFilm } from "react-icons/lu";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { appMutedGroupHoverSurfaceClass } from "@/components/UI/classTokens";
 import {
     panelCardHoverSurfaceClass,
     panelCardSurfaceClass,
@@ -101,7 +102,7 @@ export const PlaylistFileCard: React.FC<PlaylistFileCardProps> = ({
                 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
                 ${isPlaying
                     ? 'bg-pink-500/20 text-pink-400'
-                    : 'bg-white/5 text-gray-500 group-hover:bg-white/10'
+                    : `${appMutedGroupHoverSurfaceClass} text-gray-500`
                 }
             `}>
                 {index + 1}

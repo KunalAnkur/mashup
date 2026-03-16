@@ -1,14 +1,20 @@
 "use client";
 
+import {
+  appBorderedFrostedSurfaceClass,
+  appFrostedBackdropClass,
+  appHoverRevealClass,
+  appWhiteBorderClass,
+} from "@/components/UI/classTokens";
 import { useState, useRef, useEffect } from "react";
 import { locales, languageNames, isRtlLocale, type Locale } from "@/i18n/config";
 import { FaGlobe, FaChevronDown, FaCheck } from "react-icons/fa";
 import { useLocale } from "@/i18n/I18nProvider";
 
 const languageSelectorTriggerClass =
-  "flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm font-medium text-white/80 backdrop-blur-xl transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white sm:gap-2 sm:rounded-xl sm:px-3 sm:py-2";
+  `flex items-center gap-1 rounded-lg ${appWhiteBorderClass} bg-white/5 px-2 py-1.5 text-sm font-medium text-white/80 ${appFrostedBackdropClass} transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white sm:gap-2 sm:rounded-xl sm:px-3 sm:py-2`;
 const languageSelectorMenuClass =
-  "absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#1f1f23]/95 shadow-xl shadow-black/20 backdrop-blur-xl animate-[fadeIn_0.2s_ease-out_forwards]";
+  `absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl ${appBorderedFrostedSurfaceClass} bg-[#1f1f23]/95 shadow-xl shadow-black/20 animate-[fadeIn_0.2s_ease-out_forwards]`;
 const languageSelectorOptionBaseClass =
   "w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors duration-150";
 
@@ -89,10 +95,10 @@ const LanguageSelector = () => {
                   key={loc}
                   onClick={() => handleLanguageChange(loc)}
                   disabled={isChanging}
-                  className={`${languageSelectorOptionBaseClass}
+                    className={`${languageSelectorOptionBaseClass}
                     ${isSelected 
                       ? "bg-pink-500/20 text-pink-400" 
-                      : "text-white/70 hover:bg-white/5 hover:text-white"
+                      : `text-white/70 ${appHoverRevealClass}`
                     }
                     ${isRtlLocale(loc) ? "flex-row-reverse text-right" : ""}
                     ${isChanging ? "opacity-50" : ""}`}

@@ -1,9 +1,12 @@
 "use client";
 
+import {
+  appBorderedFrostedSurfaceClass,
+} from "@/components/UI/classTokens";
 import { ReactionType } from "@/types/chatTypes";
 
 const messageReactionPickerSurfaceClass =
-  "absolute left-0 z-[70] flex max-w-[min(calc(100vw-4rem),18rem)] items-center gap-1 overflow-x-auto rounded-full border border-white/10 bg-zinc-950/95 px-2 py-1.5 shadow-2xl backdrop-blur-xl scrollbar-hide";
+  `absolute left-0 z-[70] flex max-w-[min(calc(100vw-4rem),18rem)] items-center gap-1 overflow-x-auto rounded-full ${appBorderedFrostedSurfaceClass} bg-zinc-950/95 px-2 py-1.5 shadow-2xl scrollbar-hide`;
 const messageReactionPickerButtonClass =
   "flex h-8 w-8 items-center justify-center rounded-full text-lg transition-all duration-150";
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { appWhiteBorderClass } from "@/components/UI/classTokens";
 import { LuFolderPlus, LuLink2, LuScreenShare } from "react-icons/lu";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
@@ -15,7 +16,7 @@ import { AddUrlModal } from "../AddUrlModal";
 
 const contentSelectionToolbarGridClass = "grid grid-cols-3 gap-2";
 const contentSelectionToolbarButtonClass =
-    "flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl border border-white/10 px-2 py-2 text-center transition-all duration-200 hover:border-white/20 hover:bg-white/[0.03] disabled:cursor-not-allowed disabled:opacity-50";
+    `flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl ${appWhiteBorderClass} px-2 py-2 text-center transition-all duration-200 hover:border-white/20 hover:bg-white/[0.03] disabled:cursor-not-allowed disabled:opacity-50`;
 const contentSelectionToolbarIconWrapClass =
     "flex h-5 w-5 items-center justify-center";
 const contentSelectionToolbarLabelClass =

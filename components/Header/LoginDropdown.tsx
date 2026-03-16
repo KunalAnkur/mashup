@@ -19,9 +19,10 @@ import {
   DropdownDivider,
   DropdownPanel,
 } from "@/components/UI/DropdownPrimitives";
+import { appWhiteEmphasisSurfaceClass } from "@/components/UI/classTokens";
 
 const loginDropdownGuestButtonClass = "disabled:cursor-not-allowed disabled:opacity-50";
-const loginDropdownGoogleIconClass = "bg-white/8 text-white";
+const loginDropdownGoogleIconClass = appWhiteEmphasisSurfaceClass;
 const loginDropdownGuestIconClass =
   "bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 text-pink-100";
 

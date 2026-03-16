@@ -1,10 +1,14 @@
 import { AuthWrapper } from "../Onboard";
+import {
+  appBorderedFrostedSurfaceClass,
+  appWhiteBorderClass,
+} from "@/components/UI/classTokens";
 
 const shimmer =
   "relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:-translate-x-full before:animate-[shimmer_1.8s_infinite]";
 
 const glassCard =
-  "bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl shadow-2xl";
+  `bg-white/5 ${appBorderedFrostedSurfaceClass} rounded-2xl shadow-2xl`;
 
 const SkeletonBlock = ({ className = "" }: { className?: string }) => (
   <div className={`bg-white/10 ${shimmer} ${className}`} />
@@ -37,7 +41,7 @@ const SkeletonRoom = ({
           <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[inherit]" />
           <div className="relative flex h-full flex-col gap-6 p-8">
             <SkeletonBlock className="h-8 w-1/4 rounded-full" />
-            <div className="flex-1 rounded-[18px] bg-black/40 border border-white/10">
+            <div className={`flex-1 rounded-[18px] bg-black/40 ${appWhiteBorderClass}`}>
               <div className="h-full w-full rounded-[inherit] bg-gradient-to-br from-purple-500/20 via-[#151423] to-black/60" />
             </div>
             <div className="flex items-center gap-4">

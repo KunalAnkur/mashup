@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  appIconTextHoverClass,
+  appMutedHoverSurfaceClass,
+  appWhiteBorderClass,
+} from "@/components/UI/classTokens";
 import { useState } from "react";
 import { ReactionType } from "@/types/chatTypes";
 import { LuPin, LuPlus, LuX } from "react-icons/lu";
@@ -13,7 +18,7 @@ interface ReactionPickerProps {
 const reactionPickerTriggerButtonClass =
   "relative flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200";
 const reactionPickerSurfaceClass =
-  "fixed bottom-[120px] right-6 z-[200] overflow-hidden rounded-2xl border border-white/10 bg-[#1f1f23] shadow-2xl reaction-picker-container";
+  `fixed bottom-[120px] right-6 z-[200] overflow-hidden rounded-2xl ${appWhiteBorderClass} bg-[#1f1f23] shadow-2xl reaction-picker-container`;
 const reactionPickerHeaderFooterClass =
   "border-white/10 bg-gradient-to-br from-[#1f1f23] to-[#27272a]";
 const reactionPickerCategoryButtonClass =
@@ -158,7 +163,7 @@ const ReactionPicker = ({
                 </h3>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-gray-400 hover:text-white transition-colors p-1 hover:bg-white/10 rounded"
+                  className={`${appIconTextHoverClass} p-1 hover:bg-white/10 rounded`}
                 >
                   <LuX size={12} />
                 </button>
@@ -173,7 +178,7 @@ const ReactionPicker = ({
                     className={`${reactionPickerCategoryButtonClass} ${
                       selectedCategory === category
                         ? "bg-pink-500/20 text-pink-400"
-                        : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+                        : `${appMutedHoverSurfaceClass} text-gray-400`
                     }`}
                   >
                     {category}

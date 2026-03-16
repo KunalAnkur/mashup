@@ -2,8 +2,11 @@ import React from "react";
 import { FaTimes, FaVideo, FaPlay } from "react-icons/fa";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
 import { Platform } from "@/types/ModalTypes/urlPlatformTypes";
-import { zincGlassSoftInsetSurfaceClass } from "@/components/UI/classTokens";
-import { zincGlassInteractiveHoverSurfaceClass } from "@/components/UI/classTokens";
+import {
+  appMutedGroupHoverSurfaceClass,
+  zincGlassInteractiveHoverSurfaceClass,
+  zincGlassSoftInsetSurfaceClass,
+} from "@/components/UI/classTokens";
 
 interface UrlCardProps {
   url: AddedUrl;
@@ -118,7 +121,7 @@ export const UrlCard: React.FC<UrlCardProps> = ({
   return (
     <div className={`group relative flex items-center gap-1.5 sm:gap-2 md:gap-3 ${zincGlassInteractiveHoverSurfaceClass} rounded-lg sm:rounded-xl p-2 sm:p-2.5 md:p-3 transition-all duration-200 h-[60px] sm:h-[64px] md:h-[68px] lg:h-[72px] shrink-0 overflow-hidden`}>
       {/* Order Number - Always visible */}
-      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-medium flex-shrink-0 bg-white/5 text-gray-400 group-hover:bg-white/10">
+      <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-medium flex-shrink-0 ${appMutedGroupHoverSurfaceClass} text-gray-400`}>
         {index + 1}
       </div>
 
