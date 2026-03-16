@@ -3,6 +3,7 @@
 import React from "react";
 import { FaVideo, FaTimes, FaCheckCircle } from "react-icons/fa";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { purpleAccentIconSurfaceClass } from "@/components/UI/classTokens";
 
 export const EmptyUrlState: React.FC = () => {
   const t = useTranslations("sync");
@@ -15,7 +16,7 @@ export const EmptyUrlState: React.FC = () => {
           key={i}
           className="flex items-center gap-2 sm:gap-3 bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 backdrop-blur-xl border border-dashed border-zinc-600/20 rounded-lg sm:rounded-xl px-2.5 sm:px-3 py-2 sm:py-2.5"
         >
-          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center shrink-0">
+          <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full ${purpleAccentIconSurfaceClass} shrink-0`}>
             <FaVideo className="text-white/60 text-[10px] sm:text-xs" />
           </div>
           <div className="flex-1 h-2.5 sm:h-3 bg-zinc-700/20 rounded-full" />
@@ -44,4 +45,3 @@ export const EmptyUrlState: React.FC = () => {
   </div>
   );
 };
-

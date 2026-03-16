@@ -12,6 +12,12 @@ import { helper } from "@/utils";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import type { Playlist } from "@/types/storeTypes";
+import {
+  movmashProminentCtaClass,
+  purpleAccentIconSurfaceClass,
+  zincGlassInteractiveHoverSurfaceClass,
+  zincGlassStrongBorderedSurfaceClass,
+} from "@/components/UI/classTokens";
 
 // Generic screen share styling
 const SCREEN_SHARE_STYLE = {
@@ -19,6 +25,11 @@ const SCREEN_SHARE_STYLE = {
     background: "linear-gradient(to bottom right, #a855f7, #ec4899)",
   },
 };
+
+const streamAccentIconSurfaceClass =
+  "bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30";
+const streamStepBadgeClass =
+  `w-10 h-10 sm:w-12 sm:h-12 rounded-full ${streamAccentIconSurfaceClass} flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 sm:mb-4`;
 
 const ScreenSharePage = () => {
   const router = useRouter();
@@ -327,9 +338,9 @@ const ScreenSharePage = () => {
             <>
               {/* Initial State - Before Preview */}
               {/* Main Action Section */}
-              <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8">
+              <div className={`flex flex-col gap-4 sm:gap-5 md:gap-6 ${zincGlassStrongBorderedSurfaceClass} rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8`}>
                 <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-                  <div className="flex-shrink-0 inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30">
+                  <div className={`flex-shrink-0 inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl ${streamAccentIconSurfaceClass}`}>
                     <FaDesktop className="text-lg sm:text-xl text-white" />
                   </div>
                   <div className="flex-1 flex flex-col text-center sm:text-left">
@@ -345,7 +356,7 @@ const ScreenSharePage = () => {
                   className={`w-full px-4 sm:px-6 md:px-8 py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg transition-all duration-200 text-white ${
                     stream
                       ? "bg-zinc-700/50 cursor-not-allowed opacity-50"
-                      : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-500/30"
+                      : movmashProminentCtaClass
                   }`}
                 >
                   {stream ? tStream("screenSharingActive") : tStream("shareYourScreen")}
@@ -357,8 +368,8 @@ const ScreenSharePage = () => {
                 <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center">{tStream("howItWorks")}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                   {/* Step 1 */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 transition-all duration-300">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 sm:mb-4">
+                  <div className={`flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl ${zincGlassInteractiveHoverSurfaceClass} transition-all duration-300`}>
+                    <div className={streamStepBadgeClass}>
                       1
                     </div>
                     <div className="flex-1 sm:flex-none">
@@ -372,8 +383,8 @@ const ScreenSharePage = () => {
                   </div>
 
                   {/* Step 2 */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 transition-all duration-300" style={{ animationDelay: '0.2s' }}>
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 sm:mb-4">
+                  <div className={`flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl ${zincGlassInteractiveHoverSurfaceClass} transition-all duration-300`} style={{ animationDelay: '0.2s' }}>
+                    <div className={streamStepBadgeClass}>
                       2
                     </div>
                     <div className="flex-1 sm:flex-none">
@@ -387,8 +398,8 @@ const ScreenSharePage = () => {
                   </div>
 
                   {/* Step 3 */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 transition-all duration-300" style={{ animationDelay: '0.4s' }}>
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 sm:mb-4">
+                  <div className={`flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl ${zincGlassInteractiveHoverSurfaceClass} transition-all duration-300`} style={{ animationDelay: '0.4s' }}>
+                    <div className={streamStepBadgeClass}>
                       3
                     </div>
                     <div className="flex-1 sm:flex-none">
@@ -407,7 +418,7 @@ const ScreenSharePage = () => {
               <div className="hidden sm:block p-4 sm:p-5 md:p-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-lg sm:rounded-xl">
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className="shrink-0 mt-0.5 sm:mt-1">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${purpleAccentIconSurfaceClass}`}>
                       <svg
                         className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white"
                         fill="currentColor"
@@ -483,7 +494,7 @@ const ScreenSharePage = () => {
               </div>
 
               {/* Post-Preview Action Section - Below Video */}
-              <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6">
+              <div className={`flex flex-col gap-4 sm:gap-5 md:gap-6 ${zincGlassStrongBorderedSurfaceClass} rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6`}>
                 {/* Audio-only toggle */}
                 <div className="flex items-center justify-center p-3 sm:p-4 bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 backdrop-blur-xl border border-purple-500/20 rounded-lg sm:rounded-xl">
                   <label className="flex items-center gap-3 sm:gap-4 cursor-pointer group">
@@ -605,7 +616,7 @@ const ScreenSharePage = () => {
                       className={`w-full px-4 sm:px-6 md:px-8 py-3.5 sm:py-4 md:py-5 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg transition-all duration-200 text-white inline-flex items-center justify-center gap-2 sm:gap-3 ${
                         isCreatingRoom
                           ? "bg-zinc-700/50 cursor-not-allowed opacity-50"
-                          : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-500/30"
+                          : movmashProminentCtaClass
                       }`}
                     >
                       {isCreatingRoom && <ImSpinner2 className="animate-spin text-sm sm:text-base" />}

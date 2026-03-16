@@ -35,6 +35,7 @@ import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { AnimatePresence, motion } from "framer-motion";
 import PanelHeaderActionButton from "./PanelHeaderActionButton";
+import { zincGlassBlurredSurfaceClass } from "@/components/UI/classTokens";
 
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
@@ -475,7 +476,7 @@ const Panel = () => {
             <div className="flex items-center gap-2">
               <PanelHeaderActionButton
                 onClick={handleCopyLink}
-                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40"
+                className={`${zincGlassBlurredSurfaceClass} hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40`}
                 aria-label={tPanel("copyLink")}
               >
                 {copied ? (
@@ -493,7 +494,7 @@ const Panel = () => {
 
               <PanelHeaderActionButton
                 onClick={handleLeaveClick}
-                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
+                className={`${zincGlassBlurredSurfaceClass} text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400`}
                 aria-label={tPanel("leaveParty")}
               >
                 <LuLogOut size={16} />

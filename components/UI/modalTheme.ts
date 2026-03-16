@@ -1,5 +1,6 @@
-export const movmashModalGradientStopsClass =
-  "from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500";
+import { movmashGradientStopsClass } from "./classTokens";
+
+export const movmashModalGradientStopsClass = movmashGradientStopsClass;
 
 export const movmashModalTitleGradientClass =
   "from-rose-200 via-pink-100 to-fuchsia-200";

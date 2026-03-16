@@ -10,6 +10,11 @@ import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
 import { Platform } from "@/types/ModalTypes/urlPlatformTypes";
 import { ImSpinner2 } from "react-icons/im";
 import { useTranslations } from "@/i18n/I18nProvider";
+import {
+  movmashElevatedShadowClass,
+  movmashGradientStopsClass,
+  zincGlassLgPanelSurfaceClass,
+} from "@/components/UI/classTokens";
 
 interface UrlInputSectionProps {
   sourceUrlInput: string;
@@ -56,7 +61,7 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
       title={t("pasteUrls")}
     />
 
-    <div className={`bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-lg md:rounded-xl lg:rounded-2xl p-3 sm:p-4 md:p-5 flex flex-col sm:flex-1 sm:min-h-0 transition-all duration-300
+    <div className={`${zincGlassLgPanelSurfaceClass} p-3 sm:p-4 md:p-5 flex flex-col sm:flex-1 sm:min-h-0 transition-all duration-300
       ${addedUrls.length === 0 ? 'min-h-[200px]' : 
         addedUrls.length <= 1 ? 'min-h-[220px]' : 
         addedUrls.length <= 2 ? 'min-h-[290px]' : 
@@ -115,7 +120,7 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
           <Button
             onClick={onEnterRoom}
             icon={isEntering ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className="flex-1 bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:bg-zinc-700/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className={`flex-1 bg-gradient-to-r ${movmashGradientStopsClass} ${movmashElevatedShadowClass} text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all duration-200 disabled:bg-zinc-700/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50`}
             name={isEntering ? t("entering") : t("enterRoom")}
             disabled={addedUrls.length === 0 || isEntering}
           />

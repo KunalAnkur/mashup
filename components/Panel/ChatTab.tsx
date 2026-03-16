@@ -20,6 +20,7 @@ import { formatChatTime } from "@/utils/timeFormatter";
 import { isMobile } from "react-device-detect";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { getEmailPrefix, isGenericName } from "@/utils/chatName";
+import { zincGlassBorderedSurfaceClass } from "@/components/UI/classTokens";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
@@ -962,8 +963,7 @@ const ChatTab = () => {
             return (
               <div key={msg.id || i} className="flex justify-center py-1">
                 <div className="relative group">
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-full px-4 py-1.5">
+                  <div className={`relative rounded-full px-4 py-1.5 ${zincGlassBorderedSurfaceClass}`}>
                     <span className="text-white/80 text-xs font-medium">
                       {isJoinLeaveMessage ? (
                         <>
@@ -1240,7 +1240,7 @@ const ChatTab = () => {
       </div>
 
       {/* Input Area */}
-      <div className="relative flex items-center gap-1 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-xl md:rounded-2xl px-2.5 md:px-3 py-1 md:py-1.5 shadow-2xl overflow-visible">
+      <div className={`relative flex items-center gap-1 overflow-visible rounded-xl px-2.5 py-1 md:rounded-2xl md:px-3 md:py-1.5 ${zincGlassBorderedSurfaceClass}`}>
         {showEmojis && (
           <div
             ref={emojiPickerRef}

@@ -15,6 +15,10 @@ import { ImSpinner2 } from "react-icons/im";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackSignup } from "@/lib/analytics";
+import {
+  movmashElevatedShadowClass,
+  movmashGradientStopsClass,
+} from "@/components/UI/classTokens";
 
 type Prop = {
   setContainer?: (container: "login" | "signup") => void;
@@ -156,7 +160,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
           <Button
             name={signupState.isLoading ? "Signing up..." : "Signup"}
             icon={signupState.isLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className="w-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full bg-gradient-to-r ${movmashGradientStopsClass} ${movmashElevatedShadowClass} text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
             onClick={handleOnSignUp}
             disabled={signupState.isLoading}
           />

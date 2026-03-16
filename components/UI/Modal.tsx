@@ -19,6 +19,7 @@ import {
   movmashModalSoftIconWrapClass,
   movmashModalTitleGradientClass,
 } from "./modalTheme";
+import { zincGlassBlurredSurfaceClass } from "./classTokens";
 
 interface ModalProps {
   open: boolean;
@@ -49,7 +50,7 @@ const modalHeaderSubtitleClass =
 const modalActionButtonBaseClass =
   "flex-1 rounded-xl px-4 py-2.5 text-sm font-medium shadow-none transition-all duration-200";
 const modalIconActionButtonBaseClass =
-  "flex items-center justify-center rounded-lg bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 p-2 transition-all duration-200 backdrop-blur-xl md:p-2.5";
+  `flex items-center justify-center rounded-lg ${zincGlassBlurredSurfaceClass} p-2 transition-all duration-200 md:p-2.5`;
 const modalDiscardActionButtonClass =
   `${modalActionButtonBaseClass} bg-white/[0.045] text-white/92 hover:bg-white/[0.085]`;
 const modalBrandActionButtonClass =

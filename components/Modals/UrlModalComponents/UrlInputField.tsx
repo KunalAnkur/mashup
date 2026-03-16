@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "../../UI";
 import { ImSpinner2 } from "react-icons/im";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { movmashGradientStopsClass } from "@/components/UI/classTokens";
 
 interface UrlInputFieldProps {
   value: string;
@@ -40,7 +41,7 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
         <Button
           onClick={onAddClick}
           icon={isAdding ? <ImSpinner2 className="animate-spin" /> : undefined}
-          className="w-full sm:w-auto bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:bg-zinc-700/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`w-full sm:w-auto bg-gradient-to-r ${movmashGradientStopsClass} text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:bg-zinc-700/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50`}
           name={isAdding ? t("loading") : t("addUrl")}
           disabled={isAddDisabled || isAdding}
         />
@@ -54,4 +55,3 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
     </div>
   );
 };
-
