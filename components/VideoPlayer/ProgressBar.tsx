@@ -12,6 +12,7 @@ interface ProgressBarProps {
     duration: number;
     showTime?: boolean;
     showFullscreen?: boolean;
+    showProgressBar?: boolean;
     fullscreen?: boolean;
     onFullscreenToggle?: () => void;
     onUserActivity?: () => void;
@@ -27,6 +28,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     duration,
     showTime = false,
     showFullscreen = false,
+    showProgressBar = true,
     fullscreen = false,
     onFullscreenToggle,
     onUserActivity,
@@ -134,7 +136,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     const showTopRow = isMobile && (showTime || showFullscreen);
     const currentTime = formatVideoTime((displayProgress / 100) * duration || 0);
     const totalTime = formatVideoTime(duration || 0);
-    const topRowJustify = showTime && showFullscreen
+    const topRowJustify = showTime || showFullscreen
         ? "justify-between"
         : showFullscreen
             ? "justify-end"
@@ -155,13 +157,16 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         <div className="flex flex-col gap-1 ">
             {showTopRow && (
                 <div className={`flex items-center ${topRowJustify}`}>
-                    {showTime && (
+                    {showTime ? (
                         <div className="rounded-md bg-black/30 px-2 py-0.5 text-[12px] font-medium text-white/90 backdrop-blur-sm">
                             <span className="tabular-nums">{currentTime}</span>
                             <span className="mx-1 text-white/50">/</span>
                             <span className="tabular-nums text-white/70">{totalTime}</span>
                         </div>
-                    )}
+                    ): 
+                    <div className="rounded-md bg-black/30 px-2 py-0.5 text-[12px] font-medium text-white/90 backdrop-blur-sm">
+                        <span className="tabular-nums text-white/70">Live</span>
+                    </div>}
 
                     {showFullscreen && (
                         <button
@@ -182,7 +187,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                 </div>
             )}
 
-            <div
+            {showProgressBar && <div
                 ref={progressBarRef}
                 className="group/progress relative h-6 cursor-pointer select-none touch-none sm:h-10"
                 onPointerMove={handlePointerMove}
@@ -224,7 +229,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                         />
                     </div>
                 </div>
-            </div>
+            </div>}
         </div>
     );
 };

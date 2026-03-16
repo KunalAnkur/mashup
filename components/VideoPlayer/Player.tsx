@@ -141,6 +141,7 @@ const VideoPlayer = ({
     useEffect(() => setVolume(externalVolume), [externalVolume]);
     useEffect(() => setProgress(externalProgress), [externalProgress]);
     useEffect(() => setDuration(externalDuration), [externalDuration]);
+    useEffect(() => setMuted(externalMuted), [externalMuted])
 
     // Controls visibility
     const startInactivityTimer = () => {

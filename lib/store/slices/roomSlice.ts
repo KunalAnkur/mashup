@@ -124,14 +124,14 @@ const roomSlice = createSlice({
       state.hostPlayback.playing = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    builder.addMatcher(
-      (action: AnyAction) => action.type === "__rtkq/focused",
-      (state) => {
-        state.focused = true;
-      },
-    );
-  },
+  // extraReducers: (builder) => {
+  //   builder.addMatcher(
+  //     (action: AnyAction) => action.type === "__rtkq/focused",
+  //     (state) => {
+  //       state.focused = true;
+  //     },
+  //   );
+  // },
 });
 
 export const {
