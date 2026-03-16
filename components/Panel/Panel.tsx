@@ -37,6 +37,22 @@ import { AnimatePresence, motion } from "framer-motion";
 import PanelHeaderActionButton from "./PanelHeaderActionButton";
 import { zincGlassBlurredSurfaceClass } from "@/components/UI/classTokens";
 
+const panelContainerClass =
+  "relative flex h-full w-full flex-col overflow-hidden bg-transparent px-3 py-3 md:px-4 md:py-4";
+const panelDesktopVerticalSeparatorClass =
+  "pointer-events-none absolute left-0 hidden w-px bg-gradient-to-b from-transparent via-white/20 to-transparent md:block";
+const panelDesktopVerticalSeparatorGlowClass =
+  "pointer-events-none absolute left-0 hidden w-px opacity-40 shadow-[0_0_14px_rgba(255,255,255,0.10)] md:block";
+const panelMobileTopSeparatorClass =
+  "pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/12 to-transparent md:hidden";
+const panelLogoGlowClass =
+  "absolute inset-0 rounded-full bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 blur-md opacity-50";
+const panelDesktopHeaderClass = "hidden md:flex flex-col gap-3 mb-3";
+const panelDesktopCopyTooltipClass =
+  "absolute top-full -left-8 z-[110] mt-2 -translate-x-1/2 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs text-green-400 whitespace-nowrap shadow-xl pointer-events-none";
+const panelDesktopCopyTooltipArrowClass =
+  "absolute bottom-full left-1/2 mb-0 -translate-x-1/2 border-4 border-transparent border-b-zinc-900";
+
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
 const mobileTabButtonBaseClass =
@@ -351,11 +367,11 @@ const Panel = () => {
   };
 
   return (
-    <div className="relative flex flex-col h-full w-full bg-transparent px-3 py-3 md:px-4 md:py-4 overflow-hidden">
+    <div className={panelContainerClass}>
       {/* Soft separator: subtle gradient line instead of a hard border */}
-      <div className="pointer-events-none absolute left-0 top-6 bottom-6 hidden w-px bg-gradient-to-b from-transparent via-white/20 to-transparent md:block" />
-      <div className="pointer-events-none absolute left-0 top-12 bottom-12 hidden w-px opacity-40 shadow-[0_0_14px_rgba(255,255,255,0.10)] md:block" />
-      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/12 to-transparent md:hidden" />
+      <div className={`${panelDesktopVerticalSeparatorClass} top-6 bottom-6`} />
+      <div className={`${panelDesktopVerticalSeparatorGlowClass} top-12 bottom-12`} />
+      <div className={panelMobileTopSeparatorClass} />
       
 
       <div className="relative z-30 flex flex-col h-full w-full">
@@ -385,7 +401,7 @@ const Panel = () => {
         <div className="flex items-center justify-between gap-2 mb-3 w-full">
           {/* Left: Logo */}
           <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50"></div>
+            <div className={panelLogoGlowClass}></div>
             <Image
               src={constants.assets.logo}
               alt="Logo"
@@ -454,12 +470,12 @@ const Panel = () => {
         {/* DESKTOP VIEW - Original Layout (hidden on mobile devices, shown on desktop) */}
         {/* ============================================== */}
         {!isMobile ? (
-        <div className="hidden md:flex flex-col gap-3 mb-3">
+        <div className={panelDesktopHeaderClass}>
           {/* Header Row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 rounded-full blur-md opacity-50"></div>
+                <div className={panelLogoGlowClass}></div>
                 <Image
                   src={constants.assets.logo}
                   alt="Logo"
@@ -485,9 +501,9 @@ const Panel = () => {
                   <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors" />
                 )}
                 {copied && (
-                  <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-zinc-900 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl">
+                  <div className={panelDesktopCopyTooltipClass}>
                     {tCommon("linkCopied")}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-900"></div>
+                    <div className={panelDesktopCopyTooltipArrowClass}></div>
                   </div>
                 )}
               </PanelHeaderActionButton>
@@ -530,7 +546,12 @@ const Panel = () => {
                         transition={activeTabPillTransition}
                       />
                     ) : null}
-                    <span className="relative z-10 whitespace-nowrap">{getTabLabel(tab)}</span>
+                    <span
+                      className="relative z-10 block min-w-0 truncate px-1"
+                      title={getTabLabel(tab)}
+                    >
+                      {getTabLabel(tab)}
+                    </span>
                   </button>
                 );
               })}

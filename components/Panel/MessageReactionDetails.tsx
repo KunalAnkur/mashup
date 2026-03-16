@@ -2,6 +2,13 @@
 
 import { MessageReaction, ReactionType } from "@/types/chatTypes";
 
+const messageReactionDetailsSurfaceClass =
+  "pointer-events-auto absolute top-full z-[90] mt-1 w-max min-w-[9rem] max-w-[min(calc(100vw-3rem),13rem)] overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_12px_28px_rgba(0,0,0,0.24)]";
+const messageReactionDetailsListClass =
+  "max-h-[min(9rem,calc(100vh-8rem))] overflow-y-auto px-1 py-1";
+const messageReactionDetailsItemClass =
+  "flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-[10px]";
+
 interface MessageReactionDetailsProps {
   align?: "start" | "end";
   reactions: MessageReaction[];
@@ -37,11 +44,11 @@ const MessageReactionDetails = ({
 
   return (
     <div
-      className={`pointer-events-auto absolute top-full z-[90] mt-1 w-max min-w-[9rem] max-w-[min(calc(100vw-3rem),13rem)] overflow-hidden rounded-xl border border-white/10 bg-black shadow-[0_12px_28px_rgba(0,0,0,0.24)] ${
+      className={`${messageReactionDetailsSurfaceClass} ${
         align === "end" ? "right-0" : "left-0"
       }`}
     >
-      <div className="max-h-[min(9rem,calc(100vh-8rem))] overflow-y-auto px-1 py-1">
+      <div className={messageReactionDetailsListClass}>
         <div className="flex flex-col gap-0.5">
           {orderedReactions.map((reaction) => {
             const isCurrentUser =
@@ -53,7 +60,7 @@ const MessageReactionDetails = ({
             return (
               <div
                 key={`${reaction.userId}-${reaction.emoji}-${reaction.reactedAt}`}
-                className={`flex items-center justify-between gap-2 rounded-lg px-2 py-1 text-[10px] ${
+                className={`${messageReactionDetailsItemClass} ${
                   isFocusedReaction
                     ? "bg-white/8 text-white"
                     : "text-white/82"

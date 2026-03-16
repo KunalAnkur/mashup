@@ -2,6 +2,11 @@
 
 import { ReactionType } from "@/types/chatTypes";
 
+const messageReactionPickerSurfaceClass =
+  "absolute left-0 z-[70] flex max-w-[min(calc(100vw-4rem),18rem)] items-center gap-1 overflow-x-auto rounded-full border border-white/10 bg-zinc-950/95 px-2 py-1.5 shadow-2xl backdrop-blur-xl scrollbar-hide";
+const messageReactionPickerButtonClass =
+  "flex h-8 w-8 items-center justify-center rounded-full text-lg transition-all duration-150";
+
 export const QUICK_MESSAGE_REACTIONS: ReactionType[] = [
   "👍",
   "❤️",
@@ -23,7 +28,7 @@ const MessageReactionPicker = ({
   onSelect,
 }: MessageReactionPickerProps) => (
   <div
-    className={`absolute left-0 z-[70] flex max-w-[min(calc(100vw-4rem),18rem)] items-center gap-1 overflow-x-auto rounded-full border border-white/10 bg-zinc-950/95 px-2 py-1.5 shadow-2xl backdrop-blur-xl scrollbar-hide ${
+    className={`${messageReactionPickerSurfaceClass} ${
       placement === "bottom"
         ? "top-full mt-2"
         : "top-0 -translate-y-[calc(100%+0.5rem)]"
@@ -37,7 +42,7 @@ const MessageReactionPicker = ({
           key={emoji}
           type="button"
           onClick={() => onSelect(emoji)}
-          className={`flex h-8 w-8 items-center justify-center rounded-full text-lg transition-all duration-150 ${
+          className={`${messageReactionPickerButtonClass} ${
             isSelected
               ? "bg-white/14 shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
               : "hover:bg-white/8"
