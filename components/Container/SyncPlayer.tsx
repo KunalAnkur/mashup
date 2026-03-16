@@ -13,9 +13,10 @@ import type { Playlist } from "@/types/storeTypes";
 
 type Props = {
   fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
+  setFocus?: () => void;
 };
 
-const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
+const SyncPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
   const roomState = useSelector((state: RootState) => state.room);
   const activeContent = useSelector((state: RootState) => state.room.playlist.find((item) => item.selected)) as Playlist;
   const playerRef = useRef<ReactPlayer>(null);
@@ -117,6 +118,8 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
       fullscreenTargetRef={fullscreenTargetRef}
       url={videoUrl}
       muted={initialStateForRender.muted}
+      hasUserInteracted={roomState.focused}
+      onMute={setFocus}
       disableControls={controlsConfig.disableControls}
       hideControls={controlsConfig.hideControls}
       disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}

@@ -15,9 +15,10 @@ import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
+    setFocus?: () => void;
 };
 
-const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
+const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
     const authState = useSelector((state: RootState) => state.auth);
     const playerRef = useRef<ReactPlayer>(null);
@@ -436,9 +437,11 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                     hostLeft: hostLeft,
                     paused: isPaused
                 }).muted}
+                hasUserInteracted={roomState.focused}
                 onPlay={onPlay}
                 onPause={onPause}
                 hasVideoTrack={!activeItem?.onlyAudio}
+                onMute={setFocus}
                 disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
                 hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
                 autoResumeOnFullscreenExit={!isHost}
