@@ -22,6 +22,7 @@ interface ControlBarProps {
   formatTime: (seconds: number) => string;
   hideControls: ControlComponents[];
   onUserActivity?: () => void;
+  onOpenStore?: () => void;
 }
 
 export const ControlBar = ({
@@ -30,6 +31,7 @@ export const ControlBar = ({
   onSeekTo, onSeekStart, onSeekEnd, onPlayPause,
   onMuteToggle, onVolumeChange, onFullscreenToggle,
   formatTime, hideControls = [], onUserActivity,
+  onOpenStore
 }: ControlBarProps) => {
   const controlsVisibility = showControls
     ? "translate-y-0 opacity-100"
@@ -51,10 +53,12 @@ export const ControlBar = ({
           duration={duration}
           showTime={!hideControls.includes(ControlComponents.DURATION)}
           showFullscreen={!hideControls.includes(ControlComponents.FULLSCREEN)}
+          showStore={!hideControls.includes(ControlComponents.STORE)}
           showProgressBar={!hideControls.includes(ControlComponents.PROGRESS)}
           fullscreen={fullscreen}
           onFullscreenToggle={onFullscreenToggle}
           onUserActivity={onUserActivity}
+          onOpenStore={onOpenStore}
         />
 
       <PlayerControls
@@ -68,6 +72,8 @@ export const ControlBar = ({
         onMuteToggle={onMuteToggle}
         onVolumeChange={onVolumeChange}
         onFullscreenToggle={onFullscreenToggle}
+        onOpenStore={onOpenStore}
+        showStore={!hideControls.includes(ControlComponents.STORE)}
         formatTime={formatTime}
         hideControls={hideControls}
       />

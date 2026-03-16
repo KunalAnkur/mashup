@@ -15,7 +15,7 @@ import AnimatedReaction from "../Panel/AnimatedReaction";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { isMobile } from "react-device-detect";
-
+import { FaStore } from "react-icons/fa6"
 const PlayerOverlay = () => {
   const dispatch = useDispatch();
   const panelCollapsed = useSelector(
@@ -295,6 +295,7 @@ const PlayerOverlay = () => {
         </div>
       </div>
 
+      
       {/* Overlay Messages, Reactions, and Input Container - Only show when panel is closed */}
       {panelCollapsed && (
         <div className="  z-30 absolute bottom-16 right-4 flex flex-col items-end pointer-events-none">

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { isMobile } from "react-device-detect";
 import { ControlComponents } from "./Player";
-import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp, FaExpandAlt, FaCompressAlt } from "react-icons/fa"
+import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp, FaExpandAlt, FaCompressAlt, FaStore } from "react-icons/fa"
 
 interface PlayerControlsProps {
     playing: boolean;
@@ -10,10 +10,12 @@ interface PlayerControlsProps {
     progress: number;
     duration: number;
     fullscreen: boolean;
+    showStore: boolean;
     onPlayPause: () => void;
     onMuteToggle: () => void;
     onVolumeChange: (volume: number) => void;
     onFullscreenToggle: () => void;
+    onOpenStore?: () => void;
     formatTime: (seconds: number) => string;
     hideControls: ControlComponents[];
 }
@@ -49,12 +51,14 @@ const PlayerControls = ({
     progress,
     duration,
     fullscreen,
+    showStore = true,
     onPlayPause,
     onMuteToggle,
     onVolumeChange,
     onFullscreenToggle,
     formatTime,
     hideControls,
+    onOpenStore
 }: PlayerControlsProps) => {
     const currentTime = formatTime((progress / 100) * duration || 0);
     const totalTime = formatTime(duration || 0);
@@ -64,7 +68,6 @@ const PlayerControls = ({
     const showVolume = !isMobile && !hideControls.includes(ControlComponents.VOLUME);
     const showFullscreen = !isMobile && !hideControls.includes(ControlComponents.FULLSCREEN);
     const hasRightPill = showVolume || showFullscreen;
-
     return (
         <div className=" flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
@@ -84,7 +87,9 @@ const PlayerControls = ({
                     </div>
                 )}
             </div>
-
+            {!isMobile && showStore && <button onClick={() => onOpenStore?.()} className="z-50 cursor-pointer gap-2  absolute left-1/2 -translate-x-1/2 rounded-2xl bg-black/30 h-[40px] w-[40px] flex justify-center items-center font-medium text-white/90 backdrop-blur-md shadow-[0_8px_22px_rgba(0,0,0,0.25)]">
+                <FaStore />
+            </button>}
             {hasRightPill && (
                 <div className="flex items-center gap-2 rounded-2xl bg-black/30 px-2 py-1 backdrop-blur-lg shadow-[0_8px_22px_rgba(0,0,0,0.35)]">
                     {showVolume && (

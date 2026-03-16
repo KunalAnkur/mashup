@@ -20,7 +20,8 @@ export enum ControlComponents {
     PROGRESS = 'progress',
     DURATION = 'duration',
     OVERLAY = 'overlay',
-    FULLSCREEN = 'fullscreen'
+    FULLSCREEN = 'fullscreen',
+    STORE = 'store'
 }
 type VideoPlayerProps = {
     url?: string | string[] | SourceProps[] | MediaStream
@@ -43,6 +44,7 @@ type VideoPlayerProps = {
     onReady?: () => void;
     onEnded?: () => void;
     onProgress?: () => void;
+    onOpenStore?: () => void;
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
     loop?: boolean;
@@ -77,6 +79,7 @@ const VideoPlayer = ({
     onEnded,
     onFullscreenChange,
     onProgress,
+    onOpenStore,
     controls = true,
     loop = false,
     hasUserInteracted = true,
@@ -566,6 +569,7 @@ const VideoPlayer = ({
                         onSeekEnd={handleSeekEnd}
                         onPlayPause={togglePlay}
                         onMuteToggle={toggleMute}
+                        onOpenStore={onOpenStore}
                         onVolumeChange={handleVolumeChange}
                         onFullscreenToggle={toggleFullscreen}
                         formatTime={formatVideoTime}
