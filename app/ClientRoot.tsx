@@ -17,31 +17,32 @@ import LocalePersistence from "@/components/LanguageSelector/LocalePersistence";
 import { setFocused } from "@/lib/store/slices/roomSlice";
 
 export default function ClientRoot({ children }: { children: ReactNode }) {
-    // useEffect(() => {
-    //     if (store.getState().room.focused) return;
+    useEffect(() => {
+        if (window.location.pathname.includes('/room/')) return
+        if (store.getState().room.focused) return;
 
-    //     const markFocused = () => {
-    //         if (!store.getState().room.focused) {
-    //             store.dispatch(setFocused(true));
-    //         }
-    //         window.removeEventListener("click", handleFirstInteraction);
-    //         window.removeEventListener("keydown", handleFirstInteraction);
-    //         window.removeEventListener("touchstart", handleFirstInteraction);
-    //     };
+        const markFocused = () => {
+            if (!store.getState().room.focused) {
+                store.dispatch(setFocused(true));
+            }
+            window.removeEventListener("click", handleFirstInteraction);
+            window.removeEventListener("keydown", handleFirstInteraction);
+            window.removeEventListener("touchstart", handleFirstInteraction);
+        };
 
-    //     const handleFirstInteraction = () => {
-    //         markFocused();
-    //     };
+        const handleFirstInteraction = () => {
+            markFocused();
+        };
 
-    //     window.addEventListener("click", handleFirstInteraction);
-    //     window.addEventListener("keydown", handleFirstInteraction);
-    //     window.addEventListener("touchstart", handleFirstInteraction, { passive: true });
-    //     return () => {
-    //         window.removeEventListener("click", handleFirstInteraction);
-    //         window.removeEventListener("keydown", handleFirstInteraction);
-    //         window.removeEventListener("touchstart", handleFirstInteraction);
-    //     };
-    // }, []);
+        window.addEventListener("click", handleFirstInteraction);
+        window.addEventListener("keydown", handleFirstInteraction);
+        window.addEventListener("touchstart", handleFirstInteraction, { passive: true });
+        return () => {
+            window.removeEventListener("click", handleFirstInteraction);
+            window.removeEventListener("keydown", handleFirstInteraction);
+            window.removeEventListener("touchstart", handleFirstInteraction);
+        };
+    }, []);
 
     return (
         <Provider store={store}>

@@ -41,7 +41,6 @@ export const ControlBar = ({
     >
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/65 via-black/25 to-transparent sm:h-32" />
 
-      {!hideControls.includes(ControlComponents.PROGRESS) && (
         <ProgressBar
           progress={progress}
           buffered={buffered}
@@ -52,11 +51,11 @@ export const ControlBar = ({
           duration={duration}
           showTime={!hideControls.includes(ControlComponents.DURATION)}
           showFullscreen={!hideControls.includes(ControlComponents.FULLSCREEN)}
+          showProgressBar={!hideControls.includes(ControlComponents.PROGRESS)}
           fullscreen={fullscreen}
           onFullscreenToggle={onFullscreenToggle}
           onUserActivity={onUserActivity}
         />
-      )}
 
       <PlayerControls
         playing={playing}
