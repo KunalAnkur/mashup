@@ -14,6 +14,10 @@
 - After refactors or component extraction, verify that no stale references/import removals are left behind. Smoke test the directly affected screen/tab to avoid runtime `ReferenceError` issues.
 - Before deleting "unused" files, verify real imports/usages first and then clean up stale state, handlers, comments, and support types in the entry points that previously referenced them.
 - If the user explicitly defers a refactor or architecture cleanup to another branch, record it in the agent docs/backlog immediately and stop treating it as in-scope for the current branch.
+- Keep shared visual class tokens centralized in one source of truth. In this repo, prefer extending `components/UI/classTokens.ts` instead of creating new small parallel `*Theme.ts` token files for the same UI layer.
+- If shared UI tokens become too large for one file, split them intentionally into a dedicated `components/UI/constants/` structure by domain. Do not scatter them across ad hoc theme files.
+- When matching one component to another for visual consistency, treat the approved component as the visual reference and avoid changing that reference component unless the user explicitly asks for it.
+- For repeated presentational UI structure, prefer small reusable primitives over duplicating markup or pushing many style props through multiple layers.
 
 # Agent Doc Roles
 
