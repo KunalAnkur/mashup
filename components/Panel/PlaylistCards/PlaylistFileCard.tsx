@@ -1,11 +1,20 @@
 import React from "react";
 import { LuPlay, LuFilm } from "react-icons/lu";
 import { useTranslations } from "@/i18n/I18nProvider";
-import { appMutedGroupHoverSurfaceClass } from "@/components/UI/classTokens";
 import {
-    panelCardHoverSurfaceClass,
-    panelCardSurfaceClass,
-} from "../panelCardStyles";
+    playlistCardBaseClass,
+    playlistCardIdleSurfaceClass,
+    playlistCardIdleSurfaceHoverClass,
+    playlistCardIndexBaseClass,
+    playlistCardIndexIdleClass,
+    playlistCardIndexPlayingClass,
+    playlistCardPlayingBadgeClass,
+    playlistCardPlayingIndicatorClass,
+    playlistCardPlayingOverlayClass,
+    playlistCardPlayingSurfaceClass,
+    playlistCardThumbnailBaseClass,
+    playlistCardThumbnailRingClass,
+} from "./playlistCardStyles";
 
 interface PlaylistFileCardProps {
     file: File;
@@ -38,18 +47,20 @@ export const PlaylistFileCard: React.FC<PlaylistFileCardProps> = ({
             onClick={onSelect}
             disabled={!isHost}
             className={`
-                group w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0
+                ${playlistCardBaseClass}
                 ${isPlaying
-                    ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
-                    : `${panelCardSurfaceClass} border border-transparent ${isHost ? panelCardHoverSurfaceClass : ""}`
+                    ? playlistCardPlayingSurfaceClass
+                    : isHost
+                    ? playlistCardIdleSurfaceHoverClass
+                    : playlistCardIdleSurfaceClass
                 }
                 ${!isHost ? 'cursor-default' : 'cursor-pointer'}
             `}
         >
             {/* Thumbnail */}
             <div className={`
-                relative w-20 h-13 rounded-lg overflow-hidden shrink-0 
-                ${isPlaying ? 'ring-2 ring-pink-500/50' : ''}
+                ${playlistCardThumbnailBaseClass}
+                ${isPlaying ? playlistCardThumbnailRingClass : ''}
                 bg-gradient-to-br from-zinc-700 to-zinc-800
             `}>
                 {thumbnail ? (
@@ -70,8 +81,8 @@ export const PlaylistFileCard: React.FC<PlaylistFileCardProps> = ({
                 
                 {/* Play indicator overlay */}
                 {isPlaying && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
+                    <div className={playlistCardPlayingOverlayClass}>
+                        <div className={playlistCardPlayingIndicatorClass}>
                             <LuPlay className="text-white ml-0.5" size={12} />
                         </div>
                     </div>
@@ -87,7 +98,7 @@ export const PlaylistFileCard: React.FC<PlaylistFileCardProps> = ({
                         {file.name}
                     </p>
                     {isPlaying && (
-                        <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                        <span className={playlistCardPlayingBadgeClass}>
                             {t("playing")}
                         </span>
                     )}
@@ -99,10 +110,10 @@ export const PlaylistFileCard: React.FC<PlaylistFileCardProps> = ({
 
             {/* Index number */}
             <div className={`
-                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+                ${playlistCardIndexBaseClass}
                 ${isPlaying
-                    ? 'bg-pink-500/20 text-pink-400'
-                    : `${appMutedGroupHoverSurfaceClass} text-gray-500`
+                    ? playlistCardIndexPlayingClass
+                    : playlistCardIndexIdleClass
                 }
             `}>
                 {index + 1}

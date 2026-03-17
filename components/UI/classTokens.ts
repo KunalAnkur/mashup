@@ -68,6 +68,10 @@ export const appIconTextHoverClass =
 
 export const appPulseSurfaceClass = "bg-white/10 rounded animate-pulse";
 
+export const appInputRadiusClass = "rounded-xl";
+
+export const appInputVerticalPaddingClass = "py-3";
+
 export const appDropdownSurfaceClass =
   "absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-2xl bg-[linear-gradient(180deg,rgba(26,26,32,0.98),rgba(18,18,24,0.98))] backdrop-blur-2xl md:w-60";
 

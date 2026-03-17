@@ -18,6 +18,11 @@
 - If shared UI tokens become too large for one file, split them intentionally into a dedicated `components/UI/constants/` structure by domain. Do not scatter them across ad hoc theme files.
 - When matching one component to another for visual consistency, treat the approved component as the visual reference and avoid changing that reference component unless the user explicitly asks for it.
 - For repeated presentational UI structure, prefer small reusable primitives over duplicating markup or pushing many style props through multiple layers.
+- For safe refactor passes, follow the checklist:
+  - Only touch exact-match class strings or localize them into constants.
+  - Do not change component behavior, state logic, or interaction wiring.
+  - Keep the visual result identical; no color, spacing, or layout shifts.
+  - Run lint on touched files and provide step-by-step UI checks.
 
 # Agent Doc Roles
 

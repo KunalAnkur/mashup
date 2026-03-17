@@ -17,6 +17,8 @@ import { useTranslations } from "@/i18n/I18nProvider";
 import { trackSignup } from "@/lib/analytics";
 import {
   appIconTextHoverClass,
+  appInputRadiusClass,
+  appInputVerticalPaddingClass,
   appSeparatorLineClass,
   appWhiteBorderClass,
   movmashElevatedShadowClass,
@@ -35,7 +37,7 @@ type GoogleAuthUserInfo = {
 };
 
 const signupInputBaseClass =
-  `w-full rounded-xl bg-white/5 ${appWhiteBorderClass} text-white text-sm px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500`;
+  `w-full ${appInputRadiusClass} bg-white/5 ${appWhiteBorderClass} text-white text-sm px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500`;
 
 const SignupContainer = ({ setContainer }: Prop) => {
   const router = useRouter();
