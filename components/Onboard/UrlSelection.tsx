@@ -9,6 +9,10 @@ import { useEffect, useState } from "react";
 import ReactPlayer from "react-player";
 import { useRouter } from "next/navigation";
 import { Playlist } from "@/types/storeTypes";
+import {
+  appInputRadiusClass,
+  appInputVerticalPaddingClass,
+} from "@/components/UI/classTokens";
 const UrlSelection = () => {
   const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
@@ -73,7 +77,7 @@ const UrlSelection = () => {
             placeholder="Paste your source link here"
             value={sourceUrlInput}
             onChange={handleOnSourceUrlChange}
-            className="flex-1 rounded-lg w-full bg-zinc-800 text-gray-100 text-sm sm:text-base px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+            className={`flex-1 w-full ${appInputRadiusClass} bg-zinc-800 text-gray-100 text-sm sm:text-base px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:ring-2 focus:ring-pink-600`}
           />
           <Button
             onClick={handleOnEnterRoom}

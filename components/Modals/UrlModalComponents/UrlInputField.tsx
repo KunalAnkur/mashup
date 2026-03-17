@@ -4,7 +4,11 @@ import React from "react";
 import { Button } from "../../UI";
 import { ImSpinner2 } from "react-icons/im";
 import { useTranslations } from "@/i18n/I18nProvider";
-import { movmashGradientStopsClass } from "@/components/UI/classTokens";
+import {
+  appInputRadiusClass,
+  appInputVerticalPaddingClass,
+  movmashGradientStopsClass,
+} from "@/components/UI/classTokens";
 
 interface UrlInputFieldProps {
   value: string;
@@ -34,7 +38,7 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
         value={value}
         onChange={onChange}
         onKeyDown={onKeyDown}
-        className="flex-1 min-w-0 rounded-xl bg-black/10 backdrop-blur-2xl border border-zinc-600/10 text-white text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-black/15 transition-all duration-200 placeholder:text-white/40"
+        className={`flex-1 min-w-0 ${appInputRadiusClass} bg-black/10 backdrop-blur-2xl border border-zinc-600/10 text-white text-xs sm:text-sm px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-black/15 transition-all duration-200 placeholder:text-white/40`}
         disabled={isAdding}
       />
       <div className="relative group shrink-0">

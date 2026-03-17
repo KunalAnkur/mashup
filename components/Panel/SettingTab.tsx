@@ -18,6 +18,7 @@ import {
   panelTabRootClass,
   panelTabScrollAreaClass,
 } from "./panelCardStyles";
+import { appInputRadiusClass } from "@/components/UI/classTokens";
 
 const sectionClass = "space-y-3";
 const sectionLabelClass = panelMetaMutedLabelClass;
@@ -37,9 +38,9 @@ const actionPillSuccessClass =
 const valueRowClass =
   "flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0";
 const valueBoxClass =
-  "flex min-w-0 items-center gap-2 rounded-xl border border-white/[0.06] bg-transparent px-3 h-10";
+  `flex min-w-0 items-center gap-2 ${appInputRadiusClass} border border-white/[0.06] bg-transparent px-3 h-10`;
 const inputCardClass =
-  "flex min-w-0 items-center gap-2 rounded-xl border border-white/[0.07] bg-transparent px-3 h-10 transition-colors duration-200 focus-within:border-pink-400/26";
+  `flex min-w-0 items-center gap-2 ${appInputRadiusClass} border border-white/[0.07] bg-transparent px-3 h-10 transition-colors duration-200 focus-within:border-pink-400/26`;
 const textInputClass =
   "settings-input min-w-0 flex-1 appearance-none bg-transparent text-sm leading-5 text-white placeholder:text-gray-500 outline-none";
 const rowActionButtonClass =

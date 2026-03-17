@@ -19,7 +19,11 @@ import {
   movmashModalSoftIconWrapClass,
   movmashModalTitleGradientClass,
 } from "./modalTheme";
-import { zincGlassBlurredSurfaceClass } from "./classTokens";
+import {
+  appInputRadiusClass,
+  appInputVerticalPaddingClass,
+  zincGlassBlurredSurfaceClass,
+} from "./classTokens";
 
 interface ModalProps {
   open: boolean;
@@ -66,7 +70,7 @@ const modalFormHeaderClass = "mb-4 px-0 pt-0 pb-0";
 const modalFormBodyClass = "space-y-4 px-4 pb-4 pt-0 md:px-5 md:pb-5";
 const modalFormActionsClass = "flex gap-3 pt-2";
 const modalTextFieldClass =
-  "w-full rounded-xl border-0 bg-white/[0.045] px-4 py-3 text-sm text-white outline-none ring-0 transition-[background-color] duration-200 placeholder:text-gray-500 focus:bg-white/[0.06] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0";
+  `w-full ${appInputRadiusClass} border-0 bg-white/[0.045] px-4 ${appInputVerticalPaddingClass} text-sm text-white outline-none ring-0 transition-[background-color] duration-200 placeholder:text-gray-500 focus:bg-white/[0.06] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0`;
 const modalTextAreaClass =
   `${modalTextFieldClass} min-h-[112px] resize-none`;
 const modalSegmentedControlClass =
