@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { isMobile } from "react-device-detect";
 import { ControlComponents } from "./Player";
 import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp, FaExpandAlt, FaCompressAlt, FaStore } from "react-icons/fa"
+import { MdPlayDisabled } from "react-icons/md";
 
 interface PlayerControlsProps {
     playing: boolean;
@@ -16,8 +17,10 @@ interface PlayerControlsProps {
     onVolumeChange: (volume: number) => void;
     onFullscreenToggle: () => void;
     onOpenStore?: () => void;
+    onHiddingFullControls?: () => void;
     formatTime: (seconds: number) => string;
     hideControls: ControlComponents[];
+    showHidingControlsBtn?: boolean
 }
 
 const CtrlBtn = ({
@@ -58,6 +61,8 @@ const PlayerControls = ({
     onFullscreenToggle,
     formatTime,
     hideControls,
+    onHiddingFullControls,
+    showHidingControlsBtn = true,
     onOpenStore
 }: PlayerControlsProps) => {
     const currentTime = formatTime((progress / 100) * duration || 0);
@@ -123,7 +128,11 @@ const PlayerControls = ({
                             </CtrlBtn>
                         </div>
                     )}
-
+                    
+                    {showHidingControlsBtn && <CtrlBtn onClick={() => onHiddingFullControls?.()} title={"Hide controls"}>
+                        <MdPlayDisabled size={24}/>
+                    </CtrlBtn>}
+                    
                     {showFullscreen && (
                         <CtrlBtn onClick={onFullscreenToggle} title={fullscreen ? "Exit fullscreen" : "Fullscreen"}>
                             {fullscreen ? <FaCompressAlt size={18} /> : <FaExpandAlt size={18} />}

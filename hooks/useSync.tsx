@@ -65,6 +65,11 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         syncStartedTrackedRef.current = false;
     }, [roomId]);
 
+    // * This method will trigger by non host to get sync with host
+    const syncWithHost = useCallback(() => {
+        if (isHost && !roomId) return;
+        socket?.emit(SocketEvent.SYNCWITHHOST, { roomId });
+    }, [isHost, roomId, socket])
     // Build host state from Redux + player
     const getHostState = useCallback((): VideoState => {
         const state = store.getState() as RootState;
@@ -379,5 +384,5 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         };
     }, [socket, isHost, playerRef, roomId, getHostState, applySyncState, dispatch, enabled]);
 
-    return { onPlay, onPause, onSeeked, onReady, isPlaying, isConnected, selectVideo };
+    return { onPlay, onPause, onSeeked, onReady, isPlaying, isConnected, selectVideo, syncWithHost };
 };

@@ -434,6 +434,7 @@ export function getPlayerControlsConfig(url: string | string[] | SourceProps[] |
               ControlComponents.PLAY,
               ControlComponents.PROGRESS,
               ControlComponents.DURATION,
+              ControlComponents.HIDE_CONTROLS,
             ],
           };
         }
@@ -447,13 +448,24 @@ export function getPlayerControlsConfig(url: string | string[] | SourceProps[] |
                 }
                 return {
                   disableControls: [],
-                  hideControls: [ControlComponents.OVERLAY, ControlComponents.PROGRESS, ControlComponents.DURATION],
+                  hideControls: [
+                    ControlComponents.OVERLAY,
+                    ControlComponents.PROGRESS,
+                    ControlComponents.DURATION,
+                    ControlComponents.HIDE_CONTROLS,
+                  ],
+                };
+            }
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                return {
+                  disableControls: [],
+                  hideControls: [],
                 };
             }
         }
           return {
             disableControls: [],
-            hideControls: [],
+            hideControls: [ControlComponents.HIDE_CONTROLS],
           };
     }
 
@@ -469,28 +481,44 @@ export function getPlayerControlsConfig(url: string | string[] | SourceProps[] |
             return {
               disableControls: [ControlComponents.PLAY],
               hideControls: [
-                ControlComponents.OVERLAY, ControlComponents.PLAY,
+                ControlComponents.OVERLAY,
+                ControlComponents.PLAY,
                 ControlComponents.PROGRESS,
                 ControlComponents.DURATION,
+                ControlComponents.HIDE_CONTROLS,
               ],
             };
         }
+        if (url.includes("youtube.com") || url.includes("youtu.be")) {
+          return {
+            disableControls: [
+              ControlComponents.PLAY,
+              ControlComponents.PROGRESS,
+              ControlComponents.BROADCAST_SYNC
+            ],
+            hideControls: [],
+          };
+        }
       // url is a single string
       return {
-        disableControls: hostLeft ? [] : [ControlComponents.PLAY, ControlComponents.PROGRESS],
-        hideControls: [],
+        disableControls: hostLeft
+          ? []
+          : [ControlComponents.PLAY, ControlComponents.PROGRESS],
+        hideControls: [ControlComponents.HIDE_CONTROLS],
       };
     } else if (Array.isArray(url) && url.length && typeof url[0] === "string") {
       // url is string[]
       return {
-        disableControls: hostLeft ? []: [ControlComponents.PLAY, ControlComponents.PROGRESS],
-        hideControls: [],
+        disableControls: hostLeft
+          ? []
+          : [ControlComponents.PLAY, ControlComponents.PROGRESS],
+        hideControls: [ControlComponents.HIDE_CONTROLS],
       };
     } else if (Array.isArray(url) && url.length && typeof url[0] === "object") {
       // url is SourceProps[]
       return {
         disableControls: [],
-        hideControls: [],
+        hideControls: [ControlComponents.HIDE_CONTROLS],
       };
     } else if (
       typeof MediaStream !== "undefined" &&
@@ -503,6 +531,7 @@ export function getPlayerControlsConfig(url: string | string[] | SourceProps[] |
           ControlComponents.PLAY,
           ControlComponents.PROGRESS,
           ControlComponents.DURATION,
+          ControlComponents.HIDE_CONTROLS,
         ],
       };
     }
@@ -513,6 +542,7 @@ export function getPlayerControlsConfig(url: string | string[] | SourceProps[] |
         ControlComponents.PROGRESS,
         ControlComponents.OVERLAY,
         ControlComponents.DURATION,
+        ControlComponents.HIDE_CONTROLS,
       ],
     };
     

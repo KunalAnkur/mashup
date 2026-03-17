@@ -19,6 +19,7 @@ interface ControlBarProps {
   onMuteToggle: () => void;
   onVolumeChange: (volume: number) => void;
   onFullscreenToggle: () => void;
+  onHidingFullControls: () => void;
   formatTime: (seconds: number) => string;
   hideControls: ControlComponents[];
   onUserActivity?: () => void;
@@ -31,7 +32,7 @@ export const ControlBar = ({
   onSeekTo, onSeekStart, onSeekEnd, onPlayPause,
   onMuteToggle, onVolumeChange, onFullscreenToggle,
   formatTime, hideControls = [], onUserActivity,
-  onOpenStore
+  onOpenStore, onHidingFullControls
 }: ControlBarProps) => {
   const controlsVisibility = showControls
     ? "translate-y-0 opacity-100"
@@ -55,6 +56,7 @@ export const ControlBar = ({
           showFullscreen={!hideControls.includes(ControlComponents.FULLSCREEN)}
           showStore={!hideControls.includes(ControlComponents.STORE)}
           showProgressBar={!hideControls.includes(ControlComponents.PROGRESS)}
+          onHiddingFullControls={onHidingFullControls}
           fullscreen={fullscreen}
           onFullscreenToggle={onFullscreenToggle}
           onUserActivity={onUserActivity}
@@ -76,6 +78,8 @@ export const ControlBar = ({
         showStore={!hideControls.includes(ControlComponents.STORE)}
         formatTime={formatTime}
         hideControls={hideControls}
+        showHidingControlsBtn={!hideControls.includes(ControlComponents.HIDE_CONTROLS)}
+        onHiddingFullControls={onHidingFullControls}
       />
     </div>
   );

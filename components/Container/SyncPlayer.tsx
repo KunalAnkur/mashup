@@ -46,6 +46,7 @@ const SyncPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     onSeeked,
     onReady: originalOnReady,
     isPlaying,
+    syncWithHost
   } = useSync({
     playerRef,
     isHost,
@@ -126,6 +127,7 @@ const SyncPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
       onOpenStore={() =>  dispatch(toggleBottomSheet())}
       disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
       autoResumeOnFullscreenExit={!isHost}
+      syncWithHost={syncWithHost}
     >
       <PlayerOverlay />
     </Player>
