@@ -138,7 +138,7 @@ const Page = () => {
       const restContents = playlist.filter(content => content.source !== 'file');
       const newPlaylist = [...restContents, ...existedFileContents].map((content, index) => ({
           ...content,
-          selected: index === 0
+          // selected: index === 0
       }));
       dispatch(updateRoomInfo({ playlist: newPlaylist }));
     }

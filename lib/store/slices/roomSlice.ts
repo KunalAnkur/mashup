@@ -36,10 +36,11 @@ const roomSlice = createSlice({
       state.host = action.payload.authId === action.payload.data.user_id;
       state.playlist = state.host
         ? data.playlist.map((item, index) => {
-            if (index === 0) {
-              return { ...item, selected: true };
-            }
-            return { ...item, selected: false };
+            // if (index === 0) {
+            //   return { ...item, selected: true };
+            // }
+            // return { ...item, selected: false };
+            return {...item}
           }) || []
         : data.playlist;
       // Backend now uses type and source directly
