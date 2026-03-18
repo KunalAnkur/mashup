@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button, Anchor } from "../UI";
+import { Button, Anchor, Input } from "../UI";
 import * as constants from "@/constants/common";
 import {
   useAuthProviderMutation,
@@ -15,10 +15,30 @@ import { ImSpinner2 } from "react-icons/im";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackSignup } from "@/lib/analytics";
+import {
+  appIconTextHoverClass,
+  appInputRadiusClass,
+  appInputVerticalPaddingClass,
+  appSeparatorLineClass,
+  appWhiteBorderClass,
+  movmashElevatedShadowClass,
+  movmashGradientStopsClass,
+} from "@/components/UI/classTokens";
 
 type Prop = {
   setContainer?: (container: "login" | "signup") => void;
 };
+
+type GoogleAuthUserInfo = {
+  email: string;
+  name: string;
+  picture: string;
+  sub: string;
+};
+
+const signupInputBaseClass =
+  `w-full ${appInputRadiusClass} bg-white/5 ${appWhiteBorderClass} text-white text-base px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500`;
+
 const SignupContainer = ({ setContainer }: Prop) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -48,10 +68,30 @@ const SignupContainer = ({ setContainer }: Prop) => {
       dispatch(setUser(data));
       trackSignup("email", "direct"); // Email signup from signup page
       console.log(data, signupState);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // console.error("Signup failed:", error);
-      const errorMessage = error?.data?.message || error?.message || "Failed to create account";
-      const errorDescription = error?.data?.message || error?.message 
+      const hasSpecificSignupError =
+        error &&
+        typeof error === "object" &&
+        (("data" in error &&
+          error.data &&
+          typeof error.data === "object" &&
+          "message" in error.data &&
+          typeof error.data.message === "string") ||
+          ("message" in error && typeof error.message === "string"));
+      const errorMessage =
+        error && typeof error === "object"
+          ? "data" in error &&
+            error.data &&
+            typeof error.data === "object" &&
+            "message" in error.data &&
+            typeof error.data.message === "string"
+            ? error.data.message
+            : "message" in error && typeof error.message === "string"
+              ? error.message
+              : "Failed to create account"
+          : "Failed to create account";
+      const errorDescription = hasSpecificSignupError
         ? "Please check your information and try again."
         : "Please check your email, username, and password, then try again.";
       showError(errorMessage, errorDescription);
@@ -71,7 +111,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
     }
   };
 
-  const handleGoogleAuthSuccess = async (userInfo: any) => {
+  const handleGoogleAuthSuccess = async (userInfo: GoogleAuthUserInfo) => {
     try {
       const response = await authProvider({
         email: userInfo.email,
@@ -105,24 +145,26 @@ const SignupContainer = ({ setContainer }: Prop) => {
         {/* Username Input */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-300">Username</label>
-          <input
+          <Input
+            variant="raw"
             type="text"
             placeholder="Enter your username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full rounded-xl bg-white/5 text-white text-base px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
+            className={signupInputBaseClass}
           />
         </div>
 
         {/* Email Input */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-300">Email</label>
-          <input
+          <Input
+            variant="raw"
             type="email"
             placeholder="Enter your email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl bg-white/5 text-white text-base px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
+            className={signupInputBaseClass}
           />
         </div>
 
@@ -130,17 +172,18 @@ const SignupContainer = ({ setContainer }: Prop) => {
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-300">Password</label>
           <div className="relative">
-            <input
+            <Input
+              variant="raw"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl bg-white/5 text-white text-base px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
+              className={`${signupInputBaseClass} pr-12`}
             />
             <button
               type="button"
               onClick={handleTogglePassword}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              className={`absolute right-3 top-1/2 -translate-y-1/2 ${appIconTextHoverClass}`}
             >
               {showPassword ? (
                 <IoEye size={20} />
@@ -156,16 +199,16 @@ const SignupContainer = ({ setContainer }: Prop) => {
           <Button
             name={signupState.isLoading ? "Signing up..." : "Signup"}
             icon={signupState.isLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className="w-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full bg-gradient-to-r ${movmashGradientStopsClass} ${movmashElevatedShadowClass} text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
             onClick={handleOnSignUp}
             disabled={signupState.isLoading}
           />
           
           {/* Separator */}
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/10"></div>
+            <div className={appSeparatorLineClass}></div>
             <span className="text-xs text-gray-500">or</span>
-            <div className="flex-1 h-px bg-white/10"></div>
+            <div className={appSeparatorLineClass}></div>
           </div>
 
           {/* Google Button */}

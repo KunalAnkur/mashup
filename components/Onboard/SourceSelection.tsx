@@ -1,7 +1,7 @@
 "use client";
 
 import { FaBroadcastTower, FaSync } from "react-icons/fa";
-import { Button, Logo } from "../UI";
+import { Button, Input, Logo } from "../UI";
 import { useState, useCallback } from "react";
 import { ImSpinner2 } from "react-icons/im";
 
@@ -9,6 +9,10 @@ import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { trackCTAClicked } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
+import {
+  appInputRadiusClass,
+  appInputVerticalPaddingClass,
+} from "@/components/UI/classTokens";
 
 const SourceSelection = () => {
   const t = useTranslations("home");
@@ -177,16 +181,17 @@ const SourceSelection = () => {
             </p>
             <div className="flex flex-col w-full gap-2 sm:gap-3">
               <div className="flex w-full gap-2 sm:gap-3">
-                <input
+                <Input
+                  variant="raw"
                   type="text"
                   placeholder={t("roomIdPlaceholder")}
                   value={roomId}
                   onChange={handleOnRoomIdChange}
                   onKeyDown={handleKeyDown}
                   disabled={isJoining}
-                  className={`outline-none text-base flex-1 rounded-xl bg-white/5 backdrop-blur-2xl border text-white placeholder:text-white/50 p-2.5 sm:p-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 ${
+                  className={`outline-none text-base flex-1 ${appInputRadiusClass} bg-white/5 backdrop-blur-2xl border text-white placeholder:text-white/50 px-2.5 sm:px-3 ${appInputVerticalPaddingClass} focus:outline-none focus:border-pink-500/50 transition-all duration-200 ${
                     joinError
-                      ? "border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50"
+                      ? "border-red-500/50 focus:border-red-500/50"
                       : "border-none"
                   } ${isJoining ? "opacity-50 cursor-not-allowed" : ""}`}
                 />

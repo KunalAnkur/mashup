@@ -4,6 +4,7 @@ import React from "react";
 import { platforms } from "@/constants/urlPlatforms";
 import { SectionTitle } from "../DeviceModalComponents/SectionTitle";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { zincGlassLgPanelSurfaceClass } from "@/components/UI/classTokens";
 
 interface PlatformCardProps {
   platform: (typeof platforms)[0];
@@ -32,7 +33,7 @@ export const SupportedPlatformsGrid: React.FC = () => {
       gradientTo="to-pink-500"
       title={t("supportedPlatforms")}
     />
-    <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-lg md:rounded-xl lg:rounded-2xl p-3 md:p-4 lg:p-5 flex-1 min-h-0">
+    <div className={`${zincGlassLgPanelSurfaceClass} p-3 md:p-4 lg:p-5 flex-1 min-h-0`}>
       <div className="grid grid-cols-3 gap-2 md:gap-3 lg:gap-4 h-full">
         {platforms.map((platform) => (
           <PlatformCard key={platform.id} platform={platform} />
@@ -42,4 +43,3 @@ export const SupportedPlatformsGrid: React.FC = () => {
   </div>
   );
 };
-

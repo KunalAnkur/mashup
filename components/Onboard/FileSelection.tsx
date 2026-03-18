@@ -12,7 +12,7 @@ import {
   FaPlus,
   FaUpload,
 } from "react-icons/fa";
-import { Button } from "../UI";
+import { Button, Input } from "../UI";
 import { useEffect, useState, useRef } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { useFileContext } from "@/context/FileContext";
@@ -25,6 +25,11 @@ import { ExtendedFile } from "@/utils/filePersistence";
 import { Playlist } from "@/types/storeTypes";
 import { isMobile } from "react-device-detect";
 import { useTranslations } from "@/i18n/I18nProvider";
+import {
+  zincGlassFaintBlurredSurfaceClass,
+  zincGlassMutedBlurredSurfaceClass,
+  zincGlassSoftInsetSurfaceClass,
+} from "@/components/UI/classTokens";
 
 const FileSelection = () => {
   const dispatch = useDispatch();
@@ -214,7 +219,7 @@ const FileSelection = () => {
         <button
           onClick={handleAddFileClick}
           disabled={isLoading}
-          className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/40 border border-zinc-600/15 transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+          className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl ${zincGlassMutedBlurredSurfaceClass} hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/40 border border-zinc-600/15 transition-all duration-300 cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden`}
           title="Add more files"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-fuchsia-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg sm:rounded-xl" />
@@ -230,7 +235,8 @@ const FileSelection = () => {
       </div>
 
       {/* Hidden file input */}
-      <input
+      <Input
+        variant="raw"
         ref={fileInputRef}
         onChange={handleFileChange}
         type="file"
@@ -275,7 +281,7 @@ const FileSelection = () => {
                       return (
                         <div
                           className={`
-                            flex-shrink-0 rounded-lg sm:rounded-xl overflow-hidden bg-gradient-to-br from-zinc-800/15 to-zinc-700/15 backdrop-blur-sm border border-zinc-600/20
+                            flex-shrink-0 rounded-lg sm:rounded-xl overflow-hidden ${zincGlassSoftInsetSurfaceClass}
                             ${isVideo ? "w-12 h-8 sm:w-14 sm:h-9 md:w-16 md:h-10" : "p-2 sm:p-3"}
                             flex items-center justify-center
                           `}
@@ -293,7 +299,7 @@ const FileSelection = () => {
                                   if (parent) {
                                     parent.innerHTML = "";
                                     parent.className =
-                                      "p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/15 to-zinc-700/15 backdrop-blur-sm border border-zinc-600/20 flex-shrink-0 flex items-center justify-center";
+                                      `p-2 sm:p-3 rounded-lg sm:rounded-xl ${zincGlassSoftInsetSurfaceClass} flex-shrink-0 flex items-center justify-center`;
                                     parent.appendChild(getFileIcon(file.type) as any);
                                   }
                                 }}
@@ -365,7 +371,7 @@ const FileSelection = () => {
             ) : files.length < 2 ? (
               <div
                 onClick={handleAddFileClick}
-                className={`relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-2xl border border-dashed border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/8 hover:via-pink-600/8 hover:to-fuchsia-600/8 w-full min-h-[56px] sm:min-h-[64px] md:min-h-[70px] transition-all duration-200 cursor-pointer group overflow-hidden ${
+                className={`relative flex flex-col items-center justify-center p-3 sm:p-4 rounded-lg sm:rounded-xl ${zincGlassFaintBlurredSurfaceClass} border border-dashed border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/8 hover:via-pink-600/8 hover:to-fuchsia-600/8 w-full min-h-[56px] sm:min-h-[64px] md:min-h-[70px] transition-all duration-200 cursor-pointer group overflow-hidden ${
                   isLoading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
@@ -385,7 +391,7 @@ const FileSelection = () => {
           </div>
 
           {/* Info Section - Hidden on mobile, shown on desktop */}
-          <div className="hidden sm:flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5 backdrop-blur-2xl border border-zinc-600/10 rounded-lg sm:rounded-xl hover:border-purple-500/20 hover:bg-gradient-to-br hover:from-purple-600/8 hover:via-pink-600/8 hover:to-fuchsia-600/8 transition-all duration-300">
+          <div className={`hidden sm:flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 ${zincGlassFaintBlurredSurfaceClass} border border-zinc-600/10 rounded-lg sm:rounded-xl hover:border-purple-500/20 hover:bg-gradient-to-br hover:from-purple-600/8 hover:via-pink-600/8 hover:to-fuchsia-600/8 transition-all duration-300`}>
             <div className="flex items-start gap-1.5 sm:gap-2">
               <div className="shrink-0 mt-0.5">
                 <svg

@@ -128,11 +128,11 @@ const PlayerControls = ({
                             </CtrlBtn>
                         </div>
                     )}
-                    
+
                     {showHidingControlsBtn && <CtrlBtn onClick={() => onHiddingFullControls?.()} title={"Hide controls"}>
-                        <MdPlayDisabled size={24}/>
+                        <MdPlayDisabled size={24} />
                     </CtrlBtn>}
-                    
+
                     {showFullscreen && (
                         <CtrlBtn onClick={onFullscreenToggle} title={fullscreen ? "Exit fullscreen" : "Fullscreen"}>
                             {fullscreen ? <FaCompressAlt size={18} /> : <FaExpandAlt size={18} />}
