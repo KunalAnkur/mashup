@@ -20,6 +20,7 @@ import { formatChatTime } from "@/utils/timeFormatter";
 import { isMobile } from "react-device-detect";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { getEmailPrefix, isGenericName } from "@/utils/chatName";
+import { Input } from "@/components/UI";
 import { zincGlassBorderedSurfaceClass } from "@/components/UI/classTokens";
 
 const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
@@ -1316,7 +1317,8 @@ const ChatTab = () => {
           </div>
         )}
         {isMobile ? (
-          <input
+          <Input
+            variant="raw"
             ref={inputRef as React.RefObject<HTMLInputElement>}
             type="text"
             placeholder={isJoined ? t("sendMessage") : t("connecting")}

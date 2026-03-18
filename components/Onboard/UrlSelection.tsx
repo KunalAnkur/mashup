@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "../UI";
+import { Button, Input } from "../UI";
 import { useDispatch, useSelector } from "react-redux";
 import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
 import type { RootState } from "@/lib/store";
@@ -72,12 +72,13 @@ const UrlSelection = () => {
           </p>
         </div>
         <div className="flex flex-col md:flex-row  items-center md:items-start  w-full gap-3 sm:gap-4">
-          <input
+          <Input
+            variant="raw"
             type="text"
             placeholder="Paste your source link here"
             value={sourceUrlInput}
             onChange={handleOnSourceUrlChange}
-            className={`flex-1 w-full ${appInputRadiusClass} bg-zinc-800 text-gray-100 text-sm sm:text-base px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:ring-2 focus:ring-pink-600`}
+            className={`flex-1 w-full ${appInputRadiusClass} bg-zinc-800 text-gray-100 text-sm sm:text-base px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none`}
           />
           <Button
             onClick={handleOnEnterRoom}

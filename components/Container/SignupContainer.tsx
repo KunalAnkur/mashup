@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button, Anchor } from "../UI";
+import { Button, Anchor, Input } from "../UI";
 import * as constants from "@/constants/common";
 import {
   useAuthProviderMutation,
@@ -37,7 +37,7 @@ type GoogleAuthUserInfo = {
 };
 
 const signupInputBaseClass =
-  `w-full ${appInputRadiusClass} bg-white/5 ${appWhiteBorderClass} text-white text-sm px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500`;
+  `w-full ${appInputRadiusClass} bg-white/5 ${appWhiteBorderClass} text-white text-sm px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500`;
 
 const SignupContainer = ({ setContainer }: Prop) => {
   const router = useRouter();
@@ -145,7 +145,8 @@ const SignupContainer = ({ setContainer }: Prop) => {
         {/* Username Input */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-300">Username</label>
-          <input
+          <Input
+            variant="raw"
             type="text"
             placeholder="Enter your username"
             value={username}
@@ -157,7 +158,8 @@ const SignupContainer = ({ setContainer }: Prop) => {
         {/* Email Input */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-300">Email</label>
-          <input
+          <Input
+            variant="raw"
             type="email"
             placeholder="Enter your email address"
             value={email}
@@ -170,7 +172,8 @@ const SignupContainer = ({ setContainer }: Prop) => {
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-300">Password</label>
           <div className="relative">
-            <input
+            <Input
+              variant="raw"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}

@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { PageHeader } from "@/components/UI";
+import { Input, PageHeader } from "@/components/UI";
 import { FaCheckCircle, FaShare, FaDesktop, FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { RootState } from "@/lib/store";
@@ -510,7 +510,8 @@ const ScreenSharePage = () => {
                       </span>
                     </div>
                     <div className="relative">
-                      <input
+                      <Input
+                        variant="raw"
                         type="checkbox"
                         checked={audioOnly}
                         onChange={async (e) => {

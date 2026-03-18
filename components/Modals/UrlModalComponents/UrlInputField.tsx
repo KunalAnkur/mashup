@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "../../UI";
+import { Button, Input } from "../../UI";
 import { ImSpinner2 } from "react-icons/im";
 import { useTranslations } from "@/i18n/I18nProvider";
 import {
@@ -32,13 +32,14 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
   const t = useTranslations("sync");
   return (
     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-      <input
+      <Input
+        variant="raw"
         type="text"
         placeholder={t("enterUrl")}
         value={value}
         onChange={onChange}
         onKeyDown={onKeyDown}
-        className={`flex-1 min-w-0 ${appInputRadiusClass} bg-black/10 backdrop-blur-2xl border border-zinc-600/10 text-white text-xs sm:text-sm px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-black/15 transition-all duration-200 placeholder:text-white/40`}
+        className={`flex-1 min-w-0 ${appInputRadiusClass} bg-black/10 backdrop-blur-2xl border border-zinc-600/10 text-white text-xs sm:text-sm px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none transition-all duration-200 placeholder:text-white/40`}
         disabled={isAdding}
       />
       <div className="relative group shrink-0">

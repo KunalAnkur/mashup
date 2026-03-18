@@ -12,7 +12,7 @@ import {
   FaPlus,
   FaUpload,
 } from "react-icons/fa";
-import { Button } from "../UI";
+import { Button, Input } from "../UI";
 import { useEffect, useState, useRef } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { useFileContext } from "@/context/FileContext";
@@ -235,7 +235,8 @@ const FileSelection = () => {
       </div>
 
       {/* Hidden file input */}
-      <input
+      <Input
+        variant="raw"
         ref={fileInputRef}
         onChange={handleFileChange}
         type="file"

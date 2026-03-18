@@ -15,6 +15,7 @@ import AnimatedReaction from "../Panel/AnimatedReaction";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { isMobile } from "react-device-detect";
+import { Input } from "@/components/UI";
 import {
   appInputRadiusClass,
   zincGlassBlurredSurfaceClass,
@@ -406,7 +407,8 @@ const PlayerOverlay = () => {
         className={playerOverlayRoundedGlassClass}
       >
         <div className="relative flex items-center p-2">
-          <input
+          <Input
+            variant="raw"
             ref={inputRef}
             type="text"
             value={replyText}

@@ -1,4 +1,5 @@
 import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp, FaExpand, FaCompress } from "react-icons/fa";
+import { Input } from "@/components/UI";
 import { ControlComponents } from "./Player";
 
 interface PlayerControlsProps {
@@ -48,7 +49,8 @@ const PlayerControls = ({
                     {muted ? <FaVolumeMute size={18} /> : <FaVolumeUp size={18} />}
                 </button>
                 <div className="relative w-24">
-                    <input
+                    <Input
+                        variant="raw"
                         type="range"
                         min="0"
                         max="1"

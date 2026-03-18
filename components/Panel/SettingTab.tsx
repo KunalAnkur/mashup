@@ -12,6 +12,7 @@ import { validateUsername } from "@/utils/validation";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 import FeedbackModal from "@/components/Modals/FeedbackModal";
+import { Input } from "@/components/UI";
 import {
   panelFramedCardClass,
   panelMetaMutedLabelClass,
@@ -252,7 +253,8 @@ const SettingTab = () => {
                   <label className={rowLabelClass}>{t("name")}</label>
                   {activeEditField === "name" ? (
                     <div className={inputCardClass}>
-                      <input
+                      <Input
+                        variant="raw"
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -305,7 +307,8 @@ const SettingTab = () => {
                           usernameError ? "border-red-500/30" : ""
                         }`}
                       >
-                        <input
+                        <Input
+                          variant="raw"
                           type="text"
                           value={username}
                           onChange={(e) => {
