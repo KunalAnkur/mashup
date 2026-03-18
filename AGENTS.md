@@ -4,7 +4,8 @@
 - Group commit suggestions logically by changed files and purpose instead of suggesting one broad commit by default.
 - Do not suggest commit commands immediately after a change; first ask the user whether the work is finished and whether they like the result.
 - If suggesting `git add .`, make sure the commit message covers all staged changes. If the commit message is narrower than the full diff, suggest scoped `git add` commands instead of `git add .`.
-- Do not execute git branch/switch/add/commit commands from the assistant unless the user explicitly asks for that git action.
+- Do not execute `git add`, `git commit`, or `git push` from the assistant. Always give those commands to the user to run manually.
+- Do not execute git branch/switch commands from the assistant unless the user explicitly asks for that git action.
 - If the user explicitly asks to undo or move git work, prefer non-destructive commands that preserve the working tree (`git reset --soft`, branch switch with carried changes, etc.).
 - After each meaningful UI/code change, provide the relevant test command(s) and short manual test steps.
 - If the user asks to work step by step, make one bounded change at a time, then stop for feedback before moving to the next visual revision.

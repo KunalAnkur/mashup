@@ -14,8 +14,9 @@ Last sync: 2026-03-19 (doc refresh + i18n + layout stability)
 9. Prefer structural layout utilities (`flex`, `grid`, `items-*`, `justify-*`, `gap-*`) over ad hoc spacing fixes.
 10. Before suggesting any `git add` or `git commit` commands, run `git status --short`.
 11. Group commit suggestions logically by changed files/purpose, and do not suggest them until the user confirms the work is finished or approved.
-12. Do not execute git branch/switch/add/commit commands unless the user explicitly asks for that git action.
-13. If the user explicitly asks to undo or move git work, use non-destructive commands that preserve changes whenever possible.
-14. Update `AGENTS.md` first when durable repo rules change, then sync `agent/` docs without duplicating policy text unnecessarily.
-15. Keep `README.md` and `agent/` docs Movmash-specific; do not leave generic framework boilerplate or cross-repo guidance in them.
-16. Keep the repo docs in sync continuously when durable context changes; do not defer doc updates to the end of the branch.
+12. Never execute `git add`, `git commit`, or `git push`; always give those commands for the user to run manually.
+13. Do not execute git branch/switch commands unless the user explicitly asks for that git action.
+14. If the user explicitly asks to undo or move git work, use non-destructive commands that preserve changes whenever possible.
+15. Update `AGENTS.md` first when durable repo rules change, then sync `agent/` docs without duplicating policy text unnecessarily.
+16. Keep `README.md` and `agent/` docs Movmash-specific; do not leave generic framework boilerplate or cross-repo guidance in them.
+17. Keep the repo docs in sync continuously when durable context changes; do not defer doc updates to the end of the branch.

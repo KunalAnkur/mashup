@@ -38,6 +38,18 @@ Use this file to record mistakes, root causes, and prevention steps.
   - After onboarding/auth/stream page changes, idle on the page for several seconds to catch delayed reflow issues.
 - Follow-up action: Apply the same stability check to other entry pages that use delayed effects, helper banners, or auto-hide UI.
 
+## 2026-03-19 (Git Command Ownership)
+
+- Date: 2026-03-19
+- Context: Repo workflow in `costume`.
+- Error: Assistant executed `git add`, `git commit`, and `git push`, but the user wants to keep those actions in their own hands.
+- Root cause: Repo-specific git ownership preference was not recorded clearly enough in the durable workflow rules.
+- Prevention checklist:
+  - Never run `git add`, `git commit`, or `git push` in this repo.
+  - Always provide the exact git commands for the user to run manually.
+  - Keep any git help scoped to status checks, diff inspection, and command suggestions unless the user explicitly asks for another git action.
+- Follow-up action: Keep this preference enforced in `AGENTS.md` and `agent/rules.md` for future turns.
+
 ## 2026-03-07
 
 - Date: 2026-03-07
