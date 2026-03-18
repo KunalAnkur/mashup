@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import {
   useAuthProviderMutation,
   useContinueAsGuestMutation,
@@ -120,39 +120,51 @@ const LoginDropdown = ({ onClose, id, ariaLabel }: LoginDropdownProps) => {
 
   const panelAriaLabel = ariaLabel ?? tCommon("login");
 
+  const actionItems = [
+    {
+      key: "google",
+      onClick: () => googleLogin(),
+      iconChipClassName: appDropdownGoogleIconChipClass,
+      icon: <FcGoogle size={16} />,
+      label: tCommon("continueWithGoogle"),
+      disabled: false,
+      className: undefined,
+    },
+    {
+      key: "guest",
+      onClick: handleContinueAsGuest,
+      iconChipClassName: appDropdownGuestIconChipClass,
+      icon:
+        isGuestProcessing || isGuestLoading ? (
+          <ImSpinner2 className="animate-spin" size={14} />
+        ) : (
+          <LuUserRound size={14} />
+        ),
+      label:
+        isGuestProcessing || isGuestLoading
+          ? tCommon("creatingAccount")
+          : tCommon("continueAsGuest"),
+      disabled: isGuestProcessing || isGuestLoading,
+      className: appDropdownDisabledRowClass,
+    },
+  ];
+
   return (
     <DropdownPanel id={id} role="menu" aria-label={panelAriaLabel} className="z-50">
-        {/* Google Button */}
-        <DropdownActionRow
-          role="menuitem"
-          onClick={() => googleLogin()}
-          iconChipClassName={appDropdownGoogleIconChipClass}
-          icon={<FcGoogle size={16} />}
-          label={tCommon("continueWithGoogle")}
-        />
-
-        <DropdownDivider />
-
-        {/* Continue as Guest Button */}
-        <DropdownActionRow
-          role="menuitem"
-          className={appDropdownDisabledRowClass}
-          onClick={handleContinueAsGuest}
-          disabled={isGuestProcessing || isGuestLoading}
-          iconChipClassName={appDropdownGuestIconChipClass}
-          icon={
-            isGuestProcessing || isGuestLoading ? (
-              <ImSpinner2 className="animate-spin" size={14} />
-            ) : (
-              <LuUserRound size={14} />
-            )
-          }
-          label={
-            isGuestProcessing || isGuestLoading
-              ? tCommon("creatingAccount")
-              : tCommon("continueAsGuest")
-          }
-        />
+      {actionItems.map((action, index) => (
+        <Fragment key={action.key}>
+          {index > 0 && <DropdownDivider />}
+          <DropdownActionRow
+            role="menuitem"
+            onClick={action.onClick}
+            iconChipClassName={action.iconChipClassName}
+            icon={action.icon}
+            label={action.label}
+            disabled={action.disabled}
+            className={action.className}
+          />
+        </Fragment>
+      ))}
     </DropdownPanel>
   );
 };
