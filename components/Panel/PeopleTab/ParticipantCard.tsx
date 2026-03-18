@@ -6,6 +6,10 @@ import { panelCardSurfaceClass } from "../panelCardStyles";
 
 const participantCardClass =
   `relative overflow-hidden rounded-2xl px-3 py-3 ${panelCardSurfaceClass}`;
+const participantBadgeRowClass = "ml-auto flex shrink-0 items-center gap-1";
+const participantAvatarShellClass = "relative rounded-full bg-gradient-to-br p-[1px] opacity-85";
+const participantNameClass =
+  "min-w-0 flex-1 truncate text-[13px] font-medium text-white/[0.84]";
 const currentUserBadgeClass =
   "inline-flex items-center whitespace-nowrap rounded-full bg-rose-400/10 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-rose-200";
 const hostBadgeClass =
@@ -39,7 +43,7 @@ const ParticipantCard = ({
     >
       <div className="flex items-center gap-3">
         <div className="relative shrink-0">
-          <div className={`relative rounded-full bg-gradient-to-br p-[1px] opacity-85 ${avatarAccentClass}`}>
+          <div className={`${participantAvatarShellClass} ${avatarAccentClass}`}>
             <Avatar
               url={avatarUrl}
               alt={displayName}
@@ -53,7 +57,7 @@ const ParticipantCard = ({
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-start gap-2">
             <p
-              className="min-w-0 flex-1 truncate text-[13px] font-medium text-white/[0.84]"
+              className={participantNameClass}
               title={displayName}
               aria-label={displayName}
             >
@@ -61,7 +65,7 @@ const ParticipantCard = ({
             </p>
 
             {isCurrentUser || isHost ? (
-              <div className="ml-auto flex shrink-0 items-center gap-1">
+              <div className={participantBadgeRowClass}>
                 {isCurrentUser ? (
                   <span className={currentUserBadgeClass}>
                     {youLabel}

@@ -8,11 +8,24 @@
 - Do not execute git branch/switch commands from the assistant unless the user explicitly asks for that git action.
 - If the user explicitly asks to undo or move git work, prefer non-destructive commands that preserve the working tree (`git reset --soft`, branch switch with carried changes, etc.).
 - After each meaningful UI/code change, provide the relevant test command(s) and short manual test steps.
+- Before starting each UI-facing step, tell the user exactly which screen/component/flow to compare in the app so they can visually verify before and after.
+- After each UI-facing step, repeat those exact check locations as a short manual verification list.
+- When giving UI verification, describe it as step-by-step app navigation: which page to open, which component to locate, which visual properties to compare, and which interaction state to try.
 - If the user asks to work step by step, make one bounded change at a time, then stop for feedback before moving to the next visual revision.
 - When the user says “note to yourself” for a project-specific workflow/design rule, record it here if it should persist for later turns in this repo.
+- During visual cleanup and class unification, preserve existing interaction behavior such as hover-revealed timestamps, tooltips, contextual actions, and disclosure states. Remove only the decorative layer you intend to remove, not the state hook that drives related behavior.
 - After refactors or component extraction, verify that no stale references/import removals are left behind. Smoke test the directly affected screen/tab to avoid runtime `ReferenceError` issues.
 - Before deleting "unused" files, verify real imports/usages first and then clean up stale state, handlers, comments, and support types in the entry points that previously referenced them.
 - If the user explicitly defers a refactor or architecture cleanup to another branch, record it in the agent docs/backlog immediately and stop treating it as in-scope for the current branch.
+- Keep shared visual class tokens centralized in one source of truth. In this repo, prefer extending `components/UI/classTokens.ts` instead of creating new small parallel `*Theme.ts` token files for the same UI layer.
+- If shared UI tokens become too large for one file, split them intentionally into a dedicated `components/UI/constants/` structure by domain. Do not scatter them across ad hoc theme files.
+- When matching one component to another for visual consistency, treat the approved component as the visual reference and avoid changing that reference component unless the user explicitly asks for it.
+- For repeated presentational UI structure, prefer small reusable primitives over duplicating markup or pushing many style props through multiple layers.
+- For safe refactor passes, follow the checklist:
+  - Only touch exact-match class strings or localize them into constants.
+  - Do not change component behavior, state logic, or interaction wiring.
+  - Keep the visual result identical; no color, spacing, or layout shifts.
+  - Run lint on touched files and provide step-by-step UI checks.
 
 # Agent Doc Roles
 
@@ -64,6 +77,8 @@
 - Keep sibling alignment consistent by putting items inside a shared layout wrapper instead of offsetting one side with extra left/right spacing.
 - Use padding mainly for container insets and section breathing room; use layout utilities for internal alignment.
 - When tightening or balancing UI spacing, prefer shared wrapper spacing and `gap-*` over scattered one-off `ml-*`, `mr-*`, `mt-*`, or `mb-*` fixes.
+- When a shared surface token already defines the panel/popover/card look, prefer using it directly instead of stacking extra shadow, border, or blur utilities on top unless the extra layer creates a clearly intentional distinction.
+- In class unification work, remove redundant visual add-ons from consumers before creating new tokens for them. Favor one unified surface treatment over multiple slightly different layered versions.
 
 # Future UI TODOs
 

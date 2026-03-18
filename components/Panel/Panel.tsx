@@ -276,7 +276,7 @@ const Panel = () => {
       <div className="pointer-events-none absolute left-0 top-6 bottom-6 hidden w-px bg-gradient-to-b from-transparent via-white/20 to-transparent md:block" />
       <div className="pointer-events-none absolute left-0 top-12 bottom-12 hidden w-px opacity-40 shadow-[0_0_14px_rgba(255,255,255,0.10)] md:block" />
       <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/12 to-transparent md:hidden" />
-      
+
 
       <div className="relative z-30 flex flex-col h-full w-full">
         <Modal
@@ -315,7 +315,7 @@ const Panel = () => {
           </div>
 
           {/* Center: Navigation Tabs - Move to right side */}
-          
+
 
           {/* Right: Actions (Link, Leave, Avatar) */}
           <div className="flex items-center gap-1.5">
@@ -422,40 +422,73 @@ const Panel = () => {
 
                 <AvatarDropdown size={28} />
               </div>
+              <h2 className="text-base font-bold text-white font-parkinsans">
+                Movmash
+              </h2>
             </div>
 
-            {/* Desktop Tabs */}
-            <div>
-              <div
-                className={desktopTabRailClass}
-                style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
+            <div className="flex items-center gap-2">
+              <PanelHeaderActionButton
+                onClick={handleCopyLink}
+                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40"
+                aria-label={tPanel("copyLink")}
               >
-                {visibleTabs.map((tab) => {
-                  const isActive = activeTab === tab;
-                  const tabTone = getTabTone(tab);
+                {copied ? (
+                  <LuCheck size={16} className="text-green-400 transition-colors" />
+                ) : (
+                  <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors" />
+                )}
+                {copied && (
+                  <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-zinc-900 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl">
+                    {tCommon("linkCopied")}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-900"></div>
+                  </div>
+                )}
+              </PanelHeaderActionButton>
 
-                  return (
-                    <button
-                      key={tab}
-                      onClick={() => selectTab(tab)}
-                      className={`${desktopTabButtonBaseClass} ${
-                        isActive ? "text-white" : tabTone.inactiveText
-                      }`}
-                      aria-pressed={isActive}
-                    >
-                      {isActive ? (
-                        <motion.span
-                          layoutId="panel-active-pill"
-                          className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
-                          transition={activeTabPillTransition}
-                        />
-                      ) : null}
-                      <span className="relative z-10 whitespace-nowrap">{getTabLabel(tab)}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <PanelHeaderActionButton
+                onClick={handleLeaveClick}
+                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
+                aria-label={tPanel("leaveParty")}
+              >
+                <LuLogOut size={16} />
+              </PanelHeaderActionButton>
+
+              <AvatarDropdown size={28} />
             </div>
+          </div>
+
+          {/* Desktop Tabs */}
+          <div>
+            <div
+              className={desktopTabRailClass}
+              style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
+            >
+              {visibleTabs.map((tab) => {
+                const isActive = activeTab === tab;
+                const tabTone = getTabTone(tab);
+
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => selectTab(tab)}
+                    className={`${desktopTabButtonBaseClass} ${isActive ? "text-white" : tabTone.inactiveText
+                      }`}
+                    aria-pressed={isActive}
+                  >
+                    {isActive ? (
+                      <motion.span
+                        layoutId="panel-active-pill"
+                        className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
+                        transition={activeTabPillTransition}
+                      />
+                    ) : null}
+                    <span className="relative z-10 whitespace-nowrap">{getTabLabel(tab)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Content Area (Shared) */}

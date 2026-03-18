@@ -11,7 +11,7 @@ import {
   ACCEPTED_FILE_TYPES,
 } from "@/components/Modals/DeviceModalComponents";
 import { FileSelection } from "@/components";
-import { PageHeader } from "@/components/UI";
+import { Input, PageHeader } from "@/components/UI";
 import { ScreenShareBox } from "@/components/ScreenShare/ScreenShareBox";
 import { isMobile } from "react-device-detect";
 import { ExtendedFile } from "@/utils/filePersistence";
@@ -85,7 +85,8 @@ const StreamFilesPage = () => {
       <DragOverlay isVisible={isDragging} />
       
       {/* Hidden file input for drag and drop */}
-      <input
+      <Input
+        variant="raw"
         ref={fileInputRef}
         type="file"
         accept={ACCEPTED_FILE_TYPES}

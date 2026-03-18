@@ -9,6 +9,7 @@ import { useTranslations } from "@/i18n/I18nProvider";
 import {
   Modal,
   ModalHeader,
+  Input,
   modalAccentIconWrapClass,
   modalAccentTitleClass,
   modalBrandActionButtonClass,
@@ -142,7 +143,8 @@ const FeedbackModal = ({ isOpen, onClose, roomId }: FeedbackModalProps) => {
 
           <div className="space-y-4">
             <div>
-              <input
+              <Input
+                variant="raw"
                 type="text"
                 placeholder={tFeedback("topic")}
                 className={modalTextFieldClass}

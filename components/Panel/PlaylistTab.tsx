@@ -10,9 +10,15 @@ import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useRoomContext } from "@/context/RoomContext";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { usePlaylistActions } from "@/hooks/usePlaylistActions";
+import {
+    panelEmptyMessageTextClass,
+    panelMetaLabelClass,
+} from "./panelCardStyles";
 
-const headerMetaClass =
-    "text-[10px] font-semibold uppercase tracking-[0.18em] text-white/[0.38]";
+const playlistHeaderSectionClass = "mb-3 space-y-1.5";
+const playlistListClass =
+    "flex h-full flex-col gap-1.5 overflow-y-auto pr-1 custom-scrollbar md:gap-2";
+const playlistEmptyStateClass = "flex h-full items-center justify-center px-4 text-center";
 
 const PlaylistTab = () => {
     const dispatch = useDispatch();
@@ -77,9 +83,9 @@ const PlaylistTab = () => {
                 </div>
             )}
 
-            <div className="mb-3 space-y-1.5">
+            <div className={playlistHeaderSectionClass}>
                 <div className="flex px-1">
-                    <span className={headerMetaClass}>
+                    <span className={panelMetaLabelClass}>
                         {t("title")} · {playlist.length} {playlist.length === 1 ? t("item") : t("items")}
                     </span>
                 </div>
@@ -93,7 +99,7 @@ const PlaylistTab = () => {
 
             <div className="flex-1 min-h-0">
                 {playlist.length ? (
-                    <div className="flex h-full flex-col gap-1.5 overflow-y-auto pr-1 custom-scrollbar md:gap-2">
+                    <div className={playlistListClass}>
                         {playlist.map((content, index) => (
                             <PlaylistCard
                                 key={content.id}
@@ -107,8 +113,8 @@ const PlaylistTab = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="flex h-full items-center justify-center px-4 text-center">
-                        <p className="text-xs text-gray-500 md:text-sm">{t("noVideos")}</p>
+                    <div className={playlistEmptyStateClass}>
+                        <p className={panelEmptyMessageTextClass}>{t("noVideos")}</p>
                     </div>
                 )}
             </div>

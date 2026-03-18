@@ -3,18 +3,17 @@ import { useState } from "react";
 import { Button, Logo } from "../UI";
 import GoogleButton from "../GoogleAuth/GoogleButton";
 import {
-  useLoginMutation,
   useAuthProviderMutation,
   useContinueAsGuestMutation,
 } from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ImSpinner2 } from "react-icons/im";
 import { showError, showSuccess } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackLogin, trackSignup } from "@/lib/analytics";
-import Image from "next/image";
+import { zincGlassStrongBorderedSurfaceClass } from "@/components/UI/classTokens";
 
 
 type Prop = {
@@ -22,8 +21,21 @@ type Prop = {
   isModel?: boolean;
 };
 
-const LoginContainer = ({ setContainer }: Prop) => {
-  const router = useRouter();
+const guestContinueButtonClass =
+  "w-full bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed";
+const loginContainerSurfaceClass =
+  `${zincGlassStrongBorderedSurfaceClass} w-full max-w-md rounded-3xl p-8 shadow-xl mx-auto md:p-10`;
+const loginContainerSeparatorClass = "flex items-center gap-3 py-0.5";
+const loginContainerSeparatorLineClass = "h-px flex-1 bg-zinc-600/20";
+
+type GoogleAuthUserInfo = {
+  email: string;
+  name: string;
+  picture: string;
+  sub: string;
+};
+
+const LoginContainer = ({}: Prop) => {
   const searchParams = useSearchParams();
   const redirectParam = searchParams?.get("redirect");
 
@@ -39,7 +51,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
   const [isGuestProcessing, setIsGuestProcessing] = useState(false);
   const dispatch = useDispatch();
 
-  const handleGoogleAuthSuccess = async (userInfo: any) => {
+  const handleGoogleAuthSuccess = async (userInfo: GoogleAuthUserInfo) => {
     try {
       const response = await authProvider({
         email: userInfo.email,
@@ -75,7 +87,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
       const signupSource = redirectParam?.includes("/room/") ? "room_join" : "direct";
       trackSignup("guest", signupSource);
       showSuccess(tToast("welcomeGuest"));
-    } catch (error: any) {
+    } catch (error) {
       console.error("Guest signup failed:", error);
       const errorMessage =
         error?.data?.message || error?.message || tToast("unableToContinueAsGuest");
@@ -86,7 +98,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl rounded-3xl p-8 md:p-10 shadow-xl w-full max-w-md mx-auto border border-zinc-600/15">
+    <div className={loginContainerSurfaceClass}>
       <div className="flex flex-col items-center gap-7">
         {/* Logo and Welcome Section */}
         <header className="flex flex-col items-center gap-4 w-full">
@@ -138,7 +150,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
                 : tCommon("continueAsGuest")
             }
             icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className="w-full bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={guestContinueButtonClass}
             onClick={handleContinueAsGuest}
             disabled={isGuestProcessing || isGuestLoading}
           />
