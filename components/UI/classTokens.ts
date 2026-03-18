@@ -100,3 +100,14 @@ export const appDropdownDangerActionButtonClass =
 
 export const appDropdownIconChipBaseClass =
   "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg leading-none";
+
+export const appDropdownGoogleIconChipClass = appWhiteEmphasisSurfaceClass;
+
+export const appDropdownGuestIconChipClass =
+  "bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 text-pink-100";
+
+export const appDropdownLogoutIconChipClass =
+  "bg-gradient-to-br from-[#571b24] via-[#7a1f34] to-[#5d1b34] text-rose-200";
+
+export const appDropdownDisabledRowClass =
+  "disabled:cursor-not-allowed disabled:opacity-50";

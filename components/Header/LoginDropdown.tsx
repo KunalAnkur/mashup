@@ -19,15 +19,16 @@ import {
   DropdownDivider,
   DropdownPanel,
 } from "@/components/UI/DropdownPrimitives";
-import { appWhiteEmphasisSurfaceClass } from "@/components/UI/classTokens";
-
-const loginDropdownGuestButtonClass = "disabled:cursor-not-allowed disabled:opacity-50";
-const loginDropdownGoogleIconClass = appWhiteEmphasisSurfaceClass;
-const loginDropdownGuestIconClass =
-  "bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 text-pink-100";
+import {
+  appDropdownDisabledRowClass,
+  appDropdownGoogleIconChipClass,
+  appDropdownGuestIconChipClass,
+} from "@/components/UI/classTokens";
 
 type LoginDropdownProps = {
   onClose?: () => void;
+  id?: string;
+  ariaLabel?: string;
 };
 
 type GoogleAuthUserInfo = {
@@ -37,7 +38,7 @@ type GoogleAuthUserInfo = {
   sub: string;
 };
 
-const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
+const LoginDropdown = ({ onClose, id, ariaLabel }: LoginDropdownProps) => {
   const dispatch = useDispatch();
   const [authProvider] = useAuthProviderMutation();
   const [continueAsGuest, { isLoading: isGuestLoading }] =
@@ -117,12 +118,15 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
     }
   };
 
+  const panelAriaLabel = ariaLabel ?? tCommon("login");
+
   return (
-    <DropdownPanel>
+    <DropdownPanel id={id} role="menu" aria-label={panelAriaLabel} className="z-50">
         {/* Google Button */}
         <DropdownActionRow
+          role="menuitem"
           onClick={() => googleLogin()}
-          iconChipClassName={loginDropdownGoogleIconClass}
+          iconChipClassName={appDropdownGoogleIconChipClass}
           icon={<FcGoogle size={16} />}
           label={tCommon("continueWithGoogle")}
         />
@@ -131,10 +135,11 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
 
         {/* Continue as Guest Button */}
         <DropdownActionRow
-          className={loginDropdownGuestButtonClass}
+          role="menuitem"
+          className={appDropdownDisabledRowClass}
           onClick={handleContinueAsGuest}
           disabled={isGuestProcessing || isGuestLoading}
-          iconChipClassName={loginDropdownGuestIconClass}
+          iconChipClassName={appDropdownGuestIconChipClass}
           icon={
             isGuestProcessing || isGuestLoading ? (
               <ImSpinner2 className="animate-spin" size={14} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store/index";
@@ -15,17 +15,16 @@ import Modal, {
 } from "./Modal";
 import {
   appDropdownLabelClass,
+  appDropdownLogoutIconChipClass,
   appDropdownMetaTextClass,
 } from "./classTokens";
+import { useDropdownDismiss } from "./useDropdownDismiss";
 import {
   DropdownActionRow,
   DropdownDivider,
+  DropdownHeaderRow,
   DropdownPanel,
-  DropdownRow,
 } from "./DropdownPrimitives";
-
-const dropdownLogoutIconClass =
-  "bg-gradient-to-br from-[#571b24] via-[#7a1f34] to-[#5d1b34] text-rose-200";
 
 interface AvatarDropdownProps {
   size?: number;
@@ -46,35 +45,13 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const tCommon = useTranslations("common");
   const showEmailField = !user?.isGuestUser;
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handlePointerDownOutside = (event: PointerEvent) => {
-      if (
-        dropdownRef.current &&
-        event.target instanceof Node &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDownOutside);
-    document.addEventListener("keydown", handleEscapeKey);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDownOutside);
-      document.removeEventListener("keydown", handleEscapeKey);
-    };
-  }, [isOpen]);
+  useDropdownDismiss({
+    isOpen,
+    onClose: () => setIsOpen(false),
+    refs: [dropdownRef],
+    closeOnEscape: true,
+    pointerEvent: "pointerdown",
+  });
 
   // Determine avatar URL with fallbacks
   const getAvatarUrl = () => {
@@ -164,31 +141,22 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           className="z-50"
         >
           {/* User Info Section */}
-          <DropdownRow>
-            <Avatar
-              url={getAvatarUrl()}
-              alt={getUserDisplayName()}
-              size={30}
-              isDefault={!user?.profile}
-            />
-            <div className="flex min-w-0 flex-1 flex-col justify-center">
-              <h3
-                className={`truncate font-parkinsans font-semibold text-white ${appDropdownLabelClass}`}
-              >
-                {getUserDisplayName()}
-              </h3>
-              {showEmailField && user?.email && (
-                <p className={`${appDropdownMetaTextClass} mt-0.5 truncate`}>
-                  {user.email}
-                </p>
-              )}
-              {!isAuthenticated && (
-                <p className={`${appDropdownMetaTextClass} mt-0.5`}>
-                  Not authenticated
-                </p>
-              )}
-            </div>
-          </DropdownRow>
+          <DropdownHeaderRow
+            avatar={
+              <Avatar
+                url={getAvatarUrl()}
+                alt={getUserDisplayName()}
+                size={30}
+                isDefault={!user?.profile}
+              />
+            }
+            title={getUserDisplayName()}
+            titleClassName={`truncate font-parkinsans font-semibold text-white ${appDropdownLabelClass}`}
+            meta={showEmailField && user?.email ? user.email : null}
+            metaClassName={`${appDropdownMetaTextClass} mt-0.5 truncate`}
+            secondary={!isAuthenticated ? "Not authenticated" : null}
+            secondaryClassName={`${appDropdownMetaTextClass} mt-0.5`}
+          />
 
           {/* Menu Items */}
           <DropdownDivider />
@@ -196,7 +164,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
             onClick={handleLogoutClick}
             role="menuitem"
             variant="danger"
-            iconChipClassName={dropdownLogoutIconClass}
+            iconChipClassName={appDropdownLogoutIconChipClass}
             icon={
               <IoLogOutOutline
                 size={13}

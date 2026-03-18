@@ -3,11 +3,12 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import AvatarDropdown from "@/components/UI/AvatarDropdown";
 import { usePathname } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useId } from "react";
 import { useTranslations } from "@/i18n/I18nProvider";
 import LoginDropdown from "./LoginDropdown";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { Logo } from "@/components/UI";
+import { useDropdownDismiss } from "@/components/UI/useDropdownDismiss";
 
 const fixedHeaderContainerClass =
   "absolute top-4 left-4 right-4 z-50 flex items-center justify-between sm:left-auto sm:right-4 sm:justify-end";
@@ -22,6 +23,7 @@ type LoginDropdownTriggerProps = {
   dropdownRef: React.RefObject<HTMLDivElement | null>;
   isOpen: boolean;
   label: string;
+  menuId: string;
   onClose: () => void;
   onToggle: () => void;
 };
@@ -31,6 +33,7 @@ const LoginDropdownTrigger = ({
   dropdownRef,
   isOpen,
   label,
+  menuId,
   onClose,
   onToggle,
 }: LoginDropdownTriggerProps) => (
@@ -38,11 +41,14 @@ const LoginDropdownTrigger = ({
     <button
       type="button"
       onClick={onToggle}
+      aria-expanded={isOpen}
+      aria-haspopup="menu"
+      aria-controls={menuId}
       className={buttonClassName}
     >
       {label}
     </button>
-    {isOpen && <LoginDropdown onClose={onClose} />}
+    {isOpen && <LoginDropdown id={menuId} ariaLabel={label} onClose={onClose} />}
   </div>
 );
 
@@ -51,27 +57,19 @@ const ProfileHeader = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const loginDropdownMenuId = useId();
   const t = useTranslations("home");
 
   // Check if we're on a page that should have fixed positioning
   const isFixedPage = pathname === "/" || pathname === "/not-found";
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowLoginDropdown(false);
-      }
-    };
-
-    if (showLoginDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showLoginDropdown]);
+  useDropdownDismiss({
+    isOpen: showLoginDropdown,
+    onClose: () => setShowLoginDropdown(false),
+    refs: [dropdownRef],
+    closeOnEscape: false,
+    pointerEvent: "mousedown",
+  });
 
   // Close dropdown when authenticated
   useEffect(() => {
@@ -111,6 +109,7 @@ const ProfileHeader = () => {
               dropdownRef={dropdownRef}
               isOpen={showLoginDropdown}
               label={t("login")}
+              menuId={loginDropdownMenuId}
               onClose={() => setShowLoginDropdown(false)}
               onToggle={handleLoginClick}
             />
@@ -131,6 +130,7 @@ const ProfileHeader = () => {
           dropdownRef={dropdownRef}
           isOpen={showLoginDropdown}
           label={t("login")}
+          menuId={loginDropdownMenuId}
           onClose={() => setShowLoginDropdown(false)}
           onToggle={handleLoginClick}
         />

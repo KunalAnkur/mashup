@@ -40,6 +40,17 @@ type DropdownActionRowProps = Omit<
   labelClassName?: string;
 };
 
+type DropdownHeaderRowProps = HTMLAttributes<HTMLDivElement> & {
+  avatar: ReactNode;
+  title: ReactNode;
+  meta?: ReactNode;
+  secondary?: ReactNode;
+  contentClassName?: string;
+  titleClassName?: string;
+  metaClassName?: string;
+  secondaryClassName?: string;
+};
+
 export const DropdownPanel = ({
   children,
   className,
@@ -110,4 +121,31 @@ export const DropdownActionRow = ({
       {label}
     </span>
   </button>
+);
+
+export const DropdownHeaderRow = ({
+  avatar,
+  title,
+  meta,
+  secondary,
+  className,
+  contentClassName,
+  titleClassName,
+  metaClassName,
+  secondaryClassName,
+  ...props
+}: DropdownHeaderRowProps) => (
+  <DropdownRow className={className} {...props}>
+    {avatar}
+    <div
+      className={joinClassNames(
+        "flex min-w-0 flex-1 flex-col justify-center",
+        contentClassName
+      )}
+    >
+      <h3 className={titleClassName}>{title}</h3>
+      {meta ? <p className={metaClassName}>{meta}</p> : null}
+      {secondary ? <p className={secondaryClassName}>{secondary}</p> : null}
+    </div>
+  </DropdownRow>
 );
