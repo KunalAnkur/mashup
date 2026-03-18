@@ -78,7 +78,7 @@ const UrlSelection = () => {
             placeholder="Paste your source link here"
             value={sourceUrlInput}
             onChange={handleOnSourceUrlChange}
-            className={`flex-1 w-full ${appInputRadiusClass} bg-zinc-800 text-gray-100 text-sm sm:text-base px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none`}
+            className={`flex-1 w-full ${appInputRadiusClass} bg-zinc-800 text-gray-100 text-base px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none`}
           />
           <Button
             onClick={handleOnEnterRoom}

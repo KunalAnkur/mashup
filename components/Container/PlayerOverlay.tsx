@@ -5,8 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useChatContext } from "@/context/ChatContext";
-import { FiChevronsLeft, FiX, FiChevronDown } from "react-icons/fi";
-import { FiChevronsRight } from "react-icons/fi";
+import { FiX, FiChevronDown } from "react-icons/fi";
+import { FaAngleRight } from "react-icons/fa";
 import { FaPaperPlane } from "react-icons/fa";
 import { RootState } from "@/lib/store";
 import { ChatMessage, ReactionType } from "@/types/chatTypes";
@@ -21,7 +21,7 @@ import {
   zincGlassBlurredSurfaceClass,
   zincGlassBorderedSurfaceClass,
 } from "@/components/UI/classTokens";
-
+import { FaStore } from "react-icons/fa6"
 declare global {
   interface Window {
     __currentUser?: RootState["auth"]["user"];
@@ -298,22 +298,23 @@ const PlayerOverlay = () => {
             {isMobile ? (
               // On mobile: show up arrow when panel is collapsed (to open it), down arrow when open (to close it)
               panelCollapsed ? (
-                <FiChevronDown size={18} className="md:w-5 md:h-5 rotate-180" />
+                <FiChevronDown size={15} className="md:w-5 md:h-5 transition rotate-180" />
               ) : (
-                <FiChevronDown size={18} className="md:w-5 md:h-5" />
+                <FiChevronDown size={15} className="md:w-5 md:h-5 transition" />
               )
             ) : (
               // On desktop: show left/right arrows
               panelCollapsed ? (
-                <FiChevronsLeft size={20} />
+                  <FaAngleRight size={20} className="transition rotate-180" />
               ) : (
-                <FiChevronsRight size={20} />
+                  <FaAngleRight size={20} className="transition" />
               )
             )}
           </button>
         </div>
       </div>
 
+      
       {/* Overlay Messages, Reactions, and Input Container - Only show when panel is closed */}
       {panelCollapsed && (
         <div className="  z-30 absolute bottom-16 right-4 flex flex-col items-end pointer-events-none">
@@ -415,7 +416,7 @@ const PlayerOverlay = () => {
             onChange={(e) => setReplyText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a reply..."
-            className={`w-full bg-transparent ${appInputRadiusClass} pl-4 pr-12 py-1.5 text-white text-sm placeholder:text-white/40 transition-all outline-none`}
+            className={`w-full bg-transparent ${appInputRadiusClass} pl-4 pr-12 py-1.5 text-white text-base placeholder:text-white/40 transition-all outline-none`}
             disabled={isSending}
           />
           <button

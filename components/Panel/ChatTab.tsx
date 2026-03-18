@@ -164,7 +164,7 @@ const chatMessageTimestampClass =
 const chatSystemMessageTimestampClass =
   "absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-medium text-gray-500/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100";
 const chatInputFieldBaseClass =
-  "flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed font-medium";
+  "flex-1 bg-transparent outline-none text-white/95 text-base placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed font-medium";
 
 const ChatTab = () => {
   const [showEmojis, setShowEmojis] = useState(false);

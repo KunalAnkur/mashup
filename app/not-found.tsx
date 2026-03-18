@@ -10,7 +10,6 @@ const NotFound = () => {
   const router = useRouter();
   const t = useTranslations("notFound");
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     setMounted(true);
   }, []);

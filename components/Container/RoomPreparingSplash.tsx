@@ -102,7 +102,7 @@ const RoomPreparingSplash = () => {
           {/* Logo container */}
           <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[#0d0e18] ring-1 ring-white/10">
             <Image
-              src={constants.assets.logo}
+              src={constants.assets.logo192}
               alt="Movmash logo"
               width={36}
               height={36}

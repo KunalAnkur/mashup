@@ -14,66 +14,73 @@ interface ControlBarProps {
   fullscreen: boolean;
   onSeekTo: (percent: number) => void;
   onSeekStart: () => void;
-  onSeekEnd: () => void;
+  onSeekEnd: (seekTime?: number, seekPercent?: number) => void;
   onPlayPause: () => void;
   onMuteToggle: () => void;
   onVolumeChange: (volume: number) => void;
   onFullscreenToggle: () => void;
+  onHidingFullControls: () => void;
   formatTime: (seconds: number) => string;
   hideControls: ControlComponents[];
+  onUserActivity?: () => void;
+  onOpenStore?: () => void;
 }
 
 export const ControlBar = ({
-  showControls,
-  progress,
-  buffered,
-  isBuffering,
-  playing,
-  muted,
-  volume,
-  duration,
-  fullscreen,
-  onSeekTo,
-  onSeekStart,
-  onSeekEnd,
-  onPlayPause,
-  onMuteToggle,
-  onVolumeChange,
-  onFullscreenToggle,
-  formatTime,
-  hideControls = [],
-}: ControlBarProps) => (
-  <div
-    className={`absolute bottom-0 left-4 right-4 z-30 p-1 rounded-xl transition-all duration-300 ${
-      showControls ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-    }`}
-    style={{ pointerEvents: showControls ? "auto" : "none" }}
-  >
-    {!hideControls.includes(ControlComponents.PROGRESS) && (
-      <ProgressBar
-        progress={progress}
-        buffered={buffered}
-        isBuffering={isBuffering}
-        seekTo={onSeekTo}
-        handleSeekStart={onSeekStart}
-        handleSeekEnd={onSeekEnd}
-        duration={duration}
-      />
-    )}
+  showControls, progress, buffered, isBuffering,
+  playing, muted, volume, duration, fullscreen,
+  onSeekTo, onSeekStart, onSeekEnd, onPlayPause,
+  onMuteToggle, onVolumeChange, onFullscreenToggle,
+  formatTime, hideControls = [], onUserActivity,
+  onOpenStore, onHidingFullControls
+}: ControlBarProps) => {
+  const controlsVisibility = showControls
+    ? "translate-y-0 opacity-100"
+    : "pointer-events-none translate-y-3 opacity-0";
 
-    <PlayerControls
-      playing={playing}
-      muted={muted}
-      volume={volume}
-      progress={progress}
-      duration={duration}
-      fullscreen={fullscreen}
-      onPlayPause={onPlayPause}
-      onMuteToggle={onMuteToggle}
-      onVolumeChange={onVolumeChange}
-      onFullscreenToggle={onFullscreenToggle}
-      formatTime={formatTime}
-      hideControls={hideControls}
-    />
-  </div>
-);
+  return (
+    <div
+      className={`absolute inset-x-0 bottom-0 z-30 px-3 pb-2 transition-all duration-300 ease-out sm:px-4 sm:pb-9 ${controlsVisibility}`}
+    >
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/65 via-black/25 to-transparent sm:h-32" />
+
+        <ProgressBar
+          progress={progress}
+          buffered={buffered}
+          isBuffering={isBuffering}
+          seekTo={onSeekTo}
+          handleSeekStart={onSeekStart}
+          handleSeekEnd={onSeekEnd}
+          duration={duration}
+          showTime={!hideControls.includes(ControlComponents.DURATION)}
+          showFullscreen={!hideControls.includes(ControlComponents.FULLSCREEN)}
+          showStore={!hideControls.includes(ControlComponents.STORE)}
+          showProgressBar={!hideControls.includes(ControlComponents.PROGRESS)}
+          onHiddingFullControls={onHidingFullControls}
+          fullscreen={fullscreen}
+          onFullscreenToggle={onFullscreenToggle}
+          onUserActivity={onUserActivity}
+          onOpenStore={onOpenStore}
+        />
+
+      <PlayerControls
+        playing={playing}
+        muted={muted}
+        volume={volume}
+        progress={progress}
+        duration={duration}
+        fullscreen={fullscreen}
+        onPlayPause={onPlayPause}
+        onMuteToggle={onMuteToggle}
+        onVolumeChange={onVolumeChange}
+        onFullscreenToggle={onFullscreenToggle}
+        onOpenStore={onOpenStore}
+        showStore={!hideControls.includes(ControlComponents.STORE)}
+        formatTime={formatTime}
+        hideControls={hideControls}
+        showHidingControlsBtn={!hideControls.includes(ControlComponents.HIDE_CONTROLS)}
+        onHiddingFullControls={onHidingFullControls}
+      />
+    </div>
+  );
+};

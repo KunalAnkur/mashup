@@ -37,7 +37,7 @@ type GoogleAuthUserInfo = {
 };
 
 const signupInputBaseClass =
-  `w-full ${appInputRadiusClass} bg-white/5 ${appWhiteBorderClass} text-white text-sm px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500`;
+  `w-full ${appInputRadiusClass} bg-white/5 ${appWhiteBorderClass} text-white text-base px-4 ${appInputVerticalPaddingClass} focus:outline-none focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500`;
 
 const SignupContainer = ({ setContainer }: Prop) => {
   const router = useRouter();

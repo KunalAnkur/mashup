@@ -39,7 +39,7 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
         value={value}
         onChange={onChange}
         onKeyDown={onKeyDown}
-        className={`flex-1 min-w-0 ${appInputRadiusClass} bg-black/10 backdrop-blur-2xl border border-zinc-600/10 text-white text-xs sm:text-sm px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none transition-all duration-200 placeholder:text-white/40`}
+        className={`flex-1 min-w-0 ${appInputRadiusClass} bg-black/10 backdrop-blur-2xl border border-zinc-600/10 text-white text-base px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none transition-all duration-200 placeholder:text-white/40`}
         disabled={isAdding}
       />
       <div className="relative group shrink-0">

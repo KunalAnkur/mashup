@@ -3,6 +3,7 @@ import { setupListeners } from "@reduxjs/toolkit/query/react";
 import authSlice from "./slices/authSlice";
 import roomSlice from "./slices/roomSlice";
 import onboardSlice from "./slices/onboardSlice";
+import productSlice from "./slices/productSlice";
 import {
   persistReducer,
   persistStore,
@@ -19,17 +20,20 @@ import { roomApi } from "./api/roomApi";
 import { userApi } from "./api/userApi";
 import { urlApi } from "./api/urlApi";
 import { feedbackApi } from "./api/feedbackApi";
+import { productApi } from "./api/productApi";
 
 // 1. Combine reducers
 const rootReducer = combineReducers({
   [authSlice.reducerPath]: authSlice.reducer,
   [onboardSlice.reducerPath]: onboardSlice.reducer,
   [roomSlice.reducerPath]: roomSlice.reducer,
+  [productSlice.reducerPath]: productSlice.reducer,
   [authApi.reducerPath]: authApi.reducer,
   [roomApi.reducerPath]: roomApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
   [urlApi.reducerPath]: urlApi.reducer,
   [feedbackApi.reducerPath]: feedbackApi.reducer,
+  [productApi.reducerPath]: productApi.reducer,
 });
 
 // 2. Persist config
@@ -55,7 +59,8 @@ export const store = configureStore({
       roomApi.middleware,
       userApi.middleware,
       urlApi.middleware,
-      feedbackApi.middleware
+      feedbackApi.middleware,
+      productApi.middleware
     ),
   devTools: process.env.NODE_ENV !== "production",
 });

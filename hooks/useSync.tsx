@@ -3,7 +3,7 @@ import type ReactPlayer from "react-player";
 import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useDispatch } from "react-redux";
-import { setHostPlaybackPlaying, updateRoomInfo } from "@/lib/store/slices/roomSlice";
+import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { store } from "@/lib/store";
 import type { RootState } from "@/lib/store";
 import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
@@ -52,6 +52,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
     const isApplyingRemoteStateRef = useRef(false);
     const videoStartedTrackedRef = useRef(false); // Track if video_started was already tracked
     const syncStartedTrackedRef = useRef(false); // Track if sync_started was already tracked
+    const wasConnectedRef = useRef(isConnected);
 
     useEffect(() => {
         isPlayingRef.current = isPlaying;
@@ -65,6 +66,20 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         syncStartedTrackedRef.current = false;
     }, [roomId]);
 
+    // Request fresh sync when socket reconnects (non-host only)
+    useEffect(() => {
+        const wasConnected = wasConnectedRef.current;
+        wasConnectedRef.current = isConnected;
+        if (isConnected && !wasConnected && !isHost && roomId && enabled && socket) {
+            socket.emit(SocketEvent.REQUEST_CURRENT_VIDEO, { roomId });
+        }
+    }, [isConnected, isHost, roomId, enabled, socket]);
+
+    // * This method will trigger by non host to get sync with host
+    const syncWithHost = useCallback(() => {
+        if (isHost && !roomId) return;
+        socket?.emit(SocketEvent.SYNCWITHHOST, { roomId });
+    }, [isHost, roomId, socket])
     // Build host state from Redux + player
     const getHostState = useCallback((): VideoState => {
         const state = store.getState() as RootState;
@@ -77,6 +92,27 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
     }, [playerRef]);
 
     // Apply sync state to non-host player
+    // ** This part of code is to handle on mobile. when mobile try to reconnect it was not played for non host
+    const forcePlayFromSync = useCallback(() => {
+        const internalPlayer = playerRef.current?.getInternalPlayer?.() as any;
+        if (!internalPlayer) return;
+
+        if (typeof internalPlayer.play === "function") {
+            internalPlayer.play().catch(() => {
+                // Autoplay can be blocked on mobile; ignore and rely on user gesture.
+            });
+            return;
+        }
+
+        if (typeof internalPlayer.playVideo === "function") {
+            try {
+                internalPlayer.playVideo();
+            } catch {
+                // Ignore failures from player APIs without autoplay permission.
+            }
+        }
+    }, [playerRef]);
+
     const applySyncState = useCallback(
         (syncState: VideoState, forceSeek = false) => {
             if (!playerRef.current || isHost || !enabled) return;
@@ -106,8 +142,14 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             }
 
             setIsPlaying(syncState.playing);
-            dispatch(setHostPlaybackPlaying(syncState.playing));
             pendingSyncRef.current = null;
+
+            if (syncState.playing) {
+                // Mobile browsers can stay paused after reconnect unless we nudge play().
+                setTimeout(() => {
+                    forcePlayFromSync();
+                }, 150);
+            }
             
             // Track sync started (first time sync is applied successfully)
             if (!syncStartedTrackedRef.current && roomId) {
@@ -116,7 +158,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
                 syncStartedTrackedRef.current = true;
             }
         },
-        [playerRef, isHost, dispatch, enabled, roomId]
+        [playerRef, isHost, dispatch, enabled, roomId, forcePlayFromSync]
     );
 
     // Video ready handler - apply pending sync or request state
@@ -130,7 +172,11 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
                     isApplyingRemoteStateRef.current = true;
                     playerRef.current.seekTo(pendingSyncRef.current.currentTime, "seconds");
                     setIsPlaying(pendingSyncRef.current.playing);
-                    dispatch(setHostPlaybackPlaying(pendingSyncRef.current.playing));
+                    if (pendingSyncRef.current.playing) {
+                        setTimeout(() => {
+                            forcePlayFromSync();
+                        }, 150);
+                    }
                     pendingSyncRef.current = null;
                     setTimeout(() => {
                         isApplyingRemoteStateRef.current = false;
@@ -141,7 +187,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             // No pending sync - request current state from host
             socket?.emit(SocketEvent.REQUEST_CURRENT_VIDEO, { roomId });
         }
-    }, [playerRef, isHost, roomId, socket, enabled, dispatch]);
+    }, [playerRef, isHost, roomId, socket, enabled, dispatch, forcePlayFromSync]);
 
     // Safety net: request initial sync when joining (non-host only)
     useEffect(() => {
@@ -160,7 +206,6 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             if (isApplyingRemoteStateRef.current && !isHost) return;
             setIsPlaying(true);
             isPlayingRef.current = true;
-            dispatch(setHostPlaybackPlaying(true));
 
             // Track video started (first time only)
             if (!videoStartedTrackedRef.current && roomId) {
@@ -192,7 +237,6 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
             if (isApplyingRemoteStateRef.current && !isHost) return;
             setIsPlaying(false);
             isPlayingRef.current = false;
-            dispatch(setHostPlaybackPlaying(false));
 
             if (socket && roomId && isHost) {
                 socket.emit(SocketEvent.ONPAUSE, { roomId, videoState: getHostState() });
@@ -202,7 +246,7 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         [isHost, roomId, socket, getHostState, enabled, dispatch]
     );
 
-    const onSeeked = useCallback(() => {
+    const onSeeked = useCallback((seekTimeOverride?: number) => {
         if (!socket || !roomId || !isHost || !enabled) {
             console.warn(`[useSync] onSeeked called but conditions not met:`, {
                 socket: !!socket,
@@ -224,18 +268,45 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
                 !isNaN(currentTime) &&
                 isFinite(currentTime) &&
                 currentTime >= 0;
+            const hasOverride =
+                typeof seekTimeOverride === "number" &&
+                !isNaN(seekTimeOverride) &&
+                isFinite(seekTimeOverride) &&
+                seekTimeOverride >= 0;
+            const diff = hasOverride && typeof currentTime === "number" && isFinite(currentTime)
+                ? Math.abs(currentTime - seekTimeOverride)
+                : null;
 
             console.log(`[useSync] checkTime attempt ${attempt}/${max}:`, {
                 currentTime,
                 isValidTime,
+                seekTimeOverride,
+                diff,
                 state,
                 playerRefExists: !!playerRef.current,
                 playerCurrentTime: playerRef.current?.getCurrentTime?.(),
             });
 
+            if (hasOverride && diff !== null && diff > 0.5 && attempt < max) {
+                // Player hasn't updated yet; retry before sending stale time.
+                seekTimeoutRef.current = setTimeout(() => checkTime(attempt + 1, max), 100);
+                return;
+            }
+
+            const resolvedState =
+                hasOverride && diff !== null && diff > 0.5
+                    ? { ...state, currentTime: seekTimeOverride }
+                    : state;
+            const resolvedTime = resolvedState.currentTime;
+            const isResolvedValid =
+                typeof resolvedTime === "number" &&
+                !isNaN(resolvedTime) &&
+                isFinite(resolvedTime) &&
+                resolvedTime >= 0;
+
             // Always send if we have a valid number (including 0) or max attempts reached
-            if (isValidTime || attempt >= max) {
-                socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: state });
+            if (isResolvedValid || attempt >= max) {
+                socket.emit(SocketEvent.ONSEEKED, { roomId, videoState: resolvedState });
                 seekTimeoutRef.current = null;
             } else {
                 // Retry after a short delay to let player update
@@ -356,5 +427,5 @@ export const useSync = ({ playerRef, isHost, roomId, initialPlaying, enabled = t
         };
     }, [socket, isHost, playerRef, roomId, getHostState, applySyncState, dispatch, enabled]);
 
-    return { onPlay, onPause, onSeeked, onReady, isPlaying, isConnected, selectVideo };
+    return { onPlay, onPause, onSeeked, onReady, isPlaying, isConnected, selectVideo, syncWithHost };
 };

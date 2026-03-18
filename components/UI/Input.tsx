@@ -62,7 +62,7 @@ const Input = forwardRef<HTMLInputElement, Props>(({
     input.styles[style as keyof typeof input.styles]
   }`;
   const inputClass =
-    "border-none outline-none bg-transparent placeholder:text-smoothWhite text-white w-full ";
+    "border-none text-base outline-none bg-transparent placeholder:text-smoothWhite text-white w-full ";
 
   const renderValidationIcon = () => {
     if (style === "auth" && !isPassword) {
