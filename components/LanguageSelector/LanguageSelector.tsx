@@ -3,7 +3,6 @@
 import {
   appFrostedBackdropClass,
   appWhiteEmphasisSurfaceClass,
-  appWhiteBorderClass,
 } from "@/components/UI/classTokens";
 import { useId, useRef, useState } from "react";
 import { locales, languageNames, isRtlLocale, type Locale } from "@/i18n/config";
@@ -16,7 +15,7 @@ import {
 import { useDropdownDismiss } from "@/components/UI/useDropdownDismiss";
 
 const languageSelectorTriggerClass =
-  `flex items-center gap-1 rounded-lg ${appWhiteBorderClass} bg-white/5 px-2 py-1.5 text-sm font-medium text-white/80 ${appFrostedBackdropClass} transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:text-white sm:gap-2 sm:rounded-xl sm:px-3 sm:py-2`;
+  `flex items-center gap-1.5 rounded-full bg-white/[0.035] px-3 py-2 text-sm font-medium text-white/74 ${appFrostedBackdropClass} transition-all duration-200 hover:bg-white/[0.06] hover:text-white`;
 const languageSelectorMenuClass =
   `animate-[fadeIn_0.2s_ease-out_forwards]`;
 
@@ -72,11 +71,11 @@ const LanguageSelector = () => {
         aria-haspopup="menu"
         aria-controls={dropdownMenuId}
       >
-        <FaGlobe className="text-xs sm:text-sm text-pink-400" />
+        <FaGlobe className="text-xs text-white/54" />
         <span className="hidden sm:inline">{currentLanguage.nativeName}</span>
         <span className="sm:hidden text-base">{currentLanguage.flag}</span>
         <FaChevronDown 
-          className={`text-[10px] sm:text-xs transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} 
+          className={`text-[10px] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} 
         />
       </button>
 
@@ -115,9 +114,9 @@ const LanguageSelector = () => {
                   </span>
                 }
                 labelClassName="min-w-0 flex-1"
-                className={`${isSelected ? appWhiteEmphasisSurfaceClass : ""} ${
+                className={`${isSelected ? "bg-white/[0.06] text-white" : ""} ${
                   isRtl ? "flex-row-reverse text-right" : ""
-                } ${isChanging ? "opacity-50" : ""} ${!isSelected ? "text-white/70" : ""}`}
+                } ${isChanging ? "opacity-50" : ""} ${!isSelected ? "text-white/70 hover:bg-white/[0.04] hover:text-white" : ""}`}
               />
             );
           })}

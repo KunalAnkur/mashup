@@ -5,8 +5,8 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 ## Current Step
 
 - Date: 2026-03-19
-- Active task: Documentation and repo-rule refresh for Movmash.
-- Status: Updated in this pass.
+- Active task: Home-page refinement with selective rollback based on user feedback.
+- Status: In progress.
 - Completed in this workstream:
   - Refreshed `AGENTS.md` as the durable source of truth for workflow, localization, git, and layout-stability rules.
   - Synced `agent/rules.md` to the updated Movmash rules.
@@ -17,10 +17,12 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Keep rule docs aligned with actual shipped behavior and recent fixes.
   - Update `AGENTS.md` first when durable context changes, then mirror only the concise pieces into `agent/`.
   - Keep the repo docs updated during the workstream, not only as an end-of-branch cleanup.
+  - Keep the new home background and language selector treatment, while restoring the rest of the home page to the earlier version the user preferred.
   - Keep temporary implementation history out of this file unless it changes current execution priorities.
 - Verification reminder:
   - After UI copy changes, re-run locale parity and code-used translation-key checks.
   - After onboarding/auth/stream layout changes, idle on the page for a few seconds to catch delayed reflow/jump regressions.
+  - When simplifying entry screens, verify that removed decorative layers do not leave behind spacing gaps or visual imbalance.
   - After git workflow requests, verify branch pointers and working-tree state before and after any undo/move operation.
 
 ## Recent Durable Context

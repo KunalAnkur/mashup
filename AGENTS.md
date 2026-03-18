@@ -53,6 +53,13 @@
 - If helper content needs to fade out, keep the layout height stable or animate opacity/content only.
 - When a page has delayed state changes after mount, sanity-check the screen after a few seconds of idle time to catch vertical jumps or reflow regressions.
 
+# Entry UI Direction
+
+- For home, onboarding, auth, and other entry flows, prefer calm low-chrome surfaces over loud decoration.
+- Reduce border-heavy cards, stacked gradients, floating decorative elements, and heavy shadows unless they serve a clear UX purpose.
+- Keep one primary brand accent system and let spacing, typography, and hierarchy do more of the work than visual effects.
+- When simplifying a screen, remove decorative layers first before inventing new ones.
+
 # Modal Standardization Rules
 
 - Prefer shared modal primitives and shared class tokens over repeating modal markup or local one-off styles.
