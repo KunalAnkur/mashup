@@ -184,7 +184,7 @@ const SourceSelection = () => {
                   onChange={handleOnRoomIdChange}
                   onKeyDown={handleKeyDown}
                   disabled={isJoining}
-                  className={`outline-none text-sm sm:text-base flex-1 rounded-xl bg-white/5 backdrop-blur-2xl border text-white placeholder:text-white/50 p-2.5 sm:p-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 ${
+                  className={`outline-none text-base flex-1 rounded-xl bg-white/5 backdrop-blur-2xl border text-white placeholder:text-white/50 p-2.5 sm:p-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 ${
                     joinError
                       ? "border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50"
                       : "border-none"

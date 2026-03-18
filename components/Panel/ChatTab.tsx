@@ -1299,7 +1299,7 @@ const ChatTab = () => {
             onKeyDown={handleKeyDown}
             disabled={!isJoined || isLoading}
             enterKeyHint="send"
-            className="flex-1 bg-transparent outline-none text-white/95 text-xs md:text-sm placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="flex-1 bg-transparent outline-none text-white/95 text-base placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           />
         ) : (
           <textarea

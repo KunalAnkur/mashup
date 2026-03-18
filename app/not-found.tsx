@@ -9,7 +9,7 @@ import { useTranslations } from "@/i18n/I18nProvider";
 const NotFound = () => {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-
+  const t = useTranslations("notFound");
   useEffect(() => {
     setMounted(true);
   }, []);

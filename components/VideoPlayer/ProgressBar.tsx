@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { isMobile } from "react-device-detect";
 import { formatVideoTime } from "@/utils/timeFormatter";
 import { CgArrowsExpandLeft, CgCompressLeft } from "react-icons/cg";
+import { FaStore } from "react-icons/fa";
+import { MdPlayDisabled } from "react-icons/md";
 interface ProgressBarProps {
     progress: number;
     buffered: number;
@@ -10,12 +12,16 @@ interface ProgressBarProps {
     handleSeekStart: () => void;
     handleSeekEnd: (seekTime?: number, seekPercent?: number) => void;
     duration: number;
+    showStore: boolean;
     showTime?: boolean;
+    showHidingControlsBtn?: boolean;
     showFullscreen?: boolean;
     showProgressBar?: boolean;
     fullscreen?: boolean;
+    onOpenStore?: () => void;
     onFullscreenToggle?: () => void;
     onUserActivity?: () => void;
+    onHiddingFullControls?: () => void;
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -28,10 +34,14 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     duration,
     showTime = false,
     showFullscreen = false,
+    showStore = false,
+    showHidingControlsBtn = true,
     showProgressBar = true,
     fullscreen = false,
     onFullscreenToggle,
     onUserActivity,
+    onOpenStore,
+    onHiddingFullControls
 }) => {
     const progressBarRef = useRef<HTMLDivElement | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -158,16 +168,29 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             {showTopRow && (
                 <div className={`flex items-center ${topRowJustify}`}>
                     {showTime ? (
-                        <div className="rounded-md bg-black/30 px-2 py-0.5 text-[12px] font-medium text-white/90 backdrop-blur-sm">
+                        <div className="rounded-xl bg-black/30 px-2 text-[12px] flex items-center h-[28px] font-medium text-white/90 backdrop-blur-sm">
                             <span className="tabular-nums">{currentTime}</span>
                             <span className="mx-1 text-white/50">/</span>
                             <span className="tabular-nums text-white/70">{totalTime}</span>
                         </div>
                     ): 
-                    <div className="rounded-md bg-black/30 px-2 py-0.5 text-[12px] font-medium text-white/90 backdrop-blur-sm">
+                        <div className="rounded-xl bg-black/30 px-2 h-[28px] flex items-center text-[12px] font-medium text-white/90 backdrop-blur-sm">
                         <span className="tabular-nums text-white/70">Live</span>
                     </div>}
-
+                    {showStore && <button onClick={() => onOpenStore?.()} className="z-50 cursor-pointer flex gap-2 items-center absolute left-1/2 -translate-x-1/2  rounded-full bg-black/30 p-2 text-[12px] font-medium text-white/90 backdrop-blur-sm">
+                        <FaStore />
+                    </button>}
+                    <div className="flex gap-2 items-center">
+                        {showHidingControlsBtn && isMobile && <button
+                        type="button"
+                        onClick={onHiddingFullControls}
+                        onPointerDown={handleFullscreenPointerDown}
+                        title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+                        aria-label={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-transform active:scale-95"
+                    >
+                        <MdPlayDisabled />
+                    </button>}
                     {showFullscreen && (
                         <button
                             type="button"
@@ -184,6 +207,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                                 )}
                         </button>
                     )}
+                    </div>
                 </div>
             )}
 

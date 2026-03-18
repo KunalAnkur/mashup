@@ -20,7 +20,10 @@ export enum ControlComponents {
     PROGRESS = 'progress',
     DURATION = 'duration',
     OVERLAY = 'overlay',
-    FULLSCREEN = 'fullscreen'
+    FULLSCREEN = 'fullscreen',
+    STORE = 'store',
+    HIDE_CONTROLS = 'hide_controls',
+    BROADCAST_SYNC = 'broad_sync'
 }
 type VideoPlayerProps = {
     url?: string | string[] | SourceProps[] | MediaStream
@@ -43,6 +46,8 @@ type VideoPlayerProps = {
     onReady?: () => void;
     onEnded?: () => void;
     onProgress?: () => void;
+    onOpenStore?: () => void;
+    syncWithHost?: () => void;
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
     loop?: boolean;
@@ -77,6 +82,8 @@ const VideoPlayer = ({
     onEnded,
     onFullscreenChange,
     onProgress,
+    onOpenStore,
+    syncWithHost,
     controls = true,
     loop = false,
     hasUserInteracted = true,
@@ -102,12 +109,15 @@ const VideoPlayer = ({
     const [fullscreen, setFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [isBuffering, setIsBuffering] = useState(false);
-
+    const [nativeControlsActive, setNativeControlsActive] = useState(false);
+    const playingRef = useRef(playing);
+    const durationRef = useRef(externalDuration);
     // Refs
     const internalPlayerRef = useRef<ReactPlayer>(null);
     const playerRef = externalPlayerRef || internalPlayerRef;
     const playerContainerRef = useRef<HTMLDivElement>(null);
     const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const nativeControlsTimerRef = useRef<NodeJS.Timeout | null>(null);
     const seekDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const progressResumeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wasPlayingBeforeSeek = useRef(false);
@@ -142,7 +152,12 @@ const VideoPlayer = ({
     useEffect(() => setProgress(externalProgress), [externalProgress]);
     useEffect(() => setDuration(externalDuration), [externalDuration]);
     useEffect(() => setMuted(externalMuted), [externalMuted])
-
+    useEffect(() => {
+        playingRef.current = playing;
+    }, [playing]);
+    useEffect(() => {
+        durationRef.current = duration;
+    }, [duration]);
     // Controls visibility
     const startInactivityTimer = () => {
         if (isSeekingRef.current) return;
@@ -154,13 +169,78 @@ const VideoPlayer = ({
         }, 5000);
     };
 
+    const isYouTubeSource = typeof url === "string" && /youtube\.com|youtu\.be/i.test(url);
+    const showNativeControls = nativeControlsActive && isYouTubeSource;
+
+    const clearNativeControlsTimer = () => {
+        if (nativeControlsTimerRef.current) {
+            clearTimeout(nativeControlsTimerRef.current);
+            nativeControlsTimerRef.current = null;
+        }
+    };
+
+    const resolveInternalPlayingState = () => {
+        const internalPlayer = playerRef.current?.getInternalPlayer?.() as any;
+        if (internalPlayer && typeof internalPlayer.getPlayerState === "function") {
+            // YouTube IFrame API: 1 = playing, 2 = paused
+            return internalPlayer.getPlayerState() === 1;
+        }
+        if (internalPlayer && typeof internalPlayer.paused === "boolean") {
+            return !internalPlayer.paused;
+        }
+        return playing;
+    };
+
+    const syncAfterNativeControls = () => {
+        if (!playerRef.current) return;
+        if (disableControls.includes(ControlComponents.BROADCAST_SYNC)) {
+            console.log("helloakjshdkljasghdjhkag")
+            return syncWithHost?.()
+        }
+        const actualPlaying = resolveInternalPlayingState();
+        if (actualPlaying !== playingRef.current) {
+            setPlaying(actualPlaying);
+            if (actualPlaying) onPlay?.("native-controls");
+            else onPause?.("native-controls");
+        }
+
+        const currentTime = playerRef.current.getCurrentTime?.();
+        const resolvedTime =
+            typeof currentTime === "number" && isFinite(currentTime) ? currentTime : undefined;
+        const currentDuration = durationRef.current;
+        const seekPercent =
+            resolvedTime !== undefined && currentDuration > 0 ? (resolvedTime / currentDuration) * 100 : undefined;
+        onSeekEnd?.(resolvedTime, seekPercent);
+    };
+
+    const exitNativeControls = () => {
+        clearNativeControlsTimer();
+        setNativeControlsActive(false);
+        if (controls) {
+            setShowControls(true);
+            startInactivityTimer();
+        }
+        syncAfterNativeControls();
+    };
+
+    const scheduleNativeControlsReset = () => {
+        clearNativeControlsTimer();
+        nativeControlsTimerRef.current = setTimeout(() => {
+            exitNativeControls();
+        }, 5000);
+    };
+
     const handleUserActivity = () => {
+        if (showNativeControls) {
+            scheduleNativeControlsReset();
+            return;
+        }
         if (!showControls) setShowControls(true);
         startInactivityTimer();
     };
 
-    const shouldShowUnmuteOverlay = muted && (!hasUserInteracted || isMobile);
-    const showPlayerControls = controls && !shouldShowUnmuteOverlay;
+    const shouldShowUnmuteOverlay = !showNativeControls && muted && (!hasUserInteracted || isMobile);
+    const showPlayerControls = controls && !shouldShowUnmuteOverlay && !showNativeControls;
 
     const handleUnmuteOverlayClick = useCallback(() => {
         setMuted(false);
@@ -194,11 +274,26 @@ const VideoPlayer = ({
         };
     }, [handleUnmuteOverlayClick, shouldShowUnmuteOverlay]);
     useEffect(() => {
-        if (controls) {
+        if (controls && !showNativeControls) {
             startInactivityTimer();
             return () => clearTimeout(inactivityTimerRef.current!);
         }
-    }, [controls]);
+    }, [controls, showNativeControls]);
+
+    useEffect(() => {
+        if (!isYouTubeSource && nativeControlsActive) {
+            clearNativeControlsTimer();
+            setNativeControlsActive(false);
+        }
+    }, [isYouTubeSource, nativeControlsActive]);
+
+    useEffect(() => {
+        return () => {
+            if (nativeControlsTimerRef.current) {
+                clearTimeout(nativeControlsTimerRef.current);
+            }
+        };
+    }, []);
 
     // Player controls
     const isPlayDisabled = disableControls.includes(ControlComponents.PLAY);
@@ -239,6 +334,19 @@ const VideoPlayer = ({
     //     if (controls) handleUserActivity();
     // };
 
+    const handleOnHidingFullControls = () => {
+        if (!isYouTubeSource) return;
+        if (showNativeControls) {
+            exitNativeControls();
+            return;
+        }
+        if (inactivityTimerRef.current) {
+            clearTimeout(inactivityTimerRef.current);
+        }
+        setShowControls(false);
+        setNativeControlsActive(true);
+        scheduleNativeControlsReset();
+    }
     const toggleFullscreen = () => {
         if (disableControls.includes(ControlComponents.FULLSCREEN)) return;
         // For mobile browsers, use native video element fullscreen
@@ -484,6 +592,7 @@ const VideoPlayer = ({
                     width={width || "100%"}
                     height={height || "100%"}
                     playing={playing}
+                    controls={showNativeControls}
                     loop={loop}
                     muted={muted}
                     playsinline={true}
@@ -492,7 +601,7 @@ const VideoPlayer = ({
                     onDuration={handleDuration}
                     onBuffer={onBufferStart}
                     onBufferEnd={onBufferEnd}
-                    onClick={togglePlay}
+                    onClick={showNativeControls ? undefined : togglePlay}
                     onReady={onReady}
                     onEnded={onEnded}
                     onPause={() => {
@@ -502,7 +611,7 @@ const VideoPlayer = ({
                     config={{
                         youtube: {
                             playerVars: {
-                                controls: 0,
+                                controls: 1,
                                 disablekb: 0,
                                 cc_load_policy: 0,
                                 modestbranding: 1,
@@ -514,7 +623,7 @@ const VideoPlayer = ({
                 />
 
                 {/* NOTE: UI Overlay component */}
-                {children}
+                {!showNativeControls && children}
 
                 {shouldShowUnmuteOverlay && (
                     <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -533,7 +642,7 @@ const VideoPlayer = ({
                 )}
                 
                 {/* Audio Visualizer - only show when there's no video track (audio-only content) */}
-                {externalHasVideoTrack === false && (
+                {!showNativeControls && externalHasVideoTrack === false && (
                     <AudioVisualizer 
                         playing={playing} 
                         muted={muted} 
@@ -541,7 +650,7 @@ const VideoPlayer = ({
                     />
                 )}
 
-                {!shouldShowUnmuteOverlay && !hideControls.includes(ControlComponents.OVERLAY) && (
+                {!showNativeControls && !shouldShowUnmuteOverlay && !hideControls.includes(ControlComponents.OVERLAY) && (
                     <PlayPauseOverlay
                         playing={playing}
                         onToggle={togglePlay}
@@ -566,11 +675,13 @@ const VideoPlayer = ({
                         onSeekEnd={handleSeekEnd}
                         onPlayPause={togglePlay}
                         onMuteToggle={toggleMute}
+                        onOpenStore={onOpenStore}
                         onVolumeChange={handleVolumeChange}
                         onFullscreenToggle={toggleFullscreen}
                         formatTime={formatVideoTime}
                         hideControls={hideControls}
                         onUserActivity={handleUserActivity}
+                        onHidingFullControls={handleOnHidingFullControls}
                     />
                 )}
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState, store } from "@/lib/store";
 import { Player } from "@/components/VideoPlayer";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
@@ -12,6 +12,7 @@ import { useStreamSource } from "@/hooks/useStreamSource";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
 import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
+import { toggleBottomSheet } from "@/lib/store/slices/roomSlice";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -36,7 +37,7 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     const autoStoppedForMissingSourceRef = useRef(false);
     
     const { isJoined, roomType, isHost, hostLeft, roomId, captureWatchTime } = useRoomContext();
-    
+    const dispatch = useDispatch()
     // ============================================================================
     // Layer 1: Source Layer
     // ============================================================================
@@ -442,6 +443,7 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
                 onPause={onPause}
                 hasVideoTrack={!activeItem?.onlyAudio}
                 onMute={setFocus}
+                onOpenStore={() => dispatch(toggleBottomSheet())}
                 disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
                 hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
                 autoResumeOnFullscreenExit={!isHost}

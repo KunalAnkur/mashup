@@ -36,7 +36,7 @@ const valueBoxClass =
 const inputCardClass =
   "flex min-w-0 items-center gap-2 rounded-xl border border-white/[0.07] bg-transparent px-3 h-10 transition-colors duration-200 focus-within:border-pink-400/26";
 const textInputClass =
-  "settings-input min-w-0 flex-1 appearance-none bg-transparent text-sm leading-5 text-white placeholder:text-gray-500 outline-none";
+  "settings-input min-w-0 flex-1 appearance-none bg-transparent text-base leading-5 text-white placeholder:text-gray-500 outline-none";
 const rowActionButtonClass =
   "flex h-5 w-5 shrink-0 items-center justify-center transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-30";
 const rowEditButtonClass = `${rowActionButtonClass} text-white/42 hover:text-white`;
