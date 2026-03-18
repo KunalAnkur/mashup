@@ -31,7 +31,9 @@ const SignupContainer = ({ setContainer }: Prop) => {
   const [username, setUsername] = useState<string>("");
   const [authProvider] = useAuthProviderMutation();
   const [showPassword, setShowPassword] = useState(false);
+  const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
+  const tAuth = useTranslations("auth.signup");
 
   const [signupUser, signupState] = useSignupMutation();
   const dispatch = useDispatch();
@@ -50,11 +52,8 @@ const SignupContainer = ({ setContainer }: Prop) => {
       console.log(data, signupState);
     } catch (error: any) {
       // console.error("Signup failed:", error);
-      const errorMessage = error?.data?.message || error?.message || "Failed to create account";
-      const errorDescription = error?.data?.message || error?.message 
-        ? "Please check your information and try again."
-        : "Please check your email, username, and password, then try again.";
-      showError(errorMessage, errorDescription);
+      const errorMessage = error?.data?.message || error?.message || tToast("checkSignupDetails");
+      showError(tToast("signupFailed"), errorMessage);
     }
   };
 
@@ -104,10 +103,10 @@ const SignupContainer = ({ setContainer }: Prop) => {
       <div className="flex flex-col gap-5">
         {/* Username Input */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-300">Username</label>
+          <label className="text-sm font-medium text-gray-300">{tAuth("username")}</label>
           <input
             type="text"
-            placeholder="Enter your username"
+            placeholder={tAuth("enterUsername")}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="w-full rounded-xl bg-white/5 text-white text-base px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
@@ -116,10 +115,10 @@ const SignupContainer = ({ setContainer }: Prop) => {
 
         {/* Email Input */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-300">Email</label>
+          <label className="text-sm font-medium text-gray-300">{tAuth("email")}</label>
           <input
             type="email"
-            placeholder="Enter your email address"
+            placeholder={tAuth("enterEmailAddress")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full rounded-xl bg-white/5 text-white text-base px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
@@ -128,11 +127,11 @@ const SignupContainer = ({ setContainer }: Prop) => {
 
         {/* Password Input */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-300">Password</label>
+          <label className="text-sm font-medium text-gray-300">{tAuth("password")}</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              placeholder={tAuth("enterPassword")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-xl bg-white/5 text-white text-base px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition-all duration-200 placeholder:text-gray-500 border border-white/10"
@@ -154,7 +153,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
         {/* Action Buttons */}
         <div className="flex flex-col gap-4 pt-2">
           <Button
-            name={signupState.isLoading ? "Signing up..." : "Signup"}
+            name={signupState.isLoading ? tAuth("signingUp") : tAuth("signup")}
             icon={signupState.isLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
             className="w-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleOnSignUp}
@@ -164,13 +163,13 @@ const SignupContainer = ({ setContainer }: Prop) => {
           {/* Separator */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-white/10"></div>
-            <span className="text-xs text-gray-500">or</span>
+            <span className="text-xs text-gray-500">{tCommon("or")}</span>
             <div className="flex-1 h-px bg-white/10"></div>
           </div>
 
           {/* Google Button */}
           <GoogleButton
-            name="Continue with Google"
+            name={tCommon("continueWithGoogle")}
             onSuccess={handleGoogleAuthSuccess}
             onError={() => {
               console.log("Google authentication failed");
@@ -181,17 +180,17 @@ const SignupContainer = ({ setContainer }: Prop) => {
           {/* Login Link */}
           <div className="pt-2">
             <span className="flex items-center justify-center text-sm text-gray-400">
-              Already have an account?{" "}
+              {tAuth("alreadyHaveAccount")}{" "}
               {!!setContainer ? (
                 <button
                   onClick={handleOnLoginClick}
                   className="ml-1 text-pink-500 hover:text-pink-400 font-semibold transition-colors"
                 >
-                  LOGIN
+                  {tAuth("loginCta")}
                 </button>
               ) : (
                 <Anchor
-                  name="LOGIN"
+                  name={tAuth("loginCta")}
                   url={buildAuthRoute(constants.pageType.login)}
                   className="ml-1 text-pink-500 hover:text-pink-400 font-semibold transition-colors"
                 />

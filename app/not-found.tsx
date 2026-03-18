@@ -76,7 +76,7 @@ const NotFound = () => {
             >
               <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
               <FaHome className="relative z-10" />
-              <span className="relative z-10">Go Home</span>
+              <span className="relative z-10">{t("goHome")}</span>
             </button>
             
             <button

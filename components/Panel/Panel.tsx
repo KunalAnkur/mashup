@@ -350,7 +350,7 @@ const Panel = () => {
             <PanelHeaderActionButton
               onClick={handleCopyLink}
               className="bg-white/5 text-white/60 hover:text-white"
-              aria-label={tPanel("copyLink")}
+              aria-label={tCommon("copyLink")}
             >
               {copied ? <LuCheck size={15} className="text-green-400" /> : <LuLink size={15} />}
             </PanelHeaderActionButton>
@@ -397,7 +397,7 @@ const Panel = () => {
                 <PanelHeaderActionButton
                   onClick={handleCopyLink}
                   className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40"
-                  aria-label={tPanel("copyLink")}
+                  aria-label={tCommon("copyLink")}
                 >
                   {copied ? (
                     <LuCheck size={16} className="text-green-400 transition-colors" />

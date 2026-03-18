@@ -4,6 +4,7 @@ import * as mediasoupClient from "mediasoup-client";
 import { Transport, Producer, Consumer } from "mediasoup-client/types";
 import { SocketEvent } from "@/types/socketEvents";
 import { showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 import { RootState } from "@/lib/store";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -39,6 +40,7 @@ export const useStream = ({
     const { socket } = useSocket();
     const dispatch = useDispatch();
     const roomState = useSelector((state: RootState) => state.room);
+    const tToast = useTranslations("toast");
 
     const [trackUpdateCounter, setTrackUpdateCounter] = useState(0);
     // State
@@ -177,7 +179,7 @@ export const useStream = ({
             }
         } catch (error) {
             console.error("[STREAM] Replace ended tracks error:", error);
-            showError("Video restart failed", "Unable to restart video stream. Please try pausing and playing again.");
+            showError(tToast("videoRestartFailed"), tToast("unableToRestart"));
         }
     }, []);
     /**
@@ -385,7 +387,7 @@ export const useStream = ({
             // socket?.emit(SocketEvent.STREAM_HAS_VIDEO, { roomId, hasVideoTrack: videoTrack ? true : false });
         } catch (error) {
             console.error("[STREAM] Replace tracks error:", error);
-            showError("Video update failed", "Unable to update video stream. The video may continue playing.");
+            showError(tToast("videoUpdateFailed"), tToast("unableToUpdate"));
         }
     }, [isHost, roomId, socket]);
 
@@ -550,7 +552,7 @@ export const useStream = ({
             setIsInitialized(true);
         } catch (error) {
             console.error("[STREAM] Init error:", error);
-            showError("Stream initialization failed", "Unable to start video streaming. Please check your connection and try again.");
+            showError(tToast("streamInitializationFailed"), tToast("unableToStartStreaming"));
         } finally {
             initializingRef.current = false;
         }
@@ -594,7 +596,7 @@ export const useStream = ({
             return { device: newDevice, transport: newTransport };
         } catch (error) {
             console.error("[STREAM] Reinit error:", error);
-            showError("Stream reconnection failed", "Unable to reconnect to video stream. Please refresh the page.");
+            showError(tToast("streamReconnectionFailed"), tToast("unableToReconnect"));
             return null;
         }
     }, [socket, username, email, profile, roomState, createConnectHandler]);

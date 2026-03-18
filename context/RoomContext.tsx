@@ -10,6 +10,7 @@ import type { Playlist } from "@/types/storeTypes";
 import type { PinnedChatMessage } from "@/types/chatTypes";
 import { showError } from "@/utils/toast";
 import { trackRoomJoined, trackRoomLeft } from "@/lib/analytics";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 export type RoomType = "stream" | "sync";
 export interface UserInfo {
@@ -92,6 +93,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const [isJoined, setIsJoined] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const tToast = useTranslations("toast");
     const [roomType, setRoomType] = useState<RoomType | null>(null);
     const [hostLeft, setHostLeft] = useState(false);
     const [roomClosed, setRoomClosed] = useState(false);
@@ -174,16 +176,16 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setJoinResponse(null);
                 joinAttemptedRef.current = false;
                 dispatch(setHostPlaybackPlaying(false));
-                const errorMessage = response?.error || "Failed to join room";
-                showError("Failed to join room", errorMessage);
+                const errorMessage = response?.error || tToast("checkConnection");
+                showError(tToast("failedToJoinRoom"), errorMessage);
             }
         } catch (error: any) {
             console.error("Error joining room:", error);
             setIsJoined(false);
             joinAttemptedRef.current = false;
             dispatch(setHostPlaybackPlaying(false));
-            const errorMessage = error?.message || "Unable to connect to room. Please check your connection and try again.";
-            showError("Failed to join room", errorMessage);
+            const errorMessage = error?.message || tToast("checkConnection");
+            showError(tToast("failedToJoinRoom"), errorMessage);
         } finally {
             setIsLoading(false);
         }

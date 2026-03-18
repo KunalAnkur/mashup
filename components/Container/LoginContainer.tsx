@@ -31,7 +31,9 @@ const LoginContainer = ({ setContainer }: Prop) => {
     redirectParam ? `${path}?redirect=${encodeURIComponent(redirectParam)}` : path;
 
   const [loginUser, loginState] = useLoginMutation();
+  const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
+  const tAuth = useTranslations("auth.login");
   const [authProvider] = useAuthProviderMutation();
   const [continueAsGuest, { isLoading: isGuestLoading }] = useContinueAsGuestMutation();
   const [isGuestProcessing, setIsGuestProcessing] = useState(false);
@@ -75,7 +77,8 @@ const LoginContainer = ({ setContainer }: Prop) => {
       showSuccess(tToast("welcomeGuest"));
     } catch (error: any) {
       console.error("Guest signup failed:", error);
-      const errorMessage = error?.data?.message || error?.message || "Failed to continue as guest";
+      const errorMessage =
+        error?.data?.message || error?.message || tToast("unableToContinueAsGuest");
       showError(tToast("guestSignupFailed"), errorMessage);
     } finally {
       setIsGuestProcessing(false);
@@ -101,10 +104,10 @@ const LoginContainer = ({ setContainer }: Prop) => {
               Movmash
             </h1>
             <p className="text-base md:text-lg text-white/90 text-center font-medium">
-              Welcome back!
+              {tAuth("welcomeBack")}
             </p>
             <p className="text-xs md:text-sm text-white/60 text-center max-w-xs mt-0.5">
-              Choose how you'd like to continue
+              {tAuth("chooseHowToContinue")}
             </p>
           </div>
         </header>
@@ -113,7 +116,7 @@ const LoginContainer = ({ setContainer }: Prop) => {
         <div className="flex flex-col gap-3.5 w-full">
           {/* Google Button */}
           <GoogleButton
-            name="Continue with Google"
+            name={tCommon("continueWithGoogle")}
             onSuccess={handleGoogleAuthSuccess}
             onError={() => {
               console.log("Google authentication failed");
@@ -123,13 +126,17 @@ const LoginContainer = ({ setContainer }: Prop) => {
           {/* Separator */}
           <div className="flex items-center gap-3 py-0.5">
             <div className="flex-1 h-px bg-zinc-600/20"></div>
-            <span className="text-xs text-white/50 font-medium uppercase tracking-wider">or</span>
+            <span className="text-xs text-white/50 font-medium uppercase tracking-wider">{tCommon("or")}</span>
             <div className="flex-1 h-px bg-zinc-600/20"></div>
           </div>
 
           {/* Continue as Guest Button */}
           <Button
-            name={isGuestProcessing || isGuestLoading ? "Creating account..." : "Continue as Guest"}
+            name={
+              isGuestProcessing || isGuestLoading
+                ? tCommon("creatingAccount")
+                : tCommon("continueAsGuest")
+            }
             icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
             className="w-full bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleContinueAsGuest}
@@ -139,10 +146,11 @@ const LoginContainer = ({ setContainer }: Prop) => {
 
         {/* Footer Note */}
         <p className="text-xs text-white/60 text-center leading-relaxed max-w-sm mt-1">
-          By continuing, you agree to Movmash's{" "}
-          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">Terms of Service</span>
-          {" "}and{" "}
-          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">Privacy Policy</span>
+          {tAuth("agreementPrefix")}{" "}
+          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">{tAuth("termsOfService")}</span>
+          {" "}{tAuth("and")}{" "}
+          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">{tAuth("privacyPolicy")}</span>
+          {tAuth("agreementSuffix")}
         </p>
       </div>
     </div>

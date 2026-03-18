@@ -47,7 +47,7 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
       if (onClose) onClose();
     } catch (error) {
       console.error("Google authentication failed", error);
-      showError("Google authentication failed", "Please try again.");
+      showError(tToast("googleAuthFailed"), tToast("tryAgain"));
     }
   };
 
@@ -63,8 +63,19 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
       if (onClose) onClose();
     } catch (error: any) {
       console.error("Guest signup failed:", error);
-      const errorMessage = error?.data?.message || error?.message || "Failed to continue as guest";
-      showError("Guest signup failed", errorMessage);
+      const errorMessage =
+        error && typeof error === "object"
+          ? "data" in error &&
+            error.data &&
+            typeof error.data === "object" &&
+            "message" in error.data &&
+            typeof error.data.message === "string"
+            ? error.data.message
+            : "message" in error && typeof error.message === "string"
+              ? error.message
+              : tToast("unableToContinueAsGuest")
+          : tToast("unableToContinueAsGuest");
+      showError(tToast("guestSignupFailed"), errorMessage);
     } finally {
       setIsGuestProcessing(false);
     }
@@ -103,4 +114,3 @@ const LoginDropdown = ({ onClose }: LoginDropdownProps) => {
 };
 
 export default LoginDropdown;
-
