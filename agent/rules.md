@@ -1,17 +1,21 @@
 # Agent Rules
 
 These rules are mandatory for active work in this repo unless the user explicitly overrides them.
-Last sync: 2026-03-15 (modal standardization + agent doc audit)
+Last sync: 2026-03-19 (doc refresh + i18n + layout stability)
 
 1. Use Tailwind CSS for UI work.
 2. Write clean, maintainable code with minimal side effects.
-3. Do not start implementing without user permission when the user is asking to go step by step or explicitly wants approval first.
-4. Before coding, explain the next implementation step briefly.
-5. After each meaningful change, provide relevant test commands and short manual test steps.
-6. Keep user-facing i18n text synchronized for `en`, `tr`, `es`, and `ar` when UI copy changes.
-7. Before suggesting any `git add` or `git commit` commands, run `git status --short`.
-8. Group commit suggestions logically by changed files/purpose, and do not suggest them until the user confirms the change is finished or approved.
-9. Do not execute git branch/switch/add/commit commands from the assistant; provide commands for the user to run manually.
-10. Update `costume/agent/` docs when context actually changes, but avoid blind churn or duplicate notes across files.
-11. `AGENTS.md` is the source of truth for durable repo workflow and UI/system standards; keep this file aligned with it.
-12. Keep `agent/` docs repo-specific. Do not reuse them across other repos.
+3. If the user wants step-by-step work or explicit approval first, explain the next implementation step briefly before coding.
+4. After each meaningful change, provide relevant test commands and short manual test steps.
+5. Keep user-facing i18n text synchronized for `en`, `tr`, `es`, and `ar` whenever copy changes.
+6. Do not leave hardcoded toast text or touched UI copy in modified areas when a translation path should exist.
+7. After localization work, verify both locale-file parity and code-used translation keys.
+8. Avoid time-based layout shifts from disappearing wrappers, helpers, or placeholders, especially on onboarding/auth/stream pages.
+9. Prefer structural layout utilities (`flex`, `grid`, `items-*`, `justify-*`, `gap-*`) over ad hoc spacing fixes.
+10. Before suggesting any `git add` or `git commit` commands, run `git status --short`.
+11. Group commit suggestions logically by changed files/purpose, and do not suggest them until the user confirms the work is finished or approved.
+12. Do not execute git branch/switch/add/commit commands unless the user explicitly asks for that git action.
+13. If the user explicitly asks to undo or move git work, use non-destructive commands that preserve changes whenever possible.
+14. Update `AGENTS.md` first when durable repo rules change, then sync `agent/` docs without duplicating policy text unnecessarily.
+15. Keep `README.md` and `agent/` docs Movmash-specific; do not leave generic framework boilerplate or cross-repo guidance in them.
+16. Keep the repo docs in sync continuously when durable context changes; do not defer doc updates to the end of the branch.

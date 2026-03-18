@@ -4,6 +4,8 @@
 - Group commit suggestions logically by changed files and purpose instead of suggesting one broad commit by default.
 - Do not suggest commit commands immediately after a change; first ask the user whether the work is finished and whether they like the result.
 - If suggesting `git add .`, make sure the commit message covers all staged changes. If the commit message is narrower than the full diff, suggest scoped `git add` commands instead of `git add .`.
+- Do not execute git branch/switch/add/commit commands from the assistant unless the user explicitly asks for that git action.
+- If the user explicitly asks to undo or move git work, prefer non-destructive commands that preserve the working tree (`git reset --soft`, branch switch with carried changes, etc.).
 - After each meaningful UI/code change, provide the relevant test command(s) and short manual test steps.
 - If the user asks to work step by step, make one bounded change at a time, then stop for feedback before moving to the next visual revision.
 - When the user says “note to yourself” for a project-specific workflow/design rule, record it here if it should persist for later turns in this repo.
@@ -19,6 +21,23 @@
 - `agent/lessons.md` should store mistakes, root causes, prevention rules, and notable design/engineering lessons learned from shipped or attempted work.
 - `agent/tasks/notion-backlog.md` should stay as a product/backlog list, not as a duplicate execution log.
 - When these files drift, prefer consolidating duplicate guidance and updating the file that matches the note's purpose instead of copying the same content into all files.
+- `README.md` should stay project-specific and contributor-useful; do not leave it as generic framework boilerplate.
+- Keep `AGENTS.md`, `agent/rules.md`, `agent/tasks.md`, `agent/lessons.md`, `agent/tasks/notion-backlog.md`, and `README.md` updated continuously when durable repo context changes; do not postpone doc upkeep until the end of a long workstream.
+
+# Localization Rules
+
+- Keep user-facing i18n text synchronized for `en`, `tr`, `es`, and `ar` whenever UI copy changes.
+- Keep translation keys under the correct namespace. Fix wrong call sites instead of duplicating the same copy under the wrong namespace just to silence missing-key issues.
+- Replace hardcoded toast text and touched visible UI copy with translations in the areas you modify.
+- When a backend or runtime error message may be absent, provide a translated fallback title/description instead of exposing a raw English fallback.
+- After localization work, verify both locale-file parity and code-used translation key coverage; matching JSON structure alone is not enough.
+
+# Page Stability Rules
+
+- Avoid time-based layout shifts on onboarding, auth, stream, and other entry pages.
+- Do not mount empty wrappers, helper rows, or placeholder blocks that auto-disappear later and change page geometry.
+- If helper content needs to fade out, keep the layout height stable or animate opacity/content only.
+- When a page has delayed state changes after mount, sanity-check the screen after a few seconds of idle time to catch vertical jumps or reflow regressions.
 
 # Modal Standardization Rules
 

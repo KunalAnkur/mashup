@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Movmash Costume
 
-## Getting Started
+Frontend workspace for the Movmash watch-party app.
 
-First, run the development server:
+`costume` contains the user-facing experience for:
+
+- stream-from-device flows
+- screen-share room creation
+- sync-by-URL flows
+- room chat, reactions, and panel UI
+- auth and guest entry
+- localized UI in `en`, `tr`, `es`, and `ar`
+
+## Stack
+
+- Next.js App Router
+- React + TypeScript
+- Tailwind CSS
+- Redux Toolkit / RTK Query
+- Custom client i18n via `i18n/messages/*.json`
+
+## Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
+pnpm exec eslint <path>
+pnpm exec tsc --noEmit
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Use focused lint/smoke checks on touched files and screens. If `tsc` reports unrelated pre-existing issues, note that clearly instead of folding them into the change you just made.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Important Paths
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/`
+  App Router pages and layouts.
+- `components/`
+  UI, panels, onboarding flows, modals, and player surfaces.
+- `context/`
+  Auth, socket, room, file, and media context providers.
+- `hooks/`
+  Stream/sync/chat/helpers and shared UI behavior hooks.
+- `i18n/messages/`
+  Locale dictionaries for `en`, `tr`, `es`, and `ar`.
+- `agent/`
+  Repo-specific execution rules, lessons, active workstream notes, and backlog.
 
-## Learn More
+## Repo Guardrails
 
-To learn more about Next.js, take a look at the following resources:
+- Keep user-facing copy synchronized across `en`, `tr`, `es`, and `ar`.
+- Do not leave hardcoded toast text or touched UI copy in components when a translation path exists.
+- After localization work, verify both locale-file parity and code-used translation keys.
+- Avoid timed layout shifts on onboarding/stream pages. Do not auto-remove empty wrappers that change page height after mount.
+- Prefer shared modal primitives, class tokens, and layout utilities over ad hoc duplication.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Doc Map
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `AGENTS.md`
+  Source of truth for durable Movmash workflow rules and UI/system standards.
+- `agent/rules.md`
+  Concise execution mirror of the active rules.
+- `agent/tasks.md`
+  Current workstream, recent durable context, and verification reminders.
+- `agent/lessons.md`
+  Mistakes, root causes, and prevention notes.
+- `agent/tasks/notion-backlog.md`
+  Product/backlog list, not an execution log.

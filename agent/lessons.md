@@ -11,6 +11,33 @@ Use this file to record mistakes, root causes, and prevention steps.
 - Prevention checklist:
 - Follow-up action:
 
+## 2026-03-19 (Localization Audit Coverage)
+
+- Date: 2026-03-19
+- Context: App-wide toast and translation cleanup across `en`, `tr`, `es`, and `ar`.
+- Error: Locale JSON files matched each other structurally, but the app still had missing translation keys in code, wrong namespaces, and hardcoded English fallbacks in active flows.
+- Root cause: Locale-file parity was treated as enough validation, while code-used translation keys and namespace alignment were not audited after copy changes.
+- Prevention checklist:
+  - Keep locale dictionaries synchronized across all four languages whenever user-facing copy changes.
+  - Audit code-used translation keys after localization work; do not rely on JSON parity alone.
+  - Fix wrong `useTranslations(...)` namespaces at the call site instead of duplicating strings under the wrong namespace.
+  - Replace hardcoded toast strings and touched visible UI copy in the areas being edited.
+  - Provide translated fallback copy when runtime/backend messages may be absent.
+- Follow-up action: Reuse the same locale-parity + code-usage audit pattern for future i18n work and keep app-wide hardcoded-copy cleanup tracked in backlog.
+
+## 2026-03-19 (Timed Layout Shift on Stream Page)
+
+- Date: 2026-03-19
+- Context: `/stream` page content visibly moved upward a few seconds after load.
+- Error: The stream page looked stable on first render, then jumped when a delayed helper block disappeared.
+- Root cause: An empty desktop-only wrapper with bottom margin was still mounted and auto-removed after a timeout, causing a real layout reflow even though the helper text inside it was commented out.
+- Prevention checklist:
+  - Do not keep empty placeholder/helper wrappers mounted if they reserve space.
+  - Avoid auto-dismissing blocks that change page geometry after mount.
+  - If helper content must fade, keep height stable or animate content opacity only.
+  - After onboarding/auth/stream page changes, idle on the page for several seconds to catch delayed reflow issues.
+- Follow-up action: Apply the same stability check to other entry pages that use delayed effects, helper banners, or auto-hide UI.
+
 ## 2026-03-07
 
 - Date: 2026-03-07

@@ -15,6 +15,7 @@
 - [ ] Evaluate/support `video.captureStream`.
 - [ ] Evaluate/support `window.showOpenFilePicker`.
 - [ ] Improve tab-only sharing flow.
+- [ ] App-wide i18n coverage pass for remaining hardcoded UI copy, tooltips, alt text, and helper text outside the recent toast/auth/settings cleanup.
 - [ ] `UrlModal` unsupported-link UX: disable the primary button and show a tooltip on hover instead of extra helper text below the input.
 - [ ] Separate refactor branch: rename `DeviceModalComponents`, `UrlModalComponents`, and `hooks/ModalHooks` to match their current full-page/shared responsibilities.
 - [ ] Separate layout consistency branch: move app-wide alignment/spacing toward shared `flex`/`grid`/`items-*`/`justify-*`/`gap-*` patterns instead of ad hoc padding/margin-based positioning.
