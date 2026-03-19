@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { Input, PageHeader } from "@/components/UI";
+import { EntryPageHeader, Input } from "@/components/UI";
 import { FaCheckCircle, FaShare, FaDesktop, FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { RootState } from "@/lib/store";
@@ -13,6 +13,10 @@ import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import type { Playlist } from "@/types/storeTypes";
 import {
+  appEntryPageContentWrapClass,
+  appEntryPageFixedHeaderOffsetClass,
+  appEntryPageInsetClass,
+  appEntryPageShellClass,
   movmashProminentCtaClass,
   purpleAccentIconSurfaceClass,
   purplePinkAccentIconSurfaceClass,
@@ -307,7 +311,7 @@ const ScreenSharePage = () => {
 
 
   return (
-    <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
+    <div className="relative min-h-screen overflow-hidden bg-[#18181b] text-white">
       {/* Background Effects - Matching CTASection */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-0 left-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-[#e11d48]/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse-glow" />
@@ -328,46 +332,47 @@ const ScreenSharePage = () => {
       </div>
 
       {/* Content - Above Background */}
-      <div className="relative z-20 w-full h-screen flex flex-col overflow-hidden">
-        <PageHeader title={tStream("screenSharePageTitle")} onBack={handleBack} logoGap="gap-8" />
+      <div className={appEntryPageShellClass}>
+        <EntryPageHeader title={tStream("screenSharePageTitle")} onBack={handleBack} fixed />
 
         {/* Content - Scrollable area */}
-        <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden">
-          <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-8">
-            <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 w-full">
-          {!stream ? (
-            <>
-              {/* Initial State - Before Preview */}
-              {/* Main Action Section */}
-              <div className={`flex flex-col gap-4 sm:gap-5 md:gap-6 ${zincGlassStrongBorderedSurfaceClass} rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8`}>
-                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-                  <div className={`flex-shrink-0 inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl ${purplePinkAccentIconSurfaceClass}`}>
-                    <FaDesktop className="text-lg sm:text-xl text-white" />
-                  </div>
-                  <div className="flex-1 flex flex-col text-center sm:text-left">
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-white mb-0.5 sm:mb-1">{tStream("readyToShare")}</h2>
-                    <p className="text-white/60 text-xs sm:text-sm">{tStream("clickButtonBelow")}</p>
-                  </div>
-                </div>
+        <div className={`flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden ${appEntryPageFixedHeaderOffsetClass}`}>
+          <div className={appEntryPageInsetClass}>
+            <div className={appEntryPageContentWrapClass}>
+              <div className="flex w-full flex-col gap-4 sm:gap-5 md:gap-6">
+                {!stream ? (
+                  <>
+                    {/* Initial State - Before Preview */}
+                    {/* Main Action Section */}
+                    <div className={`flex flex-col gap-4 sm:gap-5 md:gap-6 ${zincGlassStrongBorderedSurfaceClass} rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8`}>
+                      <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
+                        <div className={`inline-flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg sm:h-14 sm:w-14 sm:rounded-xl ${purplePinkAccentIconSurfaceClass}`}>
+                          <FaDesktop className="text-lg text-white sm:text-xl" />
+                        </div>
+                        <div className="flex flex-1 flex-col text-center sm:text-left">
+                          <h2 className="mb-0.5 text-lg font-semibold text-white sm:mb-1 sm:text-xl md:text-2xl">{tStream("readyToShare")}</h2>
+                          <p className="text-xs text-white/60 sm:text-sm">{tStream("clickButtonBelow")}</p>
+                        </div>
+                      </div>
           
-                {/* Share Button */}
-                <button
-                  onClick={() => handleShareScreen()}
-                  disabled={!!stream}
-                  className={`w-full px-4 sm:px-6 md:px-8 py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg transition-all duration-200 text-white ${
-                    stream
-                      ? "bg-zinc-700/50 cursor-not-allowed opacity-50"
-                      : movmashProminentCtaClass
-                  }`}
-                >
-                  {stream ? tStream("screenSharingActive") : tStream("shareYourScreen")}
-                </button>
-              </div>
+                      {/* Share Button */}
+                      <button
+                        onClick={() => handleShareScreen()}
+                        disabled={!!stream}
+                        className={`w-full rounded-lg px-4 py-3 text-sm font-bold text-white transition-all duration-200 sm:rounded-xl sm:px-6 sm:py-3.5 sm:text-base md:px-8 md:py-4 md:text-lg ${
+                          stream
+                            ? "cursor-not-allowed bg-zinc-700/50 opacity-50"
+                            : movmashProminentCtaClass
+                        }`}
+                      >
+                        {stream ? tStream("screenSharingActive") : tStream("shareYourScreen")}
+                      </button>
+                    </div>
 
-              {/* Simple Steps Guide - Only show when no preview */}
-              <div className="flex flex-col gap-4 sm:gap-5 md:gap-6">
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center">{tStream("howItWorks")}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+                    {/* Simple Steps Guide - Only show when no preview */}
+                    <div className="flex flex-col gap-4 sm:gap-5 md:gap-6">
+                      <h3 className="text-center text-xl font-bold text-white sm:text-2xl md:text-3xl">{tStream("howItWorks")}</h3>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-6">
                   {/* Step 1 */}
                   <div className={`flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl ${zincGlassInteractiveHoverSurfaceClass} transition-all duration-300`}>
                     <div className={streamStepBadgeClass}>
@@ -412,11 +417,11 @@ const ScreenSharePage = () => {
                       </p>
                     </div>
                   </div>
-                </div>
-              </div>
+                      </div>
+                    </div>
 
               {/* Quick Tips - Hidden on very small screens */}
-              <div className={`hidden sm:block p-4 sm:p-5 md:p-6 ${zincGlassBorderedSurfaceClass} rounded-lg sm:rounded-xl`}>
+                    <div className={`hidden rounded-lg p-4 sm:block sm:rounded-xl sm:p-5 md:p-6 ${zincGlassBorderedSurfaceClass}`}>
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className="shrink-0 mt-0.5 sm:mt-1">
                     <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${purpleAccentIconSurfaceClass}`}>
@@ -451,10 +456,10 @@ const ScreenSharePage = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            </>
-          ) : (
-            <>
+                    </div>
+                  </>
+                ) : (
+                  <>
               {/* Post-Preview State - After Tab Selection */}
               {/* Preview Active Status Header - Above Video */}
               <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-purple-500/30 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6">
@@ -630,8 +635,9 @@ const ScreenSharePage = () => {
                   </div>
                 )}
               </div>
-            </>
-          )}
+                  </>
+                )}
+            </div>
             </div>
           </div>
         </div>

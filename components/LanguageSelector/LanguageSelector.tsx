@@ -15,7 +15,7 @@ import {
 import { useDropdownDismiss } from "@/components/UI/useDropdownDismiss";
 
 const languageSelectorTriggerClass =
-  `flex items-center gap-1.5 rounded-full bg-white/[0.035] px-3 py-2 text-sm font-medium text-white/74 ${appFrostedBackdropClass} transition-all duration-200 hover:bg-white/[0.06] hover:text-white`;
+  `flex h-10 items-center gap-1.5 rounded-full bg-white/[0.035] px-3 text-sm font-medium leading-none text-white/74 ${appFrostedBackdropClass} transition-all duration-200 hover:bg-white/[0.06] hover:text-white`;
 const languageSelectorMenuClass =
   `animate-[fadeIn_0.2s_ease-out_forwards]`;
 
@@ -62,6 +62,7 @@ const LanguageSelector = () => {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
+        type="button"
         onClick={handleToggleDropdown}
         disabled={isChanging}
         className={`${languageSelectorTriggerClass}

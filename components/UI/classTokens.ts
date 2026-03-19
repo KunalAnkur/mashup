@@ -117,3 +117,55 @@ export const appHomeEntryCardSurfaceClass =
 
 export const appHomeInputSurfaceClass =
   `${zincGlassMutedBlurredSurfaceClass} transition-[background-color] duration-200 focus-within:from-zinc-700/15 focus-within:via-zinc-600/15 focus-within:to-zinc-700/15`;
+
+export const appEntryPageShellClass =
+  "relative z-20 mx-auto flex h-screen w-full max-w-6xl flex-col overflow-hidden";
+
+export const appEntryPageInsetClass =
+  "w-full px-4 sm:px-6";
+
+export const appEntryPageContentWrapClass =
+  "w-full pt-3 pb-4 sm:pt-4 sm:pb-6 md:pt-5 md:pb-8";
+
+export const appEntryPageFixedHeaderOffsetClass = "pt-14";
+
+export const appEntryPageHeaderFixedShellClass =
+  "absolute left-4 right-4 top-4 z-50 h-10 sm:left-5 sm:right-5";
+
+export const appEntryPageHeaderFlowShellClass =
+  "relative z-40 mx-4 mt-4 h-10 sm:mx-5";
+
+export const appEntryPageHeaderRowClass =
+  "relative flex h-full items-center justify-between";
+
+export const appEntryPageHeaderLeftSectionClass =
+  "flex h-full min-w-0 items-center";
+
+export const appEntryPageHeaderTitleOverlayClass =
+  "pointer-events-none absolute inset-0 flex h-full items-center justify-center px-16 text-center sm:px-20 md:px-24";
+
+export const appEntryPageHeaderRightSectionClass =
+  "flex h-full min-w-0 items-center justify-end";
+
+export const appEntryPageHeaderNavClusterClass =
+  "flex h-full min-w-0 items-center gap-2.5 sm:gap-3.5 md:gap-4";
+
+export const appEntryPageHeaderControlsClass =
+  "flex h-full flex-row items-center gap-2.5 sm:gap-3";
+
+export const appEntryPageBrandClass =
+  "flex h-full items-center gap-2.5 text-white/90";
+
+export const appEntryPageBrandTextClass =
+  "font-parkinsans text-xl font-semibold leading-none tracking-tight text-white/90";
+
+export const appPageHeaderBackButtonClass =
+  "-ml-2 flex h-10 w-10 shrink-0 items-center justify-start rounded-full pl-2 text-white/68 leading-none transition-colors duration-200 hover:text-white sm:-ml-2.5 sm:pl-2.5";
+
+export const appPageHeaderBackIconClass = "block shrink-0 text-lg";
+
+export const appPageHeaderTitleClass =
+  "truncate font-parkinsans text-sm font-semibold leading-none tracking-tight text-white/90 sm:text-base md:text-lg";
+
+export const appEntryPageLoginTriggerClass =
+  "inline-flex h-10 items-center gap-2 px-1 text-sm font-medium leading-none text-white/76 transition-colors duration-200 hover:text-white";

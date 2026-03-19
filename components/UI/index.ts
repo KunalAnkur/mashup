@@ -7,6 +7,7 @@ import Logo from "./Logo";
 import Input from "./Input";
 import Notification from "./Notification";
 import AuthHeader from "./AuthHeader";
+import EntryPageHeader from "./EntryPageHeader";
 import PageHeader from "./PageHeader";
 import Modal, {
   ModalCloseButton,
@@ -48,6 +49,7 @@ export {
   Input,
   Notification,
   AuthHeader,
+  EntryPageHeader,
   PageHeader,
   Modal,
   ModalCloseButton,

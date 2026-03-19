@@ -13,8 +13,14 @@ import {
   getPlatformById,
   getUrlDisplayName,
 } from "@/components/Modals/UrlModalComponents";
-import { PageHeader } from "@/components/UI";
+import { EntryPageHeader } from "@/components/UI";
 import { Playlist } from "@/types/storeTypes";
+import {
+  appEntryPageContentWrapClass,
+  appEntryPageFixedHeaderOffsetClass,
+  appEntryPageInsetClass,
+  appEntryPageShellClass,
+} from "@/components/UI/classTokens";
 
 const SyncPage = () => {
   usePreventMobileScroll();
@@ -88,7 +94,7 @@ const SyncPage = () => {
   };
 
   return (
-    <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
+    <div className="relative min-h-screen overflow-hidden bg-[#18181b] text-white">
       {/* Background Effects - Matching CTASection - Responsive sizing */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-0 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-[#e11d48]/20 rounded-full blur-[48px] sm:blur-[64px] md:blur-[96px] lg:blur-[128px] animate-pulse-glow" />
@@ -109,37 +115,39 @@ const SyncPage = () => {
       </div>
 
       {/* Content - Above Background */}
-      <div className="relative z-20 w-full h-screen flex flex-col overflow-hidden">
-        <PageHeader title={t("title")} onBack={handleBack} />
+      <div className={appEntryPageShellClass}>
+        <EntryPageHeader title={t("title")} onBack={handleBack} fixed />
 
         {/* Content - Top aligned on mobile, centered on desktop */}
-        <div className="flex-1 w-full min-h-0 overflow-hidden md:overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">
-          <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 md:py-8">
-            <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 2xl:gap-16 w-full">
-              {/* Left Side - Supported Platforms - Hidden on SM, XS, shown on MD+ but only on XL+ as side-by-side */}
-              <div className="hidden lg:block lg:w-1/2">
-                <SupportedPlatformsGrid />
-              </div>
+        <div className={`flex-1 w-full min-h-0 overflow-hidden md:overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center ${appEntryPageFixedHeaderOffsetClass}`}>
+          <div className={appEntryPageInsetClass}>
+            <div className={appEntryPageContentWrapClass}>
+              <div className="flex w-full flex-col items-stretch gap-3 sm:gap-4 md:gap-6 lg:flex-row lg:gap-8 xl:gap-12 2xl:gap-16">
+                {/* Left Side - Supported Platforms - Hidden on SM, XS, shown on MD+ but only on XL+ as side-by-side */}
+                <div className="hidden lg:block lg:w-1/2">
+                  <SupportedPlatformsGrid />
+                </div>
 
-              {/* Right Side - URL Input - Full width on mobile/tablet, half on LG+ */}
-              <div className="w-full lg:w-1/2 flex flex-col min-h-0">
-                <UrlInputSection
-                  sourceUrlInput={sourceUrlInput}
-                  onSourceUrlChange={handleOnSourceUrlChange}
-                  onKeyDown={handleKeyDown}
-                  onAddUrl={handleAddUrl}
-                  isAddDisabled={isAddDisabled}
-                  tooltipMessage={tooltipMessage}
-                  addedUrls={addedUrls}
-                  loadingMetadata={loadingMetadata}
-                  onRemoveUrl={handleRemoveUrl}
-                  onCancel={handleBack}
-                  onEnterRoom={handleOnEnterRoom}
-                  getPlatformById={getPlatformById}
-                  getUrlDisplayName={getUrlDisplayName}
-                  isAdding={isAdding}
-                  isEntering={isEntering}
-                />
+                {/* Right Side - URL Input - Full width on mobile/tablet, half on LG+ */}
+                <div className="flex w-full min-h-0 flex-col lg:w-1/2">
+                  <UrlInputSection
+                    sourceUrlInput={sourceUrlInput}
+                    onSourceUrlChange={handleOnSourceUrlChange}
+                    onKeyDown={handleKeyDown}
+                    onAddUrl={handleAddUrl}
+                    isAddDisabled={isAddDisabled}
+                    tooltipMessage={tooltipMessage}
+                    addedUrls={addedUrls}
+                    loadingMetadata={loadingMetadata}
+                    onRemoveUrl={handleRemoveUrl}
+                    onCancel={handleBack}
+                    onEnterRoom={handleOnEnterRoom}
+                    getPlatformById={getPlatformById}
+                    getUrlDisplayName={getUrlDisplayName}
+                    isAdding={isAdding}
+                    isEntering={isEntering}
+                  />
+                </div>
               </div>
             </div>
           </div>

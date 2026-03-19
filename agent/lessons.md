@@ -90,6 +90,73 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Keep future redesign steps focused on actually rendered component paths.
 - Follow-up action: Add newly discovered unused/non-rendered component paths to `agent/lessons.md` every time they show up during implementation.
 
+## 2026-03-19 (Entry-Page Width Drift From Wrapper Layers)
+
+- Date: 2026-03-19
+- Context: Aligning `/`, `/sync`, `/stream`, and `/stream/screen` to the same entry-page shell.
+- Error: The shared pages technically used the same `max-w-6xl` shell, but they still looked wider or differently aligned than home.
+- Root cause: Shared `PageHeader` spacing drifted wider than the home top bar (`sm:mx-6` vs home's `sm:left/right-5`), and some entry pages still kept extra outer flex-centering wrappers that made the real stage feel inconsistent.
+- Prevention checklist:
+  - Match `PageHeader` edge spacing to the home header ratio, not only to the content inset token.
+  - Reuse the home header shell/brand/control structure instead of maintaining a second wrapper with its own spacing rules.
+  - Treat `appEntryPageShellClass` as the owner of page width; remove redundant outer centering wrappers when they do not add behavior.
+  - Compare new shared entry-page wrappers directly against the home route before assuming equal `max-w-*` values are visually equivalent.
+  - Keep the shared shell, header spacing, and content inset responsibilities separate so drift is easier to spot.
+- Follow-up action: Reuse the same home-vs-shared-shell comparison whenever entry-page wrappers are refactored.
+
+## 2026-03-19 (Entry Header Wrapper Drift)
+
+- Date: 2026-03-19
+- Context: Home, `/sync`, and `/stream` entry-header alignment cleanup.
+- Error: Even after sharing tokens, the header still drifted because home and subpages were assembled through different wrapper components with their own composition choices.
+- Root cause: The visual reference header was not being used directly by the live routes; wrapper layers reintroduced spacing and sizing differences.
+- Prevention checklist:
+  - Mount one shared entry-header component directly in the live entry routes.
+  - Keep wrapper components as thin compatibility shims only, or remove them when safe.
+  - Fix header alignment in the shared component first, not by patching each route separately.
+  - Compare left edge, right edge, and control sizing against the home route after every header change.
+- Follow-up action: Reuse `EntryPageHeader` directly for future entry pages before introducing any new per-route header wrapper.
+
+## 2026-03-19 (Back Button Optical Inset)
+
+- Date: 2026-03-19
+- Context: Shared entry-header alignment across home, `/sync`, and `/stream`.
+- Error: The subpage back arrow still looked too padded from the left edge compared with the home logo start.
+- Root cause: The back button kept a healthy touch target, but the visible icon sat centered inside that box and looked inset.
+- Prevention checklist:
+  - Preserve the touch target, but tune optical alignment in the shared back-button token.
+  - Compare the visible icon edge with the home brand edge, not only the wrapper bounds.
+  - Keep this adjustment in the shared header token/component instead of per-route margin hacks.
+  - Re-check the result on both mobile and desktop breakpoints.
+  - If the icon still looks inset, anchor the button content with shared left padding instead of relying only on negative outer margin.
+- Follow-up action: Reuse the shared back-button token for future entry pages that add left-side navigation.
+
+## 2026-03-19 (Mixed Header Positioning Drift)
+
+- Date: 2026-03-19
+- Context: Tiny top-gap mismatch between home and `/sync` despite matching shell tokens.
+- Error: The header still looked slightly lower on subpages even after row-height cleanup.
+- Root cause: Home used a fixed-position header presentation while active subpages were still mounting the shared header in normal flow, so the page-top rhythm was not actually identical.
+- Prevention checklist:
+  - Keep active entry routes on the same header positioning mode.
+  - Use one shared body-offset token under the shared fixed header.
+  - Do not assume matching `top-*` and `mt-*` utilities are visually identical across route layouts.
+  - Verify page-switch transitions between home and subpages when refining header spacing.
+- Follow-up action: Reuse the fixed-header + shared-offset pattern for future entry pages that need home-level top alignment.
+
+## 2026-03-19 (Header Layout Mode Drift)
+
+- Date: 2026-03-19
+- Context: Tiny perceived top-gap and alignment drift between the home header and subpage entry headers.
+- Error: Even with one shared shell, the header still felt a touch different when subpages switched to a separate centered-grid layout for titles.
+- Root cause: The shared header component still had two internal layout modes, so title-bearing pages were not truly using the same row geometry as home.
+- Prevention checklist:
+  - Keep one shared fixed-height header row for all entry pages.
+  - If a page needs a centered title, render it as a non-interactive overlay inside that same row.
+  - Give header text triggers/titles explicit `leading-none` and fixed control heights so font metrics cannot subtly stretch the bar.
+  - Compare home, `/sync`, and `/stream` while logged in and logged out after any header refactor.
+- Follow-up action: Reuse the single-row + title-overlay pattern for future entry-page headers instead of branching back into grid-vs-flex variants.
+
 ## 2026-03-07
 
 - Date: 2026-03-07

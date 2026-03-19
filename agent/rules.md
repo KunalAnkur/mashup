@@ -18,11 +18,15 @@ Last sync: 2026-03-19 (doc refresh + i18n + layout stability)
 13. During class unification work, avoid local near-duplicate CSS and make token changes cautiously so one tweak does not unintentionally drift the app-wide design language.
 14. During redesign work, update `components/UI/classTokens.ts` and the relevant agent docs step by step instead of postponing those syncs.
 15. When you discover an unused, parallel, or no-longer-rendered component path, record it in `agent/lessons.md`.
-16. Before suggesting any `git add` or `git commit` commands, run `git status --short`.
-17. Group commit suggestions logically by changed files/purpose, and do not suggest them until the user confirms the work is finished or approved.
-18. Never execute `git add`, `git commit`, or `git push`; always give those commands for the user to run manually.
-19. Do not execute git branch/switch commands unless the user explicitly asks for that git action.
-20. If the user explicitly asks to undo or move git work, use non-destructive commands that preserve changes whenever possible.
-21. Update `AGENTS.md` first when durable repo rules change, then sync `agent/` docs without duplicating policy text unnecessarily.
-22. Keep `README.md` and `agent/` docs Movmash-specific; do not leave generic framework boilerplate or cross-repo guidance in them.
-23. Keep the repo docs in sync continuously when durable context changes; do not defer doc updates to the end of the branch.
+16. Treat the home header as the source of truth for entry-page headers and reuse one shared header shell/parts system across home, sync, and stream routes.
+17. Before suggesting any `git add` or `git commit` commands, run `git status --short`.
+18. Group commit suggestions logically by changed files/purpose, and do not suggest them until the user confirms the work is finished or approved.
+19. Never execute `git add`, `git commit`, or `git push`; always give those commands for the user to run manually.
+20. Do not execute git branch/switch commands unless the user explicitly asks for that git action.
+21. If the user explicitly asks to undo or move git work, use non-destructive commands that preserve changes whenever possible.
+22. Update `AGENTS.md` first when durable repo rules change, then sync `agent/` docs without duplicating policy text unnecessarily.
+23. Keep `README.md` and `agent/` docs Movmash-specific; do not leave generic framework boilerplate or cross-repo guidance in them.
+24. Keep the repo docs in sync continuously when durable context changes; do not defer doc updates to the end of the branch.
+25. For shared entry headers, fix optical edge alignment in the shared token/component layer instead of nudging individual route wrappers.
+26. For pixel-stable entry-page top spacing, keep active entry routes on one shared header positioning mode and one shared body offset token.
+27. Keep shared entry headers on one fixed-height row; if a subpage needs a centered title, overlay it inside that row instead of switching to a second layout structure.

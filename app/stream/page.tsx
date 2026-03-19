@@ -11,10 +11,16 @@ import {
   ACCEPTED_FILE_TYPES,
 } from "@/components/Modals/DeviceModalComponents";
 import { FileSelection } from "@/components";
-import { Input, PageHeader } from "@/components/UI";
+import { EntryPageHeader, Input } from "@/components/UI";
 import { ScreenShareBox } from "@/components/ScreenShare/ScreenShareBox";
 import { isMobile } from "react-device-detect";
 import { ExtendedFile } from "@/utils/filePersistence";
+import {
+  appEntryPageContentWrapClass,
+  appEntryPageFixedHeaderOffsetClass,
+  appEntryPageInsetClass,
+  appEntryPageShellClass,
+} from "@/components/UI/classTokens";
 
 const StreamFilesPage = () => {
   usePreventMobileScroll();
@@ -60,7 +66,7 @@ const StreamFilesPage = () => {
 
   return (
     <div
-      className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen"
+      className="relative min-h-screen overflow-hidden bg-[#18181b] text-white"
       {...dragHandlers}
     >
       {/* Background Effects - Matching CTASection */}
@@ -96,25 +102,27 @@ const StreamFilesPage = () => {
       />
       
       {/* Content - Above Background */}
-      <div className="relative z-20 w-full h-screen flex flex-col overflow-hidden">
-        <PageHeader title={t("title")} onBack={handleBack} />
+      <div className={appEntryPageShellClass}>
+        <EntryPageHeader title={t("title")} onBack={handleBack} fixed />
 
         {/* Content - Top aligned on mobile, centered on desktop */}
-        <div className="flex-1 w-full min-h-0 overflow-hidden md:overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center">
-          <div className="w-full max-w-5xl lg:max-w-6xl 3xl:max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-8">
-            <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-12 w-full">
-              {/* Left Side - Screen Share Section - Hidden on mobile */}
-              {!isMobile && (
-                <div className="w-full lg:w-1/3 flex flex-col">
-                  <ScreenShareBox handleScreenShareClick={handleScreenShareClick} />
-                </div>
-              )}
-          
-              {!isMobile && <ContentDivider />}
+        <div className={`flex-1 w-full min-h-0 overflow-hidden md:overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center ${appEntryPageFixedHeaderOffsetClass}`}>
+          <div className={appEntryPageInsetClass}>
+            <div className={appEntryPageContentWrapClass}>
+              <div className="flex w-full flex-col items-stretch gap-3 sm:gap-4 md:gap-6 lg:flex-row lg:gap-8 xl:gap-12">
+                {/* Left Side - Screen Share Section - Hidden on mobile */}
+                {!isMobile && (
+                  <div className="flex w-full flex-col lg:w-1/3">
+                    <ScreenShareBox handleScreenShareClick={handleScreenShareClick} />
+                  </div>
+                )}
 
-              {/* Right Side - File Selection - Full width on mobile */}
-              <div className={`flex flex-col min-w-0 ${isMobile ? 'w-full' : 'w-full lg:w-2/3'}`}>
-                <FileSelection />
+                {!isMobile && <ContentDivider />}
+
+                {/* Right Side - File Selection - Full width on mobile */}
+                <div className={`flex min-w-0 flex-col ${isMobile ? "w-full" : "w-full lg:w-2/3"}`}>
+                  <FileSelection />
+                </div>
               </div>
             </div>
           </div>

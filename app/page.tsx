@@ -1,7 +1,9 @@
 "use client";
-import { SourceSelection, ProfileHeader } from "@/components";
+import { SourceSelection } from "@/components";
 import React from "react";
 import { usePreventMobileScroll } from "@/hooks/usePreventMobileScroll";
+import { EntryPageHeader } from "@/components/UI";
+import { appEntryPageShellClass } from "@/components/UI/classTokens";
 
 const Page = () => {
   usePreventMobileScroll();
@@ -40,8 +42,8 @@ const Page = () => {
         />
       </div>
 
-      <div className="relative z-20 mx-auto h-full w-full max-w-6xl">
-        <ProfileHeader />
+      <div className={appEntryPageShellClass}>
+        <EntryPageHeader fixed />
         <SourceSelection />
       </div>
     </div>
