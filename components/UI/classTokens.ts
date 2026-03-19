@@ -111,3 +111,9 @@ export const appDropdownLogoutIconChipClass =
 
 export const appDropdownDisabledRowClass =
   "disabled:cursor-not-allowed disabled:opacity-50";
+
+export const appHomeEntryCardSurfaceClass =
+  `${zincGlassMutedBlurredSurfaceClass} hover:from-zinc-700/15 hover:via-zinc-600/15 hover:to-zinc-700/15`;
+
+export const appHomeInputSurfaceClass =
+  `${zincGlassMutedBlurredSurfaceClass} transition-[background-color] duration-200 focus-within:from-zinc-700/15 focus-within:via-zinc-600/15 focus-within:to-zinc-700/15`;

@@ -13,6 +13,7 @@
 - When giving UI verification, describe it as step-by-step app navigation: which page to open, which component to locate, which visual properties to compare, and which interaction state to try.
 - If the user asks to work step by step, make one bounded change at a time, then stop for feedback before moving to the next visual revision.
 - When the user says “note to yourself” for a project-specific workflow/design rule, record it here if it should persist for later turns in this repo.
+- During redesign work, update `components/UI/classTokens.ts` and the relevant agent docs incrementally at each step instead of batching those updates at the end.
 - During visual cleanup and class unification, preserve existing interaction behavior such as hover-revealed timestamps, tooltips, contextual actions, and disclosure states. Remove only the decorative layer you intend to remove, not the state hook that drives related behavior.
 - After refactors or component extraction, verify that no stale references/import removals are left behind. Smoke test the directly affected screen/tab to avoid runtime `ReferenceError` issues.
 - Before deleting "unused" files, verify real imports/usages first and then clean up stale state, handlers, comments, and support types in the entry points that previously referenced them.
@@ -37,6 +38,7 @@
 - When these files drift, prefer consolidating duplicate guidance and updating the file that matches the note's purpose instead of copying the same content into all files.
 - `README.md` should stay project-specific and contributor-useful; do not leave it as generic framework boilerplate.
 - Keep `AGENTS.md`, `agent/rules.md`, `agent/tasks.md`, `agent/lessons.md`, `agent/tasks/notion-backlog.md`, and `README.md` updated continuously when durable repo context changes; do not postpone doc upkeep until the end of a long workstream.
+- In redesign passes, keep `components/UI/classTokens.ts` and the agent docs synchronized as the design evolves so shared tokens and workflow notes do not lag behind the UI changes.
 
 # Localization Rules
 
@@ -86,6 +88,8 @@
 - When tightening or balancing UI spacing, prefer shared wrapper spacing and `gap-*` over scattered one-off `ml-*`, `mr-*`, `mt-*`, or `mb-*` fixes.
 - When a shared surface token already defines the panel/popover/card look, prefer using it directly instead of stacking extra shadow, border, or blur utilities on top unless the extra layer creates a clearly intentional distinction.
 - In class unification work, remove redundant visual add-ons from consumers before creating new tokens for them. Favor one unified surface treatment over multiple slightly different layered versions.
+- Treat `components/UI/classTokens.ts` as the first stop for shared UI surface and control styling. Before adding or editing repeated classes, check whether an existing token should be reused or extended there instead of creating a near-duplicate inline string.
+- When `classTokens.ts` is being actively unified, edit cautiously: preserve the existing visual system, avoid parallel duplicates, and do not let one local tweak drift the app-wide CSS language.
 
 # Future UI TODOs
 

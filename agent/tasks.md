@@ -20,6 +20,8 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Keep the room/panel-style home background and the newer language selector treatment.
   - Keep the original home-page placement/order intact instead of introducing a new composition.
   - Keep the home page shell centered at `max-w-7xl` while preserving the existing content order and alignment.
+  - Route repeated home-entry styling through `components/UI/classTokens.ts` where practical instead of adding new near-duplicate inline surface classes.
+  - During redesign, keep `components/UI/classTokens.ts` and the relevant agent docs updated at each step so the system stays easy to extend.
   - Limit home-page changes to refreshed colors, surfaces, and typography while preserving existing locations.
   - Keep the home brand in the fixed top row with the language/auth controls instead of duplicating it in the content column.
   - Prefer an icon-led but borderless/background-free auth trigger in the top-right header.

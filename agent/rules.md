@@ -13,11 +13,14 @@ Last sync: 2026-03-19 (doc refresh + i18n + layout stability)
 8. Avoid time-based layout shifts from disappearing wrappers, helpers, or placeholders, especially on onboarding/auth/stream pages.
 9. For home/onboarding/auth entry screens, prefer calm low-chrome surfaces and reduce border-heavy cards, stacked gradients, floating decoration, and heavy shadows.
 10. Prefer structural layout utilities (`flex`, `grid`, `items-*`, `justify-*`, `gap-*`) over ad hoc spacing fixes.
-11. Before suggesting any `git add` or `git commit` commands, run `git status --short`.
-12. Group commit suggestions logically by changed files/purpose, and do not suggest them until the user confirms the work is finished or approved.
-13. Never execute `git add`, `git commit`, or `git push`; always give those commands for the user to run manually.
-14. Do not execute git branch/switch commands unless the user explicitly asks for that git action.
-15. If the user explicitly asks to undo or move git work, use non-destructive commands that preserve changes whenever possible.
-16. Update `AGENTS.md` first when durable repo rules change, then sync `agent/` docs without duplicating policy text unnecessarily.
-17. Keep `README.md` and `agent/` docs Movmash-specific; do not leave generic framework boilerplate or cross-repo guidance in them.
-18. Keep the repo docs in sync continuously when durable context changes; do not defer doc updates to the end of the branch.
+11. Treat `components/UI/classTokens.ts` as the shared UI style source of truth; reuse or extend tokens there before adding repeated inline class strings.
+12. During class unification work, avoid local near-duplicate CSS and make token changes cautiously so one tweak does not unintentionally drift the app-wide design language.
+13. During redesign work, update `components/UI/classTokens.ts` and the relevant agent docs step by step instead of postponing those syncs.
+14. Before suggesting any `git add` or `git commit` commands, run `git status --short`.
+15. Group commit suggestions logically by changed files/purpose, and do not suggest them until the user confirms the work is finished or approved.
+16. Never execute `git add`, `git commit`, or `git push`; always give those commands for the user to run manually.
+17. Do not execute git branch/switch commands unless the user explicitly asks for that git action.
+18. If the user explicitly asks to undo or move git work, use non-destructive commands that preserve changes whenever possible.
+19. Update `AGENTS.md` first when durable repo rules change, then sync `agent/` docs without duplicating policy text unnecessarily.
+20. Keep `README.md` and `agent/` docs Movmash-specific; do not leave generic framework boilerplate or cross-repo guidance in them.
+21. Keep the repo docs in sync continuously when durable context changes; do not defer doc updates to the end of the branch.

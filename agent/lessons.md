@@ -50,6 +50,20 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Keep any git help scoped to status checks, diff inspection, and command suggestions unless the user explicitly asks for another git action.
 - Follow-up action: Keep this preference enforced in `AGENTS.md` and `agent/rules.md` for future turns.
 
+## 2026-03-19 (Class Token Drift During UI Cleanup)
+
+- Date: 2026-03-19
+- Context: Home-page visual cleanup while `components/UI/classTokens.ts` is being actively unified.
+- Error: It is easy to make one local UI change by reintroducing inline near-duplicate classes, which slowly drifts the app away from the shared token system and creates CSS duplication.
+- Root cause: Fast visual tweaks were being made at the consumer level without first checking whether the shared token file already covered the surface/control style or should be extended.
+- Prevention checklist:
+  - Check `components/UI/classTokens.ts` before creating repeated UI class strings in feature components.
+  - Reuse or extend shared tokens instead of recreating near-matching surfaces inline.
+  - Keep token edits cautious so a local fix does not unintentionally change the broader design system.
+  - Prefer removing redundant borders/rings/shadows from consumers before inventing new token variants.
+  - Keep `classTokens.ts` and the relevant agent docs updated on each redesign step, not as an end-of-pass cleanup.
+- Follow-up action: Treat `classTokens.ts` as the first-stop source of truth during future UI polish and class unification passes.
+
 ## 2026-03-07
 
 - Date: 2026-03-07

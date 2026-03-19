@@ -8,19 +8,23 @@ import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { trackCTAClicked } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { Input } from "../UI";
+import {
+  appHomeEntryCardSurfaceClass,
+  appHomeInputSurfaceClass,
+} from "../UI/classTokens";
 
 const titleClass =
   "font-parkinsans text-[29px] font-semibold tracking-tight text-white sm:text-[31px] md:text-[35px]";
 const descriptionClass =
   "mx-auto mt-1 max-w-md px-2 text-center text-sm leading-6 text-white/56 sm:text-[15px]";
 const cardBaseClass =
-  "group relative h-36 w-full overflow-hidden rounded-2xl border border-white/[0.05] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.02))] transition-all duration-300 hover:border-white/[0.08] hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.025))] sm:h-40 md:h-44";
+  `group relative h-36 w-full overflow-hidden rounded-2xl ${appHomeEntryCardSurfaceClass} transition-all duration-300 sm:h-40 md:h-44`;
 const cardInnerClass =
   "relative flex h-full flex-col items-center justify-center px-4 text-white/82 transition-colors duration-300 group-hover:text-white";
 const cardIconWrapClass =
   "mb-2.5 flex items-center justify-center rounded-full bg-white/[0.045] p-4 text-white transition-all duration-300 group-hover:bg-white/[0.075] sm:p-5 md:p-6";
 const joinInputSurfaceClass =
-  "flex flex-1 items-center rounded-2xl border border-white/[0.04] bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.02))] px-3.5 sm:px-4 backdrop-blur-2xl transition-all duration-200 focus-within:border-white/[0.08] focus-within:bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.025))]";
+  `flex flex-1 items-center rounded-2xl px-3.5 sm:px-4 ${appHomeInputSurfaceClass}`;
 const joinInputFieldClass =
   "h-[50px] w-full appearance-none bg-transparent text-base text-white outline-none placeholder:text-white/38";
 const joinButtonClass =
@@ -161,7 +165,7 @@ const SourceSelection = () => {
               <div className="flex w-full gap-2.5 sm:gap-3">
                 <div
                   className={`${joinInputSurfaceClass} ${
-                    joinError ? "border-red-500/50 focus-within:border-red-500/50" : ""
+                    joinError ? "bg-red-500/[0.08]" : ""
                   } ${isJoining ? "cursor-not-allowed opacity-50" : ""}`}
                 >
                   <Input
