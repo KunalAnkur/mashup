@@ -32,11 +32,15 @@ Last sync: 2026-03-19 (doc refresh + i18n + layout stability)
 27. For pixel-stable entry-page top spacing, keep active entry routes on one shared header positioning mode and one shared body offset token.
 28. Keep shared entry headers on one fixed-height row; if a subpage needs a centered title, overlay it inside that row instead of switching to a second layout structure.
 29. When entry pages share the same backdrop or section-heading pattern, move that structure into shared UI primitives instead of duplicating it per route.
-30. During redesign, preserve approved page structure/order/placement unless the user explicitly wants structural change; improve surfaces, colors, spacing, and typography first.
-31. On split entry pages, do not add large outer left/right section backgrounds when inner cards/fields already carry the visual surface.
-32. During redesign, preserve the approved sizing/proportional rhythm too; do not change column widths, section heights, or component size hierarchy unless the user asks for it.
-33. On split entry pages, keep both columns on the same title-to-bottom rhythm using shared flex-height contracts, not ad hoc padding/margin balancing.
-34. Remove redundant empty-state helper tips when the placeholder content already explains the flow.
-35. On approved entry-page layouts, make minimal redesign passes by simplifying typography, font weight, borders, and shadows before changing wrappers or structure.
-36. If a section heading is already clear through spacing and type, avoid decorative accent rails and keep it closer to the shared header title scale.
-37. If the user says "Movmash theme color", use the panel active-tab gradient as the default brand accent unless they ask for another palette.
+30. If one backdrop should drive multiple routes, own it in `app/layout.tsx` or a shared scaffold and keep page wrappers/background blocks transparent so one edit changes the whole app.
+31. Once a backdrop is centralized, keep it owned only by that layout/scaffold layer; do not leave it re-exported for page-level imports that could reintroduce duplicate ownership.
+32. Name shared layout helpers by behavior/responsibility rather than by accidental styling side effects; viewport-height tokens should not sound like they own backdrop color.
+33. When `/sync`, `/stream`, and `/stream/screen` share one visual family, codify that family in `components/UI/classTokens.ts` instead of leaving route-specific inline color systems behind.
+34. During redesign, preserve approved page structure/order/placement unless the user explicitly wants structural change; improve surfaces, colors, spacing, and typography first.
+35. On split entry pages, do not add large outer left/right section backgrounds when inner cards/fields already carry the visual surface.
+36. During redesign, preserve the approved sizing/proportional rhythm too; do not change column widths, section heights, or component size hierarchy unless the user asks for it.
+37. On split entry pages, keep both columns on the same title-to-bottom rhythm using shared flex-height contracts, not ad hoc padding/margin balancing.
+38. Remove redundant empty-state helper tips when the placeholder content already explains the flow.
+39. On approved entry-page layouts, make minimal redesign passes by simplifying typography, font weight, borders, and shadows before changing wrappers or structure.
+40. If a section heading is already clear through spacing and type, avoid decorative accent rails and keep it closer to the shared header title scale.
+41. If the user says "Movmash theme color", use the panel active-tab gradient as the default brand accent unless they ask for another palette.

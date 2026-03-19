@@ -11,7 +11,7 @@ import {
   ACCEPTED_FILE_TYPES,
 } from "@/components/Modals/DeviceModalComponents";
 import { FileSelection } from "@/components";
-import { EntryPageBackdrop, EntryPageHeader, Input } from "@/components/UI";
+import { EntryPageHeader, Input } from "@/components/UI";
 import { ScreenShareBox } from "@/components/ScreenShare/ScreenShareBox";
 import { isMobile } from "react-device-detect";
 import { ExtendedFile } from "@/utils/filePersistence";
@@ -20,6 +20,7 @@ import {
   appEntryPageFixedHeaderOffsetClass,
   appEntryPageInsetClass,
   appEntryPageShellClass,
+  appFixedViewportPageClass,
 } from "@/components/UI/classTokens";
 
 const StreamFilesPage = () => {
@@ -62,11 +63,9 @@ const StreamFilesPage = () => {
 
   return (
     <div
-      className="relative h-screen overflow-hidden bg-[#09090c] text-white"
+      className={appFixedViewportPageClass}
       {...dragHandlers}
     >
-      <EntryPageBackdrop />
-
       <DragOverlay isVisible={isDragging} />
       
       {/* Hidden file input for drag and drop */}

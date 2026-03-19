@@ -308,13 +308,13 @@
     }
   },
   "notFound": {
-    "title": "Oops! This Scene is Missing",
-    "description1": "Looks like this page went on a coffee break! ☕",
-    "description2": "Don't worry, even the best movies have deleted scenes. Let's get you back to the main show!",
+    "title": "Page Not Found",
+    "description1": "This page isn't available.",
+    "description2": "The link may be broken, or the page may have been moved.",
     "goHome": "Go Home",
     "goBack": "Go Back",
-    "funFact": "Fun Fact:",
-    "funFactText": "The first 404 error appeared in 1992. You're experiencing a piece of internet history! 🚀"
+    "funFact": "Info:",
+    "funFactText": "HTTP 404 means the server could not find the page you requested."
   },
   "feedback": {
     "title": "Feedback",

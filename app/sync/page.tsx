@@ -13,13 +13,14 @@ import {
   getPlatformById,
   getUrlDisplayName,
 } from "@/components/Modals/UrlModalComponents";
-import { EntryPageBackdrop, EntryPageHeader } from "@/components/UI";
+import { EntryPageHeader } from "@/components/UI";
 import { Playlist } from "@/types/storeTypes";
 import {
   appEntryPageContentWrapClass,
   appEntryPageFixedHeaderOffsetClass,
   appEntryPageInsetClass,
   appEntryPageShellClass,
+  appFixedViewportPageClass,
 } from "@/components/UI/classTokens";
 
 const SyncPage = () => {
@@ -94,10 +95,7 @@ const SyncPage = () => {
   };
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[#09090c] text-white">
-      <EntryPageBackdrop />
-
-      {/* Content - Above Background */}
+    <div className={appFixedViewportPageClass}>
       <div className={appEntryPageShellClass}>
         <EntryPageHeader title={t("title")} fixed showBrandOnSubpage />
 

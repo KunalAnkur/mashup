@@ -308,13 +308,13 @@
     }
   },
   "notFound": {
-    "title": "¡Ups! Esta Escena Faltante",
-    "description1": "¡Parece que esta página se fue a tomar un café! ☕",
-    "description2": "No te preocupes, incluso las mejores películas tienen escenas eliminadas. ¡Volvamos al espectáculo principal!",
-    "goHome": "Ir al Inicio",
+    "title": "Página no encontrada",
+    "description1": "Esta página no está disponible.",
+    "description2": "Es posible que el enlace no funcione o que la página se haya movido.",
+    "goHome": "Ir al inicio",
     "goBack": "Volver",
-    "funFact": "Dato Curioso:",
-    "funFactText": "El primer error 404 apareció en 1992. ¡Estás experimentando una pieza de la historia de internet! 🚀"
+    "funFact": "Dato:",
+    "funFactText": "HTTP 404 significa que el servidor no pudo encontrar la página solicitada."
   },
   "feedback": {
     "title": "Comentarios",

@@ -87,6 +87,8 @@ export const appDropdownDividerClass = "h-px w-full bg-white/8";
 
 export const appSeparatorLineClass = "h-px flex-1 bg-white/10";
 
+export const appScrollbarHideClass = "scrollbar-hide";
+
 export const appDropdownMetaTextClass =
   "text-[9px] md:text-[10px] text-white/42";
 
@@ -120,6 +122,14 @@ export const appHomeEntryCardSurfaceClass =
 
 export const appHomeInputSurfaceClass =
   `${zincGlassMutedBlurredSurfaceClass} transition-[background-color] duration-200 focus-within:from-zinc-700/15 focus-within:via-zinc-600/15 focus-within:to-zinc-700/15`;
+
+export const appLayoutContentLayerClass = "relative z-10 min-h-screen";
+
+export const appFixedViewportPageClass =
+  "relative h-screen overflow-hidden text-white";
+
+export const appFlexibleViewportPageClass =
+  "relative min-h-screen overflow-hidden text-white";
 
 export const appEntryPageShellClass =
   "relative z-20 mx-auto flex h-screen w-full max-w-6xl flex-col overflow-hidden";
@@ -176,6 +186,24 @@ export const appSectionTitleWrapClass =
 export const appSectionTitleTextClass =
   "font-parkinsans text-sm font-semibold leading-none tracking-tight text-white/88 sm:text-base md:text-lg";
 
+export const appNotFoundContentClass =
+  "mx-auto flex h-full w-full max-w-2xl flex-col items-center justify-center gap-5 text-center sm:gap-6 md:gap-7";
+
+export const appNotFoundCodeClass =
+  "bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-rose-300 bg-clip-text font-parkinsans text-[84px] font-semibold leading-none tracking-tight text-transparent sm:text-[112px] md:text-[132px]";
+
+export const appNotFoundLeadClass =
+  "max-w-xl text-[15px] font-medium leading-7 text-white/82 sm:text-lg sm:leading-8";
+
+export const appNotFoundBodyClass =
+  "max-w-lg text-sm leading-6 text-white/56 sm:text-[15px]";
+
+export const appNotFoundActionRowClass =
+  "mt-1 flex w-full max-w-md flex-col gap-2.5 sm:flex-row";
+
+export const appNotFoundFootnoteClass =
+  "max-w-xl text-xs leading-6 text-white/40 sm:text-sm";
+
 export const appEntryPageLoginTriggerClass =
   "inline-flex h-10 items-center gap-2 px-1 text-sm font-medium leading-none text-white/76 transition-colors duration-200 hover:text-white";
 
@@ -211,6 +239,9 @@ export const appEntryFieldShellClass =
 
 export const appEntryFieldInputClass =
   "w-full min-w-0 bg-transparent py-3.5 text-[15px] text-white placeholder:text-white/38";
+
+export const appEntryActionButtonBaseClass =
+  "inline-flex items-center justify-center gap-2";
 
 export const appEntrySecondaryButtonClass =
   "h-12 justify-center rounded-2xl bg-white/[0.05] px-5 text-sm font-medium text-white/82 transition-colors duration-200 hover:bg-white/[0.085] hover:text-white disabled:cursor-not-allowed disabled:opacity-50";
@@ -286,3 +317,47 @@ export const appStreamScreenShareButtonClass =
 
 export const appStreamScreenShareIconClass =
   "mb-3 flex h-16 w-16 items-center justify-center text-violet-200 sm:mb-4 sm:h-20 sm:w-20";
+
+export const appStreamScreenHeroSurfaceClass =
+  "rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.08),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.08),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:rounded-2xl";
+
+export const appStreamScreenOpenSectionClass =
+  "mx-auto flex w-full max-w-2xl flex-col items-center gap-4 text-center sm:gap-5 md:gap-6";
+
+export const appStreamScreenIntroWidthClass = "w-full max-w-md";
+
+export const appStreamScreenIntroClusterClass =
+  "mx-auto flex w-full max-w-md items-center justify-center text-center";
+
+export const appStreamScreenIntroCopyClass =
+  "flex min-w-0 w-full flex-col items-center text-center";
+
+export const appStreamScreenStepCardClass =
+  "rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.06),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.06),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.025))] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.045)] transition-[filter,background] duration-200 hover:brightness-105 sm:rounded-2xl";
+
+export const appStreamScreenStepBadgeClass =
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(56,189,248,0.22),rgba(168,85,247,0.18),rgba(244,63,94,0.20))] text-base font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] sm:mb-4 sm:h-12 sm:w-12 sm:text-lg";
+
+export const appStreamScreenSupportCopyClass =
+  "text-xs leading-6 text-white/78 sm:text-[13px] md:text-sm";
+
+export const appStreamScreenInfoSurfaceClass =
+  "rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.025))] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.045)] sm:rounded-2xl";
+
+export const appStreamScreenPreviewStatusClass =
+  "rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.07),transparent_44%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.08),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.028))] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:rounded-2xl";
+
+export const appStreamScreenPreviewFrameClass =
+  "overflow-hidden rounded-xl bg-[linear-gradient(180deg,rgba(10,10,14,0.94),rgba(5,5,8,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:rounded-2xl";
+
+export const appStreamScreenAudioOnlyStateClass =
+  "bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.14),transparent_46%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.14),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))]";
+
+export const appStreamScreenToggleSurfaceClass =
+  "rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.045)] sm:rounded-2xl";
+
+export const appStreamScreenWarningSurfaceClass =
+  "rounded-xl bg-[linear-gradient(180deg,rgba(245,158,11,0.13),rgba(217,119,6,0.08))] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:rounded-2xl";
+
+export const appStreamScreenPrimaryButtonClass =
+  "inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.94),rgba(168,85,247,0.88),rgba(244,63,94,0.90))] px-4 py-3.5 text-sm font-semibold text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-2xl sm:px-6 sm:py-4 sm:text-base md:px-8 md:py-5 md:text-lg";

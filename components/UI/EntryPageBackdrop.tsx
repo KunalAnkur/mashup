@@ -1,7 +1,6 @@
-"use client";
-
 const EntryPageBackdrop = () => (
-  <div className="pointer-events-none absolute inset-0 z-0">
+  <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
+    <div className="absolute inset-0 bg-[#09090c]" />
     <div className="absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.055)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,black_40%,transparent_100%)]" />
 
     <svg

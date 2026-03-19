@@ -308,13 +308,13 @@
     }
   },
   "notFound": {
-    "title": "Hay aksi! Bu Sahne Eksik",
-    "description1": "Görünüşe göre bu sayfa bir kahve molasına çıktı! ☕",
-    "description2": "Endişelenmeyin, en iyi filmlerin bile silinmiş sahneleri var. Sizi ana gösteriye geri götürelim!",
+    "title": "Sayfa Bulunamadı",
+    "description1": "Bu sayfa şu anda kullanılamıyor.",
+    "description2": "Bağlantı bozulmuş olabilir veya sayfa taşınmış olabilir.",
     "goHome": "Ana Sayfaya Git",
     "goBack": "Geri Git",
-    "funFact": "İlginç Bilgi:",
-    "funFactText": "İlk 404 hatası 1992'de ortaya çıktı. İnternet tarihinin bir parçasını yaşıyorsunuz! 🚀"
+    "funFact": "Bilgi:",
+    "funFactText": "HTTP 404, sunucunun istenen sayfayı bulamadığı anlamına gelir."
   },
   "feedback": {
     "title": "Geri Bildirim",

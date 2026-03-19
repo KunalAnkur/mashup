@@ -29,6 +29,10 @@
 - Active entry routes should use the same header positioning mode and the same shared body offset. Do not mix fixed home headers with flow subpage headers when the goal is pixel-stable top spacing.
 - Keep shared entry headers on one fixed-height row. If a subpage needs a centered title, overlay it inside that row instead of switching to a second internal layout mode.
 - When entry pages share the same atmosphere or section-heading pattern, extract that into shared UI primitives instead of duplicating background layers or heading markup across routes.
+- When the same backdrop should affect multiple routes, mount it once at the app/layout or shared scaffold level and make page wrappers transparent instead of re-rendering or overriding the backdrop per page.
+- Once a backdrop is centralized in layout/scaffold ownership, do not keep exporting/importing that backdrop through page-level UI barrels; import it only at the owner layer so future pages do not accidentally reclaim background ownership.
+- Name shared layout tokens by responsibility and viewport behavior (`layout content`, `fixed viewport page`, `flexible viewport page`) rather than names that could imply they own background styling.
+- When `/sync`, `/stream`, and `/stream/screen` should feel like one family, push their shared surface/button/status color language into `components/UI/classTokens.ts` instead of leaving one-off inline gradients in only one route.
 - During redesign, preserve the approved page structure, order, and placement unless the user explicitly asks for a structural change. Improve the visual system first, not the layout skeleton.
 - During redesign, preserve the approved page sizing and proportional rhythm too. Do not change column widths, section heights, or component size hierarchy unless the user explicitly asks for that.
 - On split entry pages, avoid adding large outer left/right section backgrounds when the child cards, fields, and lists already provide enough surface definition.

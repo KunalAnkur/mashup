@@ -4,8 +4,8 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 
 ## Current Step
 
-- Date: 2026-03-19
-- Active task: Entry-page polish, now doing a visual-only minimal pass on `/stream` while preserving the approved structure and syncing its header/backdrop behavior with home + `/sync`.
+- Date: 2026-03-20
+- Active task: Refine the top intro state on `/stream/screen` so the icon, title, and support text read as one aligned cluster without reintroducing boxy hero chrome.
 - Status: In progress.
 - Completed in this workstream:
   - Refreshed `AGENTS.md` as the durable source of truth for workflow, localization, git, and layout-stability rules.
@@ -42,6 +42,24 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Keep the shared back arrow visually strong enough to balance the home logo mark; tune icon size in the shared header component instead of per-route overrides.
   - Keep shared back-arrow strength in the token/component layer too: if it feels too weak next to the home logo, increase icon size/stroke there instead of padding hacks.
   - Keep home, `/sync`, and `/stream` on one shared entry backdrop primitive and one shared header system so the redesign stays consistent without route-specific wrappers.
+  - Keep the app-wide backdrop owned once in `app/layout.tsx`, then remove page-level backdrop duplicates and opaque route wrappers so one edit changes the whole product atmosphere.
+  - Keep route/page wrappers transparent once the global backdrop is in place; do not leave old solid fills or duplicated glow/emoji background blocks hiding the shared backdrop.
+  - Preserve the exact approved base darkness when centralizing the backdrop; the shared backdrop owner should carry the old `#09090c` base tone so the app does not drift into a grayer mood after layout centralization.
+  - Keep page viewport helpers responsible only for height/overflow/text rhythm; backdrop ownership should stay in layout and not leak back into page-level imports or tokens.
+  - Keep token names equally explicit: use viewport/layout wording for wrapper helpers so future edits do not confuse height helpers with background ownership.
+  - Keep `/stream/screen` in the same visual family as `/stream` and `/sync` by routing hero/status/step/warning/button surfaces into shared class tokens instead of leaving older zinc-only gradients inline in the page file.
+  - On `/stream/screen`, keep the first `Ready to share` state visually open: remove the extra outer hero surface when it makes the page feel box-in-box, then center the CTA and strengthen supporting copy through shared tokens.
+  - On `/stream/screen`, keep the intro copy and icon in one side-by-side cluster when that makes the first state easier to scan than a stacked icon-above-title treatment.
+  - On `/stream/screen`, keep the intro cluster and its primary CTA on the same width guide so the top state feels deliberately aligned instead of loosely centered.
+  - On `/stream/screen`, keep the intro copy itself centered and slightly strengthen small supporting text when the first state still feels hard to read.
+  - On `/stream/screen`, if the icon does not add meaning in the open intro state, remove it and let the centered title/subcopy carry the section.
+  - On `/stream/screen`, keep scroll behavior but hide the visible scrollbar when it adds visual noise; users should still be able to scroll the page naturally.
+  - On `/stream/screen`, the full viewport should feel scrollable, not only the centered content column; if React-level wheel forwarding is unreliable, use a route-scoped `window` wheel listener and slightly stronger delta so the page still feels fast.
+  - Keep `app/not-found.tsx` on the shared entry shell/header too; fallback pages should feel like first-class Movmash routes instead of custom one-off animated screens.
+  - Keep `not-found` CTAs on explicit router handlers too: `Go Home` should always route to `/`, and `Go Back` should fall back to home if browser history does not actually change the page.
+  - On `not-found`, make `Go Home` the fast path: prefer a prefetched `Link` to `/` over a timeout-based JS handler when the route is known and stable.
+  - On `not-found`, prefer the normal home-style brand header over a centered header title so the Movmash logo stays clearly visible.
+  - Keep the `notFound` translation namespace fully synced in every locale and verify the page renders every key it depends on, including the translated title.
   - For entry-page redesign passes, keep the approved layout skeleton intact and avoid large structure shifts unless the user explicitly asks for them.
   - On split entry pages like `/sync`, avoid extra outer left/right panel backgrounds; let the inner controls/cards define the surfaces.
   - Keep split entry columns visually equal in height through the shared row/column contract, not by wrapping each side in another large background panel.

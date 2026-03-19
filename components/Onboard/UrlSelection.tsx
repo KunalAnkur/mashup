@@ -59,7 +59,7 @@ const UrlSelection = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full bg-[#18181b] px-4 py-6">
+    <div className="flex h-full flex-col items-center justify-center px-4 py-6">
       <div className="w-full max-w-md flex flex-col items-center gap-6 sm:gap-8">
         {/* Back button */}
 

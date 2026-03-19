@@ -218,8 +218,116 @@ Use this file to record mistakes, root causes, and prevention steps.
 - Prevention checklist:
   - After restoring a baseline layout or component pattern, search for newly-unused primitives created during the abandoned attempt.
   - Remove dead helpers from `components/UI`, exports, and tokens in the same pass.
-  - Record the cleanup when the dead path could otherwise mislead future work.
-- Follow-up action: Treat design pivots the same way as code refactors: clean up abandoned helpers right away instead of leaving “maybe useful later” UI paths around.
+
+## 2026-03-20 (Global Backdrop Ownership)
+
+- Date: 2026-03-20
+- Context: User wanted the same dotted/glow Movmash backdrop visible across home, auth, sync, stream, stream/screen, room, and fallback pages from one central edit point.
+- Error: The backdrop existed as a shared component, but it was still imported page by page while some routes kept their own solid backgrounds or duplicated ambient blocks, so changing one backdrop source did not actually update the whole app.
+- Root cause: Background ownership was split between `app/layout.tsx`, page-level `EntryPageBackdrop` imports, and older local background wrappers/effects.
+- Prevention checklist:
+  - If one backdrop should control the whole app, mount it once in `app/layout.tsx` or a shared scaffold.
+  - Remove page-level duplicate backdrop renders after centralizing it.
+  - Make top-level page wrappers transparent so the shared backdrop remains visible.
+  - Remove older route-local background systems that visually replace the shared backdrop, especially on auth, stream/screen, room, and fallback routes.
+  - When parallel/older component paths still carry solid background fills, either transparent them too or record them as non-live paths so they do not confuse later work.
+- Follow-up action: Keep future backdrop changes centralized in layout/scaffold ownership and treat opaque page-level backgrounds as opt-in exceptions, not defaults.
+
+## 2026-03-20 (Backdrop Tone Drift From Base Color)
+
+- Date: 2026-03-20
+- Context: After moving the shared Movmash backdrop into `app/layout.tsx`, the app started to feel grayer than the approved pre-centralization version.
+- Error: The structure was centralized correctly, but the backdrop vibe changed because the underlying global base darkness no longer matched the old entry-page base.
+- Root cause: The shared backdrop component owned the dots/noise/glows, but not the exact solid dark base tone that had previously been supplied by per-page wrappers like `bg-[#09090c]`.
+- Prevention checklist:
+  - When centralizing a background, preserve both the decorative layers and the exact underlying base color.
+  - Let the shared backdrop owner carry its own solid base layer when that base is part of the approved visual identity.
+  - Verify the before/after tone visually, not only the structure, after moving background ownership into layout.
+  - Treat global body color variables as part of the backdrop system if they sit behind transparent or masked layers.
+- Follow-up action: Keep the shared backdrop’s base darkness aligned with the approved `#09090c` tone unless the user explicitly asks for a palette change.
+
+## 2026-03-20 (Screen Share Theme Drift)
+
+- Date: 2026-03-20
+- Context: `/stream/screen` still used an older zinc/purple special-case look after `/sync` and `/stream` had already moved to the newer shared cyan/violet/rose Movmash family.
+- Error: The page structure was fine, but the screen-share route felt visually detached because its hero, step cards, status cards, toggles, and warnings still relied on page-local color treatment.
+- Root cause: The newer theme was applied to `/sync` and `/stream`, but not codified enough in shared tokens for `/stream/screen` to reuse cleanly.
+- Prevention checklist:
+  - When sibling routes should feel like one product family, add shared surface/status/button tokens in `components/UI/classTokens.ts`.
+  - Preserve the page structure; migrate color language first.
+  - Avoid leaving route-specific inline gradients behind once a shared theme direction has been approved.
+  - Compare hero, helper cards, warning states, and primary CTAs against sibling routes after each color pass.
+- Follow-up action: Reuse the new `/stream/screen` tokens for future screen-sharing or live-preview surfaces instead of inventing another local palette.
+
+## 2026-03-20 (Open Intro State On Backdrop-Driven Pages)
+
+- Date: 2026-03-20
+- Context: `/stream/screen` initial `Ready to share` state.
+- Error: The first CTA block used another full hero surface even though the global backdrop and nearby step cards already defined enough atmosphere, so the screen felt too boxy and the primary action looked buried.
+- Root cause: A reusable hero token was applied mechanically to the intro block without checking whether this specific state needed another parent surface.
+- Prevention checklist:
+  - On backdrop-driven entry pages, verify whether the intro state reads better as an open centered section before adding another full panel surface.
+  - If the primary CTA is the point of the screen, center it and constrain its width before adding more chrome.
+  - Improve readability through shared support-copy tokens first when the screen feels hard to scan.
+  - Keep structure intact; remove surface weight before changing section order or layout.
+- Follow-up action: Reuse open intro sections for future entry/splash states when the backdrop already carries the mood.
+
+## 2026-03-20 (Intro Cluster Readability)
+
+- Date: 2026-03-20
+- Context: `/stream/screen` top intro block before preview.
+- Error: Once the outer hero surface was removed, the stacked icon-above-title treatment still felt less readable than it needed to.
+- Root cause: The intro block kept a hero-style stacked composition even though the content was now a simpler product-intro/CTA state.
+- Prevention checklist:
+  - On open intro sections, compare stacked vs side-by-side icon/copy layouts before keeping the default hero pattern.
+  - If the icon is only supportive, keep it beside the title/subcopy so the text reads as one unit.
+  - Route that alignment through shared tokens when it becomes part of the new page language.
+  - If the intro leads into one main CTA, keep the text cluster and button on the same width guide so the top state feels intentionally composed.
+  - If the user still struggles to scan the first state, center the support copy and raise its contrast/size slightly before changing structure.
+  - If the icon adds no real meaning after the layout is simplified, remove it completely instead of keeping decorative noise beside the title.
+- Follow-up action: Reuse side-by-side intro clusters for future simple entry prompts when they improve scan speed.
+
+## 2026-03-20 (Hide Scrollbar, Keep Scroll)
+
+- Date: 2026-03-20
+- Context: `/stream/screen` after the preview state started needing vertical scroll.
+- Error: The page needed scrolling, but the visible scrollbar added unnecessary visual noise on a polished entry-style screen.
+- Root cause: The scroll container used `overflow-y-auto` without also opting into the existing hidden-scrollbar utility.
+- Prevention checklist:
+  - If a page still needs wheel/touch scrolling but the scrollbar itself hurts the design, hide the scrollbar instead of removing scroll.
+  - Prefer a shared token for hidden-scrollbar usage when the behavior becomes part of the UI language.
+  - Verify that the page still scrolls normally after hiding the scrollbar.
+  - On centered `max-w-*` entry layouts, test wheel/trackpad scrolling from the empty gutter areas too; if the scroll owner is narrower than the viewport, the page can feel broken even though the content technically scrolls.
+  - If gutter-area scrolling still fails with component-level wheel handlers, use a route-scoped `window` wheel listener for that page; it is more reliable for full-viewport wheel capture.
+- Follow-up action: Reuse the hidden-scrollbar token on future polished entry/preview screens when the scrollbar chrome is unnecessary.
+
+## 2026-03-20 (Fallback Pages Need Shared Chrome Too)
+
+- Date: 2026-03-20
+- Context: `app/not-found.tsx` redesign.
+- Error: The fallback page still used a separate animated composition with floating icons, custom header markup, and special-case CTA styling, so it felt detached from the rest of the redesigned app.
+- Root cause: Error/fallback routes were left outside the shared entry-page system while work focused on the main user flows.
+- Prevention checklist:
+  - Route fallback pages through the same shared entry header, shell, and button tokens whenever their behavior is still an entry-style screen.
+  - Prefer calm, readable fallback states over custom animation-heavy one-offs once the main app has an approved visual system.
+  - Make back-navigation CTAs resilient: if browser history is absent, fall back to home instead of doing nothing.
+  - Reuse shared CTA tokens first before inventing custom error-page buttons.
+  - If the fallback page already has a strong content title, avoid also centering that same title in the header; keep the normal brand header so the logo remains visible.
+  - If the destination is a stable known route like `/`, prefer a prefetched `Link` over a timeout-based JS button handler; the primary CTA should feel instant.
+- Follow-up action: Keep future maintenance/error pages aligned with the shared entry-page primitives unless they need genuinely different behavior.
+
+## 2026-03-20 (Page-Specific Locale Namespaces Need Usage Checks Too)
+
+- Date: 2026-03-20
+- Context: `app/not-found.tsx` uses a small `notFound` namespace across `en`, `tr`, `es`, and `ar`.
+- Error risk: Locale files can look structurally complete while a page still ignores one key, or one locale drifts into stale wording because only the default language was updated.
+- Root cause: Page-specific namespaces are easy to treat as "small enough to eyeball," so they often skip the same parity and usage checks used on larger dictionaries.
+- Prevention checklist:
+  - Update every locale in the same pass when changing a page-scoped namespace like `notFound`.
+  - Check the live component usage against the namespace keys, not only locale-file parity.
+  - If a namespace already has a key like `title`, either render it or remove it consistently; avoid dormant translated keys.
+  - Prefer neutral, reusable fallback copy over joke-heavy text when the page is part of the main shared UI system.
+- Follow-up action: Keep `notFound` translations aligned in all locales and continue auditing both dictionary parity and live key usage after future copy changes.
 
 ## 2026-03-19 (Empty State Wrapper Drift)
 
