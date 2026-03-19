@@ -35,6 +35,7 @@ import { trackRoomLinkCopied } from "@/lib/analytics";
 import { motion } from "framer-motion";
 import PanelHeaderActionButton from "./PanelHeaderActionButton";
 import useEmblaCarousel from "embla-carousel-react";
+import { movmashThemeGradientClass } from "../UI/classTokens";
 
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
@@ -44,8 +45,7 @@ const desktopTabRailClass =
   "relative grid w-full gap-1 rounded-full bg-white/[0.035] p-1.5";
 const desktopTabButtonBaseClass =
   "relative inline-flex min-h-[30px] min-w-0 w-full items-center justify-center overflow-hidden rounded-full p-1.5 text-[14px] leading-none font-medium text-white transition-colors duration-200";
-const activeTabPillClass =
-  "bg-[linear-gradient(135deg,rgba(190,24,93,0.96)_0%,rgba(190,24,93,0.9)_38%,rgba(168,85,247,0.8)_100%)]";
+const activeTabPillClass = movmashThemeGradientClass;
 const activeTabPillTransition = {
   type: "spring",
   stiffness: 420,

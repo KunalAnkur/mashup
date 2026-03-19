@@ -5,7 +5,7 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 ## Current Step
 
 - Date: 2026-03-19
-- Active task: Entry-page polish, now extending the home direction into the `/sync` header.
+- Active task: Entry-page polish, now doing a visual-only minimal pass on `/sync` while preserving the approved structure.
 - Status: In progress.
 - Completed in this workstream:
   - Refreshed `AGENTS.md` as the durable source of truth for workflow, localization, git, and layout-stability rules.
@@ -41,6 +41,26 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Keep the shared back-arrow hit area large, but align the visible arrow anchor to the same left start line as the home logo so page switches feel perfectly consistent.
   - Keep the shared back arrow visually strong enough to balance the home logo mark; tune icon size in the shared header component instead of per-route overrides.
   - Keep shared back-arrow strength in the token/component layer too: if it feels too weak next to the home logo, increase icon size/stroke there instead of padding hacks.
+  - Keep home and `/sync` on one shared entry backdrop primitive and one shared section-heading primitive so the redesign stays consistent and easy to reuse on `/stream`.
+  - For entry-page redesign passes, keep the approved layout skeleton intact and avoid large structure shifts unless the user explicitly asks for them.
+  - On split entry pages like `/sync`, avoid extra outer left/right panel backgrounds; let the inner controls/cards define the surfaces.
+  - Keep split entry columns visually equal in height through the shared row/column contract, not by wrapping each side in another large background panel.
+  - If a sub-section already had an approved strong internal card style, restore that child-level character before inventing a flatter replacement; keep the column open but let the boxes stay bold.
+  - When a redesign pass restores a baseline structure/sizing pattern, remove any now-unused primitives created by the abandoned direction instead of leaving parallel UI helpers behind.
+  - Keep adjacent controls in the same row visually paired; if an input and its primary companion button sit side by side, their corner radius should match.
+  - On `/sync`, keep section content aligned to the title guide and avoid extra empty-state wrapper backgrounds; the placeholder cards themselves are enough.
+  - On `/sync`, keep left and right columns aligned from the section titles down to the bottom edge, and remove redundant tip copy from the empty state.
+  - On `/sync`, keep the filled URL list shell visually open too; once the child URL cards exist, do not add another background panel behind them.
+  - On `/sync`, keep added URL cards visually static and keep the input/action controls slightly shorter once the structure is approved; oversized or reactive cards make the page feel heavier than it needs to.
+  - Keep `/sync` URL-card thumbnails on a video-friendly ratio so previews do not feel cut from the top and bottom.
+  - Keep `/sync` card numbering minimal too; once the order is clear, prefer a quiet numeral over a separate badge chip.
+  - Keep the `/sync` card start cluster tight too: the ordinal should sit close to the left edge, with a smaller gap before the thumbnail.
+  - Once the `/sync` card index becomes plain text, remove any leftover fixed box width/height around it too; otherwise hidden badge spacing remains.
+  - Treat the panel active-tab gradient as the current canonical Movmash theme color; reuse it when the user asks for "Movmash theme color" on buttons or accents.
+  - When an empty shell is transparent, top-align the placeholder rows instead of vertically centering them; centered empty states create fake top/bottom imbalance.
+  - On `/sync`, use enough placeholder rows in the empty list to avoid leaving a large dead gap; three rows is the current better balance than two.
+  - On approved `/sync` structure, make minimal cleanup through calmer type, lighter font weights, and reduced border/shadow noise before touching wrappers or layout contracts.
+  - Keep entry-page section titles closer to the shared header title scale and remove decorative accent rails when the typography already carries the hierarchy.
   - Keep `stream`, `stream/screen`, and `/sync` on the same shared width/inset contract so their left-right page edges never drift apart.
   - Match every shared `PageHeader` route to the home header's exact side-ratio (`mx-4` mobile, `mx-5` from `sm`) instead of letting stream/sync drift wider than the home top bar.
   - Remove leftover outer flex-centering wrappers and extra header spacing from entry pages when the shared `max-w-6xl` shell already owns page width, so the visual stage stays identical to home.

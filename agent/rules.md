@@ -30,3 +30,12 @@ Last sync: 2026-03-19 (doc refresh + i18n + layout stability)
 25. For shared entry headers, fix optical edge alignment in the shared token/component layer instead of nudging individual route wrappers.
 26. For pixel-stable entry-page top spacing, keep active entry routes on one shared header positioning mode and one shared body offset token.
 27. Keep shared entry headers on one fixed-height row; if a subpage needs a centered title, overlay it inside that row instead of switching to a second layout structure.
+28. When entry pages share the same backdrop or section-heading pattern, move that structure into shared UI primitives instead of duplicating it per route.
+29. During redesign, preserve approved page structure/order/placement unless the user explicitly wants structural change; improve surfaces, colors, spacing, and typography first.
+30. On split entry pages, do not add large outer left/right section backgrounds when inner cards/fields already carry the visual surface.
+31. During redesign, preserve the approved sizing/proportional rhythm too; do not change column widths, section heights, or component size hierarchy unless the user asks for it.
+32. On split entry pages, keep both columns on the same title-to-bottom rhythm using shared flex-height contracts, not ad hoc padding/margin balancing.
+33. Remove redundant empty-state helper tips when the placeholder content already explains the flow.
+34. On approved entry-page layouts, make minimal redesign passes by simplifying typography, font weight, borders, and shadows before changing wrappers or structure.
+35. If a section heading is already clear through spacing and type, avoid decorative accent rails and keep it closer to the shared header title scale.
+36. If the user says "Movmash theme color", use the panel active-tab gradient as the default brand accent unless they ask for another palette.

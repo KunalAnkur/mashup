@@ -27,6 +27,12 @@
 - For shared entry headers, align visible edges optically, not only by raw box dimensions. If a control's hit area makes it look inset, fix that once in the shared header token/component instead of nudging individual pages.
 - Active entry routes should use the same header positioning mode and the same shared body offset. Do not mix fixed home headers with flow subpage headers when the goal is pixel-stable top spacing.
 - Keep shared entry headers on one fixed-height row. If a subpage needs a centered title, overlay it inside that row instead of switching to a second internal layout mode.
+- When entry pages share the same atmosphere or section-heading pattern, extract that into shared UI primitives instead of duplicating background layers or heading markup across routes.
+- During redesign, preserve the approved page structure, order, and placement unless the user explicitly asks for a structural change. Improve the visual system first, not the layout skeleton.
+- During redesign, preserve the approved page sizing and proportional rhythm too. Do not change column widths, section heights, or component size hierarchy unless the user explicitly asks for that.
+- On split entry pages, avoid adding large outer left/right section backgrounds when the child cards, fields, and lists already provide enough surface definition.
+- On split entry pages, keep both columns on the same title-to-bottom rhythm. Use one shared flex-height contract rather than padding hacks to align their bottoms.
+- In empty states, remove redundant helper tips when the placeholder rows/cards already communicate the flow clearly.
 - For safe refactor passes, follow the checklist:
   - Only touch exact-match class strings or localize them into constants.
   - Do not change component behavior, state logic, or interaction wiring.
@@ -67,6 +73,9 @@
 - Reduce border-heavy cards, stacked gradients, floating decorative elements, and heavy shadows unless they serve a clear UX purpose.
 - Keep one primary brand accent system and let spacing, typography, and hierarchy do more of the work than visual effects.
 - When simplifying a screen, remove decorative layers first before inventing new ones.
+- On approved entry-page layouts, push minimal redesigns through typography, font weight, shadow, and border simplification before changing wrappers, spacing contracts, or component structure.
+- If a section heading is already clear through spacing and type, avoid extra accent rails or colorful side lines; keep entry-page section titles closer to the shared header title scale.
+- If the user says "Movmash theme color", use the panel active-tab gradient as the canonical brand accent unless they explicitly ask for a different palette.
 
 # Modal Standardization Rules
 

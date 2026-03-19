@@ -157,6 +157,228 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Compare home, `/sync`, and `/stream` while logged in and logged out after any header refactor.
 - Follow-up action: Reuse the single-row + title-overlay pattern for future entry-page headers instead of branching back into grid-vs-flex variants.
 
+## 2026-03-19 (Entry Page Atmosphere Duplication)
+
+- Date: 2026-03-19
+- Context: Redesigning `/sync` to match the updated home page.
+- Error: `/sync` was still carrying a separate emoji-heavy backdrop and ad hoc section-heading markup even though the desired visual language already existed on the home route.
+- Root cause: Entry-page atmosphere and section-heading structure were being rebuilt per route instead of extracted once and reused.
+- Prevention checklist:
+  - When two entry pages should feel like the same family, extract the backdrop into one shared primitive.
+  - Do the same for repeated section-heading structure instead of duplicating bars/heading markup.
+  - Keep the new primitive neutral enough that future entry pages can adopt it without route-specific hacks.
+  - After extraction, update at least one existing reference page too so the primitive is proven in live use.
+- Follow-up action: Reuse shared entry-page backdrop/heading primitives for future `/stream` cleanup instead of cloning the home markup again.
+
+## 2026-03-19 (Structure Drift During Visual Redesign)
+
+- Date: 2026-03-19
+- Context: `/sync` redesign.
+- Error: The page got cleaner visually, but the redesign also changed the approved layout skeleton, which made the screen feel wrong even though colors/surfaces improved.
+- Root cause: Visual cleanup and structure changes were bundled together instead of treating structure as a separate approval boundary.
+- Prevention checklist:
+  - Preserve the current page order, placement, and responsive layout unless the user explicitly asks for structural change.
+  - Use redesign passes to improve colors, spacing, typography, and surfaces first.
+  - If a structure change might help, stop and ask before replacing flex/stack flows with new grid/stage arrangements.
+  - Keep shared tokens/primitives, but plug them into the existing skeleton before inventing a new one.
+- Follow-up action: For future entry-page redesigns, start from “same skeleton, better styling” as the default approach.
+
+## 2026-03-19 (Outer Section Background Overdesign)
+
+- Date: 2026-03-19
+- Context: `/sync` split-layout redesign.
+- Error: Adding large left/right outer panel backgrounds made the page feel heavier and hid the approved “just boxes and controls” structure.
+- Root cause: The redesign tried to define each column with another big surface layer even though the child cards, fields, and list shell already provided enough structure.
+- Prevention checklist:
+  - On split entry pages, let inner cards/fields carry the surface language before adding any outer panel background.
+  - If the user wants the old structure preserved, keep sections visually open and avoid wrapping each side in another container skin.
+  - Make equal-height columns through the shared row/column contract, not with fake balancing wrappers.
+  - Compare the result against the older approved structure before keeping any new outer surface.
+- Follow-up action: Reuse the “open columns, surfaced children” rule for future `/stream` and `/sync` visual passes.
+
+## 2026-03-19 (Open Column, Strong Child Cards)
+
+- Date: 2026-03-19
+- Context: Restoring the `/sync` platform section after flattening it too much.
+- Error: Removing the outer section background was correct, but the platform boxes also lost the strong approved card character that helped the section read clearly.
+- Root cause: “Less outer chrome” was applied too broadly and accidentally flattened the child cards instead of only removing the extra wrapper layer.
+- Prevention checklist:
+  - Separate outer section openness from child-card styling; those are different decisions.
+  - If the previous approved version had strong child boxes, restore that first before inventing a calmer replacement.
+  - Compare the current child-card look directly against the committed baseline when the user asks for “like before.”
+  - Keep the old card rhythm (grid count, aspect ratio, centering) when that is part of what the user is responding to.
+- Follow-up action: For future redesign passes, treat “open column + strong child cards” as a valid combination instead of assuming both must become flatter together.
+
+## 2026-03-19 (Abandoned Primitive Cleanup)
+
+- Date: 2026-03-19
+- Context: `/sync` redesign pivoted back toward the approved baseline structure and sizing.
+- Error: A new shared section-heading primitive was left in the repo even after the screen switched back to the older heading structure, creating an unused parallel UI path.
+- Root cause: The redesign direction changed, but the helper extracted for the abandoned path was not cleaned up immediately.
+- Prevention checklist:
+  - After restoring a baseline layout or component pattern, search for newly-unused primitives created during the abandoned attempt.
+  - Remove dead helpers from `components/UI`, exports, and tokens in the same pass.
+  - Record the cleanup when the dead path could otherwise mislead future work.
+- Follow-up action: Treat design pivots the same way as code refactors: clean up abandoned helpers right away instead of leaving “maybe useful later” UI paths around.
+
+## 2026-03-19 (Empty State Wrapper Drift)
+
+- Date: 2026-03-19
+- Context: `/sync` empty-state cleanup.
+- Error: The empty state had an extra padded wrapper and inherited shell background that made the right column feel misaligned and heavier than needed.
+- Root cause: The empty state was treated like a boxed panel instead of a transparent state sitting inside an already-structured section.
+- Prevention checklist:
+  - If placeholder rows already communicate the state, avoid adding another parent background wrapper around them.
+  - Align split-section content to the section title guide; do not let extra padding shift one column inward.
+  - Use conditional shells when filled vs empty states need different surface density.
+- Follow-up action: Reuse transparent empty-state containers for future entry pages when child placeholders already define the visual structure.
+
+## 2026-03-19 (Redundant Empty-State Tips)
+
+- Date: 2026-03-19
+- Context: `/sync` empty-state refinement.
+- Error: Tip text below the placeholder cards added visual clutter without teaching anything the placeholders and surrounding UI did not already make obvious.
+- Root cause: Helper copy stayed in place after the empty-state visuals became self-explanatory.
+- Prevention checklist:
+  - If placeholder cards already preview the result, remove extra tip bullets beneath them.
+  - Prefer one clear empty-state visual over stacked visual + helper text + wrapper chrome.
+  - Re-check vertical rhythm after removing helper copy so the section still centers cleanly.
+- Follow-up action: Reuse transparent empty-state containers for future entry pages when child placeholders already define the visual structure.
+
+## 2026-03-19 (Centered Empty State Imbalance)
+
+- Date: 2026-03-19
+- Context: `/sync` empty-state alignment.
+- Error: Even after removing helper tips, the empty state still felt too airy because the placeholder rows were vertically centered inside a transparent shell.
+- Root cause: Centering works when a state is intentionally spotlighted, but on a split layout it creates fake top and bottom gaps that make columns feel misaligned.
+- Prevention checklist:
+  - In transparent list shells, top-align placeholder rows by default.
+  - Let the shell's `flex-1` create overall section height; do not add visual centering inside it unless the design explicitly wants a hero-style empty state.
+  - Compare the section against the opposite column after removing helper copy; centering may look balanced in isolation but wrong in a split view.
+- Follow-up action: Use top-aligned empty placeholders as the default for future split entry layouts.
+
+## 2026-03-19 (Minimal Passes On Approved Layouts)
+
+- Date: 2026-03-19
+- Context: `/sync` visual cleanup after the user explicitly asked to keep the old structure and size rhythm intact.
+- Error: It is easy to keep "improving" a screen by changing wrappers or layout when the actual problem is just visual weight: bold text, loud shadows, extra borders, and heavy surfaces.
+- Root cause: Visual cleanup work can drift into layout changes if the pass is not constrained to the token layer first.
+- Prevention checklist:
+  - On approved layouts, start by simplifying typography, font weight, shadows, and border treatments in shared tokens.
+  - Keep card positions, wrappers, and sizing contracts stable unless the user separately asks for layout changes.
+  - Reduce chrome in child surfaces before inventing new outer containers.
+  - Compare against the approved version by asking "does this feel lighter?" before asking "should this move?"
+- Follow-up action: Reuse token-first minimal passes for future `/stream` and entry-page cleanup before attempting any structural redesign.
+
+## 2026-03-19 (Filled List Shell Overdesign)
+
+- Date: 2026-03-19
+- Context: `/sync` URL list after cards had already been added.
+- Error: Even after the empty state was cleaned up, the filled list still had a parent background shell, which made the right column feel heavier than the left.
+- Root cause: The container kept a panel treatment even though the child URL cards already defined the visual structure.
+- Prevention checklist:
+  - If list items are already surfaced cards, keep the parent list shell visually open unless it needs a real grouping background.
+  - Match the visual openness of sibling sections on split layouts; do not let one side keep an extra container skin.
+  - Remove parent list backgrounds before flattening the cards themselves.
+- Follow-up action: Treat filled list shells the same way as empty states on entry pages: use the item cards as the primary surface.
+
+## 2026-03-19 (Decorative Section Title Rails)
+
+- Date: 2026-03-19
+- Context: `/sync` section-title cleanup while matching the calmer shared entry-header language.
+- Error: The colorful side rail and oversized section title made the content headings feel louder than the actual page header.
+- Root cause: Accent rails were still doing visual hierarchy work that spacing and typography could already handle.
+- Prevention checklist:
+  - If a section title is already well-separated by spacing, prefer clean type over another colorful marker.
+  - Keep entry-page section headings close to the shared header title scale unless the screen truly needs a stronger break.
+  - Simplify decorative heading accents before touching layout or wrappers.
+- Follow-up action: Reuse the shared minimalist section-title style for future `/stream` and entry-page sections unless a stronger visual divider is explicitly requested.
+
+## 2026-03-19 (Reactive Cards And Oversized Controls On Approved Layouts)
+
+- Date: 2026-03-19
+- Context: `/sync` minimal cleanup after the structure and sizing rhythm were already approved.
+- Error: Card hover reactions and tall controls kept making the page feel heavier, even after the bigger layout issues were fixed.
+- Root cause: Visual polish was still leaving interaction chrome and control scale louder than the calm entry-page direction.
+- Prevention checklist:
+  - On approved entry-page layouts, keep passive list cards visually still unless hover feedback teaches something important.
+  - If a control row already has clear hierarchy, tighten the control height before inventing new styling.
+  - Prefer compact control sizing and static surfaces when the goal is a more minimal, premium feel.
+- Follow-up action: Reuse shorter control heights and static list-card surfaces for future `/stream` and `/sync` minimal passes unless stronger interaction affordance is explicitly needed.
+
+## 2026-03-19 (Thumbnail Ratio Drift On URL Cards)
+
+- Date: 2026-03-19
+- Context: `/sync` URL-card preview cleanup.
+- Error: The preview thumbnails started feeling cropped from the top and bottom even though the card layout itself was fine.
+- Root cause: The thumbnail frame ratio drifted away from a typical video ratio, so `object-cover` cropped vertically more than expected.
+- Prevention checklist:
+  - Keep video-preview frames close to a 16:9-friendly ratio on entry-page URL cards.
+  - If the thumbnail feels cropped, fix the frame ratio before changing the whole card layout.
+  - Route thumbnail sizing through shared tokens so future tweaks stay consistent.
+- Follow-up action: Reuse the shared video-friendly thumbnail ratio for future playlist/URL card cleanup when the goal is to reduce crop without restructuring cards.
+
+## 2026-03-19 (Over-Badged Card Indices)
+
+- Date: 2026-03-19
+- Context: `/sync` added-URL cards.
+- Error: The order number sat inside its own chip, which made a simple ordinal feel heavier than the rest of the card.
+- Root cause: A badge treatment was left in place even though the number only needed to quietly communicate order.
+- Prevention checklist:
+  - If the number is only an ordinal, start with plain tabular text before adding a separate badge surface.
+  - Keep tiny secondary markers quieter than the title, thumbnail, and remove action.
+  - Extract index styling into a shared token so future card cleanup stays consistent.
+- Follow-up action: Reuse quiet text-first numbering for future minimal card passes unless the badge itself carries state or interaction.
+
+## 2026-03-19 (Loose Left Cluster On Minimal Cards)
+
+- Date: 2026-03-19
+- Context: `/sync` added-URL card cleanup after the index badge was simplified.
+- Error: Even with a quieter number, the card still felt slightly loose because the left padding and number-to-thumbnail gap were too generous.
+- Root cause: The card kept the older spacing rhythm from the heavier version after the left marker became more minimal.
+- Prevention checklist:
+  - When simplifying a card's left marker, re-check the left inset and first gap; quieter elements usually need a tighter cluster.
+  - If the start of a row should feel anchored, reduce outer left padding before inventing a new wrapper.
+  - Keep spacing adjustments in shared tokens so all cards keep the same rhythm.
+- Follow-up action: Reuse tighter left-cluster spacing for future minimal list cards when the start of the row feels too airy.
+
+## 2026-03-19 (Ghost Badge Spacing)
+
+- Date: 2026-03-19
+- Context: `/sync` URL-card ordinal cleanup.
+- Error: The number looked simplified, but it still felt too far from its neighbors because the old fixed badge box was still there invisibly.
+- Root cause: The chip styling was removed before the width/height footprint of the badge container was removed.
+- Prevention checklist:
+  - After converting a badge into plain text, remove the fixed width/height container too.
+  - Re-check the actual occupied width of the marker, not just its color/background.
+  - Keep ordinal markers text-sized unless they need to hold multi-digit alignment.
+- Follow-up action: Reuse text-first ordinals without fixed chip boxes for future minimal card passes.
+
+## 2026-03-19 (Underfilled Empty Lists)
+
+- Date: 2026-03-19
+- Context: `/sync` empty-state placeholder list.
+- Error: With only two placeholder rows, the right side still felt too empty and the section looked shorter than intended.
+- Root cause: The placeholder count was too low for the amount of vertical space the section reserves.
+- Prevention checklist:
+  - When an empty state relies on placeholder rows, use enough of them to visually hold the column height.
+  - Compare empty-state density against the filled-state rhythm; if the empty version looks hollow, increase placeholder count before adding wrapper chrome.
+  - Prefer adding one more placeholder row over reintroducing a parent background panel.
+- Follow-up action: Use a fuller placeholder count for future split entry-page empty states when the transparent shell starts to feel too empty.
+
+## 2026-03-19 (Movmash Theme Color Shorthand)
+
+- Date: 2026-03-19
+- Context: Matching `/sync` buttons to the panel tab accent.
+- Error: The repo had multiple close-but-different pink/purple accents, which made it unclear which one should represent the core Movmash brand color.
+- Root cause: The panel active-tab gradient existed as a local panel detail instead of a named shared brand accent.
+- Prevention checklist:
+  - Treat the panel active-tab gradient as the canonical Movmash theme color unless the user asks for a different palette.
+  - Extract that accent into a shared token before reusing it in new buttons or accents.
+  - When the user says "use Movmash theme color", default to that shared gradient instead of picking a nearby rose/pink/fuchsia variant.
+- Follow-up action: Reuse the shared Movmash theme gradient for future primary actions and accent surfaces when the user asks for the brand color family.
+
+
 ## 2026-03-07
 
 - Date: 2026-03-07

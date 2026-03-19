@@ -1,6 +1,9 @@
 export const movmashGradientStopsClass =
   "from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500";
 
+export const movmashThemeGradientClass =
+  "bg-[linear-gradient(135deg,rgba(190,24,93,0.96)_0%,rgba(190,24,93,0.9)_38%,rgba(168,85,247,0.8)_100%)]";
+
 export const movmashElevatedShadowClass =
   "shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40";
 
@@ -167,5 +170,68 @@ export const appPageHeaderBackIconClass = "block shrink-0 text-lg";
 export const appPageHeaderTitleClass =
   "truncate font-parkinsans text-sm font-semibold leading-none tracking-tight text-white/90 sm:text-base md:text-lg";
 
+export const appSectionTitleWrapClass =
+  "mb-3 flex items-center sm:mb-4 md:mb-5 lg:mb-6";
+
+export const appSectionTitleTextClass =
+  "font-parkinsans text-sm font-semibold leading-none tracking-tight text-white/88 sm:text-base md:text-lg";
+
 export const appEntryPageLoginTriggerClass =
   "inline-flex h-10 items-center gap-2 px-1 text-sm font-medium leading-none text-white/76 transition-colors duration-200 hover:text-white";
+
+export const appEntrySubtleSurfaceClass =
+  "rounded-2xl bg-white/[0.04] transition-colors duration-200";
+
+export const appEntryInteractiveSurfaceClass =
+  "rounded-2xl bg-white/[0.04] transition-colors duration-200 hover:bg-white/[0.06]";
+
+export const appSyncPlatformCardClass =
+  "aspect-square flex min-h-[70px] flex-col items-center justify-center overflow-hidden rounded-lg p-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-opacity duration-200 hover:opacity-[0.96] md:min-h-[90px] md:rounded-xl md:p-3 lg:min-h-[110px] lg:rounded-2xl lg:p-4 xl:min-h-[130px] xl:p-5 2xl:min-h-[140px] 2xl:p-6";
+
+export const appSyncPlatformIconClass =
+  "text-white/95 leading-none [&>svg]:text-[26px] md:[&>svg]:text-[30px] lg:[&>svg]:text-[34px] xl:[&>svg]:text-[38px]";
+
+export const appSyncPlatformLabelClass =
+  "mt-1 px-1 text-[10px] font-semibold leading-tight tracking-tight text-white/94 md:mt-2 md:text-xs lg:mt-2.5 lg:text-sm xl:text-[15px]";
+
+export const appSyncFieldInputClass =
+  "h-11 flex-1 min-w-0 rounded-xl bg-white/[0.045] px-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] backdrop-blur-xl placeholder:text-white/36 transition-colors duration-200 focus:bg-white/[0.065] sm:h-[46px] sm:px-4";
+
+export const appSyncSecondaryButtonClass =
+  "h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-white/[0.045] px-3 text-sm font-medium text-white/88 transition-colors duration-200 hover:bg-white/[0.065] hover:text-white sm:h-[46px] sm:px-4";
+
+export const appSyncPrimaryButtonClass =
+  `h-11 flex-1 items-center justify-center gap-2 rounded-xl ${movmashThemeGradientClass} px-3 text-sm font-semibold tracking-tight text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:h-[46px] sm:px-4 md:px-6`;
+
+export const appEntryFieldShellClass =
+  "flex min-h-12 items-center rounded-2xl bg-white/[0.045] px-4 transition-colors duration-200 focus-within:bg-white/[0.07]";
+
+export const appEntryFieldInputClass =
+  "w-full min-w-0 bg-transparent py-3.5 text-[15px] text-white placeholder:text-white/38";
+
+export const appEntrySecondaryButtonClass =
+  "h-12 justify-center rounded-2xl bg-white/[0.05] px-5 text-sm font-medium text-white/82 transition-colors duration-200 hover:bg-white/[0.085] hover:text-white disabled:cursor-not-allowed disabled:opacity-50";
+
+export const appEntryPrimaryButtonClass =
+  "h-12 justify-center rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 px-5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50";
+
+export const appSyncTooltipSurfaceClass =
+  "rounded-xl bg-[#18181f]/96 px-3 py-2 text-[11px] text-white/76 shadow-xl shadow-black/25 backdrop-blur-xl";
+
+export const appSyncPlaceholderRowClass =
+  "flex items-center gap-3 rounded-2xl bg-white/[0.028] px-3 py-3";
+
+export const appSyncListShellClass =
+  "min-h-[220px] flex-1 overflow-hidden sm:min-h-[200px]";
+
+export const appSyncListShellEmptyClass =
+  "flex-1 overflow-hidden rounded-2xl";
+
+export const appSyncCardThumbnailClass =
+  "relative h-[44px] w-[78px] shrink-0 overflow-hidden rounded-xl bg-black/[0.12]";
+
+export const appSyncCardIndexClass =
+  "shrink-0 text-[11px] font-medium leading-none tabular-nums text-white/38";
+
+export const appSyncCardClass =
+  "relative flex h-[74px] items-center gap-2.5 rounded-2xl bg-white/[0.038] py-3 pr-3 pl-2.5";
