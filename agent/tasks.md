@@ -22,6 +22,12 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Keep the home page shell centered at `max-w-7xl` while preserving the existing content order and alignment.
   - Route repeated home-entry styling through `components/UI/classTokens.ts` where practical instead of adding new near-duplicate inline surface classes.
   - During redesign, keep `components/UI/classTokens.ts` and the relevant agent docs updated at each step so the system stays easy to extend.
+  - On single-input entry flows, prefer focusing the primary input on open to reduce click friction.
+  - Apply that single-input autofocus rule only to clear entry flows like home join and sync URL entry, not to multi-input forms or hidden utility inputs.
+  - When applying entry UX rules, check the live route's actual rendered component path first, not only older parallel components.
+  - Record discovered unused/non-rendered component paths in `agent/lessons.md` during each step so future work avoids dead UI.
+  - This autofocus pass is complete for the current top-level entry routes: apply only on `/` join and live `/sync` URL input unless a new qualifying entry flow is added later.
+  - Top-level route audit is complete: do not add autofocus to room chat, hidden file inputs, checkboxes, or multi-input auth/forms in the current app structure.
   - Limit home-page changes to refreshed colors, surfaces, and typography while preserving existing locations.
   - Keep the home brand in the fixed top row with the language/auth controls instead of duplicating it in the content column.
   - Prefer an icon-led but borderless/background-free auth trigger in the top-right header.

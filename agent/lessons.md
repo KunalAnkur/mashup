@@ -64,6 +64,32 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Keep `classTokens.ts` and the relevant agent docs updated on each redesign step, not as an end-of-pass cleanup.
 - Follow-up action: Treat `classTokens.ts` as the first-stop source of truth during future UI polish and class unification passes.
 
+## 2026-03-19 (Single-Input Entry Focus)
+
+- Date: 2026-03-19
+- Context: Entry-page UX refinement on home/join flows.
+- Error: When a page has only one obvious primary input, making the user click into it first adds unnecessary friction.
+- Root cause: Input focus behavior was left neutral even on simple single-input entry screens where immediate typing is the main next action.
+- Prevention checklist:
+  - On entry pages with one clear primary input, autofocus it on open.
+  - Skip autofocus when there are multiple competing inputs or when auto-focus would feel jumpy/disruptive.
+  - Verify the actual rendered component tree before applying the change; old/unused entry components may no longer drive the live page.
+  - After adding autofocus, verify typing works immediately and no unwanted layout jump or scroll jump is introduced.
+- Follow-up action: Reuse this rule for future single-input onboarding/auth/join flows.
+
+## 2026-03-19 (Unused Or Parallel Component Paths)
+
+- Date: 2026-03-19
+- Context: `/sync` autofocus work.
+- Error: `components/Onboard/UrlSelection.tsx` looked like the right place to edit, but the live `/sync` route was actually rendering `components/Modals/UrlModalComponents/UrlInputSection.tsx` and `components/Modals/UrlModalComponents/UrlInputField.tsx`.
+- Root cause: Older or parallel component paths remained in the repo, and the live rendered route tree was not confirmed first.
+- Prevention checklist:
+  - Trace the live route/component tree before editing a screen.
+  - If an unused or parallel component path is discovered, record it here immediately.
+  - Treat these findings as future-risk notes until the dead path is cleaned up or clearly marked.
+  - Keep future redesign steps focused on actually rendered component paths.
+- Follow-up action: Add newly discovered unused/non-rendered component paths to `agent/lessons.md` every time they show up during implementation.
+
 ## 2026-03-07
 
 - Date: 2026-03-07

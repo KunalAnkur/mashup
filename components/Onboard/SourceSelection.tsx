@@ -171,6 +171,7 @@ const SourceSelection = () => {
                   <Input
                     variant="raw"
                     type="text"
+                    autoFocus
                     placeholder={t("roomIdPlaceholder")}
                     value={roomId}
                     onChange={handleOnRoomIdChange}

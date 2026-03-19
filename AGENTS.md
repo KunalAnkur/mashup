@@ -16,6 +16,7 @@
 - During redesign work, update `components/UI/classTokens.ts` and the relevant agent docs incrementally at each step instead of batching those updates at the end.
 - During visual cleanup and class unification, preserve existing interaction behavior such as hover-revealed timestamps, tooltips, contextual actions, and disclosure states. Remove only the decorative layer you intend to remove, not the state hook that drives related behavior.
 - After refactors or component extraction, verify that no stale references/import removals are left behind. Smoke test the directly affected screen/tab to avoid runtime `ReferenceError` issues.
+- When you discover an unused, parallel, or no-longer-rendered component during a task, record it in `agent/lessons.md` so future work does not accidentally target dead UI paths.
 - Before deleting "unused" files, verify real imports/usages first and then clean up stale state, handlers, comments, and support types in the entry points that previously referenced them.
 - If the user explicitly defers a refactor or architecture cleanup to another branch, record it in the agent docs/backlog immediately and stop treating it as in-scope for the current branch.
 - Keep shared visual class tokens centralized in one source of truth. In this repo, prefer extending `components/UI/classTokens.ts` instead of creating new small parallel `*Theme.ts` token files for the same UI layer.
@@ -54,6 +55,7 @@
 - Do not mount empty wrappers, helper rows, or placeholder blocks that auto-disappear later and change page geometry.
 - If helper content needs to fade out, keep the layout height stable or animate opacity/content only.
 - When a page has delayed state changes after mount, sanity-check the screen after a few seconds of idle time to catch vertical jumps or reflow regressions.
+- On entry pages with one clear primary input, prefer focusing that input on open so the user can start typing immediately without an extra click.
 
 # Entry UI Direction
 

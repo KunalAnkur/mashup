@@ -5,7 +5,7 @@ import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
 import type { RootState } from "@/lib/store";
 import { FaYoutube, FaVimeo, FaTwitch, FaFileVideo } from "react-icons/fa";
 import { MdOndemandVideo } from "react-icons/md";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ReactPlayer from "react-player";
 import { useRouter } from "next/navigation";
 import { Playlist } from "@/types/storeTypes";

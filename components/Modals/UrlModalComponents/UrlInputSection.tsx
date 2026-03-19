@@ -82,6 +82,7 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
           isAddDisabled={isAddDisabled}
           tooltipMessage={tooltipMessage}
           isAdding={isAdding}
+          autoFocus
         />
 
         {/* Added URLs List or Empty State - Mobile grows based on URL count */}

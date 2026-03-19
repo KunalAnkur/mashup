@@ -18,6 +18,7 @@ interface UrlInputFieldProps {
   isAddDisabled: boolean;
   tooltipMessage: string;
   isAdding?: boolean;
+  autoFocus?: boolean;
 }
 
 export const UrlInputField: React.FC<UrlInputFieldProps> = ({
@@ -28,6 +29,7 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
   isAddDisabled,
   tooltipMessage,
   isAdding = false,
+  autoFocus = false,
 }) => {
   const t = useTranslations("sync");
   return (
@@ -35,6 +37,7 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
       <Input
         variant="raw"
         type="text"
+        autoFocus={autoFocus}
         placeholder={t("enterUrl")}
         value={value}
         onChange={onChange}
