@@ -8,6 +8,12 @@ export type ProductCarouselProps = {
   placement: ProductPlacement;
 };
 
+export type ProductCardTracking = {
+  surface: "carousel" | "bottom_sheet";
+  placement?: ProductPlacement;
+  position: number;
+};
+
 export type CardArt = {
   hero: string;
   glow: string;

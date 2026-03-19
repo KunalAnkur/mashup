@@ -97,7 +97,15 @@ const ProductBottomSheet = () => {
                 {productsForGrid.map((product, index) => {
                   const art = CARD_ART_STYLES[index % CARD_ART_STYLES.length];
                   return (
-                      <ProductCard key={`${product.id}-${index}`} product={product} art={art} />
+                    <ProductCard
+                      key={`${product.id}-${index}`}
+                      product={product}
+                      art={art}
+                      tracking={{
+                        surface: "bottom_sheet",
+                        position: index + 1,
+                      }}
+                    />
                   );
                 })}
               </div>

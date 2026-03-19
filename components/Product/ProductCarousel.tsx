@@ -123,7 +123,10 @@ const ProductCarousel = ({ placement }: ProductCarouselProps) => {
                   key={`${product.id}-${index}`}
                   className="min-w-0 w-1/2 flex-none pl-1.5 md:w-2/5 md:pl-3 lg:w-1/4"
                 >
-                  <ProductCard product={product} art={art} />
+                  <ProductCard
+                    product={product}
+                    art={art}
+                  />
                 </div>
               );
             })}

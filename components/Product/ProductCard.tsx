@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CARD_ART_STYLES, CardArt, Product } from "./type";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { trackProductOpened } from "@/lib/analytics/events";
 import useEmblaCarousel from "embla-carousel-react";
 import { LuChevronLeft, LuChevronRight, LuExternalLink } from "react-icons/lu";
+import { CARD_ART_STYLES, CardArt, Product, ProductCardTracking } from "./type";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const LOCAL_IMAGE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
@@ -56,6 +59,7 @@ export const ProductCard = ({
     product: Product;
     art: CardArt;
 }) => {
+    const roomId = useSelector((state: RootState) => state.room.roomId);
     const images = useMemo(
         () =>
             product.images
@@ -106,6 +110,27 @@ export const ProductCard = ({
     };
     const artIndex = CARD_ART_STYLES.indexOf(art);
     const badgeCls = badgeVariants[artIndex % 4] ?? badgeVariants[0];
+
+
+    const handleProductClick = useCallback(() => {
+        trackProductOpened({
+            roomId,
+            productId: product.id,
+            productName: product.name,
+            productCategory: product.category,
+            productPrice: product.price,
+            productBadge: product.badge,
+            productHref: product.href,
+        });
+    }, [
+        product.badge,
+        product.category,
+        product.href,
+        product.id,
+        product.name,
+        product.price,
+        roomId,
+    ]);
 
     return (
         <article className="group block w-full overflow-hidden rounded-lg border border-white/[0.09] bg-gradient-to-b from-white/[0.055] to-white/[0.018] transition-all duration-300 hover:-translate-y-[3px] hover:border-white/[0.18] md:rounded-2xl">
@@ -205,7 +230,13 @@ export const ProductCard = ({
                 <div className="mt-0.5 flex items-center justify-between gap-2 md:mt-1">
                     <p className="line-clamp-1 text-[7.5px] text-white/38 md:text-[10px]">{product.meta}</p>
 
-                    <a href={product.href} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 text-[7.5px] text-white/48 transition hover:text-white/90 md:text-[10px]">
+                    <a
+                        href={product.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={handleProductClick}
+                        className="inline-flex shrink-0 items-center gap-1 text-[7.5px] text-white/48 transition hover:text-white/90 md:text-[10px]"
+                    >
                         View
                         <LuExternalLink size={9} className="md:h-[10px] md:w-[10px]" />
                     </a>
