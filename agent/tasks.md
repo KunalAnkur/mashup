@@ -5,7 +5,7 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 ## Current Step
 
 - Date: 2026-03-19
-- Active task: Home-page refinement with selective rollback based on user feedback.
+- Active task: Home-page professional polish while preserving the room/panel visual pattern.
 - Status: In progress.
 - Completed in this workstream:
   - Refreshed `AGENTS.md` as the durable source of truth for workflow, localization, git, and layout-stability rules.
@@ -17,7 +17,12 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Keep rule docs aligned with actual shipped behavior and recent fixes.
   - Update `AGENTS.md` first when durable context changes, then mirror only the concise pieces into `agent/`.
   - Keep the repo docs updated during the workstream, not only as an end-of-branch cleanup.
-  - Keep the new home background and language selector treatment, while restoring the rest of the home page to the earlier version the user preferred.
+  - Keep the room/panel-style home background and the newer language selector treatment.
+  - Keep the original home-page placement/order intact instead of introducing a new composition.
+  - Keep the home page shell centered at `max-w-7xl` while preserving the existing content order and alignment.
+  - Limit home-page changes to refreshed colors, surfaces, and typography while preserving existing locations.
+  - Keep the home brand in the fixed top row with the language/auth controls instead of duplicating it in the content column.
+  - Prefer an icon-led but borderless/background-free auth trigger in the top-right header.
   - Keep temporary implementation history out of this file unless it changes current execution priorities.
 - Verification reminder:
   - After UI copy changes, re-run locale parity and code-used translation-key checks.

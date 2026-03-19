@@ -6,7 +6,7 @@ import {
 } from "@/components/UI/classTokens";
 import { useId, useRef, useState } from "react";
 import { locales, languageNames, isRtlLocale, type Locale } from "@/i18n/config";
-import { FaGlobe, FaChevronDown, FaCheck } from "react-icons/fa";
+import { FaChevronDown, FaCheck } from "react-icons/fa";
 import { useLocale } from "@/i18n/I18nProvider";
 import {
   DropdownActionRow,
@@ -71,9 +71,8 @@ const LanguageSelector = () => {
         aria-haspopup="menu"
         aria-controls={dropdownMenuId}
       >
-        <FaGlobe className="text-xs text-white/54" />
+        <span className="text-base leading-none">{currentLanguage.flag}</span>
         <span className="hidden sm:inline">{currentLanguage.nativeName}</span>
-        <span className="sm:hidden text-base">{currentLanguage.flag}</span>
         <FaChevronDown 
           className={`text-[10px] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} 
         />
@@ -84,7 +83,7 @@ const LanguageSelector = () => {
           id={dropdownMenuId}
           role="menu"
           aria-label="Language selector"
-          className={languageSelectorMenuClass}
+          className={`w-40 md:w-44 ${languageSelectorMenuClass}`}
         >
           {locales.map((loc) => {
             const language = languageNames[loc];

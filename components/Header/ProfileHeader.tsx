@@ -4,6 +4,7 @@ import { RootState } from "@/lib/store";
 import AvatarDropdown from "@/components/UI/AvatarDropdown";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect, useId } from "react";
+import { LuChevronDown, LuLogIn } from "react-icons/lu";
 import { useTranslations } from "@/i18n/I18nProvider";
 import LoginDropdown from "./LoginDropdown";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -11,12 +12,13 @@ import { Logo } from "@/components/UI";
 import { useDropdownDismiss } from "@/components/UI/useDropdownDismiss";
 
 const fixedHeaderContainerClass =
-  "absolute top-4 left-4 right-4 z-50 flex items-center justify-between sm:left-auto sm:right-4 sm:justify-end";
-const headerControlsClass = "flex flex-row items-center gap-2 sm:gap-3";
+  "absolute left-4 right-4 top-4 z-50 flex items-center justify-between sm:left-5 sm:right-5";
+const headerControlsClass = "flex flex-row items-center gap-2.5 sm:gap-3";
+const fixedBrandClass = "flex items-center gap-2.5 text-white/90";
 const fixedLoginTriggerClass =
-  "text-sm font-medium text-white transition-colors duration-200 hover:text-pink-400";
+  "inline-flex h-10 items-center gap-2 px-1 text-sm font-medium text-white/76 transition-colors duration-200 hover:text-white";
 const compactLoginTriggerClass =
-  "px-2 py-1 text-xs font-medium text-white transition-colors duration-200 hover:text-pink-400 sm:text-sm";
+  "inline-flex h-9 items-center gap-1.5 px-1 text-xs font-medium text-white/76 transition-colors duration-200 hover:text-white sm:text-sm";
 
 type LoginDropdownTriggerProps = {
   buttonClassName: string;
@@ -46,7 +48,14 @@ const LoginDropdownTrigger = ({
       aria-controls={menuId}
       className={buttonClassName}
     >
-      {label}
+      <span className="flex h-5 w-5 items-center justify-center text-white/80">
+        <LuLogIn size={13} />
+      </span>
+      <span>{label}</span>
+      <LuChevronDown
+        size={14}
+        className={`transition-transform duration-200 ${isOpen ? "rotate-180 text-white" : "text-white/55"}`}
+      />
     </button>
     {isOpen && <LoginDropdown id={menuId} ariaLabel={label} onClose={onClose} />}
   </div>
@@ -90,15 +99,13 @@ const ProfileHeader = () => {
   if (isFixedPage) {
     return (
       <div className={fixedHeaderContainerClass} style={{ direction: "ltr" }}>
-        {/* Brand name - visible on mobile only */}
-        <div className="flex items-center gap-2 sm:hidden">
+        <div className={fixedBrandClass}>
           <Logo height={28} width={28} custom={true} />
-          <h3 className="text-xl font-extrabold text-white font-parkinsans tracking-tight">
+          <h3 className="font-parkinsans text-xl font-semibold tracking-tight text-white/90">
             {t("brand")}
           </h3>
         </div>
-        
-        {/* Right side: Language selector and auth controls */}
+
         <div className={headerControlsClass}>
           <LanguageSelector />
           {isAuthenticated ? (

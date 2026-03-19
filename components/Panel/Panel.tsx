@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
@@ -32,7 +32,7 @@ import { useRoomContext } from "@/context/RoomContext";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomLinkCopied } from "@/lib/analytics";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import PanelHeaderActionButton from "./PanelHeaderActionButton";
 import useEmblaCarousel from "embla-carousel-react";
 
@@ -53,30 +53,10 @@ const activeTabPillTransition = {
   mass: 0.82,
 } as const;
 
-type SwipeAxis = "x" | "y" | null;
-type SwipeState = {
-  pointerId: number | null;
-  startX: number;
-  startY: number;
-  axis: SwipeAxis;
-  enabled: boolean;
-};
-
-const initialSwipeState: SwipeState = {
-  pointerId: null,
-  startX: 0,
-  startY: 0,
-  axis: null,
-  enabled: false,
-};
-
-
-
-
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
-  const [tabDirection, setTabDirection] = useState(0);
+  const [, setTabDirection] = useState(0);
   const [tabEmblaRef, tabEmblaApi] = useEmblaCarousel({
     align: "start",
     dragFree: false,
@@ -89,7 +69,6 @@ const Panel = () => {
   const roomState = useSelector((state: RootState) => state.room);
   const host = roomState.host;
   const dispatch = useDispatch();
-  const swipeStateRef = useRef<SwipeState>(initialSwipeState);
 
   const tToast = useTranslations("toast");
   const tPanel = useTranslations("panel");
@@ -412,53 +391,19 @@ const Panel = () => {
                   )}
                 </PanelHeaderActionButton>
 
-                <PanelHeaderActionButton
-                  onClick={handleLeaveClick}
-                  className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
-                  aria-label={tPanel("leaveParty")}
-                >
-                  <LuLogOut size={16} />
-                </PanelHeaderActionButton>
+	              <PanelHeaderActionButton
+	                onClick={handleLeaveClick}
+	                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
+	                aria-label={tPanel("leaveParty")}
+	              >
+	                <LuLogOut size={16} />
+	              </PanelHeaderActionButton>
 
-                <AvatarDropdown size={28} />
-              </div>
-              <h2 className="text-base font-bold text-white font-parkinsans">
-                Movmash
-              </h2>
-            </div>
+	              <AvatarDropdown size={28} />
+	            </div>
+	            </div>
 
-            <div className="flex items-center gap-2">
-              <PanelHeaderActionButton
-                onClick={handleCopyLink}
-                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40"
-                aria-label={tPanel("copyLink")}
-              >
-                {copied ? (
-                  <LuCheck size={16} className="text-green-400 transition-colors" />
-                ) : (
-                  <LuLink size={16} className="text-white/70 group-hover:text-white transition-colors" />
-                )}
-                {copied && (
-                  <div className="absolute top-full -left-8 -translate-x-1/2 mt-2 px-3 py-1.5 bg-zinc-900 text-green-400 text-xs rounded-lg whitespace-nowrap pointer-events-none z-[110] shadow-xl">
-                    {tCommon("linkCopied")}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-900"></div>
-                  </div>
-                )}
-              </PanelHeaderActionButton>
-
-              <PanelHeaderActionButton
-                onClick={handleLeaveClick}
-                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
-                aria-label={tPanel("leaveParty")}
-              >
-                <LuLogOut size={16} />
-              </PanelHeaderActionButton>
-
-              <AvatarDropdown size={28} />
-            </div>
-          </div>
-
-          {/* Desktop Tabs */}
+	          {/* Desktop Tabs */}
           <div>
             <div
               className={desktopTabRailClass}
