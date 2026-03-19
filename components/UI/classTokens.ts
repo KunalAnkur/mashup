@@ -186,7 +186,10 @@ export const appEntryInteractiveSurfaceClass =
   "rounded-2xl bg-white/[0.04] transition-colors duration-200 hover:bg-white/[0.06]";
 
 export const appSyncPlatformCardClass =
-  "aspect-square flex min-h-[70px] flex-col items-center justify-center overflow-hidden rounded-lg p-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-opacity duration-200 hover:opacity-[0.96] md:min-h-[90px] md:rounded-xl md:p-3 lg:min-h-[110px] lg:rounded-2xl lg:p-4 xl:min-h-[130px] xl:p-5 2xl:min-h-[140px] 2xl:p-6";
+  "relative isolate aspect-square flex min-h-[70px] flex-col items-center justify-center overflow-hidden rounded-lg p-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_18px_38px_rgba(0,0,0,0.16)] transition-[filter,transform] duration-200 hover:brightness-105 md:min-h-[90px] md:rounded-xl md:p-3 lg:min-h-[110px] lg:rounded-2xl lg:p-4 xl:min-h-[130px] xl:p-5 2xl:min-h-[140px] 2xl:p-6";
+
+export const appSyncPlatformCardOverlayClass =
+  "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.15),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.08))]";
 
 export const appSyncPlatformIconClass =
   "text-white/95 leading-none [&>svg]:text-[26px] md:[&>svg]:text-[30px] lg:[&>svg]:text-[34px] xl:[&>svg]:text-[38px]";
@@ -195,13 +198,13 @@ export const appSyncPlatformLabelClass =
   "mt-1 px-1 text-[10px] font-semibold leading-tight tracking-tight text-white/94 md:mt-2 md:text-xs lg:mt-2.5 lg:text-sm xl:text-[15px]";
 
 export const appSyncFieldInputClass =
-  "h-11 flex-1 min-w-0 rounded-xl bg-white/[0.045] px-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] backdrop-blur-xl placeholder:text-white/36 transition-colors duration-200 focus:bg-white/[0.065] sm:h-[46px] sm:px-4";
+  "h-11 flex-1 min-w-0 rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.10),transparent_46%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.10),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] px-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl placeholder:text-white/36 transition-[filter,background] duration-200 focus:brightness-105 sm:h-[46px] sm:px-4";
 
 export const appSyncSecondaryButtonClass =
-  "h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-white/[0.045] px-3 text-sm font-medium text-white/88 transition-colors duration-200 hover:bg-white/[0.065] hover:text-white sm:h-[46px] sm:px-4";
+  "h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.08),rgba(168,85,247,0.06),rgba(244,63,94,0.08))] px-3 text-sm font-medium text-white/88 transition-[filter,background] duration-200 hover:brightness-105 hover:text-white sm:h-[46px] sm:px-4";
 
 export const appSyncPrimaryButtonClass =
-  `h-11 flex-1 items-center justify-center gap-2 rounded-xl ${movmashThemeGradientClass} px-3 text-sm font-semibold tracking-tight text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:h-[46px] sm:px-4 md:px-6`;
+  "h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.94),rgba(168,85,247,0.88),rgba(244,63,94,0.9))] px-3 text-sm font-semibold tracking-tight text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:h-[46px] sm:px-4 md:px-6";
 
 export const appEntryFieldShellClass =
   "flex min-h-12 items-center rounded-2xl bg-white/[0.045] px-4 transition-colors duration-200 focus-within:bg-white/[0.07]";
@@ -216,10 +219,10 @@ export const appEntryPrimaryButtonClass =
   "h-12 justify-center rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 px-5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50";
 
 export const appSyncTooltipSurfaceClass =
-  "rounded-xl bg-[#18181f]/96 px-3 py-2 text-[11px] text-white/76 shadow-xl shadow-black/25 backdrop-blur-xl";
+  "rounded-xl bg-[linear-gradient(180deg,rgba(22,22,30,0.98),rgba(14,14,20,0.98))] px-3 py-2 text-[11px] text-white/76 shadow-xl shadow-black/25 backdrop-blur-xl";
 
 export const appSyncPlaceholderRowClass =
-  "flex items-center gap-3 rounded-2xl bg-white/[0.028] px-3 py-3";
+  "flex items-center gap-3 rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.024))] px-3 py-3";
 
 export const appSyncListShellClass =
   "min-h-[220px] flex-1 overflow-hidden sm:min-h-[200px]";
@@ -228,10 +231,58 @@ export const appSyncListShellEmptyClass =
   "flex-1 overflow-hidden rounded-2xl";
 
 export const appSyncCardThumbnailClass =
-  "relative h-[44px] w-[78px] shrink-0 overflow-hidden rounded-xl bg-black/[0.12]";
+  "relative h-[44px] w-[78px] shrink-0 overflow-hidden rounded-xl bg-[linear-gradient(180deg,rgba(24,24,31,0.88),rgba(10,10,14,0.92))]";
 
 export const appSyncCardIndexClass =
   "shrink-0 text-[11px] font-medium leading-none tabular-nums text-white/38";
 
 export const appSyncCardClass =
-  "relative flex h-[74px] items-center gap-2.5 rounded-2xl bg-white/[0.038] py-3 pr-3 pl-2.5";
+  "relative flex h-[74px] items-center gap-2.5 rounded-2xl bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.06),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] py-3 pr-3 pl-2.5 transition-[filter,background] duration-200 hover:brightness-105";
+
+export const appStreamTopBarClass =
+  "mb-3 flex items-center justify-between gap-3 sm:mb-4";
+
+export const appStreamActionButtonClass =
+  "inline-flex h-10 items-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.14),rgba(168,85,247,0.08),rgba(244,63,94,0.14))] px-3.5 text-sm font-medium text-white/86 transition-[filter,background] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
+
+export const appStreamPanelClass =
+  "flex w-full flex-col";
+
+export const appStreamListClass =
+  "space-y-2 overflow-y-auto px-px pt-1 sm:space-y-2.5";
+
+export const appStreamListViewportClass =
+  "w-full min-h-[220px] sm:h-[208px] sm:min-h-[208px] sm:max-h-[208px] md:h-[214px] md:min-h-[214px] md:max-h-[214px]";
+
+export const appStreamFileCardClass =
+  "relative flex w-full max-w-full items-center justify-between overflow-hidden rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.032))] px-2.5 py-2 transition-[background,filter] duration-200 sm:min-h-[58px] sm:px-3 sm:py-2.5 md:min-h-[62px] md:px-3.5";
+
+export const appStreamFileCardSelectedClass =
+  "bg-[radial-gradient(circle_at_left,rgba(56,189,248,0.16),transparent_42%),radial-gradient(circle_at_right,rgba(244,63,94,0.14),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.048))] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]";
+
+export const appStreamFileCardIdleClass =
+  "hover:bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.08),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.038))] hover:brightness-105";
+
+export const appStreamFileThumbnailClass =
+  "flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[linear-gradient(180deg,rgba(24,24,31,0.88),rgba(10,10,14,0.92))]";
+
+export const appStreamUploadDropzoneClass =
+  "relative flex flex-col items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.13),transparent_46%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.13),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.028))] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-[filter,background] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-2xl";
+
+export const appStreamInlineAdderClass =
+  "relative flex flex-col items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.10),transparent_46%),linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.022))] transition-[filter,background] duration-200 hover:brightness-105";
+
+export const appStreamBottomActionRowClass =
+  "flex gap-2";
+
+export const appStreamGhostButtonClass =
+  "h-11 w-full justify-center rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.08),rgba(168,85,247,0.06),rgba(244,63,94,0.08))] px-4 text-sm font-medium text-white/86 transition-[filter,background] duration-200 hover:brightness-105 hover:text-white";
+
+export const appStreamPrimaryButtonClass =
+  "h-11 w-full justify-center rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.94),rgba(168,85,247,0.88),rgba(244,63,94,0.9))] px-4 text-sm font-semibold text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
+
+export const appStreamScreenShareButtonClass =
+  "flex flex-1 cursor-pointer flex-col items-center justify-center rounded-2xl bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.12),transparent_46%),radial-gradient(circle_at_bottom_left,rgba(168,85,247,0.10),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.10),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.036),rgba(255,255,255,0.026))] p-4 transition-[filter,background] duration-200 hover:brightness-105 sm:p-6";
+
+export const appStreamScreenShareIconClass =
+  "mb-3 flex h-16 w-16 items-center justify-center text-violet-200 sm:mb-4 sm:h-20 sm:w-20";

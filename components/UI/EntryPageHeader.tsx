@@ -33,6 +33,8 @@ type EntryPageHeaderProps = {
   onBack?: () => void;
   fixed?: boolean;
   showLanguage?: boolean;
+  showBrandOnSubpage?: boolean;
+  showBackButton?: boolean;
 };
 
 const entryHeaderAvatarSize = 28;
@@ -83,6 +85,8 @@ const EntryPageHeader = ({
   onBack,
   fixed = false,
   showLanguage = true,
+  showBrandOnSubpage = false,
+  showBackButton = Boolean(onBack),
 }: EntryPageHeaderProps) => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [showLoginDropdown, setShowLoginDropdown] = useState(false);
@@ -109,6 +113,8 @@ const EntryPageHeader = ({
     }
   }, [isAuthenticated]);
 
+  const shouldShowBackButton = Boolean(onBack) && showBackButton;
+
   const brand = (
     <Link href="/" className={appEntryPageBrandClass}>
       <Logo height={28} width={28} custom={true} />
@@ -123,22 +129,26 @@ const EntryPageHeader = ({
   );
 
   const left = isSubpage ? (
-    <div className={appEntryPageHeaderNavClusterClass}>
-      {onBack ? (
-        <button
-          type="button"
-          onClick={onBack}
-          className={appPageHeaderBackButtonClass}
-          aria-label="Go back"
-        >
-          <LuArrowLeft
-            size={19}
-            strokeWidth={2.6}
-            className={appPageHeaderBackIconClass}
-          />
-        </button>
-      ) : null}
-    </div>
+    showBrandOnSubpage ? (
+      brand
+    ) : (
+      <div className={appEntryPageHeaderNavClusterClass}>
+        {shouldShowBackButton ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className={appPageHeaderBackButtonClass}
+            aria-label="Go back"
+          >
+            <LuArrowLeft
+              size={19}
+              strokeWidth={2.6}
+              className={appPageHeaderBackIconClass}
+            />
+          </button>
+        ) : null}
+      </div>
+    )
   ) : (
     brand
   );

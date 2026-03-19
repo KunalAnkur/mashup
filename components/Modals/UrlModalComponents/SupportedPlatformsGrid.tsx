@@ -6,6 +6,7 @@ import { SectionTitle } from "../DeviceModalComponents/SectionTitle";
 import { useTranslations } from "@/i18n/I18nProvider";
 import {
   appSyncPlatformCardClass,
+  appSyncPlatformCardOverlayClass,
   appSyncPlatformIconClass,
   appSyncPlatformLabelClass,
 } from "@/components/UI/classTokens";
@@ -19,8 +20,11 @@ const PlatformCard: React.FC<PlatformCardProps> = ({ platform }) => (
     style={platform.bgStyle}
     className={appSyncPlatformCardClass}
   >
-    <div className={appSyncPlatformIconClass}>{platform.icon}</div>
-    <span className={appSyncPlatformLabelClass}>{platform.name}</span>
+    <div className={appSyncPlatformCardOverlayClass} />
+    <div className="relative z-10 flex flex-col items-center">
+      <div className={appSyncPlatformIconClass}>{platform.icon}</div>
+      <span className={appSyncPlatformLabelClass}>{platform.name}</span>
+    </div>
   </div>
 );
 

@@ -11,7 +11,7 @@ import {
   ACCEPTED_FILE_TYPES,
 } from "@/components/Modals/DeviceModalComponents";
 import { FileSelection } from "@/components";
-import { EntryPageHeader, Input } from "@/components/UI";
+import { EntryPageBackdrop, EntryPageHeader, Input } from "@/components/UI";
 import { ScreenShareBox } from "@/components/ScreenShare/ScreenShareBox";
 import { isMobile } from "react-device-detect";
 import { ExtendedFile } from "@/utils/filePersistence";
@@ -56,37 +56,16 @@ const StreamFilesPage = () => {
     handleFileChange
   );
 
-  const handleBack = () => {
-    router.push("/");
-  };
-
   const handleScreenShareClick = () => {
     router.push(`/stream/screen`);
   };
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden bg-[#18181b] text-white"
+      className="relative h-screen overflow-hidden bg-[#09090c] text-white"
       {...dragHandlers}
     >
-      {/* Background Effects - Matching CTASection */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-[#e11d48]/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse-glow" />
-        <div className="absolute bottom-0 right-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-[#c026d3]/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
-      </div>
-
-      {/* Floating Emojis - Hidden on small screens, visible on larger */}
-      <div className="hidden sm:block absolute inset-0 overflow-hidden pointer-events-none z-10">
-        <span className="absolute top-1/4 left-[8%] text-2xl md:text-4xl animate-float opacity-50">🎬</span>
-        <span className="absolute top-1/3 right-[12%] text-xl md:text-3xl animate-float-delayed opacity-40">🍿</span>
-        <span className="absolute bottom-1/3 left-[15%] text-3xl md:text-5xl animate-float opacity-30">😍</span>
-        <span className="absolute top-1/2 right-[8%] text-2xl md:text-4xl animate-float-delayed opacity-40">🎉</span>
-        <span className="absolute bottom-1/4 right-[20%] text-xl md:text-3xl animate-float opacity-50">❤️</span>
-        <span className="absolute top-2/3 left-[12%] text-xl md:text-3xl animate-float-delayed opacity-40">⭐</span>
-        <span className="absolute bottom-1/2 right-[15%] text-2xl md:text-4xl animate-float opacity-40">🎊</span>
-        <span className="absolute top-[15%] left-[25%] text-xl md:text-3xl animate-float-delayed opacity-35">🎞️</span>
-        <span className="absolute bottom-[20%] left-[30%] text-2xl md:text-4xl animate-float opacity-45">🎭</span>
-      </div>
+      <EntryPageBackdrop />
 
       <DragOverlay isVisible={isDragging} />
       
@@ -103,7 +82,7 @@ const StreamFilesPage = () => {
       
       {/* Content - Above Background */}
       <div className={appEntryPageShellClass}>
-        <EntryPageHeader title={t("title")} onBack={handleBack} fixed />
+        <EntryPageHeader title={t("title")} fixed showBrandOnSubpage />
 
         {/* Content - Top aligned on mobile, centered on desktop */}
         <div className={`flex-1 w-full min-h-0 overflow-hidden md:overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center ${appEntryPageFixedHeaderOffsetClass}`}>

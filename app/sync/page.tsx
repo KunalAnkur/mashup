@@ -99,7 +99,7 @@ const SyncPage = () => {
 
       {/* Content - Above Background */}
       <div className={appEntryPageShellClass}>
-        <EntryPageHeader title={t("title")} onBack={handleBack} fixed />
+        <EntryPageHeader title={t("title")} fixed showBrandOnSubpage />
 
         <div className={`flex-1 w-full min-h-0 overflow-hidden overflow-x-hidden md:flex md:items-center md:justify-center md:overflow-y-auto ${appEntryPageFixedHeaderOffsetClass}`}>
           <div className={appEntryPageInsetClass}>

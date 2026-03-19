@@ -652,3 +652,150 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Keep `agent/tasks.md` focused on current work and status, not old "current step" snapshots.
   - Keep backlog items separate from execution notes and remove duplicate sections.
 - Follow-up action: Audit agent docs when the active workstream changes significantly so stale guidance does not pile up.
+
+## 2026-03-19 (Top-Level Entry Header Mode)
+
+- Date: 2026-03-19
+- Context: Aligning the `/sync` and `/stream` headers with home without making them feel like deeper subpages.
+- Error: Treating every titled entry page as a “subpage with back button” hid the Movmash brand and added unnecessary back navigation to top-level sibling routes.
+- Root cause: The shared entry header only had two practical modes: home brand or subpage back-nav, with no shared option for “centered title plus home brand”.
+- Prevention checklist:
+  - Keep one shared header component, but let it explicitly support brand-on-subpage mode for top-level sibling routes.
+  - Use that mode for routes like `/sync` and `/stream` that are siblings of home, not children that require hierarchical back navigation.
+  - Keep deeper follow-up flows, such as `/stream/screen`, on the real back-navigation path unless the user asks otherwise.
+  - Apply the brand/back choice through shared header props instead of forking route-specific header wrappers.
+- Follow-up action: Reuse the shared brand-on-subpage header mode for future top-level entry routes that need a centered title without losing the home-brand rhythm.
+
+## 2026-03-19 (Stream Redesign Should Stay Visual-Only)
+
+- Date: 2026-03-19
+- Context: Refreshing `/stream` after `/sync` while the user explicitly wanted structure preserved.
+- Error: `/stream` still carried an older emoji-heavy backdrop and stacked gradient/border overlays even though the approved direction had already moved toward one shared entry backdrop and calmer surfaces.
+- Root cause: The route kept legacy visual layers instead of reusing the entry-page primitives and token-first minimal style established on home and `/sync`.
+- Prevention checklist:
+  - Keep `/stream` on the shared `EntryPageBackdrop` and shared entry header before touching inner component styling.
+  - Preserve the existing left divider/right section structure and do visual cleanup through tokens, not wrapper surgery.
+  - Remove decorative hover overlays, stacked gradients, and heavy borders before changing size or layout rhythm.
+  - Reuse the shared Movmash primary gradient on the final CTA instead of introducing another near-match palette.
+- Follow-up action: Continue future `/stream` cleanup through token-first visual passes while leaving the approved screen-share/files skeleton intact.
+
+## 2026-03-19 (Stream Should Match Home Mood Without Nested Panels)
+
+- Date: 2026-03-19
+- Context: Refining `/stream` after the first token-based cleanup.
+- Error: Even with calmer styling, the page still felt heavier than home because the file area and helper pieces kept stacked panel backgrounds.
+- Root cause: The first pass reduced borders and overlays, but it still left panel-inside-panel layering instead of using the more open-column approach already approved on `/sync`.
+- Prevention checklist:
+  - On `/stream`, remove outer panel backgrounds before tuning child-card color.
+  - Keep the structure intact, but let upload cards, file rows, and the screen-share card define the visual surfaces.
+  - Reuse the home accent family for the key stream surfaces so the route feels related to home instead of introducing a separate color mood.
+  - When the route already shares the same backdrop/header as home, keep inner section color accents in the same family too.
+- Follow-up action: Use the open-column + home-accent pattern for future `/stream` color passes unless the user explicitly asks for a heavier card system.
+
+## 2026-03-20 (Stream Right-Column Alignment After Panel Removal)
+
+- Date: 2026-03-20
+- Context: Tightening the `/stream` file-selection column after removing its outer panel background.
+- Error: The right column still looked slightly off because the old panel padding and list-side scrollbar padding kept the upload/file area inset from the title row and bottom actions.
+- Root cause: Visual cleanup removed the visible panel but left behind the spacing contract that panel had been creating.
+- Prevention checklist:
+  - After removing an outer surface, audit the leftover padding/inset on its children too.
+  - On open-column layouts, align the section title row, upload card, list cards, and action buttons to one left/right guide.
+  - If a gradient dropzone already reads clearly, remove the extra border instead of stacking both treatments.
+- Follow-up action: Reuse this “remove leftover insets after panel removal” check on future stream/sync cleanup passes.
+
+## 2026-03-20 (Stream Buttons Should Join The New Gradient Family)
+
+- Date: 2026-03-20
+- Context: Trying the home-style gradient vibe on `/stream`.
+- Error: The page started using the new open, home-like color mood, but the buttons still felt disconnected when only one CTA carried the accent and the others stayed flat gray.
+- Root cause: Surface cleanup happened before the action-color system was updated, so the controls no longer matched the surrounding gradient treatment.
+- Prevention checklist:
+  - When the user asks to try a new color vibe, apply it consistently across the page's main button family, not just one CTA.
+  - Keep the gradient treatment softer on secondary actions and stronger on the main CTA so hierarchy still reads clearly.
+  - If the upload states and action layout already explain the flow, remove redundant helper tip copy instead of keeping both.
+- Follow-up action: Reuse the “one gradient family, different intensity by hierarchy” rule for future stream/sync button color passes.
+
+## 2026-03-20 (Do Not Bring Back Stream Helper Text)
+
+- Date: 2026-03-20
+- Context: Fine-tuning the left `Screen Share` block on `/stream`.
+- Error: Once the stream page had been simplified, the old “Share your screen / enable audio” helper block became unnecessary visual noise under the main action card.
+- Root cause: The block belonged to the older, heavier guidance style and no longer matched the cleaner open-column design.
+- Prevention checklist:
+  - If the main action card is already clear, remove the follow-up helper paragraph instead of stacking another explanatory box under it.
+  - When retuning the left stream card colors, do it in the card/icon tokens, not by reintroducing helper content.
+  - Keep the left stream column to title + main action by default unless the user explicitly asks for more explanation.
+- Follow-up action: Reuse the title + main action only pattern for future minimal `/stream` passes unless a new user problem requires additional helper content.
+
+## 2026-03-20 (Stream Bottom Actions Can Collapse To Two)
+
+- Date: 2026-03-20
+- Context: Simplifying the `/stream` footer actions after the page became visually cleaner.
+- Error: Keeping a local `Back` action plus separate `Use Sync` and `Start Watching` rows made the footer feel busier than the rest of the page.
+- Root cause: The older action cluster survived from a heavier flow even though the top-level entry header already provides enough navigation context.
+- Prevention checklist:
+  - If `/stream` already has clear page context and a sync alternative, remove the extra local back button before adding more styling.
+  - Pair `Use Sync` and `Start Watching` in one row once they are the two real next-step actions.
+  - Route the row layout through shared stream tokens instead of hardcoding another one-off footer wrapper.
+- Follow-up action: Reuse the two-action bottom row pattern for future `/stream` minimal passes unless another third action becomes truly necessary.
+
+## 2026-03-20 (Stream File Cards Need Density Before More Decoration)
+
+- Date: 2026-03-20
+- Context: Refining the `/stream` file list after the larger surface cleanup.
+- Error: The cards still felt dull because they were too tall and too flat at the same time, which made the list look heavy without feeling premium.
+- Root cause: The first pass simplified the cards, but it kept a relatively large row height and a nearly neutral fill, so the result lost energy without gaining tightness.
+- Prevention checklist:
+  - On `/stream`, reduce card height and internal gaps before adding stronger color.
+  - Once density is improved, tune the card fill with a subtle home-family gradient instead of just raising plain white opacity.
+  - Keep thumbnail surfaces richer than the row background so the list still has visual hierarchy at smaller sizes.
+- Follow-up action: Reuse the “density first, color second” approach for future stream list-card tuning.
+
+## 2026-03-20 (Selected Stream Card Border Should Be Inset)
+
+- Date: 2026-03-20
+- Context: Making the selected file state read cleanly in the `/stream` list.
+- Error: The selected border looked weak on the left/right edges and too cramped at the top because the outer ring sat flush against the scroll container.
+- Root cause: The list had no breathing room and the selected treatment used an outer ring, which is easier to clip visually in tight scroll areas.
+- Prevention checklist:
+  - On tight scroll lists, give the container a tiny top/side inset before assuming the selected state itself is wrong.
+  - Prefer an inset border/shadow for selected states when the row needs to stay flush and compact.
+  - Keep the added breathing room minimal so alignment stays visually unchanged.
+- Follow-up action: Reuse the “tiny list inset + inset selected border” pattern for future compact selection lists when outer rings start clipping.
+
+## 2026-03-20 (Stream List Viewport Should Show Three Rows)
+
+- Date: 2026-03-20
+- Context: Tuning the visible file stack on the `/stream` right column.
+- Error: Showing only about two cards before scrolling made the file area feel cramped and underused even after the card styling improved.
+- Root cause: The desktop list viewport height was still tuned for the older, taller row sizing and did not get revisited after the density cleanup.
+- Prevention checklist:
+  - After tightening list-card height, re-check how many rows are actually visible in the viewport.
+  - On `/stream`, prefer a desktop list height that reveals 3 cards before scroll when the column has room.
+  - Route the viewport height through a shared token instead of burying it in repeated local utility strings.
+- Follow-up action: Reuse the “3 visible rows” target for future stream file-list tuning unless the row height changes again.
+
+## 2026-03-20 (Do Not Replace Stream Upload Artwork With Fillers)
+
+- Date: 2026-03-20
+- Context: Making the empty `/stream` file area as tall as the 3-row filled list.
+- Error: Adding extra placeholder rows inside the upload box technically filled the height, but it damaged the original centered upload artwork and made the empty state feel busier.
+- Root cause: The height problem was solved inside the empty-state component instead of at the shared viewport-height layer around it.
+- Prevention checklist:
+  - Keep the original centered upload artwork intact when the user already likes that composition.
+  - Match empty-state height by adjusting the list viewport, not by stuffing the upload box with extra filler content.
+  - If the user asks for “same height, same look,” preserve the artwork first and only change the container contract.
+- Follow-up action: Reuse the “keep the upload artwork, change the viewport” rule for future `/stream` empty-state sizing fixes.
+
+## 2026-03-20 (Sync Can Share Stream's Color Family Without Sharing Its Structure)
+
+- Date: 2026-03-20
+- Context: Retuning `/sync` after the newer `/stream` color direction felt more cohesive.
+- Error: `/sync` still read as a separate visual system because its controls and cards kept a flatter white-on-dark treatment while `/stream` had moved to a softer cyan/violet/pink family.
+- Root cause: The structural redesign rules were respected, but the token palette between the two entry pages drifted apart.
+- Prevention checklist:
+  - Keep `/sync` on its approved layout, but retune shared tokens so buttons, fields, cards, and placeholders can join the newer family.
+  - Use the same accent family with different intensity instead of copying every exact stream token 1:1.
+  - If platform brand colors must stay, unify them with a shared overlay/gloss layer instead of replacing the platform identities entirely.
+- Follow-up action: Reuse “shared palette, preserved structure” as the default path when aligning `/sync` with future entry-page color updates.

@@ -5,7 +5,7 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
 ## Current Step
 
 - Date: 2026-03-19
-- Active task: Entry-page polish, now doing a visual-only minimal pass on `/sync` while preserving the approved structure.
+- Active task: Entry-page polish, now doing a visual-only minimal pass on `/stream` while preserving the approved structure and syncing its header/backdrop behavior with home + `/sync`.
 - Status: In progress.
 - Completed in this workstream:
   - Refreshed `AGENTS.md` as the durable source of truth for workflow, localization, git, and layout-stability rules.
@@ -34,14 +34,14 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Apply one shared entry-header shell/parts system to every `PageHeader` route instead of maintaining separate home vs subpage header wrappers.
   - Keep active entry routes mounted on `EntryPageHeader` directly so alignment fixes live in one place instead of drifting between wrapper components.
   - Keep the back-navigation hit area, but optically align the visible arrow with the home header edge in the shared header token instead of patching route-specific padding.
-  - Keep the home brand only on the home-style fixed header; subpage entry headers (`/sync`, `/stream`, `/stream/screen`) should not re-show the Movmash logo/text.
+  - For top-level sibling entry pages like `/sync` and `/stream`, keep the home-style brand/logo in the shared header and drop the back button so the top bar still feels like one family.
   - Keep shared entry-header interactions minimal: the back arrow should only change color on hover, and the authenticated avatar should match the logo size for a cleaner, more consistent top bar.
   - Keep active entry routes on the same fixed-header + shared body-offset contract so the top gap cannot drift by a couple of pixels between home and subpages.
   - Keep the shared entry header on one fixed-height row and render subpage titles as overlays inside that row so title/back/auth variations never change the top rhythm.
   - Keep the shared back-arrow hit area large, but align the visible arrow anchor to the same left start line as the home logo so page switches feel perfectly consistent.
   - Keep the shared back arrow visually strong enough to balance the home logo mark; tune icon size in the shared header component instead of per-route overrides.
   - Keep shared back-arrow strength in the token/component layer too: if it feels too weak next to the home logo, increase icon size/stroke there instead of padding hacks.
-  - Keep home and `/sync` on one shared entry backdrop primitive and one shared section-heading primitive so the redesign stays consistent and easy to reuse on `/stream`.
+  - Keep home, `/sync`, and `/stream` on one shared entry backdrop primitive and one shared header system so the redesign stays consistent without route-specific wrappers.
   - For entry-page redesign passes, keep the approved layout skeleton intact and avoid large structure shifts unless the user explicitly asks for them.
   - On split entry pages like `/sync`, avoid extra outer left/right panel backgrounds; let the inner controls/cards define the surfaces.
   - Keep split entry columns visually equal in height through the shared row/column contract, not by wrapping each side in another large background panel.
@@ -61,6 +61,22 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - On `/sync`, use enough placeholder rows in the empty list to avoid leaving a large dead gap; three rows is the current better balance than two.
   - On approved `/sync` structure, make minimal cleanup through calmer type, lighter font weights, and reduced border/shadow noise before touching wrappers or layout contracts.
   - Keep entry-page section titles closer to the shared header title scale and remove decorative accent rails when the typography already carries the hierarchy.
+  - On `/stream`, keep the existing screen-share-left / file-selection-right structure and only simplify surfaces, typography, borders, and CTA color weight.
+  - On `/stream`, route the new visual language through `components/UI/classTokens.ts` instead of reintroducing local gradient/overlay stacks in `FileSelection` or `ScreenShareBox`.
+  - On `/stream`, keep the columns visually open like `/sync`: remove extra nested panel backgrounds and let the real cards/controls carry the surfaces.
+  - On `/stream`, reuse the home-page accent mood for color treatment so the page feels like the same product family instead of a separate palette.
+  - On `/stream`, once the outer panel bg is gone, also remove leftover inner padding/right-scroll padding so the right column aligns cleanly to the same left/right guides as the title row and action buttons.
+  - On `/stream`, keep the upload surface borderless when the gradient/background already defines the drop area strongly enough.
+  - On `/stream`, if the user asks for the new gradient vibe, apply it across the real action buttons too so the CTA family feels intentional instead of mixing one vivid button with plain gray siblings.
+  - On `/stream`, remove helper tip copy entirely once the upload states and controls are already self-explanatory.
+  - On `/stream`, if the left screen-share area still feels off after the button pass, retune that card slightly within the same home-like gradient family and avoid re-adding the removed helper text block.
+  - On `/stream`, once the bottom actions are clear enough, drop the extra local back button and keep `Use Sync` + `Start Watching` paired in one row.
+  - On `/stream`, if the file cards still feel dull or bulky, reduce their height first and then tune the card gradients/thumbnail surface before touching layout.
+  - On `/stream`, if the selected file edge gets clipped, add only a tiny top/side breathing room to the list and prefer an inset selected border over an outer ring.
+  - On `/stream`, keep the desktop file-list viewport tall enough to show 3 cards before scrolling; the right column feels better with a slightly larger visible stack.
+  - On `/stream`, keep the empty file state on that same 3-row viewport height too; do not let the empty upload state collapse shorter than the filled list.
+  - On `/stream`, keep the original centered upload empty-state artwork intact; increase the viewport height around it instead of filling the box with extra placeholder rows.
+  - On `/sync`, keep the approved structure but retune the surface palette toward the newer `/stream` family so left cards, right controls, and bottom actions feel like one product line.
   - Keep `stream`, `stream/screen`, and `/sync` on the same shared width/inset contract so their left-right page edges never drift apart.
   - Match every shared `PageHeader` route to the home header's exact side-ratio (`mx-4` mobile, `mx-5` from `sm`) instead of letting stream/sync drift wider than the home top bar.
   - Remove leftover outer flex-centering wrappers and extra header spacing from entry pages when the shared `max-w-6xl` shell already owns page width, so the visual stage stays identical to home.
