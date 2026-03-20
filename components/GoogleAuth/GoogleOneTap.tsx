@@ -66,7 +66,7 @@ const GoogleOneTap = () => {
       showSuccess(tToast("loginSuccessful"));
     } catch (error: any) {
       console.error("❌ Google One Tap authentication failed:", error);
-      const errorMessage = error?.data?.message || error?.message || tToast("authenticationFailed");
+      const errorMessage = error?.data?.message || tToast("tryAgain");
       showError(tToast("authenticationFailed"), errorMessage);
     }
   };

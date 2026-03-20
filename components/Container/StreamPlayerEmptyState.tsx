@@ -1,175 +1,882 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { RoomType } from "@/context/RoomContext";
 import getPlayerMessage from "@/utils/playerState";
+import { Playlist } from "@/types/storeTypes";
+import { ContentSelection } from "@/components/Panel/PlaylistTab/ContentSelection";
+import { usePlaylistActions } from "@/hooks/usePlaylistActions";
+import ProductCarousel from "@/components/Product/ProductCarousel";
+import * as constants from "@/constants";
+const logo = constants.assets.logo192;
+import { useDispatch } from "react-redux";
+import { setPlayerActive } from "@/lib/store/slices/roomSlice";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type StreamPlayerEmptyStateProps = {
     isHost: boolean;
     roomType: RoomType | null;
     hostLeft: boolean;
+    playlist?: Playlist[];
     remoteStream: MediaStream | null;
     isInitialized: boolean;
 };
 
+/**
+ *? ─── Main Component ───────────────────────────────────────────────────────────
+ ** Render decision tree:
+ ** 1. isLoading === true           → <LoadingScreen />
+ ** 2. hostLeft && !isHost          → <HostLeftScreen />
+ ** 3. isHost && playlist.length=0  → <HostEmptyPlaylistScreen />
+ ** 4. isHost && playlist.length>0  → <HostPreparingScreen />
+ ** 5. !isHost (viewer waiting)     → <ViewerWaitingScreen />
+ *? ─────────────────────────────────────────────────────────────────────────────
+ */
 const StreamPlayerEmptyState = ({
     isHost,
     roomType,
     hostLeft,
     remoteStream,
     isInitialized,
+    playlist = [],
 }: StreamPlayerEmptyStateProps) => {
-    const message = isHost 
-        ? "Loading video..." 
-        : getPlayerMessage(isHost, roomType || "sync", hostLeft, remoteStream);
-    
-    const subtitle = isHost 
-        ? "Preparing to stream" 
-        : `Connecting... ${isInitialized ? '(Ready)' : ''}`;
+    const [isLoading, setIsLoading] = useState(true);
+    const [contentVisible, setContentVisible] = useState(false);
 
-    // Special layout when host has left and user is not the host
+    const isHostWithoutPlaylist = isHost && playlist.length === 0;
+    const { addPlaylistContent, handleScreenShareStopped } = usePlaylistActions();
+    const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch(setPlayerActive(false));
+        return () => {
+            dispatch(setPlayerActive(true))
+        }
+    }, [dispatch, setPlayerActive])
+    useEffect(() => {
+        if (isHostWithoutPlaylist || (hostLeft && !isHost)) {
+            setIsLoading(false);
+            setContentVisible(true);
+            return;
+        }
+        const loaderTimer = setTimeout(() => setIsLoading(false), 2200);
+        const contentTimer = setTimeout(() => setContentVisible(true), 2500);
+        return () => {
+            clearTimeout(loaderTimer);
+            clearTimeout(contentTimer);
+        };
+    }, [hostLeft, isHost, isHostWithoutPlaylist]);
+
+    if (isLoading) return <LoadingScreen />;
+
     if (hostLeft && !isHost) {
+        const message = getPlayerMessage(isHost, roomType || "sync", hostLeft, remoteStream) as string;
+        return <HostLeftScreen message={message} contentVisible={contentVisible} />;
+    }
+
+    if (isHostWithoutPlaylist) {
         return (
-            <div className="relative w-full h-full bg-[#18181b] flex items-center justify-center overflow-hidden">
-                {/* Background Effects - Matching sync/stream pages */}
-                <div className="absolute inset-0 z-0">
-                    <div className="absolute top-0 left-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-[#e11d48]/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse-glow" />
-                    <div className="absolute bottom-0 right-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-[#c026d3]/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
-                </div>
-
-                {/* Floating Emojis - Hidden on small screens */}
-                <div className="hidden sm:block absolute inset-0 overflow-hidden pointer-events-none z-10">
-                    <span className="absolute top-1/4 left-[8%] text-2xl md:text-4xl animate-float opacity-50">🎬</span>
-                    <span className="absolute top-1/3 right-[12%] text-xl md:text-3xl animate-float-delayed opacity-40">🍿</span>
-                    <span className="absolute bottom-1/3 left-[15%] text-3xl md:text-5xl animate-float opacity-30">😍</span>
-                    <span className="absolute top-1/2 right-[8%] text-2xl md:text-4xl animate-float-delayed opacity-40">🎉</span>
-                    <span className="absolute bottom-1/4 right-[20%] text-xl md:text-3xl animate-float opacity-50">❤️</span>
-                    <span className="absolute top-2/3 left-[12%] text-xl md:text-3xl animate-float-delayed opacity-40">⭐</span>
-                    <span className="absolute bottom-1/2 right-[15%] text-2xl md:text-4xl animate-float opacity-40">🎊</span>
-                    <span className="absolute top-[15%] left-[25%] text-xl md:text-3xl animate-float-delayed opacity-35">🎞️</span>
-                    <span className="absolute bottom-[20%] left-[30%] text-2xl md:text-4xl animate-float opacity-45">🎭</span>
-                </div>
-
-                {/* Content - Above Background */}
-                <div className="relative z-20 text-center px-4 sm:px-6 max-w-lg">
-                    {/* Icon/Emoji with animation - Hand waving */}
-                    <div className="mb-4 sm:mb-6 md:mb-8 flex justify-center">
-                        <div className="relative">
-                            <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl animate-bounce">
-                                👋
-                            </div>
-                            {/* Pulsing ring effect - Updated colors */}
-                            <div className="absolute inset-0 -m-3 sm:-m-4 rounded-full border-2 border-purple-500/30 animate-ping" />
-                            <div className="absolute inset-0 -m-4 sm:-m-6 rounded-full border border-pink-500/20 animate-pulse" />
-                        </div>
-                    </div>
-
-                    {/* Fun message - Emphasized and above host left message */}
-                    <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-2 sm:mb-3">
-                        <span className="text-white/90">That was </span>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-fuchsia-400">
-                            fun
-                        </span>
-                        <span className="text-white/90"> 🎉</span>
-                    </p>
-
-                    {/* Main message - Host left */}
-                    <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-white/80 mb-4 sm:mb-5 md:mb-6">
-                        {message || "Host has left the room."}
-                    </h2>
-
-                    {/* Question */}
-                    <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/70 mb-5 sm:mb-6 md:mb-8 font-medium">
-                        Want to watch something else with friends?
-                    </p>
-
-                    {/* Create another room button */}
-                    <Link
-                        href="/"
-                        className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-sm sm:text-base rounded-lg sm:rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-                    >
-                        <span>Create another room</span>
-                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                    </Link>
-                </div>
-            </div>
+            <HostEmptyPlaylistScreen
+                contentVisible={contentVisible}
+                onAddContent={addPlaylistContent}
+                onScreenShareStopped={handleScreenShareStopped}
+            />
         );
     }
 
-    // Default layout for other states
-    return (
-        <div className="relative w-full h-full bg-[#18181b] flex items-center justify-center overflow-hidden">
-            {/* Background Effects - Matching sync/stream pages */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute top-0 left-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-[#e11d48]/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse-glow" />
-                <div className="absolute bottom-0 right-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-[#c026d3]/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
-            </div>
+    if (isHost) return <HostPreparingScreen contentVisible={contentVisible} />;
 
-            {/* Floating Emojis - Hidden on small screens */}
-            <div className="hidden sm:block absolute inset-0 overflow-hidden pointer-events-none z-10">
-                <span className="absolute top-1/4 left-[8%] text-2xl md:text-4xl animate-float opacity-50">🎬</span>
-                <span className="absolute top-1/3 right-[12%] text-xl md:text-3xl animate-float-delayed opacity-40">🍿</span>
-                <span className="absolute bottom-1/3 left-[15%] text-3xl md:text-5xl animate-float opacity-30">😍</span>
-                <span className="absolute top-1/2 right-[8%] text-2xl md:text-4xl animate-float-delayed opacity-40">🎉</span>
-                <span className="absolute bottom-1/4 right-[20%] text-xl md:text-3xl animate-float opacity-50">❤️</span>
-                <span className="absolute top-2/3 left-[12%] text-xl md:text-3xl animate-float-delayed opacity-40">⭐</span>
-                <span className="absolute bottom-1/2 right-[15%] text-2xl md:text-4xl animate-float opacity-40">🎊</span>
-                <span className="absolute top-[15%] left-[25%] text-xl md:text-3xl animate-float-delayed opacity-35">🎞️</span>
-                <span className="absolute bottom-[20%] left-[30%] text-2xl md:text-4xl animate-float opacity-45">🎭</span>
-            </div>
-
-            {/* Content - Above Background */}
-            <div className="relative z-20 text-center px-4 sm:px-6 max-w-md">
-                {/* Icon/Emoji with animation */}
-                <div className="mb-4 sm:mb-5 md:mb-6 flex justify-center">
-                    <div className="relative">
-                        <div className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl animate-bounce">
-                            {isHost ? "🎬" : "⏳"}
-                        </div>
-                        {/* Pulsing ring effect - Updated colors */}
-                        <div className="absolute inset-0 -m-3 sm:-m-4 rounded-full border-2 border-purple-500/30 animate-ping" />
-                        <div className="absolute inset-0 -m-4 sm:-m-6 rounded-full border border-pink-500/20 animate-pulse" />
-                    </div>
-                </div>
-
-                {/* Main message */}
-                <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white mb-2 sm:mb-3">
-                    {message || "Waiting for stream..."}
-                </h2>
-
-                {/* Subtitle */}
-                <p className="text-xs sm:text-sm md:text-base text-white/60 mb-4 sm:mb-5 md:mb-6">
-                    {subtitle}
-                </p>
-
-                {/* Loading indicator - Updated colors */}
-                <div className="flex justify-center items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-pink-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-fuchsia-500 rounded-full animate-bounce" />
-                </div>
-
-                {/* Host status badge - Show for host */}
-                {isHost && (
-                    <div className="mt-3 sm:mt-4 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-fuchsia-500/10 backdrop-blur-xl border border-purple-500/30 rounded-full">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-purple-400 rounded-full animate-pulse" />
-                        <span className="text-[10px] sm:text-xs text-purple-300 font-medium">Preparing your stream</span>
-                    </div>
-                )}
-
-                {/* Status badge - Updated styling for non-host */}
-                {isInitialized && !isHost && (
-                    <div className="mt-4 sm:mt-5 md:mt-6 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-br from-emerald-500/10 via-green-500/10 to-teal-500/10 backdrop-blur-xl border border-emerald-500/30 rounded-full">
-                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-emerald-400 rounded-full animate-pulse" />
-                        <span className="text-[10px] sm:text-xs text-emerald-300 font-medium">Ready to receive stream</span>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+    return <ViewerWaitingScreen contentVisible={contentVisible} isInitialized={isInitialized} />;
 };
 
-export default StreamPlayerEmptyState;
+// ─── Screen Components ────────────────────────────────────────────────────────
 
+const LoadingScreen = () => (
+    <ScreenShell shellClassName="sp-shell--loading">
+        <GlobalStyles />
+        <div className="sp-loader">
+            {/* Concentric scanner rings */}
+            <div className="sp-rings">
+                <span className="sp-ring sp-ring--1" />
+                <span className="sp-ring sp-ring--2" />
+                <span className="sp-ring sp-ring--3" />
+                {/* Logo at center */}
+                <div className="sp-logo-wrap">
+                    <Image src={logo} alt="Logo" width={36} height={36} className="sp-logo-img" />
+                </div>
+            </div>
+
+            {/* Segmented progress bar */}
+            <div className="sp-progress">
+                <div className="sp-progress-fill" />
+            </div>
+
+            <p className="sp-loading-label">Initializing stream</p>
+        </div>
+    </ScreenShell>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const HostLeftScreen = ({
+    message,
+    contentVisible,
+}: {
+    message: string;
+    contentVisible: boolean;
+}) => (
+    <ScreenShell bottom={<ProductCarousel placement="host-left" />}>
+        <GlobalStyles />
+        <FadeInContent visible={contentVisible}>
+            {/* Logo mark with a subtle "ended" indicator */}
+            <BrandMark variant="ended" />
+
+            <div className="sp-chip sp-chip--host-left">Session ended</div>
+
+            <h2 className="sp-heading">
+                That was <span className="sp-accent">incredible.</span>
+            </h2>
+
+            <p className="sp-body">{message || "The host has left the room."}</p>
+
+            <p className="sp-hint sp-hint--host-left">Want to watch something else with friends?</p>
+
+            <Link href="/" className="sp-cta-btn sp-cta-btn--host-left">
+                Create another room
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </Link>
+        </FadeInContent>
+    </ScreenShell>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const HostEmptyPlaylistScreen = ({
+    contentVisible,
+    onAddContent,
+    onScreenShareStopped,
+}: {
+    contentVisible: boolean;
+    onAddContent: ReturnType<typeof usePlaylistActions>["addPlaylistContent"];
+    onScreenShareStopped: ReturnType<typeof usePlaylistActions>["handleScreenShareStopped"];
+}) => (
+    <ScreenShell bottom={<ProductCarousel placement="host-empty" />}>
+        <GlobalStyles />
+        <FadeInContent visible={contentVisible}>
+            <BrandMark variant="idle" />
+
+            <h2 className="sp-heading">
+                Your playlist is <span className="sp-accent">empty.</span>
+            </h2>
+
+            <p className="sp-body">
+                Add a URL, file, or screen share to start streaming.
+            </p>
+
+            <div className="sp-content-sel">
+                <ContentSelection
+                    onAddContent={onAddContent}
+                    onScreenShareStopped={onScreenShareStopped}
+                />
+            </div>
+        </FadeInContent>
+    </ScreenShell>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const HostPreparingScreen = ({ contentVisible }: { contentVisible: boolean }) => (
+    <ScreenShell>
+        <GlobalStyles />
+        <FadeInContent visible={contentVisible}>
+            <BrandMark variant="active" />
+
+            <h2 className="sp-heading">
+                Setting up your <span className="sp-accent">stream.</span>
+            </h2>
+
+            <p className="sp-body">Your stream is being prepared. Viewers are waiting.</p>
+
+            <AudioWave />
+
+            <StatusPill variant="purple" label="Preparing stream" />
+        </FadeInContent>
+    </ScreenShell>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ViewerWaitingScreen = ({
+    contentVisible,
+    isInitialized,
+}: {
+    contentVisible: boolean;
+    isInitialized: boolean;
+}) => (
+    <ScreenShell bottom={<ProductCarousel placement="viewer-waiting" />}>
+        <GlobalStyles />
+        <FadeInContent visible={contentVisible}>
+            <BrandMark variant={isInitialized ? "active" : "idle"} />
+
+            <h2 className="sp-heading">
+                Waiting for the <span className="sp-accent">host.</span>
+            </h2>
+
+            <p className="sp-body">
+                {isInitialized
+                    ? "You're connected and ready. The stream starts shortly."
+                    : "The host hasn't started yet. You'll connect automatically."}
+            </p>
+
+            <div className="hidden md:block">
+                <AudioWave />
+            </div>
+
+            {isInitialized && (
+                <div className="hidden md:block">
+                    <StatusPill variant="green" label="Ready to receive stream" />
+                </div>
+            )}
+        </FadeInContent>
+    </ScreenShell>
+);
+
+// ─── Shared UI Primitives ─────────────────────────────────────────────────────
+
+const ScreenShell = ({
+    children,
+    bottom,
+    shellClassName,
+}: {
+    children: React.ReactNode;
+    bottom?: React.ReactNode;
+    shellClassName?: string;
+}) => (
+    <div className={`sp-shell ${bottom ? "sp-shell--with-shelf" : ""} ${shellClassName ?? ""}`}>
+        {children}
+        {bottom ? <div className="sp-bottom-slot">{bottom}</div> : null}
+    </div>
+);
+
+/**
+ * Layered brand mark — logo with state-driven halo/indicator ring.
+ * variant: "idle" | "active" | "ended"
+ */
+const BrandMark = ({ variant }: { variant: "idle" | "active" | "ended" }) => (
+    <div className={`sp-brand sp-brand--${variant}`}>
+        {/* Outer halo */}
+        {/* <span className="sp-halo sp-halo--outer" /> */}
+        {/* Inner ring */}
+        {/* <span className="sp-halo sp-halo--inner" /> */}
+        {/* Logo container */}
+
+        <span className="sp-ring sp-ring--1" />
+        <span className="sp-ring sp-ring--2" />
+        <span className="sp-ring sp-ring--3" />
+        <div className="sp-logo-wrap">
+            <Image src={logo} alt="Logo" width={42} height={42} className="sp-logo-img" />
+        </div>
+        {/* State dot */}
+        <span className={`sp-dot sp-dot--${variant}`} />
+    </div>
+);
+
+const FadeInContent = ({
+    visible,
+    children,
+}: {
+    visible: boolean;
+    children: React.ReactNode;
+}) => (
+    <div className="sp-content" data-visible={visible}>
+        {children}
+    </div>
+);
+
+/** Animated audio-wave bars (replaces equalizer dots) */
+const AudioWave = () => (
+    <div className="sp-wave">
+        {[0, 1, 2, 3, 4].map((i) => (
+            <span key={i} className="sp-wave-bar" style={{ animationDelay: `${i * 0.12}s` }} />
+        ))}
+    </div>
+);
+
+/** Status pill with pulsing indicator dot */
+const StatusPill = ({ variant, label }: { variant: "purple" | "green"; label: string }) => (
+    <div className={`sp-pill sp-pill--${variant}`}>
+        <span className="sp-pill-dot" />
+        {label}
+    </div>
+);
+
+// ─── All CSS in one place ─────────────────────────────────────────────────────
+
+const GlobalStyles = () => (
+    <style>{`
+    /* ── Shell ──────────────────────────────────────────────────── */
+    .sp-shell {
+        position: relative;
+        width: 100%; height: 100%;
+        background: transparent;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+        min-height: 0;
+        padding-left: 8px;
+        padding-right: 8px;
+        font-family: -apple-system, 'Inter', 'Helvetica Neue', sans-serif;
+    }
+    .sp-shell--loading {
+        align-items: center;
+        justify-content: center;
+    }
+    .sp-shell--with-shelf { padding-bottom: 178px; }
+    .sp-bottom-slot {
+        position: absolute;
+        left: 0; right: 0; bottom: 14px;
+        z-index: 15;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+    .sp-bottom-slot > * { pointer-events: auto; }
+    @media (max-width: 1024px) {
+        .sp-shell--with-shelf { padding-bottom: 152px; }
+        .sp-bottom-slot { bottom: 10px; }
+    }
+    @media (max-width: 640px) {
+        .sp-shell--with-shelf { padding-bottom: 168px; }
+        .sp-bottom-slot { bottom: 8px; }
+    }
+    @media (max-width: 768px) {
+        .sp-shell.sp-shell--with-shelf {
+            align-items: center;
+            padding-top: 0;
+        }
+        .sp-shell--with-shelf .sp-content {
+            max-height: calc(100% - 4px);
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .sp-shell--with-shelf .sp-content::-webkit-scrollbar { display: none; }
+    }
+    @media (max-width: 480px) {
+        .sp-shell--with-shelf { padding-bottom: 160px; }
+        .sp-shell.sp-shell--with-shelf { padding-top: 0; }
+    }
+    @media (max-height: 760px) {
+        .sp-shell {
+            align-items: flex-start;
+            padding-top: 14px;
+        }
+        .sp-shell.sp-shell--loading {
+            align-items: center;
+            padding-top: 0;
+        }
+        .sp-shell.sp-shell--with-shelf {
+            align-items: center;
+            padding-top: 0;
+        }
+        .sp-shell--with-shelf { padding-bottom: 114px; }
+        .sp-content {
+            max-height: calc(100% - 6px);
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .sp-content::-webkit-scrollbar { display: none; }
+    }
+    @media (max-height: 640px) {
+        .sp-shell {
+            padding-top: 10px;
+        }
+        .sp-shell.sp-shell--loading {
+            padding-top: 0;
+        }
+        .sp-shell.sp-shell--with-shelf {
+            padding-top: 0;
+        }
+        .sp-shell--with-shelf { padding-bottom: 100px; }
+    }
+
+    /* ── Logo image ─────────────────────────────────────────────── */
+    .sp-logo-img {
+        object-fit: contain; display: block;
+        filter: drop-shadow(0 0 12px rgba(139,92,246,.45));
+    }
+
+    /* ── Brand mark ─────────────────────────────────────────────── */
+    .sp-brand {
+        position: relative;
+        display: flex; align-items: center; justify-content: center;
+        width: 96px; height: 96px;
+        margin-bottom: 32px;
+    }
+    .sp-halo {
+        position: absolute; border-radius: 50%;
+        border: 1px solid rgba(139,92,246,.22);
+    }
+    .sp-halo--outer  { width: 96px;  height: 96px; }
+    .sp-halo--inner  { width: 72px;  height: 72px; }
+
+    .sp-brand--active .sp-halo--outer {
+        animation: haloBreath 2.8s ease-in-out infinite;
+    }
+    .sp-brand--active .sp-halo--inner {
+        animation: haloBreath 2.8s ease-in-out infinite .4s;
+    }
+    @keyframes haloBreath {
+        0%,100% { opacity:.3; transform:scale(1); }
+        50%      { opacity:.8; transform:scale(1.06); }
+    }
+
+    .sp-brand-logo {
+        position: relative; z-index: 2;
+        width: 56px; height: 56px;
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(8px);
+    }
+
+    /* State dot (bottom-right of brand mark) */
+    .sp-dot {
+        position: absolute; bottom: 6px; right: 6px;
+        width: 10px; height: 10px; border-radius: 50%;
+        border: 2px solid #09090c;
+    }
+    .sp-dot--idle   { background: rgba(255,255,255,.25); }
+    .sp-dot--active { background: #6ee7b7; animation: dotPulse 1.6s ease-in-out infinite; }
+    .sp-dot--ended  { background: rgba(255,255,255,.15); }
+    @keyframes dotPulse {
+        0%,100% { box-shadow: 0 0 0 0 rgba(110,231,183,.5); }
+        50%      { box-shadow: 0 0 0 5px rgba(110,231,183,0); }
+    }
+
+    /* ── Content wrapper ────────────────────────────────────────── */
+    .sp-content {
+        position: relative; z-index: 10;
+        display: flex; flex-direction: column;
+        align-items: center; text-align: center;
+        padding: 0 28px; width: 100%; max-width: 360px; max-height: 100%;
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
+    }
+    .sp-content[data-visible="true"] {
+        opacity: 1; transform: translateY(0);
+    }
+
+    /* ── Typography ─────────────────────────────────────────────── */
+    .sp-heading {
+        font-size: 22px; font-weight: 600;
+        line-height: 1.25; letter-spacing: -.02em;
+        color: rgba(255,255,255,.88);
+        margin: 0 0 10px;
+        text-wrap: balance;
+    }
+    .sp-accent {
+        background: linear-gradient(110deg, #c4b5fd 0%, #f9a8d4 60%, #a5f3fc 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .sp-body {
+        font-size: 13.5px; line-height: 1.65;
+        color: rgba(255,255,255,.38);
+        margin: 0 0 22px;
+        text-wrap: balance;
+    }
+    .sp-hint {
+        font-size: 12.5px;
+        color: rgba(255,255,255,.26);
+        margin: 0 0 16px;
+        text-wrap: balance;
+    }
+    @media (max-width: 768px) {
+        .sp-brand {
+            display: none;
+        }
+        .sp-dot {
+            bottom: 4px; right: 4px;
+        }
+        .sp-content {
+            max-width: 340px;
+            padding: 0 18px;
+        }
+        .sp-heading {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        .sp-body {
+            font-size: 12.5px;
+            line-height: 1.58;
+            margin-bottom: 16px;
+        }
+        .sp-hint {
+            font-size: 11.5px;
+            margin-bottom: 12px;
+        }
+        .sp-shell--with-shelf .sp-brand {
+            width: 70px; height: 70px;
+            margin-bottom: 10px;
+        }
+        .sp-shell--with-shelf .sp-heading {
+            font-size: 17px;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+        .sp-shell--with-shelf .sp-body {
+            font-size: 11px;
+            line-height: 1.42;
+            margin-bottom: 8px;
+        }
+        .sp-shell--with-shelf .sp-hint {
+            font-size: 10px;
+            margin-bottom: 7px;
+        }
+    }
+    @media (max-width: 480px) {
+        .sp-brand {
+            width: 72px; height: 72px;
+            margin-bottom: 14px;
+        }
+        .sp-content {
+            max-width: 320px;
+            padding: 0 14px;
+        }
+        .sp-heading { font-size: 18px; }
+        .sp-body {
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        .sp-hint {
+            font-size: 11px;
+            margin-bottom: 10px;
+        }
+        .sp-shell--with-shelf .sp-brand {
+            width: 60px; height: 60px;
+            margin-bottom: 8px;
+        }
+        .sp-shell--with-shelf .sp-heading {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        .sp-shell--with-shelf .sp-body {
+            font-size: 10px;
+            margin-bottom: 7px;
+        }
+        .sp-shell--with-shelf .sp-hint {
+            font-size: 9.5px;
+            margin-bottom: 6px;
+        }
+    }
+    @media (max-height: 760px) {
+        .sp-brand {
+            width: 72px; height: 72px;
+            margin-bottom: 12px;
+        }
+        .sp-heading {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+        .sp-body {
+            margin-bottom: 10px;
+        }
+        .sp-hint {
+            margin-bottom: 8px;
+        }
+    }
+    @media (max-height: 640px) {
+        .sp-brand {
+            width: 64px; height: 64px;
+            margin-bottom: 10px;
+        }
+        .sp-heading { font-size: 16px; }
+        .sp-body {
+            font-size: 11.5px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+    }
+
+    /* ── Chip ───────────────────────────────────────────────────── */
+    .sp-chip {
+        display: inline-flex; align-items: center;
+        padding: 4px 12px;
+        margin-bottom: 14px;
+        border-radius: 100px;
+        border: 1px solid rgba(255,255,255,.1);
+        background: rgba(255,255,255,.04);
+        font-size: 10px; font-weight: 600;
+        letter-spacing: .1em; text-transform: uppercase;
+        color: rgba(255,255,255,.35);
+    }
+
+    /* ── CTA button ─────────────────────────────────────────────── */
+    .sp-cta-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 22px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #7c3aed 0%, #be185d 100%);
+        font-size: 13.5px; font-weight: 600;
+        color: #fff; text-decoration: none;
+        transition: transform .18s ease, box-shadow .18s ease;
+        box-shadow: 0 0 0 1px rgba(255,255,255,.07) inset,
+                    0 8px 32px rgba(124,58,237,.28);
+    }
+    .sp-cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset,
+                    0 12px 40px rgba(124,58,237,.4);
+    }
+    .sp-cta-btn:active { transform: scale(.97); }
+
+    /* ── Audio wave ─────────────────────────────────────────────── */
+    .sp-wave {
+        display: flex; align-items: center; gap: 4px;
+        height: 28px; margin-bottom: 20px;
+    }
+    .sp-wave-bar {
+        display: block;
+        width: 3px; height: 10px; border-radius: 2px;
+        background: linear-gradient(180deg, #a78bfa 0%, #ec4899 100%);
+        animation: waveBar 1.1s ease-in-out infinite;
+        transform-origin: center bottom;
+    }
+    @keyframes waveBar {
+        0%,100% { transform: scaleY(.35); opacity:.45; }
+        50%      { transform: scaleY(1);   opacity:1;   }
+    }
+
+    /* ── Status pill ────────────────────────────────────────────── */
+    .sp-pill {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 6px 14px; border-radius: 100px;
+        font-size: 11.5px; font-weight: 500;
+    }
+    .sp-pill--purple {
+        background: rgba(139,92,246,.1);
+        border: 1px solid rgba(139,92,246,.28);
+        color: rgba(216,180,254,.9);
+    }
+    .sp-pill--green {
+        background: rgba(52,211,153,.07);
+        border: 1px solid rgba(52,211,153,.22);
+        color: rgba(110,231,183,.9);
+    }
+    .sp-pill-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        display: block;
+    }
+    .sp-pill--purple .sp-pill-dot { background: #a78bfa; animation: dotPulse 1.6s ease-in-out infinite; }
+    .sp-pill--green  .sp-pill-dot { background: #34d399; animation: dotPulse 1.6s ease-in-out infinite; }
+
+    /* ── Content selection wrapper ──────────────────────────────── */
+    .sp-content-sel { width: 100%; margin-top: 6px; }
+    @media (max-width: 768px) {
+        .sp-chip {
+            margin-bottom: 10px;
+            padding: 3px 10px;
+        }
+        .sp-cta-btn {
+            padding: 9px 18px;
+            font-size: 12.5px;
+        }
+        .sp-wave {
+            margin-bottom: 14px;
+        }
+        .sp-pill {
+            font-size: 11px;
+            padding: 5px 12px;
+        }
+        .sp-content-sel { margin-top: 4px; }
+        .sp-shell--with-shelf .sp-content-sel .grid { gap: 6px; }
+        .sp-shell--with-shelf .sp-content-sel .grid > button {
+            padding: 6px 4px;
+            border-radius: 10px;
+            gap: 4px;
+        }
+        .sp-shell--with-shelf .sp-content-sel .grid > button span:last-child {
+            font-size: 9px;
+            line-height: 1.1;
+        }
+        .sp-chip.sp-chip--host-left { display: none; }
+        .sp-hint.sp-hint--host-left { display: none; }
+        .sp-cta-btn.sp-cta-btn--host-left {
+            padding: 6px 10px;
+            border-radius: 8px;
+            gap: 5px;
+            font-size: 10.5px;
+            box-shadow: 0 0 0 1px rgba(255,255,255,.07) inset,
+                        0 6px 18px rgba(124,58,237,.22);
+        }
+        .sp-cta-btn.sp-cta-btn--host-left svg {
+            width: 12px;
+            height: 12px;
+        }
+    }
+    @media (max-width: 480px) {
+        .sp-pill {
+            font-size: 10px;
+            padding: 4px 10px;
+        }
+        .sp-shell--with-shelf .sp-content-sel .grid > button {
+            padding: 5px 3px;
+        }
+        .sp-shell--with-shelf .sp-content-sel .grid > button span:last-child {
+            font-size: 8.5px;
+        }
+        .sp-cta-btn.sp-cta-btn--host-left {
+            padding: 5px 9px;
+            border-radius: 7px;
+            gap: 4px;
+            font-size: 10px;
+        }
+        .sp-cta-btn.sp-cta-btn--host-left svg {
+            width: 11px;
+            height: 11px;
+        }
+    }
+    @media (max-height: 760px) {
+        .sp-chip {
+            margin-bottom: 8px;
+        }
+        .sp-cta-btn {
+            padding: 8px 14px;
+            font-size: 12px;
+        }
+        .sp-wave {
+            height: 22px;
+            margin-bottom: 10px;
+        }
+    }
+    @media (max-height: 640px) {
+        .sp-chip {
+            font-size: 9px;
+            padding: 3px 8px;
+        }
+        .sp-wave {
+            height: 18px;
+            margin-bottom: 8px;
+        }
+        .sp-pill {
+            font-size: 9.5px;
+            padding: 4px 9px;
+        }
+    }
+
+    /* ─────────── LOADING SCREEN ──────────────────────────────── */
+    .sp-loader {
+        position: relative; z-index: 10;
+        display: flex; flex-direction: column;
+        align-items: center; gap: 20px;
+    }
+
+    /* Scanner rings */
+    .sp-rings {
+        position: relative;
+        width: 100px; height: 100px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .sp-ring {
+        position: absolute; border-radius: 50%;
+        border: 1px solid transparent;
+    }
+    .sp-ring--1 {
+        width: 100px; height: 100px;
+        border-color: rgba(139,92,246,.35);
+        animation: scanSpin 2s linear infinite;
+        border-top-color: rgba(139,92,246,.85);
+    }
+    .sp-ring--2 {
+        width: 74px; height: 74px;
+        border-color: rgba(236,72,153,.2);
+        animation: scanSpin 2.8s linear infinite reverse;
+        border-right-color: rgba(236,72,153,.7);
+    }
+    .sp-ring--3 {
+        width: 50px; height: 50px;
+        border-color: rgba(99,102,241,.15);
+        animation: scanSpin 4s linear infinite;
+        border-bottom-color: rgba(99,102,241,.5);
+    }
+    @keyframes scanSpin { to { transform: rotate(360deg); } }
+
+    .sp-logo-wrap {
+        position: relative; z-index: 2;
+        width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Segmented progress bar */
+    .sp-progress {
+        width: 120px; height: 2px;
+        background: rgba(255,255,255,.07);
+        border-radius: 2px; overflow: hidden;
+    }
+    .sp-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7c3aed, #ec4899, #7c3aed);
+        background-size: 200%;
+        border-radius: 2px;
+        animation: progFill 2.2s cubic-bezier(.4,0,.2,1) forwards,
+                   progShimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes progFill    { from{width:0%} to{width:100%} }
+    @keyframes progShimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+
+    .sp-loading-label {
+        font-size: 10.5px; font-weight: 600; letter-spacing: .12em;
+        text-transform: uppercase; color: rgba(255,255,255,.22);
+        margin: 0;
+    }
+    @media (max-width: 768px) {
+        .sp-loader { gap: 16px; }
+        .sp-rings {
+            width: 84px; height: 84px;
+        }
+        .sp-ring--1 {
+            width: 84px; height: 84px;
+        }
+        .sp-ring--2 {
+            width: 62px; height: 62px;
+        }
+        .sp-ring--3 {
+            width: 42px; height: 42px;
+        }
+        .sp-logo-wrap {
+            width: 32px; height: 32px;
+        }
+        .sp-progress { width: 106px; }
+    }
+    @media (max-width: 480px) {
+        .sp-loader { gap: 14px; }
+        .sp-rings {
+            width: 74px; height: 74px;
+        }
+        .sp-ring--1 {
+            width: 74px; height: 74px;
+        }
+        .sp-ring--2 {
+            width: 54px; height: 54px;
+        }
+        .sp-ring--3 {
+            width: 36px; height: 36px;
+        }
+        .sp-logo-wrap {
+            width: 28px; height: 28px;
+        }
+        .sp-progress { width: 92px; }
+        .sp-loading-label { font-size: 9.5px; }
+    }
+    `}</style>
+);
+
+export default StreamPlayerEmptyState;

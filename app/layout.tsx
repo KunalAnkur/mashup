@@ -8,6 +8,8 @@ import OrganizationSchema from "@/components/SEO/OrganizationSchema";
 import WebsiteSchema from "@/components/SEO/WebsiteSchema";
 import WebPageSchema from "@/components/SEO/WebPageSchema";
 import BreadcrumbSchema from "@/components/SEO/BreadcrumbSchema";
+import EntryPageBackdrop from "@/components/UI/EntryPageBackdrop";
+import { appLayoutContentLayerClass } from "@/components/UI/classTokens";
 import "./globals.css";
 import ClientRoot from "./ClientRoot";
 
@@ -115,24 +117,27 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={isRtl ? "rtl" : "ltr"} data-scroll-behavior="smooth">
       <body
-        className="font-parkinsans antialiased text-smoothWhite bg-primaryDark "
+        className="relative bg-primaryDark font-parkinsans antialiased text-smoothWhite"
         suppressHydrationWarning
       >
-        <OrganizationSchema />
-        <WebsiteSchema />
-        <WebPageSchema
-          title="Create Party | Movmash"
-          description={constants.seo.BRAND_DESCRIPTION}
-          url={baseUrl}
-        />
-        <BreadcrumbSchema
-          items={[
-            { name: "Home", url: baseUrl },
-          ]}
-        />
-        <I18nProvider initialLocale={locale}>
-          <ClientRoot>{children}</ClientRoot>
-        </I18nProvider>
+        <EntryPageBackdrop />
+        <div className={appLayoutContentLayerClass}>
+          <OrganizationSchema />
+          <WebsiteSchema />
+          <WebPageSchema
+            title="Create Party | Movmash"
+            description={constants.seo.BRAND_DESCRIPTION}
+            url={baseUrl}
+          />
+          <BreadcrumbSchema
+            items={[
+              { name: "Home", url: baseUrl },
+            ]}
+          />
+          <I18nProvider initialLocale={locale}>
+            <ClientRoot>{children}</ClientRoot>
+          </I18nProvider>
+        </div>
         {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>

@@ -9,7 +9,7 @@ import AudioVisualizer from "@/components/VideoPlayer/AudioVisualizer";
 import { SourceProps } from "react-player/base";
 import { FileConfig } from "react-player/file";
 import { formatVideoTime } from "@/utils/timeFormatter";
-
+import { FaVolumeMute } from "react-icons/fa"
 type IOSVideoElement = HTMLVideoElement & {
     webkitEnterFullscreen?: () => void;
     webkitDisplayingFullscreen?: boolean;
@@ -20,7 +20,10 @@ export enum ControlComponents {
     PROGRESS = 'progress',
     DURATION = 'duration',
     OVERLAY = 'overlay',
-    FULLSCREEN = 'fullscreen'
+    FULLSCREEN = 'fullscreen',
+    STORE = 'store',
+    HIDE_CONTROLS = 'hide_controls',
+    BROADCAST_SYNC = 'broad_sync'
 }
 type VideoPlayerProps = {
     url?: string | string[] | SourceProps[] | MediaStream
@@ -37,15 +40,18 @@ type VideoPlayerProps = {
     onMute?: (muted: boolean) => void;
     onSeek?: (progress: number) => void;
     onSeekStart?: () => void;
-    onSeekEnd?: () => void;
+    onSeekEnd?: (seekTime?: number, seekPercent?: number) => void;
     onDuration?: (duration: number) => void;
     onFullscreenChange?: (isFullscreen: boolean) => void;
     onReady?: () => void;
     onEnded?: () => void;
     onProgress?: () => void;
+    onOpenStore?: () => void;
+    syncWithHost?: () => void;
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
     loop?: boolean;
+    hasUserInteracted?: boolean;
     fullscreenTargetRef?: React.RefObject<HTMLElement>;
     children?: ReactNode;
     className?: string;
@@ -76,8 +82,11 @@ const VideoPlayer = ({
     onEnded,
     onFullscreenChange,
     onProgress,
+    onOpenStore,
+    syncWithHost,
     controls = true,
     loop = false,
+    hasUserInteracted = true,
     playerRef: externalPlayerRef,
     fullscreenTargetRef,
     className,
@@ -100,14 +109,21 @@ const VideoPlayer = ({
     const [fullscreen, setFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [isBuffering, setIsBuffering] = useState(false);
-
+    const [nativeControlsActive, setNativeControlsActive] = useState(false);
+    const playingRef = useRef(playing);
+    const durationRef = useRef(externalDuration);
     // Refs
     const internalPlayerRef = useRef<ReactPlayer>(null);
     const playerRef = externalPlayerRef || internalPlayerRef;
     const playerContainerRef = useRef<HTMLDivElement>(null);
     const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const nativeControlsTimerRef = useRef<NodeJS.Timeout | null>(null);
     const seekDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const progressResumeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wasPlayingBeforeSeek = useRef(false);
+    const isSeekingRef = useRef(false);
+    const ignoreProgressRef = useRef(false);
+    const userMutedRef = useRef(false);
 
     const resumePlaybackIfNeeded = useCallback(() => {
         if (!autoResumeOnFullscreenExit) return;
@@ -132,32 +148,157 @@ const VideoPlayer = ({
 
     // Sync with external props
     useEffect(() => setPlaying(externalPlaying), [externalPlaying]);
-    useEffect(() => setMuted(externalMuted), [externalMuted]);
     useEffect(() => setVolume(externalVolume), [externalVolume]);
     useEffect(() => setProgress(externalProgress), [externalProgress]);
     useEffect(() => setDuration(externalDuration), [externalDuration]);
-
+    useEffect(() => setMuted(externalMuted), [externalMuted])
+    useEffect(() => {
+        playingRef.current = playing;
+    }, [playing]);
+    useEffect(() => {
+        durationRef.current = duration;
+    }, [duration]);
     // Controls visibility
     const startInactivityTimer = () => {
+        if (isSeekingRef.current) return;
         clearTimeout(inactivityTimerRef.current!);
-        inactivityTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+        inactivityTimerRef.current = setTimeout(() => {
+            if (!isSeekingRef.current) {
+                setShowControls(false);
+            }
+        }, 5000);
+    };
+
+    const isYouTubeSource = typeof url === "string" && /youtube\.com|youtu\.be/i.test(url);
+    const showNativeControls = nativeControlsActive && isYouTubeSource;
+
+    const clearNativeControlsTimer = () => {
+        if (nativeControlsTimerRef.current) {
+            clearTimeout(nativeControlsTimerRef.current);
+            nativeControlsTimerRef.current = null;
+        }
+    };
+
+    const resolveInternalPlayingState = () => {
+        const internalPlayer = playerRef.current?.getInternalPlayer?.() as any;
+        if (internalPlayer && typeof internalPlayer.getPlayerState === "function") {
+            // YouTube IFrame API: 1 = playing, 2 = paused
+            return internalPlayer.getPlayerState() === 1;
+        }
+        if (internalPlayer && typeof internalPlayer.paused === "boolean") {
+            return !internalPlayer.paused;
+        }
+        return playing;
+    };
+
+    const syncAfterNativeControls = () => {
+        if (!playerRef.current) return;
+        if (disableControls.includes(ControlComponents.BROADCAST_SYNC)) {
+            console.log("helloakjshdkljasghdjhkag")
+            return syncWithHost?.()
+        }
+        const actualPlaying = resolveInternalPlayingState();
+        if (actualPlaying !== playingRef.current) {
+            setPlaying(actualPlaying);
+            if (actualPlaying) onPlay?.("native-controls");
+            else onPause?.("native-controls");
+        }
+
+        const currentTime = playerRef.current.getCurrentTime?.();
+        const resolvedTime =
+            typeof currentTime === "number" && isFinite(currentTime) ? currentTime : undefined;
+        const currentDuration = durationRef.current;
+        const seekPercent =
+            resolvedTime !== undefined && currentDuration > 0 ? (resolvedTime / currentDuration) * 100 : undefined;
+        onSeekEnd?.(resolvedTime, seekPercent);
+    };
+
+    const exitNativeControls = () => {
+        clearNativeControlsTimer();
+        setNativeControlsActive(false);
+        if (controls) {
+            setShowControls(true);
+            startInactivityTimer();
+        }
+        syncAfterNativeControls();
+    };
+
+    const scheduleNativeControlsReset = () => {
+        clearNativeControlsTimer();
+        nativeControlsTimerRef.current = setTimeout(() => {
+            exitNativeControls();
+        }, 5000);
     };
 
     const handleUserActivity = () => {
+        if (showNativeControls) {
+            scheduleNativeControlsReset();
+            return;
+        }
         if (!showControls) setShowControls(true);
         startInactivityTimer();
     };
 
+    const shouldShowUnmuteOverlay = !showNativeControls && muted && (!hasUserInteracted || isMobile);
+    const showPlayerControls = controls && !shouldShowUnmuteOverlay && !showNativeControls;
+
+    const handleUnmuteOverlayClick = useCallback(() => {
+        setMuted(false);
+        onMute?.(false);
+        setVolume(1);
+        onVolumeChange?.(1);
+        if (!playing) {
+            // setPlaying(true);
+            onPlay?.("play");
+        }
+        handleUserActivity();
+    }, [handleUserActivity, onMute, onPlay, onVolumeChange, playing]);
+
+    // * Here we are managing the interaction basicallu to enable the mute or unmute stuff
     useEffect(() => {
-        if (controls) {
+        if (!shouldShowUnmuteOverlay) return;
+
+        const handleGlobalInteraction = (event: Event) => {
+            if ("isTrusted" in event && !event.isTrusted) return;
+            handleUnmuteOverlayClick();
+        };
+
+        window.addEventListener("click", handleGlobalInteraction);
+        window.addEventListener("touchstart", handleGlobalInteraction, { passive: true });
+        window.addEventListener("keydown", handleGlobalInteraction);
+
+        return () => {
+            window.removeEventListener("click", handleGlobalInteraction);
+            window.removeEventListener("touchstart", handleGlobalInteraction);
+            window.removeEventListener("keydown", handleGlobalInteraction);
+        };
+    }, [handleUnmuteOverlayClick, shouldShowUnmuteOverlay]);
+    useEffect(() => {
+        if (controls && !showNativeControls) {
             startInactivityTimer();
             return () => clearTimeout(inactivityTimerRef.current!);
         }
-    }, [controls]);
+    }, [controls, showNativeControls]);
+
+    useEffect(() => {
+        if (!isYouTubeSource && nativeControlsActive) {
+            clearNativeControlsTimer();
+            setNativeControlsActive(false);
+        }
+    }, [isYouTubeSource, nativeControlsActive]);
+
+    useEffect(() => {
+        return () => {
+            if (nativeControlsTimerRef.current) {
+                clearTimeout(nativeControlsTimerRef.current);
+            }
+        };
+    }, []);
 
     // Player controls
+    const isPlayDisabled = disableControls.includes(ControlComponents.PLAY);
     const togglePlay = () => {
-        if (disableControls.includes(ControlComponents.PLAY)) return;
+        if (isPlayDisabled) return;
         const newPlaying = !playing;
         setPlaying(newPlaying);
 
@@ -193,9 +334,21 @@ const VideoPlayer = ({
     //     if (controls) handleUserActivity();
     // };
 
+    const handleOnHidingFullControls = () => {
+        if (!isYouTubeSource) return;
+        if (showNativeControls) {
+            exitNativeControls();
+            return;
+        }
+        if (inactivityTimerRef.current) {
+            clearTimeout(inactivityTimerRef.current);
+        }
+        setShowControls(false);
+        setNativeControlsActive(true);
+        scheduleNativeControlsReset();
+    }
     const toggleFullscreen = () => {
         if (disableControls.includes(ControlComponents.FULLSCREEN)) return;
-        
         // For mobile browsers, use native video element fullscreen
         if (isMobile && playerRef.current) {
             const videoElement = playerRef.current.getInternalPlayer() as HTMLVideoElement | null;
@@ -289,14 +442,26 @@ const VideoPlayer = ({
 
     // Progress and seeking
     const handleProgress = (state: { played: number; loaded: number }) => {
-        setProgress(state.played * 100);
+        if (!ignoreProgressRef.current) {
+            setProgress(state.played * 100);
+        }
         setBuffered(state.loaded * 100);
         onProgress?.();
     };
 
     const handleSeekStart = () => {
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
-        
+        isSeekingRef.current = true;
+        ignoreProgressRef.current = true;
+        if (progressResumeRef.current) {
+            clearTimeout(progressResumeRef.current);
+            progressResumeRef.current = null;
+        }
+        if (controls) {
+            if (!showControls) setShowControls(true);
+            clearTimeout(inactivityTimerRef.current!);
+        }
+
         wasPlayingBeforeSeek.current = playing;
         
         // Only pause on seek start if disableSeekPauseResume is false
@@ -317,10 +482,16 @@ const VideoPlayer = ({
         onSeek?.(percent);
     };
 
-    const handleSeekEnd = () => {
+    const handleSeekEnd = (seekTime?: number, seekPercent?: number) => {
         if (disableControls.includes(ControlComponents.PROGRESS)) return;
         if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
-        onSeekEnd?.();
+        onSeekEnd?.(seekTime, seekPercent);
+        isSeekingRef.current = false;
+        if (controls) startInactivityTimer();
+        progressResumeRef.current = setTimeout(() => {
+            ignoreProgressRef.current = false;
+            progressResumeRef.current = null;
+        }, 250);
         
         // Only resume on seek end if disableSeekPauseResume is false
         if (!disableSeekPauseResume) {
@@ -409,6 +580,7 @@ const VideoPlayer = ({
                 }`}
             onMouseMove={controls ? handleUserActivity : undefined}
             onMouseEnter={controls ? handleUserActivity : undefined}
+            onTouchStart={controls ? handleUserActivity : undefined}
         >
             <div
                 className={`${false ? "w-full h-full" : "h-full w-full"
@@ -420,6 +592,7 @@ const VideoPlayer = ({
                     width={width || "100%"}
                     height={height || "100%"}
                     playing={playing}
+                    controls={showNativeControls}
                     loop={loop}
                     muted={muted}
                     playsinline={true}
@@ -428,7 +601,7 @@ const VideoPlayer = ({
                     onDuration={handleDuration}
                     onBuffer={onBufferStart}
                     onBufferEnd={onBufferEnd}
-                    onClick={togglePlay}
+                    onClick={showNativeControls ? undefined : togglePlay}
                     onReady={onReady}
                     onEnded={onEnded}
                     onPause={() => {
@@ -438,7 +611,7 @@ const VideoPlayer = ({
                     config={{
                         youtube: {
                             playerVars: {
-                                controls: 0,
+                                controls: 1,
                                 disablekb: 0,
                                 cc_load_policy: 0,
                                 modestbranding: 1,
@@ -450,10 +623,26 @@ const VideoPlayer = ({
                 />
 
                 {/* NOTE: UI Overlay component */}
-                {children}
+                {!showNativeControls && children}
+
+                {shouldShowUnmuteOverlay && (
+                    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                        <button
+                            type="button"
+                            onClick={handleUnmuteOverlayClick}
+                            className="flex flex-col items-center gap-2 text-center text-white/90"
+                            aria-label={isMobile ? "Tap to unmute" : "Click to unmute"}
+                        >
+                            <FaVolumeMute size={25}/>
+                            <span className="text-sm font-semibold">
+                                {isMobile ? "Tap to unmute" : "Click to unmute"}
+                            </span>
+                        </button>
+                    </div>
+                )}
                 
                 {/* Audio Visualizer - only show when there's no video track (audio-only content) */}
-                {externalHasVideoTrack === false && (
+                {!showNativeControls && externalHasVideoTrack === false && (
                     <AudioVisualizer 
                         playing={playing} 
                         muted={muted} 
@@ -461,9 +650,16 @@ const VideoPlayer = ({
                     />
                 )}
 
-                {!hideControls.includes(ControlComponents.OVERLAY) && <PlayPauseOverlay playing={playing} onToggle={togglePlay} onDoubleClick={toggleFullscreen} />}
+                {!showNativeControls && !shouldShowUnmuteOverlay && !hideControls.includes(ControlComponents.OVERLAY) && (
+                    <PlayPauseOverlay
+                        playing={playing}
+                        onToggle={togglePlay}
+                        onDoubleClick={toggleFullscreen}
+                        disablePlay={isPlayDisabled}
+                    />
+                )}
 
-                {controls && (
+                {showPlayerControls && (
                     <ControlBar
                         showControls={showControls}
                         progress={progress}
@@ -479,10 +675,13 @@ const VideoPlayer = ({
                         onSeekEnd={handleSeekEnd}
                         onPlayPause={togglePlay}
                         onMuteToggle={toggleMute}
+                        onOpenStore={onOpenStore}
                         onVolumeChange={handleVolumeChange}
                         onFullscreenToggle={toggleFullscreen}
                         formatTime={formatVideoTime}
                         hideControls={hideControls}
+                        onUserActivity={handleUserActivity}
+                        onHidingFullControls={handleOnHidingFullControls}
                     />
                 )}
             </div>

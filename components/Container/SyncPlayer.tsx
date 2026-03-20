@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import type ReactPlayer from "react-player";
 import { Player } from "@/components/VideoPlayer";
@@ -10,16 +10,18 @@ import { useSync } from "@/hooks";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
 import type { Playlist } from "@/types/storeTypes";
+import { toggleBottomSheet } from "@/lib/store/slices/roomSlice";
 
 type Props = {
   fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
+  setFocus?: () => void;
 };
 
-const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
+const SyncPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
   const roomState = useSelector((state: RootState) => state.room);
   const activeContent = useSelector((state: RootState) => state.room.playlist.find((item) => item.selected)) as Playlist;
   const playerRef = useRef<ReactPlayer>(null);
-
+  const dispatch = useDispatch();
   const [videoUrl, setVideoUrl] = useState("");
   const [hasVideoTrack, setHasVideoTrack] = useState<boolean | undefined>(true);
   const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -44,6 +46,7 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
     onSeeked,
     onReady: originalOnReady,
     isPlaying,
+    syncWithHost
   } = useSync({
     playerRef,
     isHost,
@@ -111,16 +114,20 @@ const SyncPlayer = ({ fullscreenTargetRef }: Props) => {
       onPlay={onPlay}
       onProgress={captureWatchTime}
       onPause={onPause}
-      onSeekEnd={onSeeked}
+      onSeekEnd={(seekTime) => onSeeked(seekTime)}
       onReady={handleReady}
       hasVideoTrack={hasVideoTrack}
       fullscreenTargetRef={fullscreenTargetRef}
       url={videoUrl}
       muted={initialStateForRender.muted}
+      hasUserInteracted={roomState.focused}
+      onMute={setFocus}
       disableControls={controlsConfig.disableControls}
       hideControls={controlsConfig.hideControls}
+      onOpenStore={() =>  dispatch(toggleBottomSheet())}
       disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
       autoResumeOnFullscreenExit={!isHost}
+      syncWithHost={syncWithHost}
     >
       <PlayerOverlay />
     </Player>

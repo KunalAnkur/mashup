@@ -10,6 +10,7 @@ import type { Playlist } from "@/types/storeTypes";
 import type { PinnedChatMessage } from "@/types/chatTypes";
 import { showError } from "@/utils/toast";
 import { trackRoomJoined, trackRoomLeft } from "@/lib/analytics";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 export type RoomType = "stream" | "sync";
 export interface UserInfo {
@@ -43,6 +44,7 @@ interface JoinResponse {
     room: RoomInformation;
     playlist?: Playlist[];
     users?: UserInfo[];
+    hostLeft?: boolean;
     existingProducers?: Record<string, any[]>;
     hostPlayback?: {
         playing: boolean;
@@ -91,6 +93,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const [isJoined, setIsJoined] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const tToast = useTranslations("toast");
     const [roomType, setRoomType] = useState<RoomType | null>(null);
     const [hostLeft, setHostLeft] = useState(false);
     const [roomClosed, setRoomClosed] = useState(false);
@@ -162,7 +165,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setJoinResponse(response);
                 dispatch(setHostPlaybackPlaying(response.hostPlayback?.playing === true));
                 setParticipants(response.users || []);
-                setHostLeft(false);
+                setHostLeft(response.hostLeft === true);
                 setRoomClosed(false);
                 
                 // Track room joined
@@ -173,16 +176,16 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setJoinResponse(null);
                 joinAttemptedRef.current = false;
                 dispatch(setHostPlaybackPlaying(false));
-                const errorMessage = response?.error || "Failed to join room";
-                showError("Failed to join room", errorMessage);
+                const errorMessage = response?.error || tToast("checkConnection");
+                showError(tToast("failedToJoinRoom"), errorMessage);
             }
         } catch (error: any) {
             console.error("Error joining room:", error);
             setIsJoined(false);
             joinAttemptedRef.current = false;
             dispatch(setHostPlaybackPlaying(false));
-            const errorMessage = error?.message || "Unable to connect to room. Please check your connection and try again.";
-            showError("Failed to join room", errorMessage);
+            const errorMessage = error?.message || tToast("checkConnection");
+            showError(tToast("failedToJoinRoom"), errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -368,6 +371,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             const state = store.getState() as RootState;
             const playlist = state.room.playlist || [];
             if (!playlist.length) return;
+            if (selectedIndex < 0 || selectedIndex >= playlist.length) return;
+
+            const currentSelectedIndex = playlist.findIndex((item) => item.selected);
+            if (currentSelectedIndex === selectedIndex) return;
 
             const updated = playlist.map((item, idx) => ({
                 ...item,
@@ -412,9 +419,15 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         if (!socket || !roomId) return;
 
-        const handleUsersUpdated = (data: { roomId: string; users: UserInfo[] }) => {
+        const handleUsersUpdated = (data: { roomId: string; users: UserInfo[]; hostLeft?: boolean }) => {
             if (data.roomId === roomId && Array.isArray(data.users)) {
                 setParticipants(data.users);
+                // !Commenting this now.. Because it does not look like it is usefull
+                // if (typeof data.hostLeft === "boolean") {
+                //     setHostLeft(data.hostLeft);
+                // } else {
+                //     setHostLeft(!data.users.some((user) => user.host));
+                // }
             }
         };
 

@@ -5,9 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useChatContext } from "@/context/ChatContext";
-import { BsFillChatSquareFill } from "react-icons/bs";
-import { FiChevronsLeft, FiX, FiChevronDown } from "react-icons/fi";
-import { FiChevronsRight } from "react-icons/fi";
+import { FiX, FiChevronDown } from "react-icons/fi";
+import { FaAngleRight } from "react-icons/fa";
 import { FaPaperPlane } from "react-icons/fa";
 import { RootState } from "@/lib/store";
 import { ChatMessage, ReactionType } from "@/types/chatTypes";
@@ -16,7 +15,7 @@ import AnimatedReaction from "../Panel/AnimatedReaction";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { isMobile } from "react-device-detect";
-
+import { FaStore } from "react-icons/fa6"
 const PlayerOverlay = () => {
   const dispatch = useDispatch();
   const panelCollapsed = useSelector(
@@ -78,7 +77,7 @@ const PlayerOverlay = () => {
       setDisplayedMessageIds(existingIds);
       mountedRef.current = true;
     }
-    
+
     // Store current user info globally for OverlayMessageBubble to access
     if (typeof window !== 'undefined') {
       (window as any).__currentUser = user;
@@ -113,7 +112,7 @@ const PlayerOverlay = () => {
         msg.type !== "system" && // Don't show system messages
         !displayedMessageIds.has(msg.id) && // Only new messages
         !ignoredMessageIds.has(msg.id) // Don't show messages that arrived when panel was open
-        // REMOVED: Don't filter out own messages anymore - we want to see our replies!
+      // REMOVED: Don't filter out own messages anymore - we want to see our replies!
     );
 
     if (newMessages.length > 0) {
@@ -151,7 +150,7 @@ const PlayerOverlay = () => {
         newMessages.forEach((msg) => {
           const messageTimestamp = msg.timestamp || Date.now();
           const timeSinceSent = Date.now() - messageTimestamp;
-          const remainingTime = Math.max(0, 60000  - timeSinceSent); // 60 seconds = 60000ms
+          const remainingTime = Math.max(0, 60000 - timeSinceSent); // 60 seconds = 60000ms
 
           if (remainingTime > 0) {
             const timeoutId = setTimeout(() => {
@@ -188,7 +187,7 @@ const PlayerOverlay = () => {
       clearTimeout(timeoutId);
     });
     messageTimeoutsRef.current.clear();
-    
+
     // Clear all overlay messages
     setOverlayMessages([]);
     setIsAnyMessageHovered(false);
@@ -264,7 +263,7 @@ const PlayerOverlay = () => {
     dispatch(setPanelCollapsed({ panelCollapsed: newPanelCollapsedState }));
   };
 
-  const handleToggleChat = () => {};
+  const handleToggleChat = () => { };
 
 
   return (
@@ -272,29 +271,30 @@ const PlayerOverlay = () => {
       {/* Top Controls */}
       <div className="z-20 flex justify-end absolute top-0 left-0 w-full h-16 md:h-20 p-3 md:p-4">
         <div className="flex gap-2 md:gap-3">
-         
+
           <button
-            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 border border-zinc-600/15 rounded-full transition-all font-medium text-white text-xs md:text-sm cursor-pointer"
+            className="rounded-2xl flex justify-center items-center bg-black/45 h-7 w-7 sm:h-fit sm:w-fit sm:p-4 backdrop-blur-sm sm:backdrop-blur-lg shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
             onClick={handleTogglePanelExpand}
           >
             {isMobile ? (
               // On mobile: show up arrow when panel is collapsed (to open it), down arrow when open (to close it)
               panelCollapsed ? (
-                <FiChevronDown size={18} className="md:w-5 md:h-5 rotate-180" />
+                <FiChevronDown size={15} className="md:w-5 md:h-5 transition rotate-180" />
               ) : (
-                <FiChevronDown size={18} className="md:w-5 md:h-5" />
+                <FiChevronDown size={15} className="md:w-5 md:h-5 transition" />
               )
             ) : (
               // On desktop: show left/right arrows
               panelCollapsed ? (
-                <FiChevronsLeft size={20} />
+                <FaAngleRight size={20} className="transition rotate-180" />
               ) : (
-                <FiChevronsRight size={20} />
+                <FaAngleRight size={20} className="transition" />
               )
             )}
           </button>
         </div>
       </div>
+
 
       {/* Overlay Messages, Reactions, and Input Container - Only show when panel is closed */}
       {panelCollapsed && (
@@ -332,85 +332,85 @@ const PlayerOverlay = () => {
           </div>
 
           {/* Reactions and Input - Shows when any message is hovered */}
-<AnimatePresence>
-  {isAnyMessageHovered && overlayMessages.length > 0 && (
-    <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-      onMouseEnter={() => {
-        setIsInputHovered(true);
-        setIsReactionsHovered(true);
-        // Keep input/reactions visible when hovering them
-        setIsAnyMessageHovered(true);
-        // Clear hide timeout when hovering
-        if (hideInputTimeoutRef.current) {
-          clearTimeout(hideInputTimeoutRef.current);
-          hideInputTimeoutRef.current = null;
-        }
-      }}
-      onMouseLeave={() => {
-        setIsInputHovered(false);
-        setIsReactionsHovered(false);
-        // Hide after delay if no message is hovered
-        hideInputTimeoutRef.current = setTimeout(() => {
-          setIsAnyMessageHovered(false);
-          hideInputTimeoutRef.current = null;
-        }, 300);
-      }}
-      className="flex flex-col  pointer-events-auto w-[280px]"
-    >
-      {/* Reactions - Glassmorphism Container */}
-      <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl rounded-2xl p-2 mb-2">
-        <div className="flex items-center justify-center gap-2">
-          {pinnedReactions.map((emoji) => (
-            <AnimatedReaction
-              key={emoji}
-              emoji={emoji}
-              isAnimating={animatingReaction === emoji}
-              disabled={!isJoined}
-              onClick={() => {
-                setAnimatingReaction(emoji);
-                sendReaction(emoji);
-                // Reset animation after it completes
-                setTimeout(() => {
-                  setAnimatingReaction(null);
-                }, 600);
-              }}
-            />
-          ))}
-        </div>
-      </div>
+          <AnimatePresence>
+            {isAnyMessageHovered && overlayMessages.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                onMouseEnter={() => {
+                  setIsInputHovered(true);
+                  setIsReactionsHovered(true);
+                  // Keep input/reactions visible when hovering them
+                  setIsAnyMessageHovered(true);
+                  // Clear hide timeout when hovering
+                  if (hideInputTimeoutRef.current) {
+                    clearTimeout(hideInputTimeoutRef.current);
+                    hideInputTimeoutRef.current = null;
+                  }
+                }}
+                onMouseLeave={() => {
+                  setIsInputHovered(false);
+                  setIsReactionsHovered(false);
+                  // Hide after delay if no message is hovered
+                  hideInputTimeoutRef.current = setTimeout(() => {
+                    setIsAnyMessageHovered(false);
+                    hideInputTimeoutRef.current = null;
+                  }, 300);
+                }}
+                className="flex flex-col  pointer-events-auto w-[280px]"
+              >
+                {/* Reactions - Glassmorphism Container */}
+                <div className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl rounded-2xl p-2 mb-2">
+                  <div className="flex items-center justify-center gap-2">
+                    {pinnedReactions.map((emoji) => (
+                      <AnimatedReaction
+                        key={emoji}
+                        emoji={emoji}
+                        isAnimating={animatingReaction === emoji}
+                        disabled={!isJoined}
+                        onClick={() => {
+                          setAnimatingReaction(emoji);
+                          sendReaction(emoji);
+                          // Reset animation after it completes
+                          setTimeout(() => {
+                            setAnimatingReaction(null);
+                          }, 600);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
 
-      {/* Input with Send Button Inside - Glassmorphism Container */}
-      <form
-        onSubmit={handleSendReply}
-        className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl rounded-2xl"
-      >
-        <div className="relative flex items-center p-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a reply..."
-            className="w-full bg-transparent rounded-xl pl-4 pr-12 py-1.5 text-white text-sm placeholder:text-white/40 transition-all outline-none"
-            disabled={isSending}
-          />
-          <button
-            type="submit"
-            disabled={!replyText.trim() || isSending}
-            className="absolute right-2 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 rounded-lg p-2 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-purple-500/30 shadow-lg shadow-purple-500/20"
-          >
-            <FaPaperPlane size={12} />
-          </button>
-        </div>
-      </form>
-    </motion.div>
-  )}
-</AnimatePresence>
+                {/* Input with Send Button Inside - Glassmorphism Container */}
+                <form
+                  onSubmit={handleSendReply}
+                  className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl rounded-2xl"
+                >
+                  <div className="relative flex items-center p-2">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Type a reply..."
+                      className="w-full bg-transparent rounded-xl pl-4 pr-12 py-1.5 text-white text-base placeholder:text-white/40 transition-all outline-none"
+                      disabled={isSending}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!replyText.trim() || isSending}
+                      className="absolute right-2 bg-gradient-to-r from-purple-600 via-pink-600 to-fuchsia-600 hover:from-purple-500 hover:via-pink-500 hover:to-fuchsia-500 rounded-lg p-2 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-purple-500/30 shadow-lg shadow-purple-500/20"
+                    >
+                      <FaPaperPlane size={12} />
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </>

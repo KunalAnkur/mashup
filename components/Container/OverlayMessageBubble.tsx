@@ -7,6 +7,14 @@ import { RootState } from "@/lib/store";
 import { ChatMessage } from "@/types/chatTypes";
 import { formatChatTime } from "@/utils/timeFormatter";
 
+const overlayMessageBubbleSurfaceClass =
+  "relative rounded-2xl bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 p-3 backdrop-blur-xl transition-all duration-200";
+const overlayMessageBubbleContentRowClass = "flex justify-end mt-1.5";
+const overlayMessageBubbleTextClass =
+  "text-sm leading-relaxed text-white/90 whitespace-pre-wrap break-words";
+const overlayMessageBubbleTimestampClass =
+  "text-[10px] font-medium text-white/50";
+
 interface OverlayMessageBubbleProps {
   message: ChatMessage;
   onDismiss: () => void;
@@ -47,17 +55,6 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
       }
     };
   }, [message.timestamp, onDismiss]);
-
-
-  // Get user initials for avatar fallback
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   // Get user color for avatar
   const getUserColor = (username: string) => {
@@ -115,31 +112,25 @@ const OverlayMessageBubble = ({ message, onDismiss, onHover }: OverlayMessageBub
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
     >
-     {/* Message Bubble - Glassmorphism Design with Purplish Gradient */}
-<div className="relative bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 backdrop-blur-xl  rounded-2xl p-3 transition-all duration-200 ">
-  {/* Username and Message */}
-  <div>
-    <span 
-      className="text-sm font-semibold inline"
-      style={{ color: getUserColor(displayUsername) }}
-      title={displayUsername}
-    >
-      {displayUsername}:{' '}
-    </span>
-    <span className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap break-words">
-      {message.message}
-    </span>
-  </div>
-  {/* Timestamp */}
-  <div className="flex justify-end mt-1.5">
-    <span className="text-white/50 text-[10px] font-medium">
-      {formatChatTime(message.timestamp || Date.now())}
-    </span>
-  </div>
-</div>
-
-
-
+      <div className={overlayMessageBubbleSurfaceClass}>
+        <div>
+          <span
+            className="inline text-sm font-semibold"
+            style={{ color: getUserColor(displayUsername) }}
+            title={displayUsername}
+          >
+            {displayUsername}:{" "}
+          </span>
+          <span className={overlayMessageBubbleTextClass}>
+            {message.message}
+          </span>
+        </div>
+        <div className={overlayMessageBubbleContentRowClass}>
+          <span className={overlayMessageBubbleTimestampClass}>
+            {formatChatTime(message.timestamp || Date.now())}
+          </span>
+        </div>
+      </div>
     </motion.div>
   );
 };

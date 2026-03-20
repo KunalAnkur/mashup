@@ -19,6 +19,7 @@ type UserRole = "host" | "guest";
 type InviteMethod = "copy_link" | "whatsapp" | "telegram" | "share_api";
 type ErrorArea = "room" | "video_sync" | "upload" | "network" | "auth";
 type AuthMethod = "google" | "google_one_tap" | "guest" | "email";
+type ProductSurface = "carousel" | "bottom_sheet";
 
 // In-app sources (where in the app they signed up)
 type InAppSource = "landing" | "home" | "room_join" | "stream" | "sync" | "direct" | "invite_link";
@@ -540,6 +541,42 @@ export const trackInviteSent = (roomId: string, method: InviteMethod) => {
   logEvent("invite_sent", { room_id: roomId, method });
 };
 
+// ============ PRODUCT EVENTS ============
+
+/** Track when a room-page product link is opened */
+export const trackProductOpened = ({
+  roomId,
+  productId,
+  productName,
+  productCategory,
+  productPrice,
+  productBadge,
+  productHref,
+}: {
+  roomId?: string | null;
+  productId: string;
+  productName: string;
+  productCategory?: string;
+  productPrice?: string;
+  productBadge?: string;
+  productHref: string;
+}) => {
+  const eventProps = {
+    page: "room",
+    room_id: roomId || undefined,
+    product_id: productId,
+    product_name: productName,
+    product_category: productCategory,
+    product_price: productPrice,
+    product_badge: productBadge,
+    product_href: productHref,
+    destination_domain: getHostnameFromUrl(productHref) || undefined,
+  };
+
+  safeCapture("product_opened", eventProps);
+  logEvent("product_opened", eventProps);
+};
+
 // ============ ERROR TRACKING ============
 
 /** Track errors - use this for important errors */
@@ -703,6 +740,9 @@ export const analytics = {
   // Sharing
   trackRoomLinkCopied,
   trackInviteSent,
+
+  // Products
+  trackProductOpened,
   
   // Error
   trackError,
