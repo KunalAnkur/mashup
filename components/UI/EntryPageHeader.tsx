@@ -40,7 +40,7 @@ type EntryPageHeaderProps = {
 const entryHeaderAvatarSize = 28;
 
 type LoginDropdownTriggerProps = {
-  dropdownRef: React.RefObject<HTMLDivElement | null>;
+  dropdownRef: React.RefObject<HTMLDivElement>;
   isOpen: boolean;
   label: string;
   menuId: string;
