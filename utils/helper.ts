@@ -403,7 +403,7 @@ export function getInitialPlayerState({ url, roomType, host, focused, screenShar
     if (roomType === "stream") {
         return {
           playing: host ? screenSharing : !paused,
-          muted: host ? screenSharing : !focused,
+          muted: host ? screenSharing : true,
         };
     }
     return {
