@@ -1,14 +1,18 @@
 "use client";
-import { Button } from "../UI";
+import { Button, Input } from "../UI";
 import { useDispatch, useSelector } from "react-redux";
 import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
 import type { RootState } from "@/lib/store";
 import { FaYoutube, FaVimeo, FaTwitch, FaFileVideo } from "react-icons/fa";
 import { MdOndemandVideo } from "react-icons/md";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ReactPlayer from "react-player";
 import { useRouter } from "next/navigation";
 import { Playlist } from "@/types/storeTypes";
+import {
+  appInputRadiusClass,
+  appInputVerticalPaddingClass,
+} from "@/components/UI/classTokens";
 const UrlSelection = () => {
   const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
@@ -55,7 +59,7 @@ const UrlSelection = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full bg-[#18181b] px-4 py-6">
+    <div className="flex h-full flex-col items-center justify-center px-4 py-6">
       <div className="w-full max-w-md flex flex-col items-center gap-6 sm:gap-8">
         {/* Back button */}
 
@@ -68,12 +72,13 @@ const UrlSelection = () => {
           </p>
         </div>
         <div className="flex flex-col md:flex-row  items-center md:items-start  w-full gap-3 sm:gap-4">
-          <input
+          <Input
+            variant="raw"
             type="text"
             placeholder="Paste your source link here"
             value={sourceUrlInput}
             onChange={handleOnSourceUrlChange}
-            className="flex-1 rounded-lg w-full bg-zinc-800 text-gray-100 text-base px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-pink-600"
+            className={`flex-1 w-full ${appInputRadiusClass} bg-zinc-800 text-gray-100 text-base px-3 sm:px-4 ${appInputVerticalPaddingClass} focus:outline-none`}
           />
           <Button
             onClick={handleOnEnterRoom}

@@ -1,77 +1,22 @@
 "use client";
 import { PlayerWrapper } from "@/components";
 import { useSelector } from "react-redux";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { RootState } from "@/lib/store";
 import { Panel } from "@/components/Panel";
 import ReactionsContainer from "@/components/Panel/ReactionsContainer";
-import { UserInfo, useRoomContext } from "@/context/RoomContext";
-import ModalOnRoomCreate from "@/components/Modals/ModalOnRoomCreate";
+import { useRoomContext } from "@/context/RoomContext";
 import { useDispatch } from "react-redux";
-import { setFocused, updateRoomInfo } from "@/lib/store/slices/roomSlice";
+import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { useFileContext } from "@/context/FileContext";
 import ProductBottomSheet from "@/components/Product/ProductBottomSheet";
+import { appFixedViewportPageClass } from "@/components/UI/classTokens";
 const Page = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isJoined, roomId, isHost, joinResponse } = useRoomContext();
-  const hostUsername = joinResponse?.users?.find((user: UserInfo) => user.host)?.username as string | null;
-
-  // Welcome/invite modal state
-  const [showModal, setShowModal] = useState(false);
-  const modalShownRef = useRef(false);
-  const roomIdRef = useRef<string | null>(null);
-
-  // Generate room URL (include host query so social previews can render host-specific titles)
-  const roomUrl = roomId
-    ? `${typeof window !== "undefined" ? window.location.origin : ""}/room/${roomId}${
-        hostUsername ? `?host=${encodeURIComponent(hostUsername)}` : ""
-      }`
-    : "";
-
-  // Reset modal when room changes
-  useEffect(() => {
-    if (roomId && roomId !== roomIdRef.current) {
-      roomIdRef.current = roomId;
-      modalShownRef.current = false;
-      setShowModal(false);
-    }
-  }, [roomId]);
-
-  // Show appropriate modal when user joins room
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    // Show modal when user joins room and hasn't shown it for this room yet
-    if (isJoined && roomId && roomId === roomIdRef.current) {
-      if (!modalShownRef.current) {
-        // Small delay to ensure everything is loaded
-        const timer = setTimeout(() => {
-          setShowModal(true);
-          modalShownRef.current = true;
-        }, 1000);
-        
-        return () => clearTimeout(timer);
-      }
-    } else {
-      setShowModal(false);
-    }
-  }, [isJoined, roomId]);
-
-  // Handle closing modal
-  const handleCloseModal = () => {
-    setShowModal(false);
-    dispatch(setFocused(true));
-    modalShownRef.current = true;
-  };
-
-  // Handle closing guest modal and joining
-  const handleJoinRoom = () => {
-    setShowModal(false);
-    modalShownRef.current = true;
-  };
+  const { isJoined, isHost } = useRoomContext();
 
   // Warn before tab close while user is in room
   useEffect(() => {
@@ -100,7 +45,9 @@ const Page = () => {
       const hasScreenShare = playlist.some((item) => item.source === "screen");
       if (hasScreenShare) {
         console.log("Host has no stream - showing modal to prompt screen share");
-        const newPlaylist = playlist.filter((item) => item.source !== "screen").map((item, index) => ({ ...item, selected: index === 0 }));
+        const newPlaylist = playlist
+          .filter((item) => item.source !== "screen")
+          .map((item, index) => ({ ...item, selected: index === 0 }));
         dispatch(updateRoomInfo({ playlist: newPlaylist }));
         // * We will not going to update in the database so we can keep those data in case we require to debugg it
         // updateRoomByRoomId({ roomId: roomState.roomId!, body: { playlist: newPlaylist } }).unwrap();  
@@ -136,7 +83,7 @@ const Page = () => {
     if (!isAllPlaylistFileSaved) {
       const existedFileContents = playlist.filter(content => (content.source === 'file' && savedFileIds.has(content.id)));
       const restContents = playlist.filter(content => content.source !== 'file');
-      const newPlaylist = [...restContents, ...existedFileContents].map((content, index) => ({
+      const newPlaylist = [...restContents, ...existedFileContents].map((content) => ({
           ...content,
           // selected: index === 0
       }));
@@ -153,44 +100,7 @@ const Page = () => {
 
   return (
     <>
-      {/* Modal */}
-      {/* <ModalOnRoomCreate
-        isHost={isHost}
-        hostUsername={hostUsername}
-        showModal={showModal}
-        onClose={handleCloseModal}
-        roomUrl={roomUrl}
-        onJoinRoom={handleJoinRoom}
-      /> */}
-      <div ref={containerRef} className="relative flex h-screen flex-col overflow-hidden bg-[#09090c] md:flex-row">
-        {/* Global room background vibe (player + panel) */}
-        <div className="pointer-events-none absolute inset-0 z-0">
-          <div className="absolute inset-0 [background-image:radial-gradient(circle,rgba(255,255,255,0.055)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_50%,black_40%,transparent_100%)]" />
-
-          <svg
-            className="absolute inset-0 opacity-[0.035]"
-            xmlns="http://www.w3.org/2000/svg"
-            width="100%"
-            height="100%"
-          >
-            <filter id="room-noise">
-              <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" />
-              <feColorMatrix type="saturate" values="0" />
-            </filter>
-            <rect width="100%" height="100%" filter="url(#room-noise)" />
-          </svg>
-
-          <div className="absolute -top-20 -left-16 h-[360px] w-[360px] rounded-full blur-[80px] bg-[radial-gradient(circle,rgba(139,92,246,0.18)_0%,transparent_70%)] animate-pulse-glow" />
-          <div
-            className="absolute -bottom-16 -right-10 h-[300px] w-[300px] rounded-full blur-[80px] bg-[radial-gradient(circle,rgba(236,72,153,0.13)_0%,transparent_70%)] animate-pulse-glow"
-            style={{ animationDelay: "1.2s" }}
-          />
-          <div
-            className="absolute bottom-[10%] left-[28%] h-[240px] w-[240px] rounded-full blur-[80px] bg-[radial-gradient(circle,rgba(59,130,246,0.10)_0%,transparent_70%)] animate-pulse-glow"
-            style={{ animationDelay: "2.1s" }}
-          />
-        </div>
-
+      <div ref={containerRef} className={`${appFixedViewportPageClass} flex flex-col md:flex-row`}>
         <div
           className={`
             relative z-10 bg-transparent transition-all duration-300

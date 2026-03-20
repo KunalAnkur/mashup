@@ -48,7 +48,8 @@
     "creatingAccount": "Creando cuenta...",
     "continueAsGuest": "Continuar como Invitado",
     "or": "o",
-    "linkCopied": "¡Enlace copiado!"
+    "linkCopied": "¡Enlace copiado!",
+    "copyLink": "Copiar enlace"
   },
   "panel": {
     "playlist": {
@@ -121,6 +122,7 @@
       "enterUsername": "Ingresa tu nombre de usuario (solo letras, números y guiones bajos)",
       "editProfile": "Editar Perfil",
       "roomLink": "Enlace de Sala",
+      "inviteFriends": "Invita a tus amigos",
       "noRoomLink": "No hay enlace de sala disponible",
       "linkCopied": "¡Enlace copiado!",
       "roomNameUpdated": "Nombre de sala actualizado exitosamente",
@@ -135,6 +137,7 @@
       "usernameRules": "El nombre de usuario solo puede contener letras, números y guiones bajos",
       "profileUpdated": "Perfil actualizado exitosamente",
       "updateFailed": "Error al actualizar",
+      "updateFailedDescription": "No pudimos actualizar tu perfil. Inténtalo de nuevo.",
       "saveChanges": "Guardar Cambios"
     },
     "leaveParty": "¿Dejar la Fiesta?",
@@ -242,9 +245,18 @@
     "tryAgain": "Por favor, inténtalo de nuevo.",
     "welcomeGuest": "¡Bienvenido! Ahora has iniciado sesión como invitado",
     "guestSignupFailed": "Error al registrarse como invitado",
+    "unableToContinueAsGuest": "No se pudo continuar como invitado. Inténtalo de nuevo.",
+    "signupFailed": "Error al registrarse",
+    "checkSignupDetails": "Revisa tus datos e inténtalo de nuevo.",
     "roomNameUpdated": "Nombre de sala actualizado exitosamente",
     "profileUpdated": "Perfil actualizado exitosamente",
     "updateFailed": "Error al actualizar",
+    "userNotFound": "Usuario no encontrado. Por favor, inicia sesión nuevamente.",
+    "validationError": "Error de validación",
+    "fillFields": "Por favor, completa el nombre y nombre de usuario.",
+    "invalidUsername": "Nombre de usuario inválido",
+    "enterValidUsername": "Por favor, ingresa un nombre de usuario válido.",
+    "usernameTaken": "Este nombre de usuario ya está en uso. Por favor, elige otro.",
     "invalidInput": "Entrada Inválida",
     "fillFieldsCorrectly": "Por favor, completa todos los campos correctamente.",
     "feedbackSent": "¡Comentario Enviado! 🎉\n¡Gracias por ayudarnos a crecer!",
@@ -272,14 +284,37 @@
     "authenticationFailed": "Error de autenticación",
     "failedToSelectFiles": "Error al seleccionar archivos"
   },
+  "auth": {
+    "login": {
+      "welcomeBack": "¡Qué bueno verte de nuevo!",
+      "chooseHowToContinue": "Elige cómo quieres continuar",
+      "agreementPrefix": "Al continuar, aceptas los",
+      "termsOfService": "Términos del servicio",
+      "and": "y la",
+      "privacyPolicy": "Política de privacidad",
+      "agreementSuffix": " de Movmash."
+    },
+    "signup": {
+      "username": "Nombre de usuario",
+      "enterUsername": "Ingresa tu nombre de usuario",
+      "email": "Correo electrónico",
+      "enterEmailAddress": "Ingresa tu correo electrónico",
+      "password": "Contraseña",
+      "enterPassword": "Ingresa tu contraseña",
+      "signingUp": "Registrando...",
+      "signup": "Registrarse",
+      "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+      "loginCta": "Iniciar sesión"
+    }
+  },
   "notFound": {
-    "title": "¡Ups! Esta Escena Faltante",
-    "description1": "¡Parece que esta página se fue a tomar un café! ☕",
-    "description2": "No te preocupes, incluso las mejores películas tienen escenas eliminadas. ¡Volvamos al espectáculo principal!",
-    "goHome": "Ir al Inicio",
+    "title": "Página no encontrada",
+    "description1": "Esta página no está disponible.",
+    "description2": "Es posible que el enlace no funcione o que la página se haya movido.",
+    "goHome": "Ir al inicio",
     "goBack": "Volver",
-    "funFact": "Dato Curioso:",
-    "funFactText": "El primer error 404 apareció en 1992. ¡Estás experimentando una pieza de la historia de internet! 🚀"
+    "funFact": "Dato:",
+    "funFactText": "HTTP 404 significa que el servidor no pudo encontrar la página solicitada."
   },
   "feedback": {
     "title": "Comentarios",

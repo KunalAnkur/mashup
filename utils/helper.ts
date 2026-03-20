@@ -491,10 +491,12 @@ export function getPlayerControlsConfig(url: string | string[] | SourceProps[] |
         }
         if (url.includes("youtube.com") || url.includes("youtu.be")) {
           return {
-            disableControls: [
+            disableControls: hostLeft
+              ? []
+              : [
               ControlComponents.PLAY,
               ControlComponents.PROGRESS,
-              ControlComponents.BROADCAST_SYNC
+              ControlComponents.BROADCAST_SYNC,
             ],
             hideControls: [],
           };

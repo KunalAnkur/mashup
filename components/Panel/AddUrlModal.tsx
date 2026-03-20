@@ -4,6 +4,7 @@ import { useTranslations } from "@/i18n/I18nProvider";
 import {
     Modal,
     ModalHeader,
+    Input,
     modalAccentIconWrapClass,
     modalAccentTitleClass,
     modalBrandActionButtonClass,
@@ -65,7 +66,8 @@ export const AddUrlModal: React.FC<AddUrlModalProps> = ({
 
                 <div className={modalFormBodyClass}>
                     <div>
-                        <input
+                        <Input
+                            variant="raw"
                             type="text"
                             placeholder={t("enterUrl")}
                             value={urlInput}

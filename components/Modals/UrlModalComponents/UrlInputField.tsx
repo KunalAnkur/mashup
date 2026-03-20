@@ -1,9 +1,14 @@
 "use client";
 
 import React from "react";
-import { Button } from "../../UI";
 import { ImSpinner2 } from "react-icons/im";
+import { Button, Input } from "../../UI";
 import { useTranslations } from "@/i18n/I18nProvider";
+import {
+  appSyncFieldInputClass,
+  appSyncPrimaryButtonClass,
+  appSyncTooltipSurfaceClass,
+} from "@/components/UI/classTokens";
 
 interface UrlInputFieldProps {
   value: string;
@@ -13,6 +18,7 @@ interface UrlInputFieldProps {
   isAddDisabled: boolean;
   tooltipMessage: string;
   isAdding?: boolean;
+  autoFocus?: boolean;
 }
 
 export const UrlInputField: React.FC<UrlInputFieldProps> = ({
@@ -23,35 +29,42 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
   isAddDisabled,
   tooltipMessage,
   isAdding = false,
+  autoFocus = false,
 }) => {
   const t = useTranslations("sync");
+
   return (
-    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-      <input
+    <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+      <Input
+        variant="raw"
         type="text"
+        autoFocus={autoFocus}
         placeholder={t("enterUrl")}
         value={value}
         onChange={onChange}
         onKeyDown={onKeyDown}
-        className="flex-1 min-w-0 rounded-xl bg-black/10 backdrop-blur-2xl border border-zinc-600/10 text-white text-base px-3 sm:px-4 py-2 sm:py-2.5 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-black/15 transition-all duration-200 placeholder:text-white/40"
+        className={`${appSyncFieldInputClass} focus:outline-none`}
         disabled={isAdding}
       />
+
       <div className="relative group shrink-0">
         <Button
           onClick={onAddClick}
           icon={isAdding ? <ImSpinner2 className="animate-spin" /> : undefined}
-          className="w-full sm:w-auto bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-3 rounded-xl transition-all duration-200 shadow-lg shadow-pink-500/20 hover:shadow-pink-500/30 disabled:bg-zinc-700/50 disabled:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`w-full sm:w-auto ${appSyncPrimaryButtonClass}`}
           name={isAdding ? t("loading") : t("addUrl")}
           disabled={isAddDisabled || isAdding}
         />
-        {isAddDisabled && tooltipMessage && (
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#2a2a2e] text-gray-200 text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10 shadow-xl">
-            {tooltipMessage}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#2a2a2e]" />
+
+        {isAddDisabled && tooltipMessage ? (
+          <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <div className={appSyncTooltipSurfaceClass}>
+              {tooltipMessage}
+            </div>
+            <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-[#18181f]" />
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
 };
-

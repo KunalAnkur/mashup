@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useId, useRef, useState } from "react";
 import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store/index";
@@ -13,18 +13,18 @@ import Modal, {
   ModalConfirmContent,
   modalConfirmSurfaceClass,
 } from "./Modal";
-
-const dropdownSurfaceClass =
-  "absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-2xl bg-[linear-gradient(180deg,rgba(33,33,39,0.96),rgba(24,24,30,0.96))] shadow-[0_18px_48px_rgba(0,0,0,0.38)] backdrop-blur-2xl md:w-60";
-const dropdownContentClass = "flex flex-col gap-0.5 p-2";
-const dropdownUserCardClass =
-  "flex items-center gap-2.5 rounded-xl px-2.5 py-2";
-const dropdownMetaTextClass = "text-[9px] md:text-[10px] text-white/42";
-const dropdownDividerClass = "h-px w-full bg-white/8";
-const dropdownLogoutButtonClass =
-  "flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-white/80 transition-all duration-200 hover:bg-rose-500/10 hover:text-white";
-const dropdownLogoutIconClass =
-  "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#571b24] via-[#7a1f34] to-[#5d1b34] text-rose-200 leading-none";
+import {
+  appDropdownLabelClass,
+  appDropdownLogoutIconChipClass,
+  appDropdownMetaTextClass,
+} from "./classTokens";
+import { useDropdownDismiss } from "./useDropdownDismiss";
+import {
+  DropdownActionRow,
+  DropdownDivider,
+  DropdownHeaderRow,
+  DropdownPanel,
+} from "./DropdownPrimitives";
 
 interface AvatarDropdownProps {
   size?: number;
@@ -35,6 +35,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownMenuId = useId();
   const dispatch = useDispatch();
   const { user, isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth
@@ -44,7 +45,13 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const tCommon = useTranslations("common");
   const showEmailField = !user?.isGuestUser;
 
-  // ALL useEffects REMOVED FOR TESTING - no event listeners at all
+  useDropdownDismiss({
+    isOpen,
+    onClose: () => setIsOpen(false),
+    refs: [dropdownRef],
+    closeOnEscape: true,
+    pointerEvent: "pointerdown",
+  });
 
   // Determine avatar URL with fallbacks
   const getAvatarUrl = () => {
@@ -105,7 +112,11 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
     <div className="relative inline-block" ref={dropdownRef}>
       {/* Avatar Button */}
       <button
+        type="button"
         onClick={toggleDropdown}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        aria-controls={dropdownMenuId}
         className={`cursor-pointer transition-transform hover:scale-105 block leading-none relative ${className}`}
       >
         <Avatar
@@ -123,54 +134,49 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className={`${dropdownSurfaceClass} z-50`}>
-          <div className={dropdownContentClass}>
-            {/* User Info Section */}
-            <div className={dropdownUserCardClass}>
+        <DropdownPanel
+          id={dropdownMenuId}
+          role="menu"
+          aria-label="Account menu"
+          className="z-50 w-44 md:w-48"
+        >
+          {/* User Info Section */}
+          <DropdownHeaderRow
+            avatar={
               <Avatar
                 url={getAvatarUrl()}
                 alt={getUserDisplayName()}
                 size={30}
                 isDefault={!user?.profile}
               />
-              <div className="flex min-w-0 flex-1 flex-col justify-center">
-                <h3 className="truncate font-parkinsans text-[11px] font-semibold text-white md:text-xs">
-                  {getUserDisplayName()}
-                </h3>
-                {showEmailField && user?.email && (
-                  <p className={`${dropdownMetaTextClass} mt-0.5 truncate`}>
-                    {user.email}
-                  </p>
-                )}
-                {!isAuthenticated && (
-                  <p className={`${dropdownMetaTextClass} mt-0.5`}>
-                    Not authenticated
-                  </p>
-                )}
-              </div>
-            </div>
+            }
+            title={getUserDisplayName()}
+            titleClassName={`truncate font-parkinsans font-semibold text-white ${appDropdownLabelClass}`}
+            meta={showEmailField && user?.email ? user.email : null}
+            metaClassName={`${appDropdownMetaTextClass} mt-0.5 truncate`}
+            secondary={!isAuthenticated ? "Not authenticated" : null}
+            secondaryClassName={`${appDropdownMetaTextClass} mt-0.5`}
+          />
 
-            {/* Menu Items */}
-            <div className={dropdownDividerClass} />
-            <button
-              onClick={handleLogoutClick}
-              className={dropdownLogoutButtonClass}
-            >
-              <div className={dropdownLogoutIconClass}>
-                <IoLogOutOutline
-                  size={13}
-                  className="block md:h-[13px] md:w-[13px]"
-                />
-              </div>
-              <p className="min-w-0 text-[11px] font-medium md:text-xs">
-                {tCommon("logout")}
-              </p>
-            </button>
-          </div>
-        </div>
+          {/* Menu Items */}
+          <DropdownDivider />
+          <DropdownActionRow
+            onClick={handleLogoutClick}
+            role="menuitem"
+            variant="danger"
+            iconChipClassName={appDropdownLogoutIconChipClass}
+            icon={
+              <IoLogOutOutline
+                size={13}
+                className="block md:h-[13px] md:w-[13px]"
+              />
+            }
+            label={tCommon("logout")}
+          />
+        </DropdownPanel>
       )}
 
-      {/* Logout Confirmation Modal - ALL onClick handlers REMOVED for testing */}
+      {/* Logout Confirmation Modal */}
       <Modal
         open={showLogoutConfirm}
         onClose={handleLogoutCancel}

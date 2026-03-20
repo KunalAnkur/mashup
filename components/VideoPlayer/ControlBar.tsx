@@ -61,6 +61,7 @@ export const ControlBar = ({
           onFullscreenToggle={onFullscreenToggle}
           onUserActivity={onUserActivity}
           onOpenStore={onOpenStore}
+          showHidingControlsBtn={!hideControls.includes(ControlComponents.HIDE_CONTROLS)}
         />
 
       <PlayerControls

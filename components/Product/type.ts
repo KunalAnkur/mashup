@@ -38,20 +38,17 @@ export const CARD_ART_STYLES: CardArt[] = [
   },
 ];
 
-export const COPY_BY_PLACEMENT: Record<
-  ProductPlacement,
-  { title: string; subtitle: string }
-> = {
+export const COPY_BY_PLACEMENT = {
   "host-empty": {
-    title: "Products you may like",
-    subtitle: "Monetize this idle moment with highly relevant picks.",
+    title: "Set the vibe 🎬",
+    subtitle: "Pick something to watch or explore ideas to make it special.",
   },
   "viewer-waiting": {
-    title: "Recommended while you wait",
-    subtitle: "Featured offers for your current watch vibe.",
+    title: "Something for you two 👀",
+    subtitle: "While you wait, explore cute finds and little surprises.",
   },
   "host-left": {
-    title: "Keep the session energy alive",
-    subtitle: "Try these creator-friendly products before your next room.",
+    title: "Make the moment yours ❤️",
+    subtitle: "Start something, or find a little surprise to share later.",
   },
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Tabs } from "@/types/roomTypes";
 import ChatTab from "./ChatTab";
 import PeopleTab from "./PeopleTab";
@@ -32,9 +32,10 @@ import { useRoomContext } from "@/context/RoomContext";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomLinkCopied } from "@/lib/analytics";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import PanelHeaderActionButton from "./PanelHeaderActionButton";
 import useEmblaCarousel from "embla-carousel-react";
+import { movmashThemeGradientClass } from "../UI/classTokens";
 
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
@@ -44,8 +45,7 @@ const desktopTabRailClass =
   "relative grid w-full gap-1 rounded-full bg-white/[0.035] p-1.5";
 const desktopTabButtonBaseClass =
   "relative inline-flex min-h-[30px] min-w-0 w-full items-center justify-center overflow-hidden rounded-full p-1.5 text-[14px] leading-none font-medium text-white transition-colors duration-200";
-const activeTabPillClass =
-  "bg-[linear-gradient(135deg,rgba(190,24,93,0.96)_0%,rgba(190,24,93,0.9)_38%,rgba(168,85,247,0.8)_100%)]";
+const activeTabPillClass = movmashThemeGradientClass;
 const activeTabPillTransition = {
   type: "spring",
   stiffness: 420,
@@ -53,30 +53,10 @@ const activeTabPillTransition = {
   mass: 0.82,
 } as const;
 
-type SwipeAxis = "x" | "y" | null;
-type SwipeState = {
-  pointerId: number | null;
-  startX: number;
-  startY: number;
-  axis: SwipeAxis;
-  enabled: boolean;
-};
-
-const initialSwipeState: SwipeState = {
-  pointerId: null,
-  startX: 0,
-  startY: 0,
-  axis: null,
-  enabled: false,
-};
-
-
-
-
 const Panel = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.CHAT);
   const [copied, setCopied] = useState(false);
-  const [tabDirection, setTabDirection] = useState(0);
+  const [, setTabDirection] = useState(0);
   const [tabEmblaRef, tabEmblaApi] = useEmblaCarousel({
     align: "start",
     dragFree: false,
@@ -89,7 +69,6 @@ const Panel = () => {
   const roomState = useSelector((state: RootState) => state.room);
   const host = roomState.host;
   const dispatch = useDispatch();
-  const swipeStateRef = useRef<SwipeState>(initialSwipeState);
 
   const tToast = useTranslations("toast");
   const tPanel = useTranslations("panel");
@@ -276,7 +255,7 @@ const Panel = () => {
       <div className="pointer-events-none absolute left-0 top-6 bottom-6 hidden w-px bg-gradient-to-b from-transparent via-white/20 to-transparent md:block" />
       <div className="pointer-events-none absolute left-0 top-12 bottom-12 hidden w-px opacity-40 shadow-[0_0_14px_rgba(255,255,255,0.10)] md:block" />
       <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/12 to-transparent md:hidden" />
-      
+
 
       <div className="relative z-30 flex flex-col h-full w-full">
         <Modal
@@ -315,7 +294,7 @@ const Panel = () => {
           </div>
 
           {/* Center: Navigation Tabs - Move to right side */}
-          
+
 
           {/* Right: Actions (Link, Leave, Avatar) */}
           <div className="flex items-center gap-1.5">
@@ -350,7 +329,7 @@ const Panel = () => {
             <PanelHeaderActionButton
               onClick={handleCopyLink}
               className="bg-white/5 text-white/60 hover:text-white"
-              aria-label={tPanel("copyLink")}
+              aria-label={tCommon("copyLink")}
             >
               {copied ? <LuCheck size={15} className="text-green-400" /> : <LuLink size={15} />}
             </PanelHeaderActionButton>
@@ -397,7 +376,7 @@ const Panel = () => {
                 <PanelHeaderActionButton
                   onClick={handleCopyLink}
                   className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 group z-40"
-                  aria-label={tPanel("copyLink")}
+                  aria-label={tCommon("copyLink")}
                 >
                   {copied ? (
                     <LuCheck size={16} className="text-green-400 transition-colors" />
@@ -412,50 +391,49 @@ const Panel = () => {
                   )}
                 </PanelHeaderActionButton>
 
-                <PanelHeaderActionButton
-                  onClick={handleLeaveClick}
-                  className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
-                  aria-label={tPanel("leaveParty")}
-                >
-                  <LuLogOut size={16} />
-                </PanelHeaderActionButton>
+	              <PanelHeaderActionButton
+	                onClick={handleLeaveClick}
+	                className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-red-600/20 hover:via-rose-600/20 hover:to-pink-600/20 hover:text-red-400"
+	                aria-label={tPanel("leaveParty")}
+	              >
+	                <LuLogOut size={16} />
+	              </PanelHeaderActionButton>
 
-                <AvatarDropdown size={28} />
-              </div>
-            </div>
+	              <AvatarDropdown size={28} />
+	            </div>
+	            </div>
 
-            {/* Desktop Tabs */}
-            <div>
-              <div
-                className={desktopTabRailClass}
-                style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
-              >
-                {visibleTabs.map((tab) => {
-                  const isActive = activeTab === tab;
-                  const tabTone = getTabTone(tab);
+	          {/* Desktop Tabs */}
+          <div>
+            <div
+              className={desktopTabRailClass}
+              style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}
+            >
+              {visibleTabs.map((tab) => {
+                const isActive = activeTab === tab;
+                const tabTone = getTabTone(tab);
 
-                  return (
-                    <button
-                      key={tab}
-                      onClick={() => selectTab(tab)}
-                      className={`${desktopTabButtonBaseClass} ${
-                        isActive ? "text-white" : tabTone.inactiveText
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => selectTab(tab)}
+                    className={`${desktopTabButtonBaseClass} ${isActive ? "text-white" : tabTone.inactiveText
                       }`}
-                      aria-pressed={isActive}
-                    >
-                      {isActive ? (
-                        <motion.span
-                          layoutId="panel-active-pill"
-                          className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
-                          transition={activeTabPillTransition}
-                        />
-                      ) : null}
-                      <span className="relative z-10 whitespace-nowrap">{getTabLabel(tab)}</span>
-                    </button>
-                  );
-                })}
-              </div>
+                    aria-pressed={isActive}
+                  >
+                    {isActive ? (
+                      <motion.span
+                        layoutId="panel-active-pill"
+                        className={`pointer-events-none absolute inset-0 rounded-full ${tabTone.activePill}`}
+                        transition={activeTabPillTransition}
+                      />
+                    ) : null}
+                    <span className="relative z-10 whitespace-nowrap">{getTabLabel(tab)}</span>
+                  </button>
+                );
+              })}
             </div>
+          </div>
         </div>
 
         {/* Content Area (Shared) */}

@@ -12,19 +12,26 @@ import { validateUsername } from "@/utils/validation";
 import { trackRoomLinkCopied } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 import FeedbackModal from "@/components/Modals/FeedbackModal";
+import { Input } from "@/components/UI";
+import {
+  panelFramedCardClass,
+  panelMetaMutedLabelClass,
+  panelTabRootClass,
+  panelTabScrollAreaClass,
+} from "./panelCardStyles";
+import { appInputRadiusClass } from "@/components/UI/classTokens";
 
 const sectionClass = "space-y-3";
-const sectionLabelClass =
-  "px-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/[0.34]";
+const sectionLabelClass = panelMetaMutedLabelClass;
 const fieldLabelClass =
   "text-[9px] font-semibold uppercase tracking-[0.12em] text-white/[0.36]";
 const rowLabelClass = fieldLabelClass;
 const cardShellClass =
-  "relative overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-4";
+  `${panelFramedCardClass} px-3.5 py-4`;
 const actionCardShellClass =
-  "relative overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-2";
+  `${panelFramedCardClass} px-3.5 py-2`;
 const actionCardButtonClass =
-  "relative w-full overflow-hidden rounded-2xl border border-white/[0.05] px-3.5 py-2 text-left transition-colors duration-200 hover:border-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50";
+  `${panelFramedCardClass} w-full px-3.5 py-2 text-left transition-colors duration-200 hover:border-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50`;
 const actionPillClass =
   "shrink-0 rounded-full bg-[linear-gradient(135deg,rgba(244,63,94,0.18),rgba(236,72,153,0.16),rgba(217,70,239,0.18))] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/[0.86] transition-colors duration-200 hover:text-white";
 const actionPillSuccessClass =
@@ -32,9 +39,9 @@ const actionPillSuccessClass =
 const valueRowClass =
   "flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0";
 const valueBoxClass =
-  "flex min-w-0 items-center gap-2 rounded-xl border border-white/[0.06] bg-transparent px-3 h-10";
+  `flex min-w-0 items-center gap-2 ${appInputRadiusClass} border border-white/[0.06] bg-transparent px-3 h-10`;
 const inputCardClass =
-  "flex min-w-0 items-center gap-2 rounded-xl border border-white/[0.07] bg-transparent px-3 h-10 transition-colors duration-200 focus-within:border-pink-400/26";
+  `flex min-w-0 items-center gap-2 ${appInputRadiusClass} border border-white/[0.07] bg-transparent px-3 h-10 transition-colors duration-200 focus-within:border-pink-400/26`;
 const textInputClass =
   "settings-input min-w-0 flex-1 appearance-none bg-transparent text-base leading-5 text-white placeholder:text-gray-500 outline-none";
 const rowActionButtonClass =
@@ -114,12 +121,12 @@ const SettingTab = () => {
 
   const handleUpdateProfile = async () => {
     if (!authState.user?.id) {
-      showError(tCommon("error"), tToast("userNotFound"));
+      showError(tCommon("error"), t("userNotFound"));
       return;
     }
 
     if (!name.trim() || !username.trim()) {
-      showError(tToast("validationError"), tToast("fillFields"));
+      showError(t("validationError"), t("fillFields"));
       return;
     }
 
@@ -127,7 +134,7 @@ const SettingTab = () => {
     const usernameValidation = validateUsername(username);
     if (!usernameValidation.valid) {
       setUsernameError(usernameValidation.error || "");
-      showError(tToast("invalidUsername"), usernameValidation.error || tToast("enterValidUsername"));
+      showError(t("invalidUsername"), usernameValidation.error || t("enterValidUsername"));
       return;
     }
 
@@ -170,17 +177,17 @@ const SettingTab = () => {
         error !== null &&
         "data" in error &&
         typeof (error as { data?: { message?: string } }).data?.message === "string"
-          ? (error as { data?: { message?: string } }).data?.message || "Failed to update profile"
+          ? (error as { data?: { message?: string } }).data?.message || t("updateFailedDescription")
           : typeof error === "object" &&
               error !== null &&
               "message" in error &&
               typeof (error as { message?: string }).message === "string"
-            ? (error as { message?: string }).message || "Failed to update profile"
-            : "Failed to update profile";
+            ? (error as { message?: string }).message || t("updateFailedDescription")
+            : t("updateFailedDescription");
 
       if (errorMessage.toLowerCase().includes("username already exists") ||
         errorMessage.toLowerCase().includes("already exists")) {
-        setUsernameError(tToast("usernameTaken"));
+        setUsernameError(t("usernameTaken"));
       }
 
       showError(tToast("updateFailed"), errorMessage);
@@ -188,7 +195,7 @@ const SettingTab = () => {
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-3 overflow-hidden">
+    <div className={panelTabRootClass}>
       <FeedbackModal
         isOpen={isFeedbackOpen}
         onClose={() => setIsFeedbackOpen(false)}
@@ -196,7 +203,7 @@ const SettingTab = () => {
       />
 
       {/* Room Settings */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      <div className={panelTabScrollAreaClass}>
         <div className="flex flex-col gap-5 pb-4">
           <section className={sectionClass}>
             <div className="space-y-1.5">
@@ -209,7 +216,7 @@ const SettingTab = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] font-medium leading-4 text-white">
-                        Invite friends
+                        {t("inviteFriends")}
                       </p>
                       {roomId ? (
                         <p className="mt-1 flex items-center gap-1 truncate text-[9px] leading-3 text-white/42">
@@ -229,7 +236,7 @@ const SettingTab = () => {
                         : actionPillClass
                     }`}
                   >
-                    {copied ? t("linkCopied") : "Copy Link"}
+                    {copied ? t("linkCopied") : tCommon("copyLink")}
                   </button>
                 </div>
               </div>
@@ -246,7 +253,8 @@ const SettingTab = () => {
                   <label className={rowLabelClass}>{t("name")}</label>
                   {activeEditField === "name" ? (
                     <div className={inputCardClass}>
-                      <input
+                      <Input
+                        variant="raw"
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -299,7 +307,8 @@ const SettingTab = () => {
                           usernameError ? "border-red-500/30" : ""
                         }`}
                       >
-                        <input
+                        <Input
+                          variant="raw"
                           type="text"
                           value={username}
                           onChange={(e) => {

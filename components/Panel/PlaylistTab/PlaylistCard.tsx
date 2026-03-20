@@ -17,6 +17,7 @@ import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { RootState } from "@/lib/store";
+import { appPulseSurfaceClass } from "@/components/UI/classTokens";
 import { FaPause, FaPlay } from "react-icons/fa";
 
 
@@ -30,6 +31,18 @@ interface PlaylistCardProps {
 }
 
 type ScreenShareMode = "tab" | "window" | "screen" | "unknown";
+
+const playlistCardInfoRowClass = "flex items-center gap-1.5 md:gap-2";
+const playlistCardTitleBaseClass = "text-[11px] md:text-xs font-normal leading-tight";
+const playlistCardScreenLabelClass = "text-[7px] font-semibold uppercase tracking-[0.14em]";
+const playlistCardStopButtonClass =
+    "flex h-6 w-6 flex-shrink-0 self-center items-center justify-center rounded-full bg-black/20 text-white/45 transition-all duration-200 hover:bg-black/30 hover:text-white/78";
+const playlistCardScreenStatusIconClass =
+    "flex h-6 w-6 flex-shrink-0 self-center items-center justify-center rounded-full text-xs";
+const playlistCardNumberBadgeClass =
+    "flex h-7 w-7 flex-shrink-0 self-center items-center justify-center rounded-full text-[10px] font-medium tabular-nums";
+const playlistCardThumbnailClass =
+    "relative h-10 w-14 shrink-0 self-center overflow-hidden rounded-lg md:h-11 md:w-[72px]";
 
 const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 B";
@@ -128,7 +141,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
                     <div className="relative flex items-center gap-1.5 text-white">
                         <Icon size={10} />
-                        <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                        <span className={playlistCardScreenLabelClass}>
                             {label}
                         </span>
                     </div>
@@ -142,7 +155,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
                     <div className="relative flex items-center gap-1.5 text-white">
                         <Icon size={10} />
-                        <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                        <span className={playlistCardScreenLabelClass}>
                             {label}
                         </span>
                     </div>
@@ -156,7 +169,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
                     <div className="relative flex items-center gap-1.5 text-white">
                         <Icon size={10} />
-                        <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                        <span className={playlistCardScreenLabelClass}>
                             {label}
                         </span>
                     </div>
@@ -169,7 +182,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_42%)]" />
                 <div className="relative flex items-center gap-1.5 text-white">
                     <Icon size={10} />
-                    <span className="text-[7px] font-semibold uppercase tracking-[0.14em]">
+                    <span className={playlistCardScreenLabelClass}>
                         {label}
                     </span>
                 </div>
@@ -253,7 +266,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             if (isLoading) {
                 return (
                     <div className="space-y-1 md:space-y-1.5">
-                        <div className="h-3 md:h-3.5 bg-white/10 rounded animate-pulse w-3/4" />
+                        <div className={`h-3 md:h-3.5 w-3/4 ${appPulseSurfaceClass}`} />
                         <div className="h-2 md:h-2.5 bg-white/5 rounded w-1/2 animate-pulse" />
                     </div>
                 );
@@ -262,9 +275,9 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             if (hasMetadata && metadata) {
                 return (
                     <>
-                        <div className="flex items-center gap-1.5 md:gap-2">
+                        <div className={playlistCardInfoRowClass}>
                             <p
-                                className={`text-[11px] md:text-xs font-normal line-clamp-1 leading-tight ${titleClass}`}
+                                className={`${playlistCardTitleBaseClass} line-clamp-1 ${titleClass}`}
                             >
                                 {metadata.title || getUrlDisplayName(link)}
                             </p>
@@ -287,9 +300,9 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
 
             return (
                 <>
-                    <div className="flex items-center gap-1.5 md:gap-2">
+                    <div className={playlistCardInfoRowClass}>
                         <p
-                            className={`text-[11px] md:text-xs font-normal truncate ${titleClass}`}
+                            className={`${playlistCardTitleBaseClass} truncate ${titleClass}`}
                         >
                             {getUrlDisplayName(link)}
                         </p>
@@ -305,9 +318,9 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             const platformName = metadata?.title || tStream("screenShare");
             return (
                 <>
-                    <div className="flex items-center gap-1.5 md:gap-2">
+                    <div className={playlistCardInfoRowClass}>
                         <p
-                            className={`text-[11px] md:text-xs font-normal line-clamp-1 leading-tight ${titleClass}`}
+                            className={`${playlistCardTitleBaseClass} line-clamp-1 ${titleClass}`}
                         >
                             {platformName}
                         </p>
@@ -325,9 +338,9 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             const file = ext.file;
             return (
                 <>
-                    <div className="flex items-center gap-1.5 md:gap-2">
+                    <div className={playlistCardInfoRowClass}>
                         <p
-                            className={`text-[11px] md:text-xs font-normal line-clamp-1 leading-tight ${titleClass}`}
+                            className={`${playlistCardTitleBaseClass} line-clamp-1 ${titleClass}`}
                         >
                             {metadata?.title || link}
                         </p>
@@ -353,7 +366,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             return (
                 <button
                     onClick={() => handleStop(content.id, source)}
-                    className="flex h-6 w-6 flex-shrink-0 self-center items-center justify-center rounded-full bg-black/20 text-white/45 transition-all duration-200 hover:bg-black/30 hover:text-white/78"
+                    className={playlistCardStopButtonClass}
                     title={t("stopScreenSharing")}
                 >
                     <LuX size={11} className="md:w-3 md:h-3" />
@@ -365,7 +378,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             return (
                 <div
                     className={`
-            flex h-6 w-6 flex-shrink-0 self-center items-center justify-center rounded-full text-xs
+            ${playlistCardScreenStatusIconClass}
             ${isSelected ? "bg-white/[0.1] text-white/72 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" : "bg-white/[0.04] text-white/35"}
           `}
                 >
@@ -379,7 +392,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
                 renderPlaybackButton()
             ) : (
                 <div
-                    className="flex h-7 w-7 flex-shrink-0 self-center items-center justify-center rounded-full bg-white/[0.04] text-[10px] font-medium tabular-nums text-white/45"
+                    className={`${playlistCardNumberBadgeClass} bg-white/[0.04] text-white/45`}
                 >
                     {index + 1}
                 </div>
@@ -411,7 +424,7 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
             {/* Thumbnail */}
             <div
                 className={`
-          relative h-10 w-14 shrink-0 self-center overflow-hidden rounded-lg md:h-11 md:w-[72px]
+          ${playlistCardThumbnailClass}
           ${isSelected
               ? "bg-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
               : "bg-white/[0.03]"}

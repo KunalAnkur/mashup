@@ -13,6 +13,7 @@ import {
   modalConfirmSurfaceClass,
   modalSubtleCloseButtonClass,
 } from "@/components/UI";
+import { appSeparatorLineClass } from "@/components/UI/classTokens";
 
 interface ModalOnRoomCreateProps {
   isHost: boolean;
@@ -233,9 +234,9 @@ const ModalOnRoomCreate = ({
 
           {/* Separator */}
           <div className="mb-3 flex items-center gap-1.5 md:mb-4 md:gap-2">
-            <div className="h-px flex-1 bg-white/10"></div>
+            <div className={appSeparatorLineClass}></div>
             <span className="text-[10px] text-white/40 md:text-xs">{tCommon("or")}</span>
-            <div className="h-px flex-1 bg-white/10"></div>
+            <div className={appSeparatorLineClass}></div>
           </div>
 
           {/* Share buttons */}

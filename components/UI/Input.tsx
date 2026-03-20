@@ -1,5 +1,6 @@
-import { InputHTMLAttributes } from "react";
+import { InputHTMLAttributes, forwardRef } from "react";
 import { input } from "./config";
+import { appInputRadiusClass, appInputVerticalPaddingClass } from "./classTokens";
 import { FaCircleCheck } from "react-icons/fa6";
 import { RxCross2 } from "react-icons/rx";
 import { IoEye, IoEyeOff } from "react-icons/io5";
@@ -14,10 +15,11 @@ type Props = {
   isPassword?: boolean;
   showPassword?: boolean;
   style?: "general" | "auth";
+  variant?: "wrapped" | "raw";
   onTogglePassword?: () => void; // To handle password visibility toggle
 } & InputHTMLAttributes<HTMLInputElement>;
 
-const Input = ({
+const Input = forwardRef<HTMLInputElement, Props>(({
   placeholder,
   type = "text",
   className = "",
@@ -26,13 +28,37 @@ const Input = ({
   isPassword = false,
   showPassword = false,
   style = "general",
+  variant = "wrapped",
   label,
   onTogglePassword,
   ...rest
-}: Props) => {
+}: Props, ref) => {
+  const resolvedType = isPassword && showPassword ? "text" : type;
+  if (variant === "raw") {
+    const rawClassName = [
+      "appearance-none bg-transparent outline-none ring-0 shadow-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return (
+      <input
+        {...rest}
+        type={resolvedType}
+        placeholder={placeholder}
+        className={rawClassName}
+        ref={ref}
+      />
+    );
+  }
+
   const wrapperClass =
     style === "auth" ? "flex flex-col gap-1" : "inline-block";
-  const inputWrapperClass = `h-fit px-3 py-1.5 flex gap-2 items-center rounded-md text-sm text-smoothWhite ${
+  const inputBasePaddingClass =
+    style === "auth" ? appInputVerticalPaddingClass : "py-1.5";
+  const inputBaseRadiusClass =
+    style === "auth" ? appInputRadiusClass : "rounded-md";
+  const inputWrapperClass = `h-fit px-3 ${inputBasePaddingClass} flex gap-2 items-center ${inputBaseRadiusClass} text-sm text-smoothWhite ${
     input.styles[style as keyof typeof input.styles]
   }`;
   const inputClass =
@@ -81,9 +107,10 @@ const Input = ({
           {style === "general" && icon && <span>{icon}</span>}
           <input
             {...rest}
-            type={isPassword && showPassword ? "text" : type}
+            type={resolvedType}
             placeholder={placeholder}
             className={`${inputClass} ${className}`}
+            ref={ref}
           />
 
           {renderValidationIcon()}
@@ -102,6 +129,8 @@ const Input = ({
       )}
     </div>
   );
-};
+});
+
+Input.displayName = "Input";
 
 export default Input;
