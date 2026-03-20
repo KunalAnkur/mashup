@@ -1,11 +1,10 @@
 "use client";
 import { useState } from "react";
 import { LoginContainer, SignupContainer } from "../Container";
-import { AuthHeader, Button } from "../UI";
+import { Button } from "../UI";
 import { useDispatch } from "react-redux";
 import { changeStep } from "@/lib/store/slices/onboardSlice";
 import { OnboardStep } from "@/types/storeTypes";
-import * as constants from "@/constants/common";
 
 const AuthWrapper = ({ isModel = false }: { isModel?: boolean }) => {
   const [container, setContainer] = useState<"login" | "signup">("login");
@@ -14,14 +13,7 @@ const AuthWrapper = ({ isModel = false }: { isModel?: boolean }) => {
     dispatch(changeStep(OnboardStep.SELECT_SOURCE));
   };
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full px-8 md:px-0 gap-8 bg-[#18181b] ">
-      {/* <AuthHeader
-        title={
-          `/${container}` === constants.pageType.signup
-            ? "Signup to start watching"
-            : "Welcome again!"
-        }
-      /> */}
+    <div className="flex h-full w-full flex-col items-center justify-center gap-8 px-8 md:px-0">
       <div className="w-full max-w-md">
         {container === "login" && (
           <LoginContainer setContainer={setContainer} />

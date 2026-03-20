@@ -972,7 +972,7 @@ const ChatTab = () => {
                     displayMessage = t("youSeeked");
                   }
                 } else {
-                  messageWords[0] = t("you");
+                  messageWords[0] = tCommon("you");
                   displayMessage = messageWords.join(" ");
                 }
               } else {

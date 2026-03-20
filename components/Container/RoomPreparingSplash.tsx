@@ -5,7 +5,7 @@ import * as constants from "@/constants";
 
 const RoomPreparingSplash = () => {
   return (
-    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-[#07080f]">
+    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-transparent">
 
       {/* Ambient background */}
       <div className="pointer-events-none absolute inset-0">

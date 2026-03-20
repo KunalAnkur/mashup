@@ -138,7 +138,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           id={dropdownMenuId}
           role="menu"
           aria-label="Account menu"
-          className="z-50"
+          className="z-50 w-44 md:w-48"
         >
           {/* User Info Section */}
           <DropdownHeaderRow

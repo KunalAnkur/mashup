@@ -36,7 +36,7 @@ const Input = forwardRef<HTMLInputElement, Props>(({
   const resolvedType = isPassword && showPassword ? "text" : type;
   if (variant === "raw") {
     const rawClassName = [
-      "outline-none ring-0 shadow-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none",
+      "appearance-none bg-transparent outline-none ring-0 shadow-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none",
       className,
     ]
       .filter(Boolean)

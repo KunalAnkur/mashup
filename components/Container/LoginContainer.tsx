@@ -5,6 +5,7 @@ import GoogleButton from "../GoogleAuth/GoogleButton";
 import {
   useAuthProviderMutation,
   useContinueAsGuestMutation,
+  useLoginMutation,
 } from "@/lib/store/api/authApi";
 import { setUser, setGoogleUser } from "@/lib/store/slices/authSlice";
 import { useDispatch } from "react-redux";
@@ -38,7 +39,14 @@ type GoogleAuthUserInfo = {
 const LoginContainer = ({}: Prop) => {
   const searchParams = useSearchParams();
   const redirectParam = searchParams?.get("redirect");
+
+  const buildAuthRoute = (path: string) =>
+    redirectParam ? `${path}?redirect=${encodeURIComponent(redirectParam)}` : path;
+
+  const [loginUser, loginState] = useLoginMutation();
+  const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
+  const tAuth = useTranslations("auth.login");
   const [authProvider] = useAuthProviderMutation();
   const [continueAsGuest, { isLoading: isGuestLoading }] = useContinueAsGuestMutation();
   const [isGuestProcessing, setIsGuestProcessing] = useState(false);
@@ -83,17 +91,7 @@ const LoginContainer = ({}: Prop) => {
     } catch (error) {
       console.error("Guest signup failed:", error);
       const errorMessage =
-        error && typeof error === "object"
-          ? "data" in error &&
-            error.data &&
-            typeof error.data === "object" &&
-            "message" in error.data &&
-            typeof error.data.message === "string"
-            ? error.data.message
-            : "message" in error && typeof error.message === "string"
-              ? error.message
-              : "Failed to continue as guest"
-          : "Failed to continue as guest";
+        error?.data?.message || error?.message || tToast("unableToContinueAsGuest");
       showError(tToast("guestSignupFailed"), errorMessage);
     } finally {
       setIsGuestProcessing(false);
@@ -119,10 +117,10 @@ const LoginContainer = ({}: Prop) => {
               Movmash
             </h1>
             <p className="text-base md:text-lg text-white/90 text-center font-medium">
-              Welcome back!
+              {tAuth("welcomeBack")}
             </p>
             <p className="text-xs md:text-sm text-white/60 text-center max-w-xs mt-0.5">
-              Choose how you&apos;d like to continue
+              {tAuth("chooseHowToContinue")}
             </p>
           </div>
         </header>
@@ -131,7 +129,7 @@ const LoginContainer = ({}: Prop) => {
         <div className="flex flex-col gap-3.5 w-full">
           {/* Google Button */}
           <GoogleButton
-            name="Continue with Google"
+            name={tCommon("continueWithGoogle")}
             onSuccess={handleGoogleAuthSuccess}
             onError={() => {
               console.log("Google authentication failed");
@@ -139,15 +137,19 @@ const LoginContainer = ({}: Prop) => {
           />
 
           {/* Separator */}
-          <div className={loginContainerSeparatorClass}>
-            <div className={loginContainerSeparatorLineClass}></div>
-            <span className="text-xs text-white/50 font-medium uppercase tracking-wider">or</span>
-            <div className={loginContainerSeparatorLineClass}></div>
+          <div className="flex items-center gap-3 py-0.5">
+            <div className="flex-1 h-px bg-zinc-600/20"></div>
+            <span className="text-xs text-white/50 font-medium uppercase tracking-wider">{tCommon("or")}</span>
+            <div className="flex-1 h-px bg-zinc-600/20"></div>
           </div>
 
           {/* Continue as Guest Button */}
           <Button
-            name={isGuestProcessing || isGuestLoading ? "Creating account..." : "Continue as Guest"}
+            name={
+              isGuestProcessing || isGuestLoading
+                ? tCommon("creatingAccount")
+                : tCommon("continueAsGuest")
+            }
             icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
             className={guestContinueButtonClass}
             onClick={handleContinueAsGuest}
@@ -157,10 +159,11 @@ const LoginContainer = ({}: Prop) => {
 
         {/* Footer Note */}
         <p className="text-xs text-white/60 text-center leading-relaxed max-w-sm mt-1">
-          By continuing, you agree to Movmash&apos;s{" "}
-          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">Terms of Service</span>
-          {" "}and{" "}
-          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">Privacy Policy</span>
+          {tAuth("agreementPrefix")}{" "}
+          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">{tAuth("termsOfService")}</span>
+          {" "}{tAuth("and")}{" "}
+          <span className="text-white/80 hover:text-pink-400 transition-colors cursor-pointer">{tAuth("privacyPolicy")}</span>
+          {tAuth("agreementSuffix")}
         </p>
       </div>
     </div>

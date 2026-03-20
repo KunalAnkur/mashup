@@ -48,7 +48,8 @@
     "creatingAccount": "جاري إنشاء الحساب...",
     "continueAsGuest": "المتابعة كضيف",
     "or": "أو",
-    "linkCopied": "تم نسخ الرابط!"
+    "linkCopied": "تم نسخ الرابط!",
+    "copyLink": "انسخ الرابط"
   },
   "panel": {
     "playlist": {
@@ -121,6 +122,7 @@
       "enterUsername": "أدخل اسم المستخدم (أحرف وأرقام وشرطات سفلية فقط)",
       "editProfile": "تعديل الملف الشخصي",
       "roomLink": "رابط الغرفة",
+      "inviteFriends": "ادعُ الأصدقاء",
       "noRoomLink": "لا يوجد رابط غرفة متاح",
       "linkCopied": "تم نسخ الرابط!",
       "roomNameUpdated": "تم تحديث اسم الغرفة بنجاح",
@@ -135,6 +137,7 @@
       "usernameRules": "يمكن أن يحتوي اسم المستخدم على أحرف وأرقام وشرطات سفلية فقط",
       "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
       "updateFailed": "فشل التحديث",
+      "updateFailedDescription": "تعذر تحديث ملفك الشخصي. يرجى المحاولة مرة أخرى.",
       "saveChanges": "حفظ التغييرات"
     },
     "leaveParty": "مغادرة الحفلة؟",
@@ -242,6 +245,9 @@
     "tryAgain": "يرجى المحاولة مرة أخرى.",
     "welcomeGuest": "مرحبًا! لقد قمت بتسجيل الدخول كضيف الآن",
     "guestSignupFailed": "فشل تسجيل الضيف",
+    "unableToContinueAsGuest": "تعذر المتابعة كضيف. يرجى المحاولة مرة أخرى.",
+    "signupFailed": "فشل إنشاء الحساب",
+    "checkSignupDetails": "يرجى التحقق من بياناتك والمحاولة مرة أخرى.",
     "roomNameUpdated": "تم تحديث اسم الغرفة بنجاح",
     "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
     "updateFailed": "فشل التحديث",
@@ -278,14 +284,37 @@
     "authenticationFailed": "فشل المصادقة",
     "failedToSelectFiles": "فشل اختيار الملفات"
   },
+  "auth": {
+    "login": {
+      "welcomeBack": "مرحبًا بعودتك!",
+      "chooseHowToContinue": "اختر كيف تريد المتابعة",
+      "agreementPrefix": "بالمتابعة، فإنك توافق على",
+      "termsOfService": "شروط الخدمة",
+      "and": "و",
+      "privacyPolicy": "سياسة الخصوصية",
+      "agreementSuffix": " الخاصة بـ Movmash."
+    },
+    "signup": {
+      "username": "اسم المستخدم",
+      "enterUsername": "أدخل اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "enterEmailAddress": "أدخل بريدك الإلكتروني",
+      "password": "كلمة المرور",
+      "enterPassword": "أدخل كلمة المرور",
+      "signingUp": "جارٍ إنشاء الحساب...",
+      "signup": "إنشاء حساب",
+      "alreadyHaveAccount": "هل لديك حساب بالفعل؟",
+      "loginCta": "تسجيل الدخول"
+    }
+  },
   "notFound": {
-    "title": "عذرًا! هذا المشهد مفقود",
-    "description1": "يبدو أن هذه الصفحة ذهبت لتأخذ استراحة قهوة! ☕",
-    "description2": "لا تقلق، حتى أفضل الأفلام لديها مشاهد محذوفة. دعنا نعيدك إلى العرض الرئيسي!",
-    "goHome": "الذهاب للصفحة الرئيسية",
-    "goBack": "رجوع",
-    "funFact": "حقيقة ممتعة:",
-    "funFactText": "ظهر خطأ 404 الأول في عام 1992. أنت تعيش جزءًا من تاريخ الإنترنت! 🚀"
+    "title": "الصفحة غير موجودة",
+    "description1": "هذه الصفحة غير متاحة الآن.",
+    "description2": "قد يكون الرابط غير صالح أو ربما تم نقل الصفحة.",
+    "goHome": "العودة للرئيسية",
+    "goBack": "الرجوع",
+    "funFact": "معلومة:",
+    "funFactText": "يشير HTTP 404 إلى أن الخادم لم يتمكن من العثور على الصفحة المطلوبة."
   },
   "feedback": {
     "title": "ملاحظات",

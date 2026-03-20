@@ -48,7 +48,8 @@
     "creatingAccount": "Creating account...",
     "continueAsGuest": "Continue as Guest",
     "or": "or",
-    "linkCopied": "Link copied!"
+    "linkCopied": "Link copied!",
+    "copyLink": "Copy Link"
   },
   "panel": {
     "playlist": {
@@ -121,6 +122,7 @@
       "enterUsername": "Enter your username (letters, numbers, underscores only)",
       "editProfile": "Edit Profile",
       "roomLink": "Room Link",
+      "inviteFriends": "Invite friends",
       "noRoomLink": "No room link available",
       "linkCopied": "Link copied!",
       "roomNameUpdated": "Room name updated successfully",
@@ -135,6 +137,7 @@
       "usernameRules": "Username can only contain letters, numbers, and underscores",
       "profileUpdated": "Profile updated successfully",
       "updateFailed": "Update failed",
+      "updateFailedDescription": "We couldn't update your profile. Please try again.",
       "saveChanges": "Save Changes"
     },
     "leaveParty": "Leave Party?",
@@ -242,6 +245,9 @@
     "tryAgain": "Please try again.",
     "welcomeGuest": "Welcome! You're now signed in as a guest",
     "guestSignupFailed": "Guest signup failed",
+    "unableToContinueAsGuest": "Unable to continue as guest. Please try again.",
+    "signupFailed": "Signup failed",
+    "checkSignupDetails": "Please check your details and try again.",
     "roomNameUpdated": "Room name updated successfully",
     "profileUpdated": "Profile updated successfully",
     "updateFailed": "Update failed",
@@ -278,14 +284,37 @@
     "authenticationFailed": "Authentication failed",
     "failedToSelectFiles": "Failed to select files"
   },
+  "auth": {
+    "login": {
+      "welcomeBack": "Welcome back!",
+      "chooseHowToContinue": "Choose how you'd like to continue",
+      "agreementPrefix": "By continuing, you agree to Movmash's",
+      "termsOfService": "Terms of Service",
+      "and": "and",
+      "privacyPolicy": "Privacy Policy",
+      "agreementSuffix": "."
+    },
+    "signup": {
+      "username": "Username",
+      "enterUsername": "Enter your username",
+      "email": "Email",
+      "enterEmailAddress": "Enter your email address",
+      "password": "Password",
+      "enterPassword": "Enter your password",
+      "signingUp": "Signing up...",
+      "signup": "Sign up",
+      "alreadyHaveAccount": "Already have an account?",
+      "loginCta": "Log in"
+    }
+  },
   "notFound": {
-    "title": "Oops! This Scene is Missing",
-    "description1": "Looks like this page went on a coffee break! ☕",
-    "description2": "Don't worry, even the best movies have deleted scenes. Let's get you back to the main show!",
+    "title": "Page Not Found",
+    "description1": "This page isn't available.",
+    "description2": "The link may be broken, or the page may have been moved.",
     "goHome": "Go Home",
     "goBack": "Go Back",
-    "funFact": "Fun Fact:",
-    "funFactText": "The first 404 error appeared in 1992. You're experiencing a piece of internet history! 🚀"
+    "funFact": "Info:",
+    "funFactText": "HTTP 404 means the server could not find the page you requested."
   },
   "feedback": {
     "title": "Feedback",

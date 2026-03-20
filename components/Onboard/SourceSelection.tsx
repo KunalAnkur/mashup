@@ -1,18 +1,34 @@
 "use client";
 
 import { FaBroadcastTower, FaSync } from "react-icons/fa";
-import { Button, Input, Logo } from "../UI";
 import { useState, useCallback } from "react";
 import { ImSpinner2 } from "react-icons/im";
-
 import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { trackCTAClicked } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { Input } from "../UI";
 import {
-  appInputRadiusClass,
-  appInputVerticalPaddingClass,
-} from "@/components/UI/classTokens";
+  appHomeEntryCardSurfaceClass,
+  appHomeInputSurfaceClass,
+} from "../UI/classTokens";
+
+const titleClass =
+  "font-parkinsans text-[29px] font-semibold tracking-tight text-white sm:text-[31px] md:text-[35px]";
+const descriptionClass =
+  "mx-auto mt-1 max-w-md px-2 text-center text-sm leading-6 text-white/56 sm:text-[15px]";
+const cardBaseClass =
+  `group relative h-36 w-full overflow-hidden rounded-2xl ${appHomeEntryCardSurfaceClass} transition-all duration-300 sm:h-40 md:h-44`;
+const cardInnerClass =
+  "relative flex h-full flex-col items-center justify-center px-4 text-white/82 transition-colors duration-300 group-hover:text-white";
+const cardIconWrapClass =
+  "mb-2.5 flex items-center justify-center rounded-full bg-white/[0.045] p-4 text-white transition-all duration-300 group-hover:bg-white/[0.075] sm:p-5 md:p-6";
+const joinInputSurfaceClass =
+  `flex flex-1 items-center rounded-2xl px-3.5 sm:px-4 ${appHomeInputSurfaceClass}`;
+const joinInputFieldClass =
+  "h-[50px] w-full appearance-none bg-transparent text-base text-white outline-none placeholder:text-white/38";
+const joinButtonClass =
+  "inline-flex items-center justify-center whitespace-nowrap rounded-2xl px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 text-sm sm:text-[15px] font-semibold tracking-tight transition-all duration-200 shadow-[0_10px_24px_rgba(190,24,93,0.22)] enabled:bg-gradient-to-r enabled:from-rose-600 enabled:via-pink-600 enabled:to-fuchsia-600 enabled:text-white enabled:hover:shadow-[0_14px_30px_rgba(190,24,93,0.28)] disabled:cursor-not-allowed disabled:bg-white/[0.05] disabled:text-gray-600 disabled:shadow-none";
 
 const SourceSelection = () => {
   const t = useTranslations("home");
@@ -28,7 +44,6 @@ const SourceSelection = () => {
     router.push("/stream");
   }, [router]);
 
-  // Navigate to sync - no warning needed (works on mobile)
   const handleOnURLSelection = useCallback(() => {
     trackCTAClicked("sync");
     router.push("/sync");
@@ -38,10 +53,9 @@ const SourceSelection = () => {
     const value = e.target.value.toUpperCase();
     setRoomId(value);
     setIsJoinDisabled(value.trim().length === 0);
-    setJoinError(""); // Clear error when user types
+    setJoinError("");
   };
 
-  // Join room - no warning needed (can join any room type)
   const handleJoinRoom = useCallback(async () => {
     const trimmedRoomId = roomId.trim();
     if (trimmedRoomId.length === 0 || isJoining) return;
@@ -56,14 +70,12 @@ const SourceSelection = () => {
         response?.statusCode === 401 ||
         (response?.success && response?.data)
       ) {
-        // Room exists and is active, navigate to it
         trackCTAClicked("join_room", { room_id: trimmedRoomId });
         router.push(`/room/${trimmedRoomId}`);
       } else {
         setJoinError(t("errors.roomNotFound"));
       }
     } catch (error: unknown) {
-      // Handle API errors (404, network errors, etc.)
       const err = error as {
         status?: number | string;
         data?: { status?: number };
@@ -75,9 +87,8 @@ const SourceSelection = () => {
       } else {
         setJoinError(t("errors.joinFailed"));
       }
-      setIsJoining(false);
     } finally {
-      // setIsJoining(false);
+      setIsJoining(false);
     }
   }, [roomId, isJoining, getRoomByRoomId, router, t]);
 
@@ -89,66 +100,47 @@ const SourceSelection = () => {
 
   return (
     <>
-      <div className="w-full h-full flex flex-col items-center justify-center bg-transparent px-4 pt-20 sm:pt-6 pb-6 overflow-hidden sm:overflow-y-auto overflow-x-hidden">
-        <div className="w-full max-w-lg flex flex-col items-center gap-3 sm:gap-4 md:gap-5 my-auto">
-          {/* LOGO & BRAND - Hidden on mobile (shown in header instead) */}
-          <div className="hidden sm:flex items-center justify-center gap-3 ">
-            <Logo height={36} width={36} custom={true} />
-            <h3 className="text-2xl sm:text-2xl md:text-3xl font-extrabold text-white text-center font-parkinsans tracking-tight">
-              {t("brand")}
-            </h3>
-          </div>
-
-          {/* Create Party */}
-          <div
-            className="w-full animate-slide-up"
-            style={{ animationDelay: "0.1s" }}
-          >
-            <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
-              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 animate-pulse"></div>
-              <h2 className="text-2xl sm:text-2xl md:text-3xl font-extrabold text-white text-center font-parkinsans">
-                {t("createParty")}
-              </h2>
+      <div className="flex h-full w-full flex-col items-center justify-center overflow-hidden bg-transparent px-4 pb-6 pt-20 sm:overflow-y-auto sm:px-6 sm:pb-6 sm:pt-6">
+        <div className="my-auto flex w-full max-w-lg flex-col items-center gap-4 sm:gap-5 md:gap-6">
+          <div className="w-full animate-slide-up" style={{ animationDelay: "0.1s" }}>
+            <div className="mb-3 flex items-center justify-center gap-2 sm:mb-4">
+              <div className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 opacity-85 animate-pulse"></div>
+              <h2 className={titleClass}>{t("createParty")}</h2>
               <div
-                className="w-2 h-2 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-500 animate-pulse"
+                className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-500 opacity-85 animate-pulse"
                 style={{ animationDelay: "0.5s" }}
               ></div>
             </div>
-            <p className="text-gray-400 text-center mb-3 sm:mb-4 text-xs sm:text-sm font-medium px-2 mt-1">
-              {t("createPartyDescription")}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch w-full">
-              {/* Stream */}
+            <p className={descriptionClass}>{t("createPartyDescription")}</p>
+
+            <div className="mt-4 flex w-full flex-col items-stretch justify-center gap-3 sm:flex-row sm:gap-4">
               <button
                 onClick={handleOnUploadSelection}
-                className="relative w-full sm:w-1/2 h-36 sm:h-40 md:h-44 group animate-scale-in"
+                className={`${cardBaseClass} animate-scale-in sm:w-1/2`}
                 style={{ animationDelay: "0.2s" }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 backdrop-blur-5xl  rounded-xl group-hover:from-rose-600/30 group-hover:via-pink-600/30 group-hover:to-fuchsia-600/30 group-hover:border-white/20 transition-all duration-300"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-xl backdrop-blur-sm"></div>
-                <div className="relative flex flex-col items-center justify-center h-full text-white/80 group-hover:text-white transition-colors duration-300">
-                  <div className="flex items-center justify-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-full bg-gradient-to-br from-blue-500/15 to-cyan-500/15 backdrop-blur-md border border-blue-400/20 group-hover:from-blue-500/30 group-hover:to-cyan-500/30 group-hover:border-blue-400/40 transition-all duration-300 mb-1 md:mb-2 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-blue-500/50">
-                    <FaBroadcastTower className="text-xl sm:text-2xl text-blue-300 group-hover:text-white transition-colors duration-300" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.12),transparent_44%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.12),transparent_42%)] opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className={cardInnerClass}>
+                  <div className={`${cardIconWrapClass} text-cyan-200 group-hover:text-white`}>
+                    <FaBroadcastTower className="text-xl sm:text-2xl" />
                   </div>
-                  <span className="text-base sm:text-lg font-semibold">
+                  <span className="text-base font-medium tracking-tight sm:text-lg">
                     {t("stream")}
                   </span>
                 </div>
               </button>
 
-              {/* Sync */}
               <button
                 onClick={handleOnURLSelection}
-                className="relative overflow-hidden w-full sm:w-1/2 h-36 sm:h-40 md:h-44 group animate-scale-in"
+                className={`${cardBaseClass} animate-scale-in sm:w-1/2`}
                 style={{ animationDelay: "0.3s" }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 via-fuchsia-600/20 to-purple-600/20 backdrop-blur-2xl rounded-xl group-hover:from-pink-600/30 group-hover:via-fuchsia-600/30 group-hover:to-purple-600/30 group-hover:border-white/20 transition-all duration-300"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-pink-600 via-fuchsia-600 to-purple-600 opacity-0 group-hover:opacity-20 transition-opacity duration-300 rounded-xl backdrop-blur-sm"></div>
-                <div className="relative flex flex-col items-center justify-center h-full text-white/80 group-hover:text-white transition-colors duration-300">
-                  <div className="flex items-center justify-center p-3 sm:p-4 md:p-5 lg:p-6 rounded-full bg-gradient-to-br from-indigo-500/15 to-purple-500/15 backdrop-blur-md border border-indigo-400/20 group-hover:from-indigo-500/30 group-hover:to-purple-500/30 group-hover:border-indigo-400/40 transition-all duration-300 mb-1 md:mb-2 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-indigo-500/50">
-                    <FaSync className="text-xl sm:text-2xl text-indigo-300 group-hover:text-white transition-colors duration-300" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,70,239,0.14),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_40%)] opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className={cardInnerClass}>
+                  <div className={`${cardIconWrapClass} text-fuchsia-200 group-hover:text-white`}>
+                    <FaSync className="text-xl sm:text-2xl" />
                   </div>
-                  <span className="text-base sm:text-lg font-semibold">
+                  <span className="text-base font-medium tracking-tight sm:text-lg">
                     {t("sync")}
                   </span>
                 </div>
@@ -156,65 +148,60 @@ const SourceSelection = () => {
             </div>
           </div>
 
-          {/* Divider */}
-          <div
-            className="flex items-center gap-2 w-full animate-fade-in"
-            style={{ animationDelay: "0.4s" }}
-          >
-            <div className="flex-1 h-[1.5px] bg-gradient-to-r from-transparent via-gray-700 to-transparent rounded-full" />
-            <span className="text-gray-500 text-sm sm:text-md font-semibold">
+          <div className="flex w-full animate-fade-in items-center gap-2" style={{ animationDelay: "0.4s" }}>
+            <div className="h-px flex-1 rounded-full bg-gradient-to-r from-transparent via-white/[0.14] to-transparent" />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/[0.34]">
               {t("or")}
             </span>
-            <div className="flex-1 h-[1.5px] bg-gradient-to-r from-transparent via-gray-700 to-transparent rounded-full" />
+            <div className="h-px flex-1 rounded-full bg-gradient-to-r from-transparent via-white/[0.14] to-transparent" />
           </div>
 
-          {/* Join Party */}
-          <div
-            className="w-full flex flex-col items-center animate-slide-up"
-            style={{ animationDelay: "0.5s" }}
-          >
-            <h2 className="text-2xl sm:text-2xl md:text-3xl font-extrabold text-white text-center mb-1 font-parkinsans">
-              {t("joinParty")}
-            </h2>
-            <p className="text-gray-400 text-center mb-3 sm:mb-4 text-xs sm:text-sm font-medium px-2">
-              {t("joinPartyDescription")}
-            </p>
-            <div className="flex flex-col w-full gap-2 sm:gap-3">
-              <div className="flex w-full gap-2 sm:gap-3">
-                <Input
-                  variant="raw"
-                  type="text"
-                  placeholder={t("roomIdPlaceholder")}
-                  value={roomId}
-                  onChange={handleOnRoomIdChange}
-                  onKeyDown={handleKeyDown}
-                  disabled={isJoining}
-                  className={`outline-none text-base flex-1 ${appInputRadiusClass} bg-white/5 backdrop-blur-2xl border text-white placeholder:text-white/50 px-2.5 sm:px-3 ${appInputVerticalPaddingClass} focus:outline-none focus:border-pink-500/50 transition-all duration-200 ${
-                    joinError
-                      ? "border-red-500/50 focus:border-red-500/50"
-                      : "border-none"
-                  } ${isJoining ? "opacity-50 cursor-not-allowed" : ""}`}
-                />
-                <div className="relative">
-                  <div className="group">
-                    <Button
-                      name={isJoining ? t("joining") : t("join")}
-                      icon={isJoining ? <ImSpinner2 className="animate-spin" /> : undefined}
+          <div className="w-full animate-slide-up" style={{ animationDelay: "0.5s" }}>
+            <div className="flex flex-col items-center">
+              <h2 className={`${titleClass} mb-1`}>{t("joinParty")}</h2>
+            </div>
 
-                      onClick={handleJoinRoom}
-                      className="text-sm sm:text-base md:text-lg font-bold px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 rounded-xl transition-all duration-200 shadow-lg whitespace-nowrap
-                                      enabled:bg-gradient-to-r enabled:from-rose-600 enabled:via-pink-600 enabled:to-fuchsia-600 enabled:text-white enabled:shadow-pink-500/25
-                                      enabled:hover:from-rose-500 enabled:hover:via-pink-500 enabled:hover:to-fuchsia-500 enabled:hover:shadow-pink-500/40
-                                      disabled:bg-white/5 disabled:text-gray-600 disabled:cursor-not-allowed disabled:shadow-none"
-                      disabled={isJoinDisabled || isJoining}
-                    />
-                  </div>
+            <div className="flex w-full flex-col gap-2.5 sm:gap-3">
+              <div className="flex w-full gap-2.5 sm:gap-3">
+                <div
+                  className={`${joinInputSurfaceClass} ${
+                    joinError ? "bg-red-500/[0.08]" : ""
+                  } ${isJoining ? "cursor-not-allowed opacity-50" : ""}`}
+                >
+                  <Input
+                    variant="raw"
+                    type="text"
+                    autoFocus
+                    placeholder={t("roomIdPlaceholder")}
+                    value={roomId}
+                    onChange={handleOnRoomIdChange}
+                    onKeyDown={handleKeyDown}
+                    disabled={isJoining}
+                    className={joinInputFieldClass}
+                  />
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleJoinRoom}
+                  className={joinButtonClass}
+                  disabled={isJoinDisabled || isJoining}
+                >
+                  {isJoining ? (
+                    <span className="inline-flex items-center gap-2">
+                      <ImSpinner2 className="animate-spin" />
+                      {t("joining")}
+                    </span>
+                  ) : (
+                    t("join")
+                  )}
+                </button>
               </div>
-              {joinError && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-xl animate-fade-in">
+
+              {joinError ? (
+                <div className="animate-fade-in flex items-center gap-2 rounded-2xl border border-red-400/20 bg-red-500/10 px-3 py-2.5">
                   <svg
-                    className="w-4 h-4 text-red-400 flex-shrink-0"
+                    className="h-4 w-4 shrink-0 text-red-400"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -224,9 +211,9 @@ const SourceSelection = () => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <p className="text-red-400 text-xs sm:text-sm">{joinError}</p>
+                  <p className="text-xs text-red-200 sm:text-sm">{joinError}</p>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -264,33 +251,19 @@ const SourceSelection = () => {
           }
         }
 
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-
         .animate-fade-in {
-          animation: fade-in 0.6s ease-out forwards;
+          animation: fade-in 0.5s ease-out forwards;
           opacity: 0;
         }
 
         .animate-slide-up {
-          animation: slide-up 0.6s ease-out forwards;
+          animation: slide-up 0.55s ease-out forwards;
           opacity: 0;
         }
 
         .animate-scale-in {
           animation: scale-in 0.5s ease-out forwards;
           opacity: 0;
-        }
-
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
         }
       `}</style>
     </>

@@ -121,12 +121,12 @@ const SettingTab = () => {
 
   const handleUpdateProfile = async () => {
     if (!authState.user?.id) {
-      showError(tCommon("error"), tToast("userNotFound"));
+      showError(tCommon("error"), t("userNotFound"));
       return;
     }
 
     if (!name.trim() || !username.trim()) {
-      showError(tToast("validationError"), tToast("fillFields"));
+      showError(t("validationError"), t("fillFields"));
       return;
     }
 
@@ -134,7 +134,7 @@ const SettingTab = () => {
     const usernameValidation = validateUsername(username);
     if (!usernameValidation.valid) {
       setUsernameError(usernameValidation.error || "");
-      showError(tToast("invalidUsername"), usernameValidation.error || tToast("enterValidUsername"));
+      showError(t("invalidUsername"), usernameValidation.error || t("enterValidUsername"));
       return;
     }
 
@@ -177,17 +177,17 @@ const SettingTab = () => {
         error !== null &&
         "data" in error &&
         typeof (error as { data?: { message?: string } }).data?.message === "string"
-          ? (error as { data?: { message?: string } }).data?.message || "Failed to update profile"
+          ? (error as { data?: { message?: string } }).data?.message || t("updateFailedDescription")
           : typeof error === "object" &&
               error !== null &&
               "message" in error &&
               typeof (error as { message?: string }).message === "string"
-            ? (error as { message?: string }).message || "Failed to update profile"
-            : "Failed to update profile";
+            ? (error as { message?: string }).message || t("updateFailedDescription")
+            : t("updateFailedDescription");
 
       if (errorMessage.toLowerCase().includes("username already exists") ||
         errorMessage.toLowerCase().includes("already exists")) {
-        setUsernameError(tToast("usernameTaken"));
+        setUsernameError(t("usernameTaken"));
       }
 
       showError(tToast("updateFailed"), errorMessage);
@@ -216,7 +216,7 @@ const SettingTab = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] font-medium leading-4 text-white">
-                        Invite friends
+                        {t("inviteFriends")}
                       </p>
                       {roomId ? (
                         <p className="mt-1 flex items-center gap-1 truncate text-[9px] leading-3 text-white/42">
@@ -236,7 +236,7 @@ const SettingTab = () => {
                         : actionPillClass
                     }`}
                   >
-                    {copied ? t("linkCopied") : "Copy Link"}
+                    {copied ? t("linkCopied") : tCommon("copyLink")}
                   </button>
                 </div>
               </div>

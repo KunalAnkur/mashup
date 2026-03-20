@@ -51,7 +51,9 @@ const SignupContainer = ({ setContainer }: Prop) => {
   const [username, setUsername] = useState<string>("");
   const [authProvider] = useAuthProviderMutation();
   const [showPassword, setShowPassword] = useState(false);
+  const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
+  const tAuth = useTranslations("auth.signup");
 
   const [signupUser, signupState] = useSignupMutation();
   const dispatch = useDispatch();
@@ -70,31 +72,8 @@ const SignupContainer = ({ setContainer }: Prop) => {
       console.log(data, signupState);
     } catch (error: unknown) {
       // console.error("Signup failed:", error);
-      const hasSpecificSignupError =
-        error &&
-        typeof error === "object" &&
-        (("data" in error &&
-          error.data &&
-          typeof error.data === "object" &&
-          "message" in error.data &&
-          typeof error.data.message === "string") ||
-          ("message" in error && typeof error.message === "string"));
-      const errorMessage =
-        error && typeof error === "object"
-          ? "data" in error &&
-            error.data &&
-            typeof error.data === "object" &&
-            "message" in error.data &&
-            typeof error.data.message === "string"
-            ? error.data.message
-            : "message" in error && typeof error.message === "string"
-              ? error.message
-              : "Failed to create account"
-          : "Failed to create account";
-      const errorDescription = hasSpecificSignupError
-        ? "Please check your information and try again."
-        : "Please check your email, username, and password, then try again.";
-      showError(errorMessage, errorDescription);
+      const errorMessage = error?.data?.message || error?.message || tToast("checkSignupDetails");
+      showError(tToast("signupFailed"), errorMessage);
     }
   };
 
@@ -144,11 +123,10 @@ const SignupContainer = ({ setContainer }: Prop) => {
       <div className="flex flex-col gap-5">
         {/* Username Input */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-300">Username</label>
-          <Input
-            variant="raw"
+          <label className="text-sm font-medium text-gray-300">{tAuth("username")}</label>
+          <input
             type="text"
-            placeholder="Enter your username"
+            placeholder={tAuth("enterUsername")}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className={signupInputBaseClass}
@@ -157,11 +135,10 @@ const SignupContainer = ({ setContainer }: Prop) => {
 
         {/* Email Input */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-300">Email</label>
-          <Input
-            variant="raw"
+          <label className="text-sm font-medium text-gray-300">{tAuth("email")}</label>
+          <input
             type="email"
-            placeholder="Enter your email address"
+            placeholder={tAuth("enterEmailAddress")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={signupInputBaseClass}
@@ -170,12 +147,12 @@ const SignupContainer = ({ setContainer }: Prop) => {
 
         {/* Password Input */}
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-300">Password</label>
+          <label className="text-sm font-medium text-gray-300">{tAuth("password")}</label>
           <div className="relative">
             <Input
               variant="raw"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              placeholder={tAuth("enterPassword")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={`${signupInputBaseClass} pr-12`}
@@ -197,7 +174,7 @@ const SignupContainer = ({ setContainer }: Prop) => {
         {/* Action Buttons */}
         <div className="flex flex-col gap-4 pt-2">
           <Button
-            name={signupState.isLoading ? "Signing up..." : "Signup"}
+            name={signupState.isLoading ? tAuth("signingUp") : tAuth("signup")}
             icon={signupState.isLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
             className={`w-full bg-gradient-to-r ${movmashGradientStopsClass} ${movmashElevatedShadowClass} text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
             onClick={handleOnSignUp}
@@ -206,14 +183,14 @@ const SignupContainer = ({ setContainer }: Prop) => {
           
           {/* Separator */}
           <div className="flex items-center gap-3">
-            <div className={appSeparatorLineClass}></div>
-            <span className="text-xs text-gray-500">or</span>
-            <div className={appSeparatorLineClass}></div>
+            <div className="flex-1 h-px bg-white/10"></div>
+            <span className="text-xs text-gray-500">{tCommon("or")}</span>
+            <div className="flex-1 h-px bg-white/10"></div>
           </div>
 
           {/* Google Button */}
           <GoogleButton
-            name="Continue with Google"
+            name={tCommon("continueWithGoogle")}
             onSuccess={handleGoogleAuthSuccess}
             onError={() => {
               console.log("Google authentication failed");
@@ -224,17 +201,17 @@ const SignupContainer = ({ setContainer }: Prop) => {
           {/* Login Link */}
           <div className="pt-2">
             <span className="flex items-center justify-center text-sm text-gray-400">
-              Already have an account?{" "}
+              {tAuth("alreadyHaveAccount")}{" "}
               {!!setContainer ? (
                 <button
                   onClick={handleOnLoginClick}
                   className="ml-1 text-pink-500 hover:text-pink-400 font-semibold transition-colors"
                 >
-                  LOGIN
+                  {tAuth("loginCta")}
                 </button>
               ) : (
                 <Anchor
-                  name="LOGIN"
+                  name={tAuth("loginCta")}
                   url={buildAuthRoute(constants.pageType.login)}
                   className="ml-1 text-pink-500 hover:text-pink-400 font-semibold transition-colors"
                 />
