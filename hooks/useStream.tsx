@@ -6,7 +6,7 @@ import { SocketEvent } from "@/types/socketEvents";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { RootState } from "@/lib/store";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 interface UseStreamParams {
     roomId: string | null;
@@ -38,7 +38,6 @@ export const useStream = ({
     profile,
 }: UseStreamParams) => {
     const { socket } = useSocket();
-    const dispatch = useDispatch();
     const roomState = useSelector((state: RootState) => state.room);
     const tToast = useTranslations("toast");
 
@@ -191,15 +190,15 @@ export const useStream = ({
         return (audioTrack?.readyState === 'ended') || (videoTrack?.readyState === 'ended');
     }, []);
     /**
-         * Pauses audio and video producers
+         * Broadcasts that the host paused local playback without pausing producers.
+         * Keeping the captured video track live allows consumers to keep rendering
+         * the last captured frame instead of falling back to black.
          */
-    const pauseProducers = useCallback(() => {
+    const notifyPausedPlayback = useCallback(() => {
         if (isSeekingRef.current || !isHost || !roomId) return;
-        audioProducerRef.current?.pause();
-        videoProducerRef.current?.pause();
         socket?.emit(SocketEvent.STREAM_PAUSED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
-    }, [dispatch, isHost, roomId, socket]);
+    }, [isHost, roomId, socket]);
 
     /**
      * Resumes audio and video producers
@@ -217,7 +216,7 @@ export const useStream = ({
         if (videoProducerRef.current?.paused) videoProducerRef.current.resume();
         socket?.emit(SocketEvent.STREAM_RESUMED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: true });
-    }, [dispatch, isHost, roomId, socket, areTracksEnded, replaceEndedTracks]);
+    }, [isHost, roomId, socket, areTracksEnded, replaceEndedTracks]);
 
     
     /**
@@ -816,14 +815,14 @@ export const useStream = ({
     return {
         isInitialized,
         initializeFromJoinResponse,
-        pauseProducers,
+        pauseProducers: notifyPausedPlayback,
         resumeProducers,
         stopStream: stopHostStream,
         resetState,
         onPause: (event?: string) => {
             // Don't pause during seek - the 'seekend' event or isSeekingRef check prevents this
             if (event === 'seekend' || isSeekingRef.current) return;
-            pauseProducers();
+            notifyPausedPlayback();
         },
         onPlay: (event?: string) => {
             // Allow resume after seek completes (isSeekingRef is false) even if event is 'seekend'
