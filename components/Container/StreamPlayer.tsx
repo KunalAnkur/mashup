@@ -450,13 +450,6 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
             >
                 <PlayerOverlay />
             </Player>
-
-            {/* Pause frame overlay for consumers */}
-            {!isHost && pauseFrameUrl && (
-                <div className="absolute inset-0 z-0 pointer-events-none">
-                    <img src={pauseFrameUrl} alt="Paused" className="w-full h-full object-contain bg-black" />
-                </div>
-            )}
         </div>
     );
 };
