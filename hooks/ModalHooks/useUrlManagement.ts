@@ -22,10 +22,23 @@ interface UseUrlManagementOptions {
   persistToLocalStorage?: boolean;
 }
 
+type UrlMetadataResponseItem = {
+  url: string;
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+  author?: string;
+  siteName?: string;
+  link?: string;
+};
+
 export const useUrlManagement = (options?: UseUrlManagementOptions) => {
   const { onUrlAdded, persistToLocalStorage = !options?.onUrlAdded } = options || {};
   const authState = useSelector((state: RootState) => state.auth);
   const roomState = useSelector((state: RootState) => state.room);
+  const roomUrls = roomState.playlist
+    .filter((item) => item.source === "url")
+    .map((item) => item.link);
   const [sourceUrlInput, setSourceUrlInput] = useState<string>("");
   const [addedUrls, setAddedUrls] = useState<AddedUrl[]>([]);
   const [isAddDisabled, setAddDisabled] = useState<boolean>(true);
@@ -63,11 +76,16 @@ export const useUrlManagement = (options?: UseUrlManagementOptions) => {
           return {};
         }
 
+        const metadataItems = Array.isArray(data.data)
+          ? (data.data as UrlMetadataResponseItem[])
+          : [];
+        const primaryItem = metadataItems[0];
+
         return {
-          title: data.data?.title || undefined,
-          description: data.data?.description || undefined,
-          thumbnail: data.data?.thumbnail || undefined,
-          author: data.data?.author || data.data?.siteName || undefined,
+          title: primaryItem?.title || undefined,
+          description: primaryItem?.description || undefined,
+          thumbnail: primaryItem?.thumbnail || undefined,
+          author: primaryItem?.author || primaryItem?.siteName || undefined,
         };
       } catch (error) {
         console.error("Error fetching metadata:", error);
@@ -81,7 +99,7 @@ export const useUrlManagement = (options?: UseUrlManagementOptions) => {
     // Only sync from roomState if not using API-based flow
     if (onUrlAdded) return;
     
-    if (!roomState.urls || roomState.urls.length === 0) {
+    if (roomUrls.length === 0) {
       if (persistToLocalStorage) {
         const addedUrls = localStorage.getItem("addedUrls");
         if (addedUrls) {
@@ -96,7 +114,7 @@ export const useUrlManagement = (options?: UseUrlManagementOptions) => {
     }
 
     const fetchMetadata = async () => {
-      const promises = roomState.urls.map(async (url) => {
+      const promises = roomUrls.map(async (url) => {
         const metadata = await fetchUrlMetadata(url);
         return { url, platformId: detectPlatform(url), metadata };
       });
@@ -108,7 +126,7 @@ export const useUrlManagement = (options?: UseUrlManagementOptions) => {
     };
     
     fetchMetadata();
-  }, [roomState.urls, fetchUrlMetadata, onUrlAdded, persistToLocalStorage]);
+  }, [roomUrls, fetchUrlMetadata, onUrlAdded, persistToLocalStorage]);
 
   // Validate URL input
   useEffect(() => {
@@ -178,26 +196,18 @@ export const useUrlManagement = (options?: UseUrlManagementOptions) => {
         return;
       }
 
-      const serverData = data.data || {};
-      const playlistItems = serverData.playlistItems as
-        | {
-            url: string;
-            title?: string;
-            description?: string;
-            thumbnail?: string;
-            author?: string;
-          }[]
-        | undefined;
+      const metadataItems = Array.isArray(data.data)
+        ? (data.data as UrlMetadataResponseItem[])
+        : [];
+      const primaryItem = metadataItems[0];
 
       // Determine URLs to add
       let urlsToAdd: string[] = [];
       
-      if (playlistItems && playlistItems.length > 0 && !isMixPlaylist) {
-        // If backend returned a playlist (and it's not a Mix), add all playlist video URLs
-        urlsToAdd = playlistItems.map((item) => item.url);
+      if (metadataItems.length > 0 && !isMixPlaylist) {
+        urlsToAdd = metadataItems.map((item) => item.url);
       } else {
-        // Normal single URL behavior (including Mix playlists which only add the first video)
-        urlsToAdd = [url];
+        urlsToAdd = [primaryItem?.url || url];
       }
 
       // If onUrlAdded callback is provided, use API-based flow
@@ -225,16 +235,14 @@ export const useUrlManagement = (options?: UseUrlManagementOptions) => {
       setSourceUrlInput("");
       setLoadingMetadata((prev) => new Set(prev).add(newIndex));
 
-      if (playlistItems && playlistItems.length > 0 && !isMixPlaylist) {
-        // If backend returned a playlist, replace the single placeholder
-        // with all playlist video URLs as separate entries.
+      if (metadataItems.length > 0 && !isMixPlaylist) {
         setAddedUrls((prev) => {
           const withoutPlaceholder = [...prev];
           if (withoutPlaceholder[newIndex]) {
             withoutPlaceholder.splice(newIndex, 1);
           }
 
-          const playlistEntries: AddedUrl[] = playlistItems.map((item) => ({
+          const playlistEntries: AddedUrl[] = metadataItems.map((item) => ({
             url: item.url,
             platformId: detectPlatform(item.url),
             metadata: {
@@ -254,10 +262,10 @@ export const useUrlManagement = (options?: UseUrlManagementOptions) => {
       } else {
         // Normal single URL behavior
         const metadata: AddedUrl["metadata"] = {
-          title: serverData.title || undefined,
-          description: serverData.description || undefined,
-          thumbnail: serverData.thumbnail || undefined,
-          author: serverData.author || serverData.siteName || undefined,
+          title: primaryItem?.title || undefined,
+          description: primaryItem?.description || undefined,
+          thumbnail: primaryItem?.thumbnail || undefined,
+          author: primaryItem?.author || primaryItem?.siteName || undefined,
         };
 
         setAddedUrls((prev) => {

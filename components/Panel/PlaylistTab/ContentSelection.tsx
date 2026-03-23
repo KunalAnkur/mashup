@@ -15,6 +15,16 @@ import { useTranslations } from "@/i18n/I18nProvider";
 import { AddUrlModal } from "../AddUrlModal";
 import { isMobile } from "react-device-detect";
 
+type UrlMetadataResponseItem = {
+    url: string;
+    title?: string;
+    description?: string;
+    thumbnail?: string;
+    author?: string;
+    siteName?: string;
+    link?: string;
+};
+
 const contentSelectionToolbarGridClass = "grid grid-cols-2 gap-2 sm:grid-cols-3";
 const contentSelectionToolbarButtonClass =
     `flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl ${appWhiteBorderClass} px-2 py-2 text-center transition-all duration-200 hover:border-white/20 hover:bg-white/[0.03] disabled:cursor-not-allowed disabled:opacity-50`;
@@ -256,34 +266,27 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                 return;
             }
 
-            const serverData = data.data || {};
-            const playlistItems = serverData.playlistItems as
-                | {
-                    url: string;
-                    title?: string;
-                    description?: string;
-                    thumbnail?: string;
-                    author?: string;
-                }[]
-                | undefined;
+            const metadataItems = Array.isArray(data.data)
+                ? (data.data as UrlMetadataResponseItem[])
+                : [];
+            const primaryItem = metadataItems[0];
 
             // Determine URLs to add
             let urlsToAdd: string[] = [];
             
-            if (playlistItems && playlistItems.length > 0 && !isMixPlaylist) {
-                // If backend returned a playlist (and it's not a Mix), add all playlist video URLs
-                urlsToAdd = playlistItems.map((item) => item.url);
+            if (metadataItems.length > 0 && !isMixPlaylist) {
+                // If backend returned playlist items, add all of them.
+                urlsToAdd = metadataItems.map((item) => item.url);
             } else {
-                // Normal single URL behavior (including Mix playlists which only add the first video)
-                urlsToAdd = [rawUrl];
+                // For single URLs and Mix playlists, use the normalized backend URL if available.
+                urlsToAdd = [primaryItem?.url || rawUrl];
             }
 
             // Create Playlist items for all URLs
             const playlistEntries: Playlist[] = urlsToAdd.map((url, index) => {
-                // For playlist items, use metadata from playlistItems if available
                 let metadata: UrlMetadata = {};
-                if (playlistItems && playlistItems.length > 0 && !isMixPlaylist && playlistItems[index]) {
-                    const item = playlistItems[index];
+                if (metadataItems.length > 0 && !isMixPlaylist && metadataItems[index]) {
+                    const item = metadataItems[index];
                     metadata = {
                         ...(item.title && { title: item.title }),
                         ...(item.description && { description: item.description }),
@@ -291,13 +294,13 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                         ...(item.author && { author: item.author }),
                     };
                 } else {
-                    // For single URL or Mix, use main metadata
+                    // For single URL or Mix, use the first returned metadata item.
                     metadata = {
-                        ...(serverData.title && { title: serverData.title }),
-                        ...(serverData.description && { description: serverData.description }),
-                        thumbnail: serverData.thumbnail || null,
-                        ...(serverData.author && { author: serverData.author }),
-                        ...(serverData.siteName && !serverData.author && { author: serverData.siteName }),
+                        ...(primaryItem?.title && { title: primaryItem.title }),
+                        ...(primaryItem?.description && { description: primaryItem.description }),
+                        thumbnail: primaryItem?.thumbnail || null,
+                        ...(primaryItem?.author && { author: primaryItem.author }),
+                        ...(primaryItem?.siteName && !primaryItem?.author && { author: primaryItem.siteName }),
                     };
                 }
 

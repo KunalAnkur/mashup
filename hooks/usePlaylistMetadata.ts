@@ -1,12 +1,18 @@
 import { useEffect, useState, useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { setUrlMetadata } from "@/lib/store/slices/roomSlice";
+
+type UrlMetadataResponseItem = {
+    url: string;
+    title?: string;
+    description?: string;
+    thumbnail?: string;
+    author?: string;
+    siteName?: string;
+};
 
 export const usePlaylistMetadata = (urls: string[], isFileStreaming: boolean) => {
-    const dispatch = useDispatch();
     const authState = useSelector((state: RootState) => state.auth);
-    const urlMetadataCache = useSelector((state: RootState) => state.room.urlMetadataCache);
 
     // Track which URLs are currently being fetched
     const [loadingUrls, setLoadingUrls] = useState<Set<string>>(new Set());
@@ -17,9 +23,8 @@ export const usePlaylistMetadata = (urls: string[], isFileStreaming: boolean) =>
     useEffect(() => {
         if (isFileStreaming || urls.length === 0) return;
 
-        // Find URLs that need metadata fetching (not cached, not loading, not failed)
         const urlsToFetch = urls.filter(
-            (url) => !urlMetadataCache[url] && !loadingUrls.has(url) && !failedUrlsRef.current.has(url)
+            (url) => !loadingUrls.has(url) && !failedUrlsRef.current.has(url)
         );
 
         if (urlsToFetch.length === 0) return;
@@ -50,16 +55,10 @@ export const usePlaylistMetadata = (urls: string[], isFileStreaming: boolean) =>
 
                     if (response.ok) {
                         const data = await response.json();
-                        // Cache the metadata in Redux
-                        dispatch(setUrlMetadata({
-                            url,
-                            metadata: {
-                                title: data.data?.title || undefined,
-                                description: data.data?.description || undefined,
-                                thumbnail: data.data?.thumbnail || undefined,
-                                author: data.data?.author || data.data?.siteName || undefined,
-                            },
-                        }));
+                        const metadataItems = Array.isArray(data.data)
+                            ? (data.data as UrlMetadataResponseItem[])
+                            : [];
+                        console.log("[PlaylistMetadata] Metadata fetched for URL:", url, metadataItems[0]);
                         // Remove from failed set if it was there (in case of manual retry)
                         failedUrlsRef.current.delete(url);
                     } else {
@@ -83,10 +82,9 @@ export const usePlaylistMetadata = (urls: string[], isFileStreaming: boolean) =>
         };
 
         fetchMetadata();
-    }, [urls, isFileStreaming, authState.token, urlMetadataCache, loadingUrls, dispatch]);
+    }, [urls, isFileStreaming, authState.token, loadingUrls]);
 
     const isUrlLoading = (url: string): boolean => loadingUrls.has(url);
 
     return { isUrlLoading };
 };
-
