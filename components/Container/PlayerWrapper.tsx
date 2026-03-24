@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import SyncPlayer from "./SyncPlayer";
 import StreamPlayer from "./StreamPlayer";
+import P2PStreamPlayer from "./P2PStreamPlayer";
 import { Playlist } from "@/types/storeTypes";
 import { useEffect, useState, useRef } from "react";
 import StreamPlayerEmptyState from "./StreamPlayerEmptyState";
@@ -72,7 +73,16 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
       />
     );
   }
-
+  // ** We will going to use this below one when we implemented monetisation here
+  // if (currentType === "stream") {
+  //   return (
+  //     <P2PStreamPlayer
+  //       fullscreenTargetRef={fullscreenTargetRef}
+  //       setFocus={() => dispatch(setFocused(true))}
+  //     />
+  //   );
+  // }
+  
   if (!content) return <StreamPlayerEmptyState
     isHost={host}
     roomType={currentType as RoomType}

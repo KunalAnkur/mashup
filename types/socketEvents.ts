@@ -59,4 +59,13 @@ export enum SocketEvent {
   HOST_JOINED = "hostJoined",
   USERS_UPDATED = "usersUpdated",
   USERNAME_UPDATED = "usernameUpdated",
+
+  // P2P WebRTC events
+  P2P_OFFER = "p2pOffer",
+  P2P_ANSWER = "p2pAnswer",
+  P2P_ICE_CANDIDATE = "p2pIceCandidate",
+  P2P_PEER_JOINED = "p2pPeerJoined",
+  P2P_PEER_LEFT = "p2pPeerLeft",
+  P2P_STREAM_STARTED = "p2pStreamStarted",
+  P2P_ROOM_CLOSED = "p2pRoomClosed",
 }
