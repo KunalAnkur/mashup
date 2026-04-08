@@ -348,6 +348,18 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
         stopStream(hasNoActiveItem ? "playlist-empty" : "screen-share-ended");
     }, [isHost, isInitialized, activeItem, isScreenSharing, stopStream]);
 
+    //** Pause video if it is playing when subscription modal comes up */
+    useEffect(() => {
+        if (roomState.settings.upgradeSubscriptionModal && isHost) {
+            // Pause the video when upgrade modal opens (only for host)
+            const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
+            if (video && !video.paused) {
+                video.pause();
+                onPause();
+            }
+        }
+    }, [roomState.settings.upgradeSubscriptionModal, isHost, onPause]);
+
     // ============================================================================
     // Render
     // ============================================================================

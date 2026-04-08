@@ -10,6 +10,7 @@ const initialState: RoomState = {
   refer: false,
   watchTime: 0,
   settings: {
+    upgradeSubscriptionModal: false,
     panelCollapsed: false,
     bottomSheet: false,
     /** 
@@ -45,7 +46,7 @@ const roomSlice = createSlice({
         : data.playlist;
       // Backend now uses type and source directly
       state.refer = false;
-      state.watchTime = 0;
+      state.watchTime = action.payload.data.total_playtime_seconds;
       state.hostPlayback.playing = false;
       state.settings.bottomSheet = false;
       state.loading = false;
@@ -124,6 +125,12 @@ const roomSlice = createSlice({
     setHostPlaybackPlaying: (state, action: PayloadAction<boolean>) => {
       state.hostPlayback.playing = action.payload;
     },
+    setUpgradeSubscriptionModal: (state, action: PayloadAction<{ open: boolean; message?: string }>) => {
+      state.settings.upgradeSubscriptionModal = action.payload.open;
+      if (action.payload.message) {
+        state.settings.upgradeSubscriptionMessage = action.payload.message;
+      }
+    },
   },
   // extraReducers: (builder) => {
   //   builder.addMatcher(
@@ -151,5 +158,6 @@ export const {
   updateWatchTime,
   cleanScreenSourcePlaylist,
   setHostPlaybackPlaying,
+  setUpgradeSubscriptionModal,
 } = roomSlice.actions;
 export default roomSlice;

@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import type { RootState } from "@/lib/store";
 import { logout } from "@/lib/store/slices/authSlice";
 import { setRoom, setLoading as setRoomLoading } from "@/lib/store/slices/roomSlice";
+import { setSubscription, clearSubscription } from "@/lib/store/slices/subscriptionSlice";
 import { useVerifyTokenMutation } from "@/lib/store/api/authApi";
 import { useCreateRoomMutation, useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
+import { useLazyGetMySubscriptionQuery } from "@/lib/store/api/userApi";
 import RoomPreparingSplash from "@/components/Container/RoomPreparingSplash";
 import { trackRoomCreated, trackRoomJoined } from "@/lib/analytics";
 
@@ -15,6 +17,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [verifyToken] = useVerifyTokenMutation();
   const [createRoomApi] = useCreateRoomMutation();
   const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
+  const [getMySubscription] = useLazyGetMySubscriptionQuery();
   const roomState = useSelector((state: RootState) => state.room);
   const authState = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
@@ -28,10 +31,23 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const response = await verifyToken().unwrap();
       if (!response.success) {
         dispatch(logout());
+        dispatch(clearSubscription());
       } else {
+        dispatch(setSubscription(response.data.subscription))
+        // Fetch subscription info after successful token verification
+        // try {
+        //   const subscriptionResponse = await getMySubscription().unwrap();
+        //   if (subscriptionResponse.success && subscriptionResponse.data) {
+        //     dispatch(setSubscription(subscriptionResponse.data));
+        //   }
+        // } catch (error) {
+        //   // Subscription fetch failed, but auth is still valid
+        //   console.error("Failed to fetch subscription:", error);
+        // }
       }
     } catch {
       dispatch(logout());
+      dispatch(clearSubscription());
     }
   };
 

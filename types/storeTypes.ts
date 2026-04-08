@@ -90,10 +90,12 @@ export type Playlist = {
 }
 
 export type RoomSetting = {
-  panelCollapsed: boolean
-  bottomSheet: boolean
-  playerActive: boolean
-}
+  upgradeSubscriptionModal: boolean;
+  upgradeSubscriptionMessage?: string;
+  panelCollapsed: boolean;
+  bottomSheet: boolean;
+  playerActive: boolean;
+};
 
 /**
  * Authentication state interface
