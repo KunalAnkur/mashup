@@ -72,6 +72,12 @@ export const userApi = createApi({
         method: "GET",
       }),
     }),
+    cancelMySubscription: builder.mutation<GetSubscriptionResponse, void>({
+      query: () => ({
+        url: "/subscription/cancel",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -80,5 +86,5 @@ export const {
   useGetUserByIdQuery,
   useGetMySubscriptionQuery,
   useLazyGetMySubscriptionQuery,
+  useCancelMySubscriptionMutation,
 } = userApi;
-

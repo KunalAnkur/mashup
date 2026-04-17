@@ -144,6 +144,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       // const authRoutes = ["/login", "/signup"];
       const authRoutes = ["/login"];
       const isAuthRoute = authRoutes.includes(pathname);
+      const requiresAuthentication =
+        pathname === "/pricing" || pathname === "/subscription";
       const redirectParam = searchParams?.get("redirect");
       const safeRedirect =
         redirectParam && redirectParam.startsWith("/") ? redirectParam : null;
@@ -166,6 +168,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         }
         // Otherwise redirect to home
         router.replace("/");
+        return;
+      }
+
+      if (requiresAuthentication && !authState.isAuthenticated) {
+        const queryString =
+          typeof window !== "undefined" ? window.location.search : "";
+        const redirectPath = `${pathname || "/"}` + queryString;
+        router.replace(`/login?redirect=${encodeURIComponent(redirectPath)}`);
         return;
       }
 

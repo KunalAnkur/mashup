@@ -12,7 +12,7 @@ export default function CancelPage() {
           Your payment was not completed. You can return and try upgrading again anytime.
         </p>
         <div className="mt-6 flex gap-3 justify-center">
-          <Link href="/payment" className={`${appEntryActionButtonBaseClass} ${appEntrySecondaryButtonClass}`}>
+          <Link href="/pricing" className={`${appEntryActionButtonBaseClass} ${appEntrySecondaryButtonClass}`}>
             Back to Pricing
           </Link>
         </div>
