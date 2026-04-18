@@ -83,6 +83,27 @@ const formatDate = (value?: string | Date | null) => {
   }).format(date);
 };
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error !== "object" || error === null) {
+    return fallback;
+  }
+
+  const maybeError = error as {
+    data?: { message?: unknown };
+    message?: unknown;
+  };
+
+  if (typeof maybeError.data?.message === "string") {
+    return maybeError.data.message;
+  }
+
+  if (typeof maybeError.message === "string") {
+    return maybeError.message;
+  }
+
+  return fallback;
+};
+
 type PlanCardProps = {
   badge: string;
   name: string;
@@ -93,6 +114,26 @@ type PlanCardProps = {
   accentClassName: string;
   children?: React.ReactNode;
 };
+
+const subscriptionGridClassName = "grid gap-4 md:grid-cols-2";
+const planCardClassName =
+  "relative overflow-hidden rounded-[2rem] border border-white/10 px-5 py-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:px-6 sm:py-6";
+const planCardBadgeClassName =
+  "inline-flex items-center rounded-full bg-white/[0.05] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/68";
+const planCardNameClassName =
+  "mt-4 font-parkinsans text-[2rem] font-semibold leading-none tracking-[-0.05em] text-white md:text-[2.35rem]";
+const planCardIconClassName =
+  "flex h-10 w-10 items-center justify-center rounded-[1rem] bg-white/[0.05] text-white/90";
+const planCardPriceRowClassName = "mt-5 flex items-end gap-2";
+const planCardPriceClassName =
+  "font-parkinsans text-[2.35rem] font-semibold text-white md:text-[2.7rem]";
+const planCardCadenceClassName = "pb-1 text-[13px] capitalize text-white/42";
+const planCardPerksClassName = "mt-5 space-y-2.5";
+const planCardPerkItemClassName =
+  "flex items-center gap-3 text-[13px] leading-5 text-white/74 md:text-sm md:leading-6";
+const planCardPerkIconClassName =
+  "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/80";
+const planCardActionsClassName = "mt-6";
 
 function PlanCard({
   badge,
@@ -105,48 +146,46 @@ function PlanCard({
   children,
 }: PlanCardProps) {
   return (
-    <article
-      className={`relative overflow-hidden rounded-[2rem] border border-white/10 px-6 py-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)] md:px-7 md:py-7 ${accentClassName}`}
-    >
+    <article className={`${planCardClassName} ${accentClassName}`}>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" />
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <span className="inline-flex items-center rounded-full bg-white/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/68">
+          <span className={planCardBadgeClassName}>
             {badge}
           </span>
-          <h2 className="mt-5 font-parkinsans text-[2.35rem] font-semibold leading-none tracking-[-0.05em] text-white md:text-[2.75rem]">
+          <h2 className={planCardNameClassName}>
             {name}
           </h2>
         </div>
 
-        <span className="flex h-11 w-11 items-center justify-center rounded-[1.1rem] bg-white/[0.05] text-white/90">
+        <span className={planCardIconClassName}>
           {icon}
         </span>
       </div>
 
-      <div className="mt-6 flex items-end gap-2">
-        <span className="font-parkinsans text-4xl font-semibold text-white md:text-5xl">
+      <div className={planCardPriceRowClassName}>
+        <span className={planCardPriceClassName}>
           {price}
         </span>
-        <span className="pb-1.5 text-sm capitalize text-white/42">{cadence}</span>
+        <span className={planCardCadenceClassName}>{cadence}</span>
       </div>
 
-      <ul className="mt-6 space-y-3">
+      <ul className={planCardPerksClassName}>
         {perks.map((perk) => (
           <li
             key={perk}
-            className="flex items-center gap-3 text-sm leading-6 text-white/74"
+            className={planCardPerkItemClassName}
           >
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/80">
-              <LuCheck className="h-3.5 w-3.5" />
+            <span className={planCardPerkIconClassName}>
+              <LuCheck className="h-3 w-3" />
             </span>
             <span>{perk}</span>
           </li>
         ))}
       </ul>
 
-      {children ? <div className="mt-8">{children}</div> : null}
+      {children ? <div className={planCardActionsClassName}>{children}</div> : null}
     </article>
   );
 }
@@ -207,11 +246,11 @@ export default function SubscriptionPage() {
       showSuccess(
         "Your plan will stop renewing at the end of the current billing period.",
       );
-    } catch (cancelError: any) {
-      const message =
-        cancelError?.data?.message ||
-        cancelError?.message ||
-        "Unable to cancel your subscription right now.";
+    } catch (cancelError: unknown) {
+      const message = getErrorMessage(
+        cancelError,
+        "Unable to cancel your subscription right now.",
+      );
       showError("Subscription cancellation failed", message);
     }
   };
@@ -226,9 +265,9 @@ export default function SubscriptionPage() {
         >
           <div className={appEntryPageInsetClass}>
             <div className={appEntryPageContentWrapClass}>
-              <section className="mx-auto max-w-5xl space-y-6 pb-8 pt-8 md:space-y-8 md:pb-12 md:pt-12">
+              <section className="mx-auto max-w-5xl space-y-5 pb-6 pt-5 md:space-y-6 md:pb-8 md:pt-8">
                 <section className="mx-auto max-w-xl text-center">
-                  <h1 className="font-parkinsans text-3xl font-semibold tracking-[-0.04em] text-white md:text-[3.1rem]">
+                  <h1 className="font-parkinsans text-[2.5rem] font-semibold tracking-[-0.04em] text-white md:text-[2.85rem]">
                     Subscription
                   </h1>
                 </section>
@@ -245,7 +284,7 @@ export default function SubscriptionPage() {
                       accentClassName="bg-[linear-gradient(180deg,rgba(244,63,94,0.07),rgba(255,255,255,0.03))]"
                     >
                       {isCancellationScheduled && cancellationDate ? (
-                        <p className="mb-4 text-sm text-white/56">
+                        <p className="mb-3 text-[13px] text-white/56">
                           Cancels on {cancellationDate}
                         </p>
                       ) : null}
@@ -254,7 +293,7 @@ export default function SubscriptionPage() {
                         <button
                           type="button"
                           onClick={() => setShowCancelConfirm(true)}
-                          className={`${appEntryActionButtonBaseClass} h-12 w-full rounded-2xl bg-red-500/12 px-5 text-sm font-semibold text-red-200 transition-colors duration-200 hover:bg-red-500/18`}
+                          className={`${appEntryActionButtonBaseClass} h-11 w-full rounded-[1.15rem] bg-red-500/12 px-5 text-sm font-semibold text-red-200 transition-colors duration-200 hover:bg-red-500/18`}
                         >
                           Cancel plan
                         </button>
@@ -262,7 +301,7 @@ export default function SubscriptionPage() {
                     </PlanCard>
                   </section>
                 ) : (
-                  <section className="grid gap-5 lg:grid-cols-2">
+                  <section className={subscriptionGridClassName}>
                     <PlanCard
                       badge="Current plan"
                       name={currentPlanName}
@@ -283,7 +322,7 @@ export default function SubscriptionPage() {
                       accentClassName="bg-[linear-gradient(180deg,rgba(244,63,94,0.07),rgba(255,255,255,0.03))]"
                     >
                       <StartPremiumCheckoutButton
-                        className="w-full"
+                        className="!h-11 w-full !rounded-[1.15rem] text-sm"
                         label="Upgrade to Premium"
                       />
                     </PlanCard>
