@@ -6,10 +6,11 @@ import SyncPlayer from "./SyncPlayer";
 import StreamPlayer from "./StreamPlayer";
 import P2PStreamPlayer from "./P2PStreamPlayer";
 import { Playlist } from "@/types/storeTypes";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import StreamPlayerEmptyState from "./StreamPlayerEmptyState";
-import { RoomType } from "@/context/RoomContext";
+import { RoomType, useRoomContext } from "@/context/RoomContext";
 import { setFocused } from "@/lib/store/slices/roomSlice";
+import { SubscriptionTier } from "@/types/subscriptionTypes";
 
 type PlayerWrapperProps = {
   fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -18,6 +19,7 @@ type PlayerWrapperProps = {
 const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   const roomState = useSelector((state: RootState) => state.room);
   const dispatch = useDispatch();
+  const { streamDeliveryMode } = useRoomContext();
   const [content, setContent] = useState<Playlist | null>(null);
   const [lastKnownType, setLastKnownType] = useState<RoomType>("stream");
   const subscriptionState = useSelector(
@@ -36,15 +38,11 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
       setLastKnownType(content.type);
     }
   }, [content?.type]);
-  const [subscriptionType, setSubscriptionType] = useState<"free" | "premium">(
-    "free",
-  );
-  useEffect(() => {
-    if (subscriptionState.subscription) {
-      setSubscriptionType(subscriptionState.subscription.tier);
-    }
-  }, [subscriptionState.subscription]);
   const currentType = content?.type ?? lastKnownType; // "stream" | "sync"
+  const isPremiumUser =
+    false;
+  const effectiveStreamDeliveryMode =
+    streamDeliveryMode || (roomState.host && isPremiumUser ? "sfu" : "p2p");
   // Generate key for StreamPlayer based on host status and onlyAudio transitions
   // const getStreamPlayerKey = (): string => {
   //   // For non-host: check onlyAudio transitions
@@ -75,15 +73,15 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   // }, [content?.onlyAudio]);
   // TODO: Need to fix this later. related to replace producer tracks from audio to audio and screen to file.
   if (currentType === "stream") {
-    subscriptionType === "premium" ? (
+    return effectiveStreamDeliveryMode === "sfu" ? (
       <StreamPlayer
-        key={currentType}
+        key="stream-premium"
         fullscreenTargetRef={fullscreenTargetRef}
         setFocus={() => dispatch(setFocused(true))}
       />
     ) : (
       <P2PStreamPlayer
-        key={currentType}
+        key="stream-free"
         fullscreenTargetRef={fullscreenTargetRef}
         setFocus={() => dispatch(setFocused(true))}
       />
