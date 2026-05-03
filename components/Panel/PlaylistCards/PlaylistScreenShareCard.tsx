@@ -1,7 +1,17 @@
 import React from "react";
-import { LuX } from "react-icons/lu";
-import { FaBroadcastTower } from "react-icons/fa";
+import { LuRadioTower, LuX } from "react-icons/lu";
 import { useTranslations } from "@/i18n/I18nProvider";
+import {
+    playlistCardBaseClass,
+    playlistCardIdleSurfaceClass,
+    playlistCardIndexPlayingClass,
+    playlistCardPlayingBadgeClass,
+    playlistCardPlayingIndicatorClass,
+    playlistCardPlayingOverlayClass,
+    playlistCardPlayingSurfaceClass,
+    playlistCardThumbnailBaseClass,
+    playlistCardThumbnailRingClass,
+} from "./playlistCardStyles";
 
 interface PlaylistScreenShareCardProps {
     platformName: string;
@@ -12,6 +22,11 @@ interface PlaylistScreenShareCardProps {
     isHost: boolean;
 }
 
+const playlistScreenShareStopButtonClass =
+    "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 group-hover:scale-110";
+const playlistScreenShareIdleBadgeClass =
+    "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center";
+
 export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = ({
     platformName,
     platformLogo,
@@ -20,21 +35,22 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
     onStop,
     isHost,
 }) => {
+    const t = useTranslations("panel.playlist");
     return (
         <div
             className={`
-                w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0 relative group
+                ${playlistCardBaseClass} relative
                 ${isPlaying
-                    ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
-                    : 'bg-white/5 border border-transparent'
+                    ? playlistCardPlayingSurfaceClass
+                    : playlistCardIdleSurfaceClass
                 }
             `}
         >
             {/* Platform Logo */}
             <div
                 className={`
-                    relative w-20 h-13 rounded-lg overflow-hidden shrink-0 flex items-center justify-center
-                    ${isPlaying ? 'ring-2 ring-pink-500/50' : ''}
+                    ${playlistCardThumbnailBaseClass} flex items-center justify-center
+                    ${isPlaying ? playlistCardThumbnailRingClass : ''}
                 `}
                 style={platformBgStyle}
             >
@@ -44,10 +60,10 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
                 
                 {/* Streaming indicator overlay */}
                 {isPlaying && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className={playlistCardPlayingOverlayClass}>
                         <div className="flex flex-col items-center gap-1">
-                            <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
-                                <FaBroadcastTower className="text-white" size={10} />
+                            <div className={playlistCardPlayingIndicatorClass}>
+                                <LuRadioTower className="text-white" size={10} />
                             </div>
                             <div className="w-1 h-1 rounded-full bg-pink-500 animate-pulse"></div>
                         </div>
@@ -64,7 +80,7 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
                         {platformName}
                     </p>
                     {isPlaying && (
-                        <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                        <span className={playlistCardPlayingBadgeClass}>
                             {t("streaming")}
                         </span>
                     )}
@@ -78,23 +94,22 @@ export const PlaylistScreenShareCard: React.FC<PlaylistScreenShareCardProps> = (
             {isHost && onStop ? (
                 <button
                     onClick={onStop}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 group-hover:scale-110"
+                    className={playlistScreenShareStopButtonClass}
                     title={t("stopScreenSharing")}
                 >
                     <LuX size={12} />
                 </button>
             ) : (
                 <div className={`
-                    w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+                    ${playlistScreenShareIdleBadgeClass}
                     ${isPlaying
-                        ? 'bg-pink-500/20 text-pink-400'
+                        ? playlistCardIndexPlayingClass
                         : 'bg-white/5 text-gray-500'
                     }
                 `}>
-                    <FaBroadcastTower size={12} />
+                    <LuRadioTower size={12} />
                 </div>
             )}
         </div>
     );
 };
-

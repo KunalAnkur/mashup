@@ -5,11 +5,12 @@ import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, store } from "@/lib/store";
-import { setHostPlaybackPlaying, updateRoomInfo, updateWatchTime } from "@/lib/store/slices/roomSlice";
+import { setHostPlaybackPlaying, updateRoomInfo, updateWatchTime, setUpgradeSubscriptionModal } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
 import type { PinnedChatMessage } from "@/types/chatTypes";
 import { showError } from "@/utils/toast";
 import { trackRoomJoined, trackRoomLeft } from "@/lib/analytics";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 export type RoomType = "stream" | "sync";
 export interface UserInfo {
@@ -33,6 +34,8 @@ export interface RoomInformation {
 }
 interface JoinResponse {
     success: boolean;
+    type?: string;
+    message?: string;
     roomId: string;
     roomType: RoomType;
     chatHistory?: any[];
@@ -43,6 +46,7 @@ interface JoinResponse {
     room: RoomInformation;
     playlist?: Playlist[];
     users?: UserInfo[];
+    hostLeft?: boolean;
     existingProducers?: Record<string, any[]>;
     hostPlayback?: {
         playing: boolean;
@@ -91,6 +95,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const [isJoined, setIsJoined] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const tToast = useTranslations("toast");
     const [roomType, setRoomType] = useState<RoomType | null>(null);
     const [hostLeft, setHostLeft] = useState(false);
     const [roomClosed, setRoomClosed] = useState(false);
@@ -162,7 +167,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setJoinResponse(response);
                 dispatch(setHostPlaybackPlaying(response.hostPlayback?.playing === true));
                 setParticipants(response.users || []);
-                setHostLeft(false);
+                setHostLeft(response.hostLeft === true);
                 setRoomClosed(false);
                 
                 // Track room joined
@@ -173,16 +178,24 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setJoinResponse(null);
                 joinAttemptedRef.current = false;
                 dispatch(setHostPlaybackPlaying(false));
-                const errorMessage = response?.error || "Failed to join room";
-                showError("Failed to join room", errorMessage);
+                const errorMessage = response?.error || tToast("checkConnection");
+                showError(tToast("failedToJoinRoom"), errorMessage);
+                if (response?.type === 'NOT_ALLOWED') {
+                    // Open upgrade subscription modal with the message from response
+                    console.log("Room joining not allowed", response);
+                    dispatch(setUpgradeSubscriptionModal({
+                        open: true,
+                        message: response?.message
+                    }));
+                }
             }
         } catch (error: any) {
             console.error("Error joining room:", error);
             setIsJoined(false);
             joinAttemptedRef.current = false;
             dispatch(setHostPlaybackPlaying(false));
-            const errorMessage = error?.message || "Unable to connect to room. Please check your connection and try again.";
-            showError("Failed to join room", errorMessage);
+            const errorMessage = error?.message || tToast("checkConnection");
+            showError(tToast("failedToJoinRoom"), errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -368,6 +381,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             const state = store.getState() as RootState;
             const playlist = state.room.playlist || [];
             if (!playlist.length) return;
+            if (selectedIndex < 0 || selectedIndex >= playlist.length) return;
+
+            const currentSelectedIndex = playlist.findIndex((item) => item.selected);
+            if (currentSelectedIndex === selectedIndex) return;
 
             const updated = playlist.map((item, idx) => ({
                 ...item,
@@ -391,6 +408,27 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             }
         };
 
+        const handleOnNotify = (data: {success: boolean, type: string, message: string}) => {
+            if (!data.success) {
+                switch (data.type) {
+                    case "NOT_ALLOWED":
+                        dispatch(setUpgradeSubscriptionModal({
+                            open: true,
+                            message: data?.message
+                        }));
+                        return
+                    case "WATCH_TIME_LIMIT_EXCEEDED":
+                        dispatch(setUpgradeSubscriptionModal({
+                            open: true,
+                            message: data?.message
+                        }));
+                        return;
+                
+                    default:
+                        break;
+                }
+            }
+        }
         socket.on(SocketEvent.HOST_LEFT, handleHostLeft);
         socket.on(SocketEvent.LEAVE_ROOM, handleRoomClosed);
         socket.on(SocketEvent.HOST_JOINED, handleHostJoined);
@@ -398,6 +436,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         socket.on(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
         socket.on(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
         socket.on(SocketEvent.HOST_PLAYBACK_STATE, handleHostPlaybackState);
+        socket.on(SocketEvent.NOTIFY, handleOnNotify);
         return () => {
             socket.off(SocketEvent.HOST_LEFT, handleHostLeft);
             socket.off(SocketEvent.LEAVE_ROOM, handleRoomClosed);
@@ -406,15 +445,22 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             socket.off(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
             socket.off(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
             socket.off(SocketEvent.HOST_PLAYBACK_STATE, handleHostPlaybackState);
+            socket.off(SocketEvent.NOTIFY, handleOnNotify);
         };
     }, [socket, roomId, isHost, roomType, dispatch]);
     
     useEffect(() => {
         if (!socket || !roomId) return;
 
-        const handleUsersUpdated = (data: { roomId: string; users: UserInfo[] }) => {
+        const handleUsersUpdated = (data: { roomId: string; users: UserInfo[]; hostLeft?: boolean }) => {
             if (data.roomId === roomId && Array.isArray(data.users)) {
                 setParticipants(data.users);
+                // !Commenting this now.. Because it does not look like it is usefull
+                // if (typeof data.hostLeft === "boolean") {
+                //     setHostLeft(data.hostLeft);
+                // } else {
+                //     setHostLeft(!data.users.some((user) => user.host));
+                // }
             }
         };
 

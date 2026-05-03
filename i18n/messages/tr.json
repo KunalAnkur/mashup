@@ -48,7 +48,8 @@
     "creatingAccount": "Hesap oluşturuluyor...",
     "continueAsGuest": "Misafir Olarak Devam Et",
     "or": "veya",
-    "linkCopied": "Bağlantı kopyalandı!"
+    "linkCopied": "Bağlantı kopyalandı!",
+    "copyLink": "Bağlantıyı Kopyala"
   },
   "panel": {
     "playlist": {
@@ -59,6 +60,10 @@
       "playing": "Oynatılıyor",
       "streaming": "Yayınlanıyor",
       "screenSharingActive": "Ekran paylaşımı aktif",
+      "screenShareTab": "Sekme",
+      "screenShareWindow": "Pencere",
+      "screenShareScreen": "Ekran",
+      "screenShareLive": "Canlı",
       "stopScreenSharing": "Ekran paylaşımını durdur",
       "localFile": "Yerel dosya",
       "noVideos": "Video yok",
@@ -110,13 +115,14 @@
       "profileSettings": "Profil Ayarları",
       "name": "Ad",
       "username": "Kullanıcı Adı",
-      "emailAddress": "E-posta Adresi",
+      "emailAddress": "E-posta",
       "emailCannotBeChanged": "E-posta değiştirilemez",
       "notSet": "Ayarlanmamış",
       "enterName": "Adınızı girin",
       "enterUsername": "Kullanıcı adınızı girin (sadece harf, rakam ve alt çizgi)",
       "editProfile": "Profili Düzenle",
       "roomLink": "Oda Bağlantısı",
+      "inviteFriends": "Arkadaşlarını davet et",
       "noRoomLink": "Oda bağlantısı mevcut değil",
       "linkCopied": "Bağlantı kopyalandı!",
       "roomNameUpdated": "Oda adı başarıyla güncellendi",
@@ -131,6 +137,7 @@
       "usernameRules": "Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir",
       "profileUpdated": "Profil başarıyla güncellendi",
       "updateFailed": "Güncelleme başarısız",
+      "updateFailedDescription": "Profilini güncelleyemedik. Lütfen tekrar dene.",
       "saveChanges": "Değişiklikleri Kaydet"
     },
     "leaveParty": "Partiden Ayrıl?",
@@ -238,9 +245,18 @@
     "tryAgain": "Lütfen tekrar deneyin.",
     "welcomeGuest": "Hoş geldiniz! Artık misafir olarak giriş yaptınız",
     "guestSignupFailed": "Misafir kaydı başarısız",
+    "unableToContinueAsGuest": "Misafir olarak devam edilemedi. Lütfen tekrar dene.",
+    "signupFailed": "Kayıt başarısız",
+    "checkSignupDetails": "Lütfen bilgilerini kontrol edip tekrar dene.",
     "roomNameUpdated": "Oda adı başarıyla güncellendi",
     "profileUpdated": "Profil başarıyla güncellendi",
     "updateFailed": "Güncelleme başarısız",
+    "userNotFound": "Kullanıcı bulunamadı. Lütfen tekrar giriş yapın.",
+    "validationError": "Doğrulama hatası",
+    "fillFields": "Lütfen ad ve kullanıcı adını doldurun.",
+    "invalidUsername": "Geçersiz kullanıcı adı",
+    "enterValidUsername": "Lütfen geçerli bir kullanıcı adı girin.",
+    "usernameTaken": "Bu kullanıcı adı zaten alınmış. Lütfen farklı bir tane seçin.",
     "invalidInput": "Geçersiz Giriş",
     "fillFieldsCorrectly": "Lütfen tüm alanları doğru şekilde doldurun.",
     "feedbackSent": "Geri Bildirim Gönderildi! 🎉\nBüyümemize yardımcı olduğunuz için teşekkürler!",
@@ -268,20 +284,45 @@
     "authenticationFailed": "Kimlik doğrulama başarısız",
     "failedToSelectFiles": "Dosya seçilemedi"
   },
+  "auth": {
+    "login": {
+      "welcomeBack": "Tekrar hoş geldin!",
+      "chooseHowToContinue": "Nasıl devam etmek istediğini seç",
+      "agreementPrefix": "Devam ederek Movmash'in",
+      "termsOfService": "Hizmet Şartları",
+      "and": "ve",
+      "privacyPolicy": "Gizlilik Politikası",
+      "agreementSuffix": " kabul etmiş olursun."
+    },
+    "signup": {
+      "username": "Kullanıcı adı",
+      "enterUsername": "Kullanıcı adını gir",
+      "email": "E-posta",
+      "enterEmailAddress": "E-posta adresini gir",
+      "password": "Şifre",
+      "enterPassword": "Şifreni gir",
+      "signingUp": "Hesap oluşturuluyor...",
+      "signup": "Kayıt Ol",
+      "alreadyHaveAccount": "Zaten hesabın var mı?",
+      "loginCta": "Giriş Yap"
+    }
+  },
   "notFound": {
-    "title": "Hay aksi! Bu Sahne Eksik",
-    "description1": "Görünüşe göre bu sayfa bir kahve molasına çıktı! ☕",
-    "description2": "Endişelenmeyin, en iyi filmlerin bile silinmiş sahneleri var. Sizi ana gösteriye geri götürelim!",
+    "title": "Sayfa Bulunamadı",
+    "description1": "Bu sayfa şu anda kullanılamıyor.",
+    "description2": "Bağlantı bozulmuş olabilir veya sayfa taşınmış olabilir.",
     "goHome": "Ana Sayfaya Git",
     "goBack": "Geri Git",
-    "funFact": "İlginç Bilgi:",
-    "funFactText": "İlk 404 hatası 1992'de ortaya çıktı. İnternet tarihinin bir parçasını yaşıyorsunuz! 🚀"
+    "funFact": "Bilgi:",
+    "funFactText": "HTTP 404, sunucunun istenen sayfayı bulamadığı anlamına gelir."
   },
   "feedback": {
     "title": "Geri Bildirim",
     "helpUsImprove": "Gelişmemize yardımcı olun",
     "topic": "Konu",
     "descriptionPlaceholder": "Bize düşüncelerinizi söyleyin...",
+    "topicMinLength": "Konu için en az 3 karakter girin.",
+    "descriptionMinLength": "Açıklama için en az 10 karakter girin.",
     "sendFeedback": "Geri Bildirim Gönder",
     "category": {
       "bug": "Hata",

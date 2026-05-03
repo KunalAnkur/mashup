@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState, store } from "@/lib/store";
 import { Player } from "@/components/VideoPlayer";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
@@ -12,12 +12,14 @@ import { useStreamSource } from "@/hooks/useStreamSource";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
 import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
+import { toggleBottomSheet } from "@/lib/store/slices/roomSlice";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
+    setFocus?: () => void;
 };
 
-const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
+const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
     const authState = useSelector((state: RootState) => state.auth);
     const playerRef = useRef<ReactPlayer>(null);
@@ -32,9 +34,10 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
     const videoStartedTrackedRef = useRef(false); // Track if video_started was already tracked
     const syncStartedTrackedRef = useRef(false); // Track if sync_started was already tracked
     const pendingInitializationRef = useRef(false);
+    const autoStoppedForMissingSourceRef = useRef(false);
     
     const { isJoined, roomType, isHost, hostLeft, roomId, captureWatchTime } = useRoomContext();
-    
+    const dispatch = useDispatch()
     // ============================================================================
     // Layer 1: Source Layer
     // ============================================================================
@@ -121,6 +124,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         onSeekEnd,
         onPlay: streamOnPlay,
         onPause,
+        stopStream,
     } = useStream({
         roomId: roomState.roomId,
         getStream, // Source-agnostic! useStream doesn't care where this comes from
@@ -136,16 +140,6 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         // onStreamHasVideo: handleStreamHasVideo,
     });
 
-    
-    // ============================================================================
-    // Initialization Effects
-    // ============================================================================
-
-    useEffect(() => {
-        if (isHost) return;
-        if (!isJoined) return;
-        initializeFromJoinResponse();
-    }, [isHost, isJoined, initializeFromJoinResponse]);
     
     // ============================================================================
     // Player Event Handlers
@@ -277,23 +271,6 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         }
     }, [isHost, isJoined, handleVideoReady]);
     
-    // Handle pending initialization when isJoined becomes true
-    useEffect(() => {
-        if (!isHost || !isJoined || !pendingInitializationRef.current) return;
-        
-        console.log("[StreamPlayer] isJoined is now true, retrying pending initialization");
-        // Trigger initialization by calling handleVideoReady logic
-        // We'll manually trigger the video ready handler
-        const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
-        if (video) {
-            // Call the handler again now that we're joined
-            handleVideoReady();
-        } else {
-            // If video isn't ready yet, it will be called when video becomes ready
-            console.log("[StreamPlayer] Video element not ready yet, will initialize when ready");
-        }
-    }, [isHost, isJoined, handleVideoReady]);
-    
     const handleVideoEnded = useCallback(() => {
     
     }, []);
@@ -353,6 +330,36 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
         }
     }, [isHost, isInitialized, hostLeft]);
 
+    useEffect(() => {
+        if (!isHost || !isInitialized) return;
+
+        const hasNoActiveItem = !activeItem;
+        const screenShareEnded = activeItem?.source === "screen" && !isScreenSharing;
+        const shouldStop = hasNoActiveItem || screenShareEnded;
+
+        if (!shouldStop) {
+            autoStoppedForMissingSourceRef.current = false;
+            return;
+        }
+
+        if (autoStoppedForMissingSourceRef.current) return;
+        autoStoppedForMissingSourceRef.current = true;
+
+        stopStream(hasNoActiveItem ? "playlist-empty" : "screen-share-ended");
+    }, [isHost, isInitialized, activeItem, isScreenSharing, stopStream]);
+
+    //** Pause video if it is playing when subscription modal comes up */
+    useEffect(() => {
+        if (roomState.settings.upgradeSubscriptionModal && isHost) {
+            // Pause the video when upgrade modal opens (only for host)
+            const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
+            if (video && !video.paused) {
+                video.pause();
+                onPause();
+            }
+        }
+    }, [roomState.settings.upgradeSubscriptionModal, isHost, onPause]);
+
     // ============================================================================
     // Render
     // ============================================================================
@@ -371,6 +378,7 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                 hostLeft={hostLeft}
                 remoteStream={remoteStream}
                 isInitialized={isInitialized}
+                playlist={roomState.playlist}
             />
         );
     }
@@ -442,22 +450,18 @@ const StreamPlayer = ({ fullscreenTargetRef }: Props) => {
                     hostLeft: hostLeft,
                     paused: isPaused
                 }).muted}
+                hasUserInteracted={roomState.focused}
                 onPlay={onPlay}
                 onPause={onPause}
                 hasVideoTrack={!activeItem?.onlyAudio}
+                onMute={setFocus}
+                onOpenStore={() => dispatch(toggleBottomSheet())}
                 disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
                 hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
                 autoResumeOnFullscreenExit={!isHost}
             >
                 <PlayerOverlay />
             </Player>
-
-            {/* Pause frame overlay for consumers */}
-            {!isHost && pauseFrameUrl && (
-                <div className="absolute inset-0 z-0 pointer-events-none">
-                    <img src={pauseFrameUrl} alt="Paused" className="w-full h-full object-contain bg-black" />
-                </div>
-            )}
         </div>
     );
 };

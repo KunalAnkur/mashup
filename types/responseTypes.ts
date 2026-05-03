@@ -9,6 +9,8 @@ export type UserLoginResp = {
       profile?: string;
       username?: string;
       session_id?: string;
+      is_email_verified: boolean;
+      guest_account: boolean
     };
     token: string;
   };
@@ -28,6 +30,7 @@ export interface RoomCreateResponse {
     playlist: Playlist[];
     room_id: string;
     is_active: boolean;
+    total_playtime_seconds: number;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;

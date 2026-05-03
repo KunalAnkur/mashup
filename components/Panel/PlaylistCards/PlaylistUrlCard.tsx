@@ -3,6 +3,23 @@ import { LuPlay, LuFilm } from "react-icons/lu";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
 import { getPlatformById, getUrlDisplayName } from "@/types/ModalTypes/urlUtils";
 import { useTranslations } from "@/i18n/I18nProvider";
+import {
+    appPulseSurfaceClass,
+} from "@/components/UI/classTokens";
+import {
+    playlistCardBaseClass,
+    playlistCardIdleSurfaceClass,
+    playlistCardIdleSurfaceHoverClass,
+    playlistCardIndexBaseClass,
+    playlistCardIndexIdleClass,
+    playlistCardIndexPlayingClass,
+    playlistCardPlayingBadgeClass,
+    playlistCardPlayingIndicatorClass,
+    playlistCardPlayingOverlayClass,
+    playlistCardPlayingSurfaceClass,
+    playlistCardThumbnailBaseClass,
+    playlistCardThumbnailRingClass,
+} from "./playlistCardStyles";
 
 interface PlaylistUrlCardProps {
     url: AddedUrl;
@@ -21,6 +38,7 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
     isLoading = false,
     onSelect,
 }) => {
+    const t = useTranslations("panel.playlist");
     const platform = getPlatformById(url.platformId);
     const hasMetadata = url.metadata && (url.metadata.title || url.metadata.thumbnail);
 
@@ -29,18 +47,20 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
             onClick={onSelect}
             disabled={!isHost}
             className={`
-                group w-full flex gap-3 rounded-xl p-2 transition-all duration-200 h-[72px] shrink-0
+                ${playlistCardBaseClass}
                 ${isPlaying
-                    ? 'bg-gradient-to-r from-rose-600/20 via-pink-600/20 to-fuchsia-600/20 border border-pink-500/30'
-                    : 'bg-white/5 border border-transparent hover:bg-white/10 hover:border-white/10'
+                    ? playlistCardPlayingSurfaceClass
+                    : isHost
+                    ? playlistCardIdleSurfaceHoverClass
+                    : playlistCardIdleSurfaceClass
                 }
                 ${!isHost ? 'cursor-default' : 'cursor-pointer'}
             `}
         >
             {/* Thumbnail */}
             <div className={`
-                relative w-20 h-13 rounded-lg overflow-hidden shrink-0 
-                ${isPlaying ? 'ring-2 ring-pink-500/50' : ''}
+                ${playlistCardThumbnailBaseClass}
+                ${isPlaying ? playlistCardThumbnailRingClass : ''}
                 bg-gradient-to-br from-[#1f1f23] to-[#27272a]
             `}>
                 {isLoading ? (
@@ -72,8 +92,8 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
                 
                 {/* Play indicator overlay */}
                 {isPlaying && !isLoading && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center">
+                    <div className={playlistCardPlayingOverlayClass}>
+                        <div className={playlistCardPlayingIndicatorClass}>
                             <LuPlay className="text-white ml-0.5" size={12} />
                         </div>
                     </div>
@@ -84,7 +104,7 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
             <div className="flex flex-col gap-0.5 min-w-0 flex-1 justify-center overflow-hidden text-left">
                 {isLoading ? (
                     <div className="space-y-1.5">
-                        <div className="h-3.5 bg-white/10 rounded animate-pulse w-3/4"></div>
+                        <div className={`h-3.5 w-3/4 ${appPulseSurfaceClass}`}></div>
                         <div className="h-2.5 bg-white/5 rounded w-1/2 animate-pulse"></div>
                     </div>
                 ) : hasMetadata && url.metadata ? (
@@ -96,7 +116,7 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
                                 {url.metadata.title || getUrlDisplayName(url.url)}
                             </p>
                             {isPlaying && (
-                                <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                                <span className={playlistCardPlayingBadgeClass}>
                                     {t("playing")}
                                 </span>
                             )}
@@ -123,7 +143,7 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
                                 {getUrlDisplayName(url.url)}
                             </p>
                             {isPlaying && (
-                                <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium bg-pink-500/20 text-pink-400 rounded">
+                                <span className={playlistCardPlayingBadgeClass}>
                                     {t("playing")}
                                 </span>
                             )}
@@ -137,10 +157,10 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
 
             {/* Index number */}
             <div className={`
-                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 self-center
+                ${playlistCardIndexBaseClass}
                 ${isPlaying
-                    ? 'bg-pink-500/20 text-pink-400'
-                    : 'bg-white/5 text-gray-500 group-hover:bg-white/10'
+                    ? playlistCardIndexPlayingClass
+                    : playlistCardIndexIdleClass
                 }
             `}>
                 {index + 1}
@@ -148,4 +168,3 @@ export const PlaylistUrlCard: React.FC<PlaylistUrlCardProps> = ({
         </button>
     );
 };
-

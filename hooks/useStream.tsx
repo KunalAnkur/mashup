@@ -4,9 +4,9 @@ import * as mediasoupClient from "mediasoup-client";
 import { Transport, Producer, Consumer } from "mediasoup-client/types";
 import { SocketEvent } from "@/types/socketEvents";
 import { showError } from "@/utils/toast";
+import { useTranslations } from "@/i18n/I18nProvider";
 import { RootState } from "@/lib/store";
 import { useSelector } from "react-redux";
-import { helper } from "@/utils";
 
 interface UseStreamParams {
     roomId: string | null;
@@ -39,6 +39,7 @@ export const useStream = ({
 }: UseStreamParams) => {
     const { socket } = useSocket();
     const roomState = useSelector((state: RootState) => state.room);
+    const tToast = useTranslations("toast");
 
     const [trackUpdateCounter, setTrackUpdateCounter] = useState(0);
     // State
@@ -89,8 +90,67 @@ export const useStream = ({
         consumerTransportRef.current = null;
         initializingRef.current = false;
         setIsInitialized(false);
-        socket.emit(SocketEvent.CLEANUP_STREAM_ROOM, { roomId });
-    }, [socket, roomId]);
+        if (isHost) {
+            socket.emit(SocketEvent.CLEANUP_STREAM_ROOM, { roomId });
+        }
+    }, [socket, roomId, isHost]);
+
+    const closeConsumerMedia = useCallback(() => {
+        consumersRef.current.forEach((consumer) => {
+            try {
+                if (!consumer.closed) {
+                    consumer.close();
+                }
+            } catch (error) {
+                console.warn("[STREAM] Error closing consumer on cleanup:", error);
+            }
+        });
+        consumersRef.current = [];
+    }, []);
+
+    const closeHostProducers = useCallback(() => {
+        let closedAny = false;
+
+        if (audioProducerRef.current) {
+            try {
+                if (!audioProducerRef.current.closed) {
+                    audioProducerRef.current.close();
+                    closedAny = true;
+                }
+            } catch (error) {
+                console.warn("[STREAM] Error closing audio producer:", error);
+            } finally {
+                audioProducerRef.current = null;
+            }
+        }
+
+        if (videoProducerRef.current) {
+            try {
+                if (!videoProducerRef.current.closed) {
+                    videoProducerRef.current.close();
+                    closedAny = true;
+                }
+            } catch (error) {
+                console.warn("[STREAM] Error closing video producer:", error);
+            } finally {
+                videoProducerRef.current = null;
+            }
+        }
+
+        return closedAny;
+    }, []);
+
+    const stopHostStream = useCallback((reason: string = "manual") => {
+        if (!isHost || !roomId) return;
+
+        const hadLiveProducers = closeHostProducers();
+        if (hadLiveProducers) {
+            console.log(`[STREAM] Host stream stopped (${reason})`);
+        }
+
+        socket?.emit(SocketEvent.STREAM_STOPPED, { roomId });
+        socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
+    }, [closeHostProducers, isHost, roomId, socket]);
     /**
      * Notifies listeners that tracks have been updated
      */
@@ -114,10 +174,11 @@ export const useStream = ({
             }
 
             if (tracksReplaced) {
+                setTrackUpdateCounter((count) => count + 1);
             }
         } catch (error) {
             console.error("[STREAM] Replace ended tracks error:", error);
-            showError("Video restart failed", "Unable to restart video stream. Please try pausing and playing again.");
+            showError(tToast("videoRestartFailed"), tToast("unableToRestart"));
         }
     }, []);
     /**
@@ -129,12 +190,12 @@ export const useStream = ({
         return (audioTrack?.readyState === 'ended') || (videoTrack?.readyState === 'ended');
     }, []);
     /**
-         * Pauses audio and video producers
+         * Broadcasts that the host paused local playback without pausing producers.
+         * Keeping the captured video track live allows consumers to keep rendering
+         * the last captured frame instead of falling back to black.
          */
-    const pauseProducers = useCallback(() => {
+    const notifyPausedPlayback = useCallback(() => {
         if (isSeekingRef.current || !isHost || !roomId) return;
-        audioProducerRef.current?.pause();
-        videoProducerRef.current?.pause();
         socket?.emit(SocketEvent.STREAM_PAUSED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
     }, [isHost, roomId, socket]);
@@ -268,6 +329,10 @@ export const useStream = ({
             videoProducerRef.current = await transport.produce({ track: videoTrack });
         }
 
+        if (audioProducerRef.current || videoProducerRef.current) {
+            setTrackUpdateCounter((count) => count + 1);
+        }
+
         // Notify consumers about new producers
         const producers = [
             audioProducerRef.current && { kind: 'audio', peerId: socket.id, producerId: audioProducerRef.current.id },
@@ -275,7 +340,7 @@ export const useStream = ({
         ].filter(Boolean);
 
         if (producers.length) {
-            console.log("producer called createProducers called", {producers});
+            console.log("producer called createProducers called", { producers });
             socket.emit(SocketEvent.INCOMING_PRODUCER, {
                 roomId: currentRoomId,
                 producers: { [socket.id!]: producers }
@@ -301,21 +366,27 @@ export const useStream = ({
 
         const audioTrack = newStream.getAudioTracks()[0];
         const videoTrack = newStream.getVideoTracks()[0];
+        let tracksReplaced = false;
         try {
             if (audioProducerRef.current && !audioProducerRef.current.closed && audioTrack) {
                 console.log("[DEBUG] = Audio Producer Replaced");
                 await audioProducerRef.current.replaceTrack({ track: audioTrack });
+                tracksReplaced = true;
             }
             if (videoProducerRef.current && !videoProducerRef.current.closed && videoTrack) {
                 console.log("[DEBUG] = Video Producer Replaced");
                 await videoProducerRef.current.replaceTrack({ track: videoTrack });
+                tracksReplaced = true;
+            }
+            if (tracksReplaced) {
+                setTrackUpdateCounter((count) => count + 1);
             }
             // * commenting this below because we are anymore going to use from redux slice
             // console.log("[Stream] Stream has video track: ==", { videoTrack, audioTrack });
             // socket?.emit(SocketEvent.STREAM_HAS_VIDEO, { roomId, hasVideoTrack: videoTrack ? true : false });
         } catch (error) {
             console.error("[STREAM] Replace tracks error:", error);
-            showError("Video update failed", "Unable to update video stream. The video may continue playing.");
+            showError(tToast("videoUpdateFailed"), tToast("unableToUpdate"));
         }
     }, [isHost, roomId, socket]);
 
@@ -383,7 +454,13 @@ export const useStream = ({
             if (!isHost) return;
             // here we will going to replace the tracks
             const stream = getStreamRef.current();
-            if (stream) await replaceProducerTracks(stream);
+            const producerTransport = producerTransportRef.current;
+            if (stream && producerTransport && !producerTransport.closed) {
+                await createProducers(producerTransport, stream, roomId);
+                await replaceProducerTracks(stream);
+            } else if (stream) {
+                await replaceProducerTracks(stream);
+            }
             return;
         };
         const { response: joinResponse, success } = await socket.emitWithAck(SocketEvent.GET_TRANSPORT_INFO, {
@@ -474,7 +551,7 @@ export const useStream = ({
             setIsInitialized(true);
         } catch (error) {
             console.error("[STREAM] Init error:", error);
-            showError("Stream initialization failed", "Unable to start video streaming. Please check your connection and try again.");
+            showError(tToast("streamInitializationFailed"), tToast("unableToStartStreaming"));
         } finally {
             initializingRef.current = false;
         }
@@ -518,7 +595,7 @@ export const useStream = ({
             return { device: newDevice, transport: newTransport };
         } catch (error) {
             console.error("[STREAM] Reinit error:", error);
-            showError("Stream reconnection failed", "Unable to reconnect to video stream. Please refresh the page.");
+            showError(tToast("streamReconnectionFailed"), tToast("unableToReconnect"));
             return null;
         }
     }, [socket, username, email, profile, roomState, createConnectHandler]);
@@ -529,10 +606,13 @@ export const useStream = ({
 
     useEffect(() => {
         if (!socket || isHost || !enabled) return;
-        const handleStreamStopped = () => onStreamStoppedRef.current?.();
+        const handleStreamStopped = () => {
+            closeConsumerMedia();
+            onStreamStoppedRef.current?.();
+        };
         socket.on(SocketEvent.STREAM_STOPPED, handleStreamStopped);
         return () => { socket.off(SocketEvent.STREAM_STOPPED, handleStreamStopped); };
-    }, [socket, isHost, enabled]);
+    }, [socket, isHost, enabled, closeConsumerMedia]);
     
     useEffect(() => {
         if (!socket || !enabled) return;
@@ -602,14 +682,8 @@ export const useStream = ({
         if (!isHost || !enabled || !isInitialized) return;
 
         const handleTrackEnded = () => {
-            console.log("[useStream] Track ended - cleaning up producers");
-            audioProducerRef.current?.close();
-            videoProducerRef.current?.close();
-            audioProducerRef.current = null;
-            videoProducerRef.current = null;
-            setIsInitialized(false);
-            socket?.emit(SocketEvent.STREAM_STOPPED, { roomId });
-            socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
+            console.log("[useStream] Producer track ended - stopping host stream");
+            stopHostStream("producer-track-ended");
         };
 
         const tracks: MediaStreamTrack[] = [];
@@ -630,7 +704,7 @@ export const useStream = ({
                 track.removeEventListener('ended', handleTrackEnded);
             });
         };
-    }, [isHost, enabled, isInitialized, socket, roomId]);
+    }, [isHost, enabled, isInitialized, trackUpdateCounter, stopHostStream]);
 
     useEffect(() => {
         if (!socket || isHost || !enabled || !roomId) return;
@@ -649,7 +723,24 @@ export const useStream = ({
             console.log("initializeFromJoinResponse called", { producers: data.producers, consumersRef: consumersRef.current, needsReinit });
             // if (consumersRef.current.length) return;
             if (needsReinit) {
-                console.warn("[STREAM] Consumer transport not ready, cannot consume producers yet");
+                console.log("[STREAM] Consumer transport not ready, reinitializing for incoming producers");
+                resetState();
+
+                const result = await reinitializeConsumer(roomId);
+                if (!result) return;
+
+                await new Promise(r => setTimeout(r, 300));
+
+                try {
+                    for (const peerId of Object.keys(data.producers)) {
+                        if (data.producers[peerId]?.length) {
+                            console.log(`[STREAM] Consuming ${data.producers[peerId].length} producers from ${peerId} after reinit`);
+                            await consumeProducers(data.producers[peerId], result.device, result.transport, roomId);
+                        }
+                    }
+                } catch (error) {
+                    console.error("[STREAM] Error consuming producers after reinit:", error);
+                }
                 return;
             }
 
@@ -686,7 +777,7 @@ export const useStream = ({
 
         socket.on(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer);
         return () => { socket.off(SocketEvent.INCOMING_PRODUCER, handleIncomingProducer); };
-    }, [socket, isHost, roomId, enabled, consumeProducers, resetState]);
+    }, [socket, isHost, roomId, enabled, consumeProducers, resetState, reinitializeConsumer]);
 
     // Listen to STREAM_HAS_VIDEO event from host (for consumers)
     // * commenting this below useeffect because we are anymore going to use from redux slice
@@ -724,13 +815,14 @@ export const useStream = ({
     return {
         isInitialized,
         initializeFromJoinResponse,
-        pauseProducers,
+        pauseProducers: notifyPausedPlayback,
         resumeProducers,
+        stopStream: stopHostStream,
         resetState,
         onPause: (event?: string) => {
             // Don't pause during seek - the 'seekend' event or isSeekingRef check prevents this
             if (event === 'seekend' || isSeekingRef.current) return;
-            pauseProducers();
+            notifyPausedPlayback();
         },
         onPlay: (event?: string) => {
             // Allow resume after seek completes (isSeekingRef is false) even if event is 'seekend'

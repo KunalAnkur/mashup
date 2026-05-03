@@ -66,7 +66,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             console.error('[SOCKET] Connection error:', error);
             if (!errorShownRef.current) {
                 errorShownRef.current = true;
-                showError("Failed to connect", "Please check your internet connection and try again.");
+                showError(tToast("failedToConnect"), tToast("checkInternetConnection"));
             }
         };
 

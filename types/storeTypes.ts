@@ -15,6 +15,8 @@ export type User = {
   username?: string;
   /** Session identifier */
   sessionId?: string;
+  isEmailVerified: boolean;
+  isGuestUser: boolean;
 };
 /** Metadata for a URL in the playlist */
 export interface UrlMetadata {
@@ -56,6 +58,27 @@ export interface RoomState {
     playing: boolean;
   };
 }
+
+export interface Product {
+  id: string;
+  name: string;
+  price: string;
+  images: string[];
+  category: string;
+  badge: string;
+  rating: string;
+  meta: string;
+  href: string;
+  surface: string;
+  glow: string;
+}
+
+export interface ProductState {
+  items: Product[];
+  loading: boolean;
+  error: string | null;
+}
+
 export type Playlist = {
   id: string;
   type: "stream" | "sync";
@@ -67,8 +90,12 @@ export type Playlist = {
 }
 
 export type RoomSetting = {
-  panelCollapsed: boolean
-}
+  upgradeSubscriptionModal: boolean;
+  upgradeSubscriptionMessage?: string;
+  panelCollapsed: boolean;
+  bottomSheet: boolean;
+  playerActive: boolean;
+};
 
 /**
  * Authentication state interface

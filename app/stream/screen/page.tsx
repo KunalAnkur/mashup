@@ -2,8 +2,8 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { PageHeader } from "@/components/UI";
-import { FaCheckCircle, FaShare, FaDesktop, FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
+import { EntryPageHeader, Input } from "@/components/UI";
+import { FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { RootState } from "@/lib/store";
 import { setRefers, setScreenSharing, updateRoomInfo } from "@/lib/store/slices/roomSlice";
@@ -12,13 +12,30 @@ import { helper } from "@/utils";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import type { Playlist } from "@/types/storeTypes";
-
-// Generic screen share styling
-const SCREEN_SHARE_STYLE = {
-  bgStyle: {
-    background: "linear-gradient(to bottom right, #a855f7, #ec4899)",
-  },
-};
+import {
+  appEntryPageContentWrapClass,
+  appEntryPageFixedHeaderOffsetClass,
+  appEntryPageInsetClass,
+  appEntryPageShellClass,
+  appFlexibleViewportPageClass,
+  appScrollbarHideClass,
+  appSectionTitleTextClass,
+  appStreamScreenAudioOnlyStateClass,
+  appStreamScreenHeroSurfaceClass,
+  appStreamScreenInfoSurfaceClass,
+  appStreamScreenIntroClusterClass,
+  appStreamScreenIntroCopyClass,
+  appStreamScreenIntroWidthClass,
+  appStreamScreenOpenSectionClass,
+  appStreamScreenPreviewFrameClass,
+  appStreamScreenPreviewStatusClass,
+  appStreamScreenPrimaryButtonClass,
+  appStreamScreenSupportCopyClass,
+  appStreamScreenStepBadgeClass,
+  appStreamScreenStepCardClass,
+  appStreamScreenToggleSurfaceClass,
+  appStreamScreenWarningSurfaceClass,
+} from "@/components/UI/classTokens";
 
 const ScreenSharePage = () => {
   const router = useRouter();
@@ -37,6 +54,7 @@ const ScreenSharePage = () => {
   const [showWarning, setShowWarning] = useState(false);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const handleBack = () => {
     // Stop stream if active
@@ -127,7 +145,7 @@ const ScreenSharePage = () => {
           const settings = videoTracks[0].getSettings();
           // displaySurface can be 'monitor', 'window', 'browser', or 'tab'
           isTab = settings.displaySurface === 'tab' || settings.displaySurface === 'browser';
-        } catch (e) {
+        } catch {
           // Fallback: if audio exists, assume it's a tab (tab sharing typically captures audio)
           isTab = hasAudio;
         }
@@ -231,9 +249,10 @@ const ScreenSharePage = () => {
       dispatch(setScreenSharing(screenItem));
       // Store in MediaStreamContext for use in room (MediaStream cannot be in Redux)
       
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorName = err instanceof Error ? err.name : undefined;
       // Only show alert for unexpected errors, not user cancellations
-      if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
+      if (errorName === 'NotAllowedError' || errorName === 'AbortError') {
         // User cancelled or permission denied - silently handle
         console.log("Screen sharing cancelled or permission denied");
         return;
@@ -242,7 +261,7 @@ const ScreenSharePage = () => {
       // For other errors, log but don't show alert (less intrusive)
       console.error("Screen sharing error:", err);
       // Only show toast for truly unexpected errors
-      if (err.name !== 'NotFoundError' && err.name !== 'NotReadableError') {
+      if (errorName !== 'NotFoundError' && errorName !== 'NotReadableError') {
         showError(tToast("screenSharingFailed"), tToast("checkPermissions"));
       }
     }
@@ -293,121 +312,131 @@ const ScreenSharePage = () => {
     }
   }, [isStreamReady, stream, audioOnly, dispatch, router, authState.isAuthenticated, authState.user]);
 
+  useEffect(() => {
+    const handleGlobalWheel = (event: WheelEvent) => {
+      const scrollContainer = contentScrollRef.current;
+      if (!scrollContainer || event.deltaY === 0) return;
+
+      const target = event.target as Node | null;
+      if (target && scrollContainer.contains(target)) {
+        return;
+      }
+
+      const canScroll = scrollContainer.scrollHeight > scrollContainer.clientHeight;
+      if (!canScroll) return;
+
+      event.preventDefault();
+      scrollContainer.scrollTop += event.deltaY * 1.35;
+    };
+
+    window.addEventListener("wheel", handleGlobalWheel, { passive: false });
+    return () => {
+      window.removeEventListener("wheel", handleGlobalWheel);
+    };
+  }, []);
+
 
   return (
-    <div className="relative w-full h-full bg-[#18181b] flex flex-col items-center overflow-hidden min-h-screen">
-      {/* Background Effects - Matching CTASection */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-[#e11d48]/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse-glow" />
-        <div className="absolute bottom-0 right-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-[#c026d3]/20 rounded-full blur-[80px] sm:blur-[100px] md:blur-[128px] animate-pulse-glow" style={{ animationDelay: '1.5s' }} />
-      </div>
-
-      {/* Floating Emojis - Hidden on small screens */}
-      <div className="hidden sm:block absolute inset-0 overflow-hidden pointer-events-none z-10">
-        <span className="absolute top-1/4 left-[8%] text-2xl md:text-4xl animate-float opacity-50">🎬</span>
-        <span className="absolute top-1/3 right-[12%] text-xl md:text-3xl animate-float-delayed opacity-40">🍿</span>
-        <span className="absolute bottom-1/3 left-[15%] text-3xl md:text-5xl animate-float opacity-30">😍</span>
-        <span className="absolute top-1/2 right-[8%] text-2xl md:text-4xl animate-float-delayed opacity-40">🎉</span>
-        <span className="absolute bottom-1/4 right-[20%] text-xl md:text-3xl animate-float opacity-50">❤️</span>
-        <span className="absolute top-2/3 left-[12%] text-xl md:text-3xl animate-float-delayed opacity-40">⭐</span>
-        <span className="absolute bottom-1/2 right-[15%] text-2xl md:text-4xl animate-float opacity-40">🎊</span>
-        <span className="absolute top-[15%] left-[25%] text-xl md:text-3xl animate-float-delayed opacity-35">🎞️</span>
-        <span className="absolute bottom-[20%] left-[30%] text-2xl md:text-4xl animate-float opacity-45">🎭</span>
-      </div>
-
-      {/* Content - Above Background */}
-      <div className="relative z-20 w-full h-screen flex flex-col overflow-hidden">
-        <PageHeader title={tStream("screenSharePageTitle")} onBack={handleBack} logoGap="gap-8" />
+    <div className={appFlexibleViewportPageClass}>
+      <div className={appEntryPageShellClass}>
+        <EntryPageHeader title={tStream("screenSharePageTitle")} onBack={handleBack} fixed />
 
         {/* Content - Scrollable area */}
-        <div className="flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden">
-          <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-10 py-4 sm:py-6 md:py-8">
-            <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 w-full">
-          {!stream ? (
-            <>
-              {/* Initial State - Before Preview */}
-              {/* Main Action Section */}
-              <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8">
-                <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-                  <div className="flex-shrink-0 inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30">
-                    <FaDesktop className="text-lg sm:text-xl text-white" />
-                  </div>
-                  <div className="flex-1 flex flex-col text-center sm:text-left">
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-white mb-0.5 sm:mb-1">{tStream("readyToShare")}</h2>
-                    <p className="text-white/60 text-xs sm:text-sm">{tStream("clickButtonBelow")}</p>
-                  </div>
-                </div>
+        <div
+          ref={contentScrollRef}
+          className={`flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden ${appScrollbarHideClass} ${appEntryPageFixedHeaderOffsetClass}`}
+        >
+          <div className={appEntryPageInsetClass}>
+            <div className={appEntryPageContentWrapClass}>
+              <div className="flex w-full flex-col gap-4 sm:gap-5 md:gap-6">
+                {!stream ? (
+                  <>
+                    {/* Initial State - Before Preview */}
+                    {/* Main Action Section */}
+                    <div className={appStreamScreenOpenSectionClass}>
+                      <div className={appStreamScreenIntroClusterClass}>
+                        <div className={appStreamScreenIntroCopyClass}>
+                          <h2 className="mb-1 text-lg font-semibold tracking-tight text-white sm:text-xl md:text-2xl">
+                            {tStream("readyToShare")}
+                          </h2>
+                          <p className={appStreamScreenSupportCopyClass}>
+                            {tStream("clickButtonBelow")}
+                          </p>
+                        </div>
+                      </div>
           
-                {/* Share Button */}
-                <button
-                  onClick={() => handleShareScreen()}
-                  disabled={!!stream}
-                  className={`w-full px-4 sm:px-6 md:px-8 py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg transition-all duration-200 text-white ${
-                    stream
-                      ? "bg-zinc-700/50 cursor-not-allowed opacity-50"
-                      : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-500/30"
-                  }`}
-                >
-                  {stream ? tStream("screenSharingActive") : tStream("shareYourScreen")}
-                </button>
-              </div>
+                      {/* Share Button */}
+                      <div className={appStreamScreenIntroWidthClass}>
+                        <button
+                          onClick={() => handleShareScreen()}
+                          disabled={!!stream}
+                          className={`${
+                            stream
+                              ? "cursor-not-allowed bg-zinc-700/50 opacity-50"
+                              : appStreamScreenPrimaryButtonClass
+                          }`}
+                        >
+                          {stream ? tStream("screenSharingActive") : tStream("shareYourScreen")}
+                        </button>
+                      </div>
+                    </div>
 
-              {/* Simple Steps Guide - Only show when no preview */}
-              <div className="flex flex-col gap-4 sm:gap-5 md:gap-6">
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center">{tStream("howItWorks")}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+                    {/* Simple Steps Guide - Only show when no preview */}
+                    <div className="flex flex-col gap-4 sm:gap-5 md:gap-6">
+                      <h3 className={`${appSectionTitleTextClass} text-center text-lg sm:text-xl md:text-2xl`}>{tStream("howItWorks")}</h3>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-6">
                   {/* Step 1 */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 transition-all duration-300">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 sm:mb-4">
+                  <div className={`flex flex-row items-center gap-3 px-3 py-4 text-left sm:flex-col sm:items-center sm:gap-0 sm:px-4 sm:py-6 sm:text-center md:px-5 md:py-8 ${appStreamScreenStepCardClass}`}>
+                    <div className={appStreamScreenStepBadgeClass}>
                       1
                     </div>
-                    <div className="flex-1 sm:flex-none">
-                      <h4 className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">
+                    <div className="flex-1 sm:flex-none sm:text-center">
+                      <h4 className="mb-1 text-[15px] font-semibold tracking-tight text-white sm:mb-2 sm:text-base">
                         {tStream("clickScreenShareButton")}
                       </h4>
-                      <p className="text-white/60 text-[10px] sm:text-xs leading-relaxed">
+                      <p className={appStreamScreenSupportCopyClass}>
                         {tStream("clickShareScreenButton")}
                       </p>
                     </div>
                   </div>
 
                   {/* Step 2 */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 transition-all duration-300" style={{ animationDelay: '0.2s' }}>
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 sm:mb-4">
+                  <div className={`flex flex-row items-center gap-3 px-3 py-4 text-left sm:flex-col sm:items-center sm:gap-0 sm:px-4 sm:py-6 sm:text-center md:px-5 md:py-8 ${appStreamScreenStepCardClass}`} style={{ animationDelay: '0.2s' }}>
+                    <div className={appStreamScreenStepBadgeClass}>
                       2
                     </div>
-                    <div className="flex-1 sm:flex-none">
-                      <h4 className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">
+                    <div className="flex-1 sm:flex-none sm:text-center">
+                      <h4 className="mb-1 text-[15px] font-semibold tracking-tight text-white sm:mb-2 sm:text-base">
                         {tStream("chooseTabToShare")}
                       </h4>
-                      <p className="text-white/60 text-[10px] sm:text-xs leading-relaxed">
+                      <p className={appStreamScreenSupportCopyClass}>
                         {tStream("chooseTabForBestAudio")}
                       </p>
                     </div>
                   </div>
 
                   {/* Step 3 */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-center text-left sm:text-center gap-3 sm:gap-0 px-3 sm:px-4 md:px-5 py-4 sm:py-6 md:py-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:border-purple-500/30 hover:bg-gradient-to-br hover:from-purple-600/10 hover:via-pink-600/10 hover:to-fuchsia-600/10 transition-all duration-300" style={{ animationDelay: '0.4s' }}>
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-500/20 via-fuchsia-500/20 to-pink-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 sm:mb-4">
+                  <div className={`flex flex-row items-center gap-3 px-3 py-4 text-left sm:flex-col sm:items-center sm:gap-0 sm:px-4 sm:py-6 sm:text-center md:px-5 md:py-8 ${appStreamScreenStepCardClass}`} style={{ animationDelay: '0.4s' }}>
+                    <div className={appStreamScreenStepBadgeClass}>
                       3
                     </div>
-                    <div className="flex-1 sm:flex-none">
-                      <h4 className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">
+                    <div className="flex-1 sm:flex-none sm:text-center">
+                      <h4 className="mb-1 text-[15px] font-semibold tracking-tight text-white sm:mb-2 sm:text-base">
                         {tStream("clickStartSharing")}
                       </h4>
-                      <p className="text-white/60 text-[10px] sm:text-xs leading-relaxed">
+                      <p className={appStreamScreenSupportCopyClass}>
                         {tStream("clickStartSharingDescription")}
                       </p>
                     </div>
                   </div>
-                </div>
-              </div>
+                      </div>
+                    </div>
 
               {/* Quick Tips - Hidden on very small screens */}
-              <div className="hidden sm:block p-4 sm:p-5 md:p-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 rounded-lg sm:rounded-xl">
+                    <div className={`hidden p-4 sm:block sm:p-5 md:p-6 ${appStreamScreenInfoSurfaceClass}`}>
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className="shrink-0 mt-0.5 sm:mt-1">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.16),rgba(168,85,247,0.12),rgba(244,63,94,0.14))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:h-8 sm:w-8">
                       <svg
                         className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white"
                         fill="currentColor"
@@ -422,38 +451,38 @@ const ScreenSharePage = () => {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <p className="text-white font-semibold mb-2 sm:mb-3 text-xs sm:text-sm">{tStream("quickTips")}</p>
+                    <p className="mb-2 text-xs font-semibold tracking-tight text-white sm:mb-3 sm:text-sm">{tStream("quickTips")}</p>
                     <div className="space-y-2 sm:space-y-2.5">
                       <div className="flex items-start gap-2 sm:gap-2.5">
-                        <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
-                        <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">{tStream("tipSelectSpecificTab")}</p>
+                        <div className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-cyan-300 sm:h-1.5 sm:w-1.5"></div>
+                        <p className={appStreamScreenSupportCopyClass}>{tStream("tipSelectSpecificTab")}</p>
                       </div>
                       <div className="flex items-start gap-2 sm:gap-2.5">
-                        <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
-                        <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">{tStream("tipKeepTabActive")}</p>
+                        <div className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-violet-300 sm:h-1.5 sm:w-1.5"></div>
+                        <p className={appStreamScreenSupportCopyClass}>{tStream("tipKeepTabActive")}</p>
                       </div>
                       <div className="flex items-start gap-2 sm:gap-2.5">
-                        <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-fuchsia-400 mt-1.5 flex-shrink-0"></div>
-                        <p className="text-white/70 text-[10px] sm:text-xs leading-relaxed">{tStream("tipCheckPermission")}</p>
+                        <div className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-rose-300 sm:h-1.5 sm:w-1.5"></div>
+                        <p className={appStreamScreenSupportCopyClass}>{tStream("tipCheckPermission")}</p>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </>
-          ) : (
-            <>
+                    </div>
+                  </>
+                ) : (
+                  <>
               {/* Post-Preview State - After Tab Selection */}
               {/* Preview Active Status Header - Above Video */}
-              <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-purple-500/30 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6">
+              <div className={`flex flex-col gap-4 p-4 sm:gap-5 sm:p-5 md:gap-6 md:p-6 ${appStreamScreenPreviewStatusClass}`}>
                 <div className="text-center">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2">{tStream("previewActive")}</h2>
-                  <p className="text-white/70 text-xs sm:text-sm">{tStream("screenShareReady")}</p>
+                  <h2 className="mb-1 text-lg font-semibold tracking-tight text-white sm:mb-2 sm:text-xl md:text-2xl">{tStream("previewActive")}</h2>
+                  <p className={appStreamScreenSupportCopyClass}>{tStream("screenShareReady")}</p>
                 </div>
               </div>
 
               {/* Stream Preview */}
-              <div className="rounded-lg sm:rounded-xl overflow-hidden bg-black animate-fade-in">
+              <div className={`${appStreamScreenPreviewFrameClass} animate-fade-in`}>
                 <div className="relative aspect-video">
                   <video
                     ref={videoRef}
@@ -463,10 +492,10 @@ const ScreenSharePage = () => {
                     className={audioOnly ? "hidden" : "w-full h-full object-contain"}
                   />
                   {audioOnly && (
-                    <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-fuchsia-900/20 to-pink-900/20">
+                    <div className={`absolute inset-0 flex h-full w-full flex-col items-center justify-center ${appStreamScreenAudioOnlyStateClass}`}>
                       <FaVolumeUp className="text-3xl sm:text-4xl md:text-5xl text-fuchsia-400/60 mb-2 sm:mb-3 md:mb-4" />
-                      <div className="text-fuchsia-300 font-semibold text-sm sm:text-base mb-0.5 sm:mb-1">{tStream("audioOnlyMode")}</div>
-                      <div className="text-gray-400 text-xs sm:text-sm">{tStream("streamingAudioFromTab")}</div>
+                      <div className="mb-0.5 text-sm font-semibold text-fuchsia-200 sm:mb-1 sm:text-base">{tStream("audioOnlyMode")}</div>
+                      <div className={appStreamScreenSupportCopyClass}>{tStream("streamingAudioFromTab")}</div>
                     </div>
                   )}
                   {isStreamReady && (
@@ -483,9 +512,9 @@ const ScreenSharePage = () => {
               </div>
 
               {/* Post-Preview Action Section - Below Video */}
-              <div className="flex flex-col gap-4 sm:gap-5 md:gap-6 bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-2xl border border-zinc-600/15 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6">
+              <div className={`flex flex-col gap-4 p-4 sm:gap-5 sm:p-5 md:gap-6 md:p-6 ${appStreamScreenHeroSurfaceClass}`}>
                 {/* Audio-only toggle */}
-                <div className="flex items-center justify-center p-3 sm:p-4 bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 backdrop-blur-xl border border-purple-500/20 rounded-lg sm:rounded-xl">
+                <div className={`flex items-center justify-center p-3 sm:p-4 ${appStreamScreenToggleSurfaceClass}`}>
                   <label className="flex items-center gap-3 sm:gap-4 cursor-pointer group">
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       {audioOnly ? (
@@ -498,7 +527,8 @@ const ScreenSharePage = () => {
                       </span>
                     </div>
                     <div className="relative">
-                      <input
+                      <Input
+                        variant="raw"
                         type="checkbox"
                         checked={audioOnly}
                         onChange={async (e) => {
@@ -547,11 +577,12 @@ const ScreenSharePage = () => {
                                   console.log("Re-capture cancelled, keeping audio-only mode");
                                   // audioOnly state stays true, stream stays active
                                 }
-                              } catch (error: any) {
+                              } catch (error: unknown) {
+                                const errorName = error instanceof Error ? error.name : undefined;
                                 console.error("Error re-capturing stream with video:", error);
                                 // If re-capture fails, keep current stream active
                                 // Don't stop the stream or change state
-                                if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+                                if (errorName === 'NotAllowedError' || errorName === 'AbortError') {
                                   // User cancelled or permission denied - silently keep current state
                                   console.log("Re-capture cancelled or denied, keeping audio-only mode");
                                 } else {
@@ -583,7 +614,7 @@ const ScreenSharePage = () => {
 
                 {/* Warning */}
                 {showWarning && (
-                  <div className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-md sm:rounded-lg backdrop-blur-sm">
+                  <div className={`flex items-start gap-2 p-3 sm:gap-3 sm:p-4 ${appStreamScreenWarningSurfaceClass}`}>
                     <FaExclamationTriangle className="text-yellow-400 flex-shrink-0 mt-0.5 text-sm sm:text-base" />
                     <div className="flex-1">
                       <p className="text-yellow-300 font-medium text-xs sm:text-sm mb-0.5 sm:mb-1">{tStream("tabSelectionRequired")}</p>
@@ -602,23 +633,24 @@ const ScreenSharePage = () => {
                     <button
                       onClick={handleStartStreaming}
                       disabled={isCreatingRoom}
-                      className={`w-full px-4 sm:px-6 md:px-8 py-3.5 sm:py-4 md:py-5 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg transition-all duration-200 text-white inline-flex items-center justify-center gap-2 sm:gap-3 ${
+                      className={`${
                         isCreatingRoom
                           ? "bg-zinc-700/50 cursor-not-allowed opacity-50"
-                          : "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 hover:from-rose-500 hover:via-pink-500 hover:to-fuchsia-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-500/30"
+                          : appStreamScreenPrimaryButtonClass
                       }`}
                     >
                       {isCreatingRoom && <ImSpinner2 className="animate-spin text-sm sm:text-base" />}
                       {isCreatingRoom ? tStream("creatingRoom") : tStream("startSharing")}
                     </button>
-                    <p className="text-white/60 text-xs sm:text-sm mt-2 sm:mt-3">
+                    <p className={`${appStreamScreenSupportCopyClass} mt-2 sm:mt-3`}>
                       {tStream("roomWillBeCreated")}
                     </p>
                   </div>
                 )}
               </div>
-            </>
-          )}
+                  </>
+                )}
+            </div>
             </div>
           </div>
         </div>

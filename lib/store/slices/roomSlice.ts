@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { AnyAction, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Playlist, RoomSetting, RoomState } from "@/types/storeTypes";
 import { RoomCreateResponse } from "@/types/responseTypes";
 
@@ -10,7 +10,14 @@ const initialState: RoomState = {
   refer: false,
   watchTime: 0,
   settings: {
-    panelCollapsed: false
+    upgradeSubscriptionModal: false,
+    panelCollapsed: false,
+    bottomSheet: false,
+    /** 
+     * *this playeractive represent whether the playerwrapper component is mounted or not.
+     * *This will handle the panel height accordingly
+    */
+    playerActive: true,
   },
   loading: false,
   focused: false,
@@ -26,19 +33,23 @@ const roomSlice = createSlice({
     setRoom: (state, action: PayloadAction<RoomCreateResponse>) => {
       const data = action.payload.data;
       state.haveRoom = true;
-      state.loading = false;
       state.roomId = data.room_id;
-      state.playlist = data.playlist.map((item, index) => {
-        if (index === 0) {
-          return { ...item, selected: true };
-        }
-        return { ...item, selected: false };
-      }) || [];
       state.host = action.payload.authId === action.payload.data.user_id;
+      state.playlist = state.host
+        ? data.playlist.map((item, index) => {
+            // if (index === 0) {
+            //   return { ...item, selected: true };
+            // }
+            // return { ...item, selected: false };
+            return {...item}
+          }) || []
+        : data.playlist;
       // Backend now uses type and source directly
       state.refer = false;
-      state.watchTime = 0;
+      state.watchTime = action.payload.data.total_playtime_seconds;
       state.hostPlayback.playing = false;
+      state.settings.bottomSheet = false;
+      state.loading = false;
       // state.selectedIndex = data.playlist.findIndex((item) => item.selected) || 0;
     },
     exitRoom: (state) => {
@@ -46,6 +57,7 @@ const roomSlice = createSlice({
       state.loading = false;
       state.roomId = null;
       state.hostPlayback.playing = false;
+      state.settings.bottomSheet = false;
       // state.event = action.payload;
     },
     setPlaylist: (state, action: PayloadAction<Playlist[]>) => {
@@ -55,9 +67,9 @@ const roomSlice = createSlice({
     setScreenSharing: (state, action: PayloadAction<Playlist>) => {
       // Remove any existing screen sharing items to avoid duplicates
       const otherItems = state.playlist
-        .filter(item => item.source !== "screen")
-        .map(item => ({ ...item, selected: false }));
-      
+        .filter((item) => item.source !== "screen")
+        .map((item) => ({ ...item, selected: false }));
+
       // Add the new screen sharing item at the top and mark as selected
       state.playlist = [action.payload, ...otherItems];
     },
@@ -68,7 +80,7 @@ const roomSlice = createSlice({
       state,
       action: PayloadAction<{
         playlist?: Playlist[];
-      }>
+      }>,
     ) => {
       if (action.payload.playlist !== undefined) {
         state.playlist = action.payload.playlist;
@@ -76,7 +88,9 @@ const roomSlice = createSlice({
       }
     },
     cleanScreenSourcePlaylist: (state) => {
-      state.playlist = state.playlist.filter(item => item.source !== "screen");
+      state.playlist = state.playlist.filter(
+        (item) => item.source !== "screen",
+      );
       // state.selectedIndex = state.playlist.findIndex((item) => item.selected) || 0;
     },
     setPanelCollapsed: (state, action: PayloadAction<Partial<RoomSetting>>) => {
@@ -85,7 +99,15 @@ const roomSlice = createSlice({
         ...action.payload,
       };
     },
-
+    setBottomSheet: (state, action: PayloadAction<boolean>) => {
+      state.settings.bottomSheet = action.payload;
+    },
+    toggleBottomSheet: (state) => {
+      state.settings.bottomSheet = !state.settings.bottomSheet;
+    },
+    setPlayerActive: (state, action: PayloadAction<boolean>) => {
+      state.settings.playerActive = action.payload;
+    },
     updateWatchTime: (state) => {
       state.watchTime++;
     },
@@ -93,7 +115,7 @@ const roomSlice = createSlice({
       state,
       action: PayloadAction<{
         refer: boolean;
-      }>
+      }>,
     ) => {
       state.refer = action.payload.refer;
     },
@@ -103,8 +125,21 @@ const roomSlice = createSlice({
     setHostPlaybackPlaying: (state, action: PayloadAction<boolean>) => {
       state.hostPlayback.playing = action.payload;
     },
+    setUpgradeSubscriptionModal: (state, action: PayloadAction<{ open: boolean; message?: string }>) => {
+      state.settings.upgradeSubscriptionModal = action.payload.open;
+      if (action.payload.message) {
+        state.settings.upgradeSubscriptionMessage = action.payload.message;
+      }
+    },
   },
-  extraReducers: () => {},
+  // extraReducers: (builder) => {
+  //   builder.addMatcher(
+  //     (action: AnyAction) => action.type === "__rtkq/focused",
+  //     (state) => {
+  //       state.focused = true;
+  //     },
+  //   );
+  // },
 });
 
 export const {
@@ -112,6 +147,9 @@ export const {
   exitRoom,
   setLoading,
   setPanelCollapsed,
+  setBottomSheet,
+  toggleBottomSheet,
+  setPlayerActive,
   setRefers,
   updateRoomInfo,
   setFocused,
@@ -120,5 +158,6 @@ export const {
   updateWatchTime,
   cleanScreenSourcePlaylist,
   setHostPlaybackPlaying,
+  setUpgradeSubscriptionModal,
 } = roomSlice.actions;
 export default roomSlice;

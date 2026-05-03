@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import SyncPlayer from "./SyncPlayer";
 import StreamPlayer from "./StreamPlayer";
@@ -8,6 +8,7 @@ import { Playlist } from "@/types/storeTypes";
 import { useEffect, useState, useRef } from "react";
 import StreamPlayerEmptyState from "./StreamPlayerEmptyState";
 import { RoomType } from "@/context/RoomContext";
+import { setFocused } from "@/lib/store/slices/roomSlice";
 
 type PlayerWrapperProps = {
   fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -15,7 +16,9 @@ type PlayerWrapperProps = {
 
 const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   const roomState = useSelector((state: RootState) => state.room);
+  const dispatch = useDispatch();
   const [content, setContent] = useState<Playlist | null>(null);
+  const [lastKnownType, setLastKnownType] = useState<RoomType>("stream");
   // const prevOnlyAudioRef = useRef<boolean | null>(null);
   const host = roomState.host;
   useEffect(() => {
@@ -24,7 +27,13 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     setContent(content ?? null);
   }, [roomState.playlist]);
 
-  const currentType = content?.type; // "stream" | "sync"
+  useEffect(() => {
+    if (content?.type) {
+      setLastKnownType(content.type);
+    }
+  }, [content?.type]);
+
+  const currentType = content?.type ?? lastKnownType; // "stream" | "sync"
   // Generate key for StreamPlayer based on host status and onlyAudio transitions
   // const getStreamPlayerKey = (): string => {
   //   // For non-host: check onlyAudio transitions
@@ -54,6 +63,16 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   //   }
   // }, [content?.onlyAudio]);
  // TODO: Need to fix this later. related to replace producer tracks from audio to audio and screen to file.
+  if (currentType === "stream") {
+    return (
+      <StreamPlayer
+        key={currentType}
+        fullscreenTargetRef={fullscreenTargetRef}
+        setFocus={() => dispatch(setFocused(true))}
+      />
+    );
+  }
+
   if (!content) return <StreamPlayerEmptyState
     isHost={host}
     roomType={currentType as RoomType}
@@ -61,20 +80,13 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     remoteStream={null}
     isInitialized={false}
   />;
-  if (currentType === "stream") {
-    return (
-      <StreamPlayer
-        key={currentType}
-        fullscreenTargetRef={fullscreenTargetRef}
-      />
-    );
-  }
 
   // Default to SyncPlayer when type is "sync" or undefined
   return (
     <SyncPlayer
       key={content.id}
       fullscreenTargetRef={fullscreenTargetRef}
+      setFocus={() => dispatch(setFocused(true))}
     />
   );
 };

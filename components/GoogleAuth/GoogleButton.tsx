@@ -1,28 +1,42 @@
 "use client";
-import { useGoogleLogin, TokenResponse } from "@react-oauth/google";
+import { appMutedHoverSurfaceClass } from "@/components/UI/classTokens";
+import { ReactNode } from "react";
+import { useGoogleLogin } from "@react-oauth/google";
 import { Button } from "../UI";
 import { FcGoogle } from "react-icons/fc";
 import axios from "axios";
 
+export type GoogleAuthUserInfo = {
+  email: string;
+  name: string;
+  picture: string;
+  sub: string;
+};
+
 type Props = {
   name: string;
-  onSuccess: (
-    tokenResponse: Omit<TokenResponse, "error" | "error_description" | "error_uri">
-  ) => void;
+  className?: string;
+  icon?: ReactNode;
+  disabled?: boolean;
+  onSuccess: (userInfo: GoogleAuthUserInfo) => void | Promise<void>;
   onError?: () => void;
 };
 
-const GoogleButton = ({ onSuccess, onError, name }: Props) => {
+const GoogleButton = ({
+  onSuccess,
+  onError,
+  name,
+  className = "",
+  icon,
+  disabled = false,
+}: Props) => {
   const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) =>{ 
-      console.log(tokenResponse.access_token)
+    onSuccess: async (tokenResponse) => {
       const userInfo = await axios
-        .get('https://www.googleapis.com/oauth2/v3/userinfo',
-          {
-            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-          })
-      const result = userInfo.data;
-      onSuccess(result)
+        .get<GoogleAuthUserInfo>("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+      await onSuccess(userInfo.data);
     },
     onError: onError,
   });
@@ -30,9 +44,14 @@ const GoogleButton = ({ onSuccess, onError, name }: Props) => {
   return (
     <Button
       name={name}
-      className="w-full py-3 rounded-xl bg-white/5 text-gray-300 text-sm px-4 hover:bg-white/10 hover:text-white transition-all duration-200 font-medium "
-      icon={<FcGoogle size={20} />}
-      onClick={() => login()}
+      className={`w-full rounded-xl py-3 text-sm font-medium text-gray-300 transition-all duration-200 ${appMutedHoverSurfaceClass} ${className}`}
+      icon={icon ?? <FcGoogle size={20} />}
+      onClick={() => {
+        if (!disabled) {
+          login();
+        }
+      }}
+      disabled={disabled}
     />
   );
 };
