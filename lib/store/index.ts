@@ -4,6 +4,7 @@ import authSlice from "./slices/authSlice";
 import roomSlice from "./slices/roomSlice";
 import onboardSlice from "./slices/onboardSlice";
 import productSlice from "./slices/productSlice";
+import subscriptionSlice from "./slices/subscriptionSlice";
 import {
   persistReducer,
   persistStore,
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   [onboardSlice.reducerPath]: onboardSlice.reducer,
   [roomSlice.reducerPath]: roomSlice.reducer,
   [productSlice.reducerPath]: productSlice.reducer,
+  [subscriptionSlice.reducerPath]: subscriptionSlice.reducer,
   [authApi.reducerPath]: authApi.reducer,
   [roomApi.reducerPath]: roomApi.reducer,
   [userApi.reducerPath]: userApi.reducer,
@@ -40,7 +42,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: [authSlice.reducerPath, onboardSlice.reducerPath], // only persist `auth` slice
+  whitelist: [authSlice.reducerPath, onboardSlice.reducerPath, subscriptionSlice.reducerPath], // persist auth, onboard, and subscription slices
 };
 
 // 3. Apply persistReducer

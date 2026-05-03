@@ -107,6 +107,14 @@ const SyncPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
 
   const controlsConfig = helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft ?? false);
 
+  //** Pause video if it is playing when subscription modal comes up */
+  useEffect(() => {
+    if (roomState.settings.upgradeSubscriptionModal && isHost) {
+      if (isPlaying) {
+          onPause("watch_time_limit_exceeded");
+      }
+    }
+  }, [roomState.settings.upgradeSubscriptionModal, isHost]);
   return (
     <Player
       playerRef={playerRef}

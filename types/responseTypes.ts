@@ -30,6 +30,7 @@ export interface RoomCreateResponse {
     playlist: Playlist[];
     room_id: string;
     is_active: boolean;
+    total_playtime_seconds: number;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
