@@ -13,6 +13,7 @@ import { trackRoomJoined, trackRoomLeft } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 
 export type RoomType = "stream" | "sync";
+export type StreamDeliveryMode = "p2p" | "sfu";
 export interface UserInfo {
     socketId: string;
     roomId: string;
@@ -38,6 +39,7 @@ interface JoinResponse {
     message?: string;
     roomId: string;
     roomType: RoomType;
+    streamDeliveryMode?: StreamDeliveryMode | null;
     chatHistory?: any[];
     pinnedMessage?: PinnedChatMessage | null;
     rtpCapabilities?: any;
@@ -58,6 +60,7 @@ interface RoomContextType {
     isJoined: boolean;
     isLoading: boolean;
     roomType: RoomType | null;
+    streamDeliveryMode: StreamDeliveryMode | null;
     hostLeft: boolean;
     roomClosed: boolean;
     joinResponse: JoinResponse | null;
@@ -97,6 +100,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const [isLoading, setIsLoading] = useState(false);
     const tToast = useTranslations("toast");
     const [roomType, setRoomType] = useState<RoomType | null>(null);
+    const [streamDeliveryMode, setStreamDeliveryMode] = useState<StreamDeliveryMode | null>(null);
     const [hostLeft, setHostLeft] = useState(false);
     const [roomClosed, setRoomClosed] = useState(false);
     const [joinResponse, setJoinResponse] = useState<JoinResponse | null>(null);
@@ -164,6 +168,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setIsJoined(true);
                 currentRoomRef.current = roomId;
                 setRoomType(response.roomType || derivedRoomType);
+                setStreamDeliveryMode(response.streamDeliveryMode || null);
                 setJoinResponse(response);
                 dispatch(setHostPlaybackPlaying(response.hostPlayback?.playing === true));
                 setParticipants(response.users || []);
@@ -210,6 +215,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
         setIsJoined(false);
         setRoomType(null);
+        setStreamDeliveryMode(null);
         setHostLeft(false);
         setRoomClosed(false);
         dispatch(setHostPlaybackPlaying(false));
@@ -268,6 +274,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         socket.emit(SocketEvent.LEAVE_ROOM, { roomId, room: roomState });
         setIsJoined(false);
         setRoomType(null);
+        setStreamDeliveryMode(null);
         setHostLeft(false);
         setRoomClosed(false);
         dispatch(setHostPlaybackPlaying(false));
@@ -292,6 +299,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         if (roomId !== currentRoomRef.current) {
             joinAttemptedRef.current = false;
             currentRoomRef.current = null;
+            setStreamDeliveryMode(null);
             dispatch(setHostPlaybackPlaying(false));
         }
     }, [roomId, dispatch]);
@@ -327,10 +335,14 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         const handleRoomInfoUpdated = (data: { 
             roomId: string; 
             playlist: Playlist[];
+            streamDeliveryMode?: StreamDeliveryMode | null;
         }) => {
             // ! Need to do something here to update the playlist in the redux store
             if (data.roomId === roomId && !isHost) {
                 dispatch(updateRoomInfo({ playlist: data.playlist }));
+                if (data.streamDeliveryMode) {
+                    setStreamDeliveryMode(data.streamDeliveryMode);
+                }
                 // const newRoomType = data.room.type;
                 // const currentRoomType = roomType;
                 
@@ -499,6 +511,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             isJoined,
             isLoading,
             roomType,
+            streamDeliveryMode,
             hostLeft,
             roomClosed,
             joinResponse,
