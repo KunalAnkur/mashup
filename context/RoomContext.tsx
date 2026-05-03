@@ -40,6 +40,7 @@ interface JoinResponse {
     roomId: string;
     roomType: RoomType;
     streamDeliveryMode?: StreamDeliveryMode | null;
+    iceServers?: RTCIceServer[];
     chatHistory?: any[];
     pinnedMessage?: PinnedChatMessage | null;
     rtpCapabilities?: any;

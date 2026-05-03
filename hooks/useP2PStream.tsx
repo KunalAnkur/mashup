@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSocket } from "@/context/SocketContext";
+import { useRoomContext } from "@/context/RoomContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
@@ -24,14 +25,6 @@ interface PeerConnection {
     stream?: MediaStream;
 }
 
-// ICE server configuration (STUN/TURN servers)
-const ICE_SERVERS: RTCConfiguration = {
-    iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" },
-    ],
-};
-
 export const useP2PStream = ({
     roomId,
     getStream,
@@ -46,6 +39,7 @@ export const useP2PStream = ({
     profile,
 }: UseP2PStreamParams) => {
     const { socket } = useSocket();
+    const { joinResponse } = useRoomContext();
     const tToast = useTranslations("toast");
 
     // State
@@ -57,6 +51,10 @@ export const useP2PStream = ({
     const localStreamRef = useRef<MediaStream | null>(null);
     const initializingRef = useRef(false);
     const isSeekingRef = useRef(false);
+    const iceServersRef = useRef<RTCIceServer[]>([
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+    ]);
 
     // Callback refs to avoid stale closures
     const getStreamRef = useRef(getStream);
@@ -71,6 +69,16 @@ export const useP2PStream = ({
     useEffect(() => { onStreamPausedRef.current = onStreamPaused; }, [onStreamPaused]);
     useEffect(() => { onStreamResumedRef.current = onStreamResumed; }, [onStreamResumed]);
     useEffect(() => { onStreamStoppedRef.current = onStreamStopped; }, [onStreamStopped]);
+    useEffect(() => {
+        if (joinResponse?.iceServers?.length) {
+            iceServersRef.current = joinResponse.iceServers;
+        } else {
+            iceServersRef.current = [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" },
+            ];
+        }
+    }, [joinResponse?.iceServers]);
 
     // ============================================================================
     // Helper Functions
@@ -101,7 +109,9 @@ export const useP2PStream = ({
      */
     const createPeerConnection = useCallback((peerId: string): RTCPeerConnection => {
         console.log(`[P2P] Creating peer connection for ${peerId}`);
-        const pc = new RTCPeerConnection(ICE_SERVERS);
+        const pc = new RTCPeerConnection({
+            iceServers: iceServersRef.current,
+        });
 
         // Handle ICE candidates
         pc.onicecandidate = (event) => {
