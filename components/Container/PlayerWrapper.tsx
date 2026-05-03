@@ -39,7 +39,7 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     }
   }, [content?.type]);
   const currentType = content?.type ?? lastKnownType; // "stream" | "sync"
-  const isPremiumUser = true;
+  const isPremiumUser = subscriptionState.subscription?.tier === SubscriptionTier.PREMIUM;
   const effectiveStreamDeliveryMode =
     streamDeliveryMode || (roomState.host && isPremiumUser ? "sfu" : "p2p");
   // Generate key for StreamPlayer based on host status and onlyAudio transitions
@@ -72,19 +72,19 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   // }, [content?.onlyAudio]);
   // TODO: Need to fix this later. related to replace producer tracks from audio to audio and screen to file.
   if (currentType === "stream") {
-    return effectiveStreamDeliveryMode === "sfu" ? (
+    // return effectiveStreamDeliveryMode === "sfu" ? (
       <StreamPlayer
         key="stream-premium"
         fullscreenTargetRef={fullscreenTargetRef}
         setFocus={() => dispatch(setFocused(true))}
       />
-    ) : (
-      <P2PStreamPlayer
-        key="stream-free"
-        fullscreenTargetRef={fullscreenTargetRef}
-        setFocus={() => dispatch(setFocused(true))}
-      />
-    );
+    // ) : (
+    //   <P2PStreamPlayer
+    //     key="stream-free"
+    //     fullscreenTargetRef={fullscreenTargetRef}
+    //     setFocus={() => dispatch(setFocused(true))}
+    //   />
+    // );
   }
   // ** We will going to use this below one when we implemented monetisation here
   // if (currentType === "stream") {
