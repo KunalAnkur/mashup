@@ -74,7 +74,7 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   if (currentType === "stream") {
     // return effectiveStreamDeliveryMode === "sfu" ? (
       <StreamPlayer
-        key="stream-premium"
+        key={currentType}
         fullscreenTargetRef={fullscreenTargetRef}
         setFocus={() => dispatch(setFocused(true))}
       />
