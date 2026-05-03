@@ -1,12 +1,14 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store/index";
 import { logout } from "@/lib/store/slices/authSlice";
 import { useLogoutMutation } from "@/lib/store/api/authApi";
 import { IoLogOutOutline } from "react-icons/io5";
+import { LuCrown } from "react-icons/lu";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import Modal, {
@@ -37,6 +39,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownMenuId = useId();
   const dispatch = useDispatch();
+  const router = useRouter();
   const { user, isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth
   );
@@ -80,6 +83,11 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const handleLogoutClick = () => {
     setShowLogoutConfirm(true);
     setIsOpen(false);
+  };
+
+  const handleSubscriptionClick = () => {
+    setIsOpen(false);
+    router.push("/subscription");
   };
   
 
@@ -159,6 +167,19 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           />
 
           {/* Menu Items */}
+          <DropdownDivider />
+          <DropdownActionRow
+            onClick={handleSubscriptionClick}
+            role="menuitem"
+            iconChipClassName="bg-white/[0.06] text-amber-100"
+            icon={
+              <LuCrown
+                size={13}
+                className="block md:h-[13px] md:w-[13px]"
+              />
+            }
+            label="Subscription"
+          />
           <DropdownDivider />
           <DropdownActionRow
             onClick={handleLogoutClick}

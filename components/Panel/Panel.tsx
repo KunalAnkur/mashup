@@ -21,6 +21,7 @@ import * as constants from "../../constants";
 // Added icons for tabs and new feedback icon
 import {
   LuCheck,
+  LuCrown,
   LuLink,
   LuLogOut,
   LuMessageCircle,
@@ -227,6 +228,10 @@ const Panel = () => {
     setShowLeaveConfirm(false);
   };
 
+  const handleOpenSubscription = () => {
+    router.push("/subscription");
+  };
+
 
   const selectTab = (nextTab: Tabs) => {
     const nextIndex = visibleTabs.indexOf(nextTab);
@@ -334,6 +339,14 @@ const Panel = () => {
               {copied ? <LuCheck size={15} className="text-green-400" /> : <LuLink size={15} />}
             </PanelHeaderActionButton>
 
+            <PanelHeaderActionButton
+              onClick={handleOpenSubscription}
+              className="bg-amber-500/10 text-amber-300 hover:text-amber-200"
+              aria-label="Subscription"
+            >
+              <LuCrown size={15} />
+            </PanelHeaderActionButton>
+
             {/* Leave */}
             <PanelHeaderActionButton
               onClick={handleLeaveClick}
@@ -389,6 +402,14 @@ const Panel = () => {
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-0 border-4 border-transparent border-b-zinc-900"></div>
                     </div>
                   )}
+                </PanelHeaderActionButton>
+
+                <PanelHeaderActionButton
+                  onClick={handleOpenSubscription}
+                  className="bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl text-white/70 hover:from-amber-500/20 hover:via-yellow-500/16 hover:to-orange-500/20 hover:text-amber-200"
+                  aria-label="Subscription"
+                >
+                  <LuCrown size={16} />
                 </PanelHeaderActionButton>
 
 	              <PanelHeaderActionButton

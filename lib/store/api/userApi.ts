@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { UserSubscription } from "@/types/subscriptionTypes";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -24,6 +25,13 @@ export interface UpdateProfileResponse {
     created_at: string;
     updated_at: string;
   };
+}
+
+export interface GetSubscriptionResponse {
+  success: boolean;
+  status: string;
+  message: string;
+  data: UserSubscription;
 }
 
 export const userApi = createApi({
@@ -57,11 +65,26 @@ export const userApi = createApi({
         method: "GET",
       }),
     }),
+    // GET /api/v1/user/subscription/me - Get current user's subscription
+    getMySubscription: builder.query<GetSubscriptionResponse, void>({
+      query: () => ({
+        url: "/subscription/me",
+        method: "GET",
+      }),
+    }),
+    cancelMySubscription: builder.mutation<GetSubscriptionResponse, void>({
+      query: () => ({
+        url: "/subscription/cancel",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
 export const {
   useUpdateProfileMutation,
   useGetUserByIdQuery,
+  useGetMySubscriptionQuery,
+  useLazyGetMySubscriptionQuery,
+  useCancelMySubscriptionMutation,
 } = userApi;
-

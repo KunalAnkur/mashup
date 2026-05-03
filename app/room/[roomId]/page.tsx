@@ -7,10 +7,11 @@ import { Panel } from "@/components/Panel";
 import ReactionsContainer from "@/components/Panel/ReactionsContainer";
 import { useRoomContext } from "@/context/RoomContext";
 import { useDispatch } from "react-redux";
-import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
+import { updateRoomInfo, setUpgradeSubscriptionModal } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { useFileContext } from "@/context/FileContext";
 import ProductBottomSheet from "@/components/Product/ProductBottomSheet";
+import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionModal";
 import { appFixedViewportPageClass } from "@/components/UI/classTokens";
 const Page = () => {
   const dispatch = useDispatch();
@@ -98,8 +99,19 @@ const Page = () => {
       ? "h-[75vh]"
       : "h-[60vh]";
 
+  const handleCloseUpgradeModal = () => {
+    dispatch(setUpgradeSubscriptionModal({ open: false }));
+  };
+
   return (
     <>
+      {/* Upgrade Subscription Modal */}
+      <UpgradeSubscriptionModal
+        isOpen={roomState.settings.upgradeSubscriptionModal}
+        onClose={handleCloseUpgradeModal}
+        message={roomState.settings.upgradeSubscriptionMessage}
+      />
+      
       <div ref={containerRef} className={`${appFixedViewportPageClass} flex flex-col md:flex-row`}>
         <div
           className={`

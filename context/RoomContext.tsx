@@ -5,7 +5,7 @@ import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, store } from "@/lib/store";
-import { setHostPlaybackPlaying, updateRoomInfo, updateWatchTime } from "@/lib/store/slices/roomSlice";
+import { setHostPlaybackPlaying, updateRoomInfo, updateWatchTime, setUpgradeSubscriptionModal } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
 import type { PinnedChatMessage } from "@/types/chatTypes";
 import { showError } from "@/utils/toast";
@@ -34,6 +34,8 @@ export interface RoomInformation {
 }
 interface JoinResponse {
     success: boolean;
+    type?: string;
+    message?: string;
     roomId: string;
     roomType: RoomType;
     chatHistory?: any[];
@@ -178,6 +180,14 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 dispatch(setHostPlaybackPlaying(false));
                 const errorMessage = response?.error || tToast("checkConnection");
                 showError(tToast("failedToJoinRoom"), errorMessage);
+                if (response?.type === 'NOT_ALLOWED') {
+                    // Open upgrade subscription modal with the message from response
+                    console.log("Room joining not allowed", response);
+                    dispatch(setUpgradeSubscriptionModal({
+                        open: true,
+                        message: response?.message
+                    }));
+                }
             }
         } catch (error: any) {
             console.error("Error joining room:", error);
@@ -398,6 +408,27 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             }
         };
 
+        const handleOnNotify = (data: {success: boolean, type: string, message: string}) => {
+            if (!data.success) {
+                switch (data.type) {
+                    case "NOT_ALLOWED":
+                        dispatch(setUpgradeSubscriptionModal({
+                            open: true,
+                            message: data?.message
+                        }));
+                        return
+                    case "WATCH_TIME_LIMIT_EXCEEDED":
+                        dispatch(setUpgradeSubscriptionModal({
+                            open: true,
+                            message: data?.message
+                        }));
+                        return;
+                
+                    default:
+                        break;
+                }
+            }
+        }
         socket.on(SocketEvent.HOST_LEFT, handleHostLeft);
         socket.on(SocketEvent.LEAVE_ROOM, handleRoomClosed);
         socket.on(SocketEvent.HOST_JOINED, handleHostJoined);
@@ -405,6 +436,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         socket.on(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
         socket.on(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
         socket.on(SocketEvent.HOST_PLAYBACK_STATE, handleHostPlaybackState);
+        socket.on(SocketEvent.NOTIFY, handleOnNotify);
         return () => {
             socket.off(SocketEvent.HOST_LEFT, handleHostLeft);
             socket.off(SocketEvent.LEAVE_ROOM, handleRoomClosed);
@@ -413,6 +445,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             socket.off(SocketEvent.VIDEO_SELECTED, handleVideoSelected);
             socket.off(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
             socket.off(SocketEvent.HOST_PLAYBACK_STATE, handleHostPlaybackState);
+            socket.off(SocketEvent.NOTIFY, handleOnNotify);
         };
     }, [socket, roomId, isHost, roomType, dispatch]);
     
