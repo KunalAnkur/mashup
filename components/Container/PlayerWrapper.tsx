@@ -39,7 +39,7 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     }
   }, [content?.type]);
   const currentType = content?.type ?? lastKnownType; // "stream" | "sync"
-  const isPremiumUser = subscriptionState.subscription?.tier === SubscriptionTier.PREMIUM;
+  const isPremiumUser = subscriptionState.subscription?.tier === SubscriptionTier.FREE;
   const effectiveStreamDeliveryMode =
     streamDeliveryMode || (roomState.host && isPremiumUser ? "sfu" : "p2p");
   // Generate key for StreamPlayer based on host status and onlyAudio transitions
