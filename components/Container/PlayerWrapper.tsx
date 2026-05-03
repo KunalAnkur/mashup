@@ -20,6 +20,9 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   const dispatch = useDispatch();
   const [content, setContent] = useState<Playlist | null>(null);
   const [lastKnownType, setLastKnownType] = useState<RoomType>("stream");
+  const subscriptionState = useSelector(
+    (state: RootState) => state.subscription,
+  );
   // const prevOnlyAudioRef = useRef<boolean | null>(null);
   const host = roomState.host;
   useEffect(() => {
@@ -33,7 +36,14 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
       setLastKnownType(content.type);
     }
   }, [content?.type]);
-
+  const [subscriptionType, setSubscriptionType] = useState<"free" | "premium">(
+    "free",
+  );
+  useEffect(() => {
+    if (subscriptionState.subscription) {
+      setSubscriptionType(subscriptionState.subscription.tier);
+    }
+  }, [subscriptionState.subscription]);
   const currentType = content?.type ?? lastKnownType; // "stream" | "sync"
   // Generate key for StreamPlayer based on host status and onlyAudio transitions
   // const getStreamPlayerKey = (): string => {
@@ -63,10 +73,16 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   //     prevOnlyAudioRef.current = content.onlyAudio;
   //   }
   // }, [content?.onlyAudio]);
- // TODO: Need to fix this later. related to replace producer tracks from audio to audio and screen to file.
+  // TODO: Need to fix this later. related to replace producer tracks from audio to audio and screen to file.
   if (currentType === "stream") {
-    return (
+    subscriptionType === "premium" ? (
       <StreamPlayer
+        key={currentType}
+        fullscreenTargetRef={fullscreenTargetRef}
+        setFocus={() => dispatch(setFocused(true))}
+      />
+    ) : (
+      <P2PStreamPlayer
         key={currentType}
         fullscreenTargetRef={fullscreenTargetRef}
         setFocus={() => dispatch(setFocused(true))}
@@ -82,14 +98,17 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   //     />
   //   );
   // }
-  
-  if (!content) return <StreamPlayerEmptyState
-    isHost={host}
-    roomType={currentType as RoomType}
-    hostLeft={roomState.host}
-    remoteStream={null}
-    isInitialized={false}
-  />;
+
+  if (!content)
+    return (
+      <StreamPlayerEmptyState
+        isHost={host}
+        roomType={currentType as RoomType}
+        hostLeft={roomState.host}
+        remoteStream={null}
+        isInitialized={false}
+      />
+    );
 
   // Default to SyncPlayer when type is "sync" or undefined
   return (
