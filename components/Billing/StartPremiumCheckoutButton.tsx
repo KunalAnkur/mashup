@@ -73,7 +73,7 @@ export default function StartPremiumCheckoutButton({
           body: JSON.stringify({
             plan_slug: "premium",
             success_url: resolveCallbackUrl("/pricing/success", successUrl),
-            cancel_url: resolveCallbackUrl("/pricing/cancel", cancelUrl),
+            cancel_url: resolveCallbackUrl("/pricing/failure", cancelUrl),
           }),
         });
         const json = await resp.json();
