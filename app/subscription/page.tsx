@@ -31,20 +31,22 @@ const freePlan = {
   price: "$0",
   cadence: "/month",
   perks: [
-    "6 people per room",
-    "3 watch hours per session",
-    "720p screen sharing",
+    "2 people per room",
+    "2-hour sessions",
+    "Basic room UI",
+    // "No audio or video calls",
   ],
 };
 
 const premiumPlan = {
   name: "Premium",
-  price: "$9.99",
+  price: "$2.99",
   cadence: "/month",
   perks: [
-    "50 people per room",
-    "Unlimited watch hours",
-    "Recording, analytics, and branding",
+    "50+ people per room",
+    "Unlimited time",
+    // "Audio and video calls",
+    "Better room UI",
   ],
 };
 
