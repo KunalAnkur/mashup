@@ -39,10 +39,10 @@ const plans = [
     cardClassName:
       "bg-white/[0.024] ring-1 ring-white/8 shadow-[0_22px_54px_rgba(0,0,0,0.18)]",
     features: [
-      "6 people per room",
-      "3 watch hours per session",
-      "720p screen sharing",
-      "Uploads up to 500 MB",
+      "2 people per room",
+      "2-hour sessions",
+      "Basic room UI",
+      // "No audio or video calls",
     ],
     ctaLabel: "Start free",
     ctaHref: "/",
@@ -51,7 +51,7 @@ const plans = [
     id: "premium",
     name: "Premium",
     eyebrow: "Best for creators and communities",
-    value: "$9.99",
+    value: "$2.99",
     valueMeta: "per month",
     description:
       "Best for hosts who run bigger rooms, longer sessions, cleaner branding, and better control.",
@@ -62,10 +62,10 @@ const plans = [
     cardClassName:
       "bg-[linear-gradient(180deg,rgba(244,63,94,0.07)_0%,rgba(255,255,255,0.03)_24%,rgba(255,255,255,0.022)_100%)] ring-1 ring-rose-400/20 shadow-[0_26px_64px_rgba(0,0,0,0.24)]",
     features: [
-      "50 people per room",
-      "Unlimited watch hours",
-      "1080p screen sharing",
-      "Recording, analytics, and branding",
+      "50+ people per room",
+      "Unlimited time",
+      // "Audio and video calls",
+      "Better room UI",
     ],
     ctaLabel: "Upgrade to Premium",
     ctaHref: "/pricing",
