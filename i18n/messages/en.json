@@ -138,7 +138,9 @@
       "profileUpdated": "Profile updated successfully",
       "updateFailed": "Update failed",
       "updateFailedDescription": "We couldn't update your profile. Please try again.",
-      "saveChanges": "Save Changes"
+      "saveChanges": "Save Changes",
+      "marketingEmails": "News & updates",
+      "marketingEmailsDesc": "Updates on new features and tips"
     },
     "leaveParty": "Leave Party?",
     "leavePartyMessage": "Are you sure you want to leave this party? You'll need the room ID to rejoin.",
@@ -329,5 +331,14 @@
       "feature": "Feature",
       "other": "Other"
     }
+  },
+  "marketing": {
+    "title": "Stay in the loop?",
+    "message": "Get notified about new features and watch party tips. Unsubscribe anytime.",
+    "noThanks": "No thanks",
+    "yesNotifyMe": "Yes, notify me",
+    "saving": "Saving…",
+    "settingsLabel": "News & updates",
+    "settingsDescription": "Updates on new features and watch party tips"
   }
 }

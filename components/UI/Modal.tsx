@@ -409,6 +409,8 @@ export {
   modalConfirmSurfaceClass,
   modalBalancedContentClass,
   modalConfirmHeaderClass,
+  modalConfirmContentBodyClass,
+  modalConfirmActionsClass,
   modalConfirmMessageClass,
   modalFormHeaderClass,
   modalFormBodyClass,

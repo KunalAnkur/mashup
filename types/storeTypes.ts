@@ -17,6 +17,7 @@ export type User = {
   sessionId?: string;
   isEmailVerified: boolean;
   isGuestUser: boolean;
+  marketingEmailsOptIn?: boolean | null;
 };
 /** Metadata for a URL in the playlist */
 export interface UrlMetadata {

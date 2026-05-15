@@ -43,7 +43,8 @@ const authSlice = createSlice({
         profile: user.profile || "",
         sessionId: user.session_id,
         isEmailVerified: user.is_email_verified,
-        isGuestUser: user.guest_account
+        isGuestUser: user.guest_account,
+        marketingEmailsOptIn: user.marketing_emails_opt_in ?? null,
       };
 
       state.token = token;
@@ -136,6 +137,12 @@ const authSlice = createSlice({
       state.error = null;
     },
 
+    setMarketingOptIn: (state, action: PayloadAction<boolean>) => {
+      if (state.user) {
+        state.user.marketingEmailsOptIn = action.payload;
+      }
+    },
+
     /**
      * Reset authentication state to initial values
      * Useful for cleanup or reset scenarios
@@ -155,6 +162,7 @@ export const {
   setError,
   clearError,
   resetAuth,
+  setMarketingOptIn,
 } = authSlice.actions;
 
 export default authSlice;

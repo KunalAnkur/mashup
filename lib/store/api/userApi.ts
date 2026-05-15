@@ -78,6 +78,13 @@ export const userApi = createApi({
         method: "POST",
       }),
     }),
+    updateMarketingPreference: builder.mutation<{ success: boolean }, { opt_in: boolean }>({
+      query: ({ opt_in }) => ({
+        url: "/marketing-preference",
+        method: "POST",
+        body: { opt_in },
+      }),
+    }),
   }),
 });
 
@@ -87,4 +94,5 @@ export const {
   useGetMySubscriptionQuery,
   useLazyGetMySubscriptionQuery,
   useCancelMySubscriptionMutation,
+  useUpdateMarketingPreferenceMutation,
 } = userApi;

@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
-import { useUpdateProfileMutation } from "@/lib/store/api/userApi";
-import { updateProfile as updateProfileAction } from "@/lib/store/slices/authSlice";
-import { LuCheck, LuLink, LuPencil, LuMessageSquare, LuX } from "react-icons/lu";
+import { useUpdateProfileMutation, useUpdateMarketingPreferenceMutation } from "@/lib/store/api/userApi";
+import { updateProfile as updateProfileAction, setMarketingOptIn } from "@/lib/store/slices/authSlice";
+import { LuBell, LuCheck, LuLink, LuPencil, LuMessageSquare, LuX } from "react-icons/lu";
 import { showError, showSuccess } from "@/utils/toast";
 import { useRoomContext } from "@/context/RoomContext";
 import { validateUsername } from "@/utils/validation";
@@ -58,7 +58,9 @@ const SettingTab = () => {
   const dispatch = useDispatch();
   const { updateUserName } = useRoomContext();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+  const [updateMarketing, { isLoading: isUpdatingMarketing }] = useUpdateMarketingPreferenceMutation();
   const t = useTranslations("panel.settings");
+  const tMarketing = useTranslations("marketing");
   const tHome = useTranslations("home");
   const tToast = useTranslations("toast");
   const tCommon = useTranslations("common");
@@ -72,6 +74,18 @@ const SettingTab = () => {
   const [usernameError, setUsernameError] = useState<string>("");
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const showEmailField = !authState.user?.isGuestUser;
+  const marketingOptIn = authState.user?.marketingEmailsOptIn ?? false;
+
+  const handleToggleMarketing = async () => {
+    if (isUpdatingMarketing || authState.user?.isGuestUser) return;
+    const newValue = !marketingOptIn;
+    try {
+      await updateMarketing({ opt_in: newValue }).unwrap();
+      dispatch(setMarketingOptIn(newValue));
+    } catch {
+      // silent fail
+    }
+  };
 
   const roomUrl = roomId
     ? typeof window !== "undefined"
@@ -371,6 +385,39 @@ const SettingTab = () => {
                     </div>
                   )}
                 </div>
+
+                {showEmailField ? (
+                  <div className={valueRowClass}>
+                    <label className={rowLabelClass}>{t("marketingEmails")}</label>
+                    <button
+                      type="button"
+                      onClick={handleToggleMarketing}
+                      disabled={isUpdatingMarketing}
+                      className={`${valueBoxClass} cursor-pointer justify-between transition-colors duration-200 hover:border-white/[0.1] disabled:cursor-not-allowed disabled:opacity-50`}
+                      aria-label={t("marketingEmails")}
+                    >
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <LuBell size={14} className={marketingOptIn ? "text-rose-300" : "text-white/30"} />
+                        <p className="min-w-0 flex-1 truncate text-sm text-white/60">
+                          {t("marketingEmailsDesc")}
+                        </p>
+                      </div>
+                      <div
+                        className={`relative h-4 w-7 shrink-0 rounded-full transition-colors duration-200 ${
+                          marketingOptIn
+                            ? "bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500"
+                            : "bg-white/[0.12]"
+                        }`}
+                      >
+                        <span
+                          className={`absolute left-0.5 top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform duration-200 ${
+                            marketingOptIn ? "translate-x-3" : "translate-x-0"
+                          }`}
+                        />
+                      </div>
+                    </button>
+                  </div>
+                ) : null}
 
                 {showEmailField ? (
                   <div className={`${valueRowClass} group relative`}>

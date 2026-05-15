@@ -138,7 +138,9 @@
       "profileUpdated": "Profil başarıyla güncellendi",
       "updateFailed": "Güncelleme başarısız",
       "updateFailedDescription": "Profilini güncelleyemedik. Lütfen tekrar dene.",
-      "saveChanges": "Değişiklikleri Kaydet"
+      "saveChanges": "Değişiklikleri Kaydet",
+      "marketingEmails": "Haberler ve güncellemeler",
+      "marketingEmailsDesc": "Yeni özellikler ve ipuçları"
     },
     "leaveParty": "Partiden Ayrıl?",
     "leavePartyMessage": "Bu partiden ayrılmak istediğinizden emin misiniz? Tekrar katılmak için oda ID'sine ihtiyacınız olacak.",
@@ -329,5 +331,14 @@
       "feature": "Özellik",
       "other": "Diğer"
     }
+  },
+  "marketing": {
+    "title": "Gelişmelerden haberdar ol?",
+    "message": "Yeni özellikler ve izleme partisi ipuçları hakkında bildirim al. İstediğin zaman abonelikten çık.",
+    "noThanks": "Hayır, teşekkürler",
+    "yesNotifyMe": "Evet, bildir",
+    "saving": "Kaydediliyor…",
+    "settingsLabel": "Haberler ve güncellemeler",
+    "settingsDescription": "Yeni özellikler ve izleme partisi ipuçları"
   }
 }

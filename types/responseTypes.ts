@@ -10,7 +10,8 @@ export type UserLoginResp = {
       username?: string;
       session_id?: string;
       is_email_verified: boolean;
-      guest_account: boolean
+      guest_account: boolean;
+      marketing_emails_opt_in?: boolean | null;
     };
     token: string;
   };

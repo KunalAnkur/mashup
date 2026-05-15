@@ -1,10 +1,10 @@
 // app/ClientRoot.tsx
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { SocketProvider } from "@/context/SocketContext"; // adjust the path
 import { store, persistor } from '@/lib/store';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { PersistGate } from "redux-persist/integration/react";
 import AuthGuard from "@/context/AuthGuard";
 import { FileProvider } from "@/context/FileContext";
@@ -15,6 +15,34 @@ import { PostHogProvider } from "@/components/PostHogProvider";
 import { Toaster } from 'react-hot-toast';
 import LocalePersistence from "@/components/LanguageSelector/LocalePersistence";
 import { setFocused } from "@/lib/store/slices/roomSlice";
+import WelcomeMarketingModal from "@/components/Modals/WelcomeMarketingModal";
+import { RootState } from "@/lib/store";
+
+// Mounted inside Provider+PersistGate so it can read Redux state
+function MarketingModalTrigger() {
+    const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        if (
+            isAuthenticated &&
+            user &&
+            !user.isGuestUser &&
+            user.marketingEmailsOptIn === null
+        ) {
+            // Small delay so the page renders before the modal pops
+            const t = setTimeout(() => setOpen(true), 800);
+            return () => clearTimeout(t);
+        }
+    }, [isAuthenticated, user]);
+
+    return (
+        <WelcomeMarketingModal
+            isOpen={open}
+            onClose={() => setOpen(false)}
+        />
+    );
+}
 
 export default function ClientRoot({ children }: { children: ReactNode }) {
     useEffect(() => {
@@ -60,8 +88,9 @@ export default function ClientRoot({ children }: { children: ReactNode }) {
                                 </MediaStreamProvider>
                             </FileProvider>
                         </AuthGuard>
+                        <MarketingModalTrigger />
                     </GoogleAuthProvider>
-                    <Toaster 
+                    <Toaster
                         position="top-right"
                         toastOptions={{
                             className: '',

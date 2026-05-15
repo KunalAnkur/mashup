@@ -7,8 +7,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store/index";
 import { logout } from "@/lib/store/slices/authSlice";
 import { useLogoutMutation } from "@/lib/store/api/authApi";
+import { useGetMySubscriptionQuery } from "@/lib/store/api/userApi";
+import { setSubscription } from "@/lib/store/slices/subscriptionSlice";
+import { useEffect } from "react";
 import { IoLogOutOutline } from "react-icons/io5";
-import { LuCrown } from "react-icons/lu";
+import { LuCrown, LuSparkles } from "react-icons/lu";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import Modal, {
@@ -27,6 +30,7 @@ import {
   DropdownHeaderRow,
   DropdownPanel,
 } from "./DropdownPrimitives";
+import { SubscriptionTier, SubscriptionStatus } from "@/types/subscriptionTypes";
 
 interface AvatarDropdownProps {
   size?: number;
@@ -43,10 +47,28 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
   const { user, isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth
   );
+  const subscription = useSelector(
+    (state: RootState) => state.subscription.subscription
+  );
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
   const tToast = useTranslations("toast");
   const tCommon = useTranslations("common");
   const showEmailField = !user?.isGuestUser;
+
+  // Fetch subscription when authenticated so premium status is always current
+  const { data: subscriptionData } = useGetMySubscriptionQuery(undefined, {
+    skip: !isAuthenticated || !!user?.isGuestUser,
+  });
+  useEffect(() => {
+    if (subscriptionData?.data) {
+      dispatch(setSubscription(subscriptionData.data));
+    }
+  }, [subscriptionData, dispatch]);
+
+  const isPremiumUser =
+    subscription?.tier === SubscriptionTier.PREMIUM &&
+    subscription?.status !== SubscriptionStatus.EXPIRED &&
+    subscription?.status !== SubscriptionStatus.CANCELLED;
 
   useDropdownDismiss({
     isOpen,
@@ -56,7 +78,6 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
     pointerEvent: "pointerdown",
   });
 
-  // Determine avatar URL with fallbacks
   const getAvatarUrl = () => {
     if (isAuthenticated && user?.profile) {
       return user.profile;
@@ -69,14 +90,9 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
     return "https://randomuser.me/api/portraits/women/44.jpg";
   };
 
-  // Get user display name
   const getUserDisplayName = () => {
-    if (isAuthenticated && user?.name) {
-      return user.name;
-    }
-    if (isAuthenticated && user?.username) {
-      return user.username;
-    }
+    if (isAuthenticated && user?.name) return user.name;
+    if (isAuthenticated && user?.username) return user.username;
     return "Guest";
   };
 
@@ -89,7 +105,6 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
     setIsOpen(false);
     router.push("/subscription");
   };
-  
 
   const handleLogoutConfirm = async () => {
     try {
@@ -100,10 +115,8 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
       console.error("Logout failed:", error);
       showError(tToast("logoutFailed"), tToast("errorLoggingOut"));
     } finally {
-      // Always clear local state and redirect, even if API call fails
       dispatch(logout());
       setShowLogoutConfirm(false);
-      // Use window.location for a hard redirect to bypass any loading states
       window.location.href = "/";
     }
   };
@@ -131,12 +144,23 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           url={getAvatarUrl()}
           alt={getUserDisplayName()}
           size={size}
+          isPremium={isPremiumUser}
           isDefault={!isAuthenticated || !user?.profile}
         />
 
-        {/* Dropdown indicator */}
-        {isOpen && (
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 rounded-full"></div>
+        {/* Premium crown badge */}
+        {isPremiumUser && (
+          <span
+            className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 shadow-md shadow-rose-500/40 ring-[1.5px] ring-black/40"
+            aria-label="Premium"
+          >
+            <LuCrown size={8} className="text-white" />
+          </span>
+        )}
+
+        {/* Dropdown indicator (non-premium) */}
+        {isOpen && !isPremiumUser && (
+          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-gradient-to-r from-rose-500 via-pink-500 to-fuchsia-500 rounded-full" />
         )}
       </button>
 
@@ -155,12 +179,20 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                 url={getAvatarUrl()}
                 alt={getUserDisplayName()}
                 size={30}
+                isPremium={isPremiumUser}
                 isDefault={!user?.profile}
               />
             }
             title={getUserDisplayName()}
             titleClassName={`truncate font-parkinsans font-semibold text-white ${appDropdownLabelClass}`}
-            meta={showEmailField && user?.email ? user.email : null}
+            meta={
+              isPremiumUser ? (
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-rose-300 ring-1 ring-rose-500/25">
+                  <LuCrown size={8} />
+                  <span>Premium</span>
+                </span>
+              ) : showEmailField && user?.email ? user.email : null
+            }
             metaClassName={`${appDropdownMetaTextClass} mt-0.5 truncate`}
             secondary={!isAuthenticated ? "Not authenticated" : null}
             secondaryClassName={`${appDropdownMetaTextClass} mt-0.5`}
@@ -171,14 +203,17 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           <DropdownActionRow
             onClick={handleSubscriptionClick}
             role="menuitem"
-            iconChipClassName="bg-white/[0.06] text-amber-100"
-            icon={
-              <LuCrown
-                size={13}
-                className="block md:h-[13px] md:w-[13px]"
-              />
+            iconChipClassName={
+              isPremiumUser
+                ? "bg-gradient-to-br from-rose-500/25 via-pink-500/25 to-fuchsia-500/25 text-rose-300 ring-1 ring-rose-500/30"
+                : "bg-white/[0.06] text-amber-100"
             }
-            label="Subscription"
+            icon={
+              isPremiumUser
+                ? <LuCrown size={13} className="block md:h-[13px] md:w-[13px]" />
+                : <LuSparkles size={13} className="block md:h-[13px] md:w-[13px]" />
+            }
+            label={isPremiumUser ? "Premium" : "Upgrade"}
           />
           <DropdownDivider />
           <DropdownActionRow
@@ -217,7 +252,6 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           confirmDisabled={isLoggingOut}
         />
       </Modal>
-
     </div>
   );
 };

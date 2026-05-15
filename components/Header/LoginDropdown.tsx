@@ -165,6 +165,19 @@ const LoginDropdown = ({ onClose, id, ariaLabel }: LoginDropdownProps) => {
           />
         </Fragment>
       ))}
+      <div className="px-3 pb-3 pt-2">
+        <p className="text-center text-[10px] leading-relaxed text-white/28">
+          By continuing you agree to our{" "}
+          <a href="https://movmash.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/50 transition-colors">
+            Terms
+          </a>{" "}
+          &{" "}
+          <a href="https://movmash.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/50 transition-colors">
+            Privacy Policy
+          </a>
+          .
+        </p>
+      </div>
     </DropdownPanel>
   );
 };

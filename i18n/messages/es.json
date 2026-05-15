@@ -138,7 +138,9 @@
       "profileUpdated": "Perfil actualizado exitosamente",
       "updateFailed": "Error al actualizar",
       "updateFailedDescription": "No pudimos actualizar tu perfil. Inténtalo de nuevo.",
-      "saveChanges": "Guardar Cambios"
+      "saveChanges": "Guardar Cambios",
+      "marketingEmails": "Noticias y novedades",
+      "marketingEmailsDesc": "Novedades y consejos"
     },
     "leaveParty": "¿Dejar la Fiesta?",
     "leavePartyMessage": "¿Estás seguro de que quieres dejar esta fiesta? Necesitarás el ID de la sala para volver a unirte.",
@@ -329,5 +331,14 @@
       "feature": "Característica",
       "other": "Otro"
     }
+  },
+  "marketing": {
+    "title": "¿Mantenerse informado?",
+    "message": "Recibe notificaciones sobre nuevas funciones y consejos para fiestas de cine. Cancela cuando quieras.",
+    "noThanks": "No, gracias",
+    "yesNotifyMe": "Sí, notifícame",
+    "saving": "Guardando…",
+    "settingsLabel": "Noticias y novedades",
+    "settingsDescription": "Novedades sobre funciones y consejos de Watch Party"
   }
 }

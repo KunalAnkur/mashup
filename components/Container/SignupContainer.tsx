@@ -198,8 +198,21 @@ const SignupContainer = ({ setContainer }: Prop) => {
             }}
           />
 
+          {/* ToS */}
+          <p className="text-center text-[11px] leading-relaxed text-white/30">
+            By signing up you agree to our{" "}
+            <a href="https://movmash.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/50 transition-colors">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="https://movmash.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/50 transition-colors">
+              Privacy Policy
+            </a>
+            .
+          </p>
+
           {/* Login Link */}
-          <div className="pt-2">
+          <div className="pt-1">
             <span className="flex items-center justify-center text-sm text-gray-400">
               {tAuth("alreadyHaveAccount")}{" "}
               {!!setContainer ? (
