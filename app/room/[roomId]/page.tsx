@@ -13,6 +13,7 @@ import { useFileContext } from "@/context/FileContext";
 import ProductBottomSheet from "@/components/Product/ProductBottomSheet";
 import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionModal";
 import { appFixedViewportPageClass } from "@/components/UI/classTokens";
+import FloatingCallOverlay from "@/components/VideoCall/FloatingCallOverlay";
 const Page = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
@@ -126,6 +127,7 @@ const Page = () => {
           {/* Flying Emoji Animations - Inside fullscreen container to work in fullscreen mode */}
           <ReactionsContainer />
           <ProductBottomSheet />
+          <FloatingCallOverlay />
         </div>
         <div
           className={`

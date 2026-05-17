@@ -54,6 +54,7 @@ interface JoinResponse {
     hostPlayback?: {
         playing: boolean;
     };
+    hostIsPremium?: boolean;
     error?: string;
 }
 
@@ -67,6 +68,7 @@ interface RoomContextType {
     joinResponse: JoinResponse | null;
     roomId: string | null;
     isHost: boolean;
+    hostIsPremium: boolean;
     username: string;
     leaveRoom: () => void;
     updatePlaylist: (urls: string[]) => void;
@@ -99,6 +101,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const [isJoined, setIsJoined] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [hostIsPremium, setHostIsPremium] = useState(false);
     const tToast = useTranslations("toast");
     const [roomType, setRoomType] = useState<RoomType | null>(null);
     const [streamDeliveryMode, setStreamDeliveryMode] = useState<StreamDeliveryMode | null>(null);
@@ -165,11 +168,12 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 // room: roomPayload,
                 playlist: roomState.playlist,
             }) as JoinResponse;
-            if (response?.success) {                
+            if (response?.success) {
                 setIsJoined(true);
                 currentRoomRef.current = roomId;
                 setRoomType(response.roomType || derivedRoomType);
                 setStreamDeliveryMode(response.streamDeliveryMode || null);
+                setHostIsPremium(response.hostIsPremium === true);
                 setJoinResponse(response);
                 dispatch(setHostPlaybackPlaying(response.hostPlayback?.playing === true));
                 setParticipants(response.users || []);
@@ -518,6 +522,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             joinResponse,
             roomId,
             isHost,
+            hostIsPremium,
             username,
             leaveRoom,
             updatePlaylist,
