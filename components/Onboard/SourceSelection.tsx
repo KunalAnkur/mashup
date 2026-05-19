@@ -100,7 +100,7 @@ const SourceSelection = () => {
 
   return (
     <>
-      <div className="flex h-full w-full flex-col items-center justify-center overflow-hidden bg-transparent px-4 pb-6 pt-20 sm:overflow-y-auto sm:px-6 sm:pb-6 sm:pt-6">
+      <div className="flex flex-1 w-full flex-col items-center justify-center overflow-y-auto bg-transparent px-4 pb-6 pt-20 sm:px-6 sm:pb-6 sm:pt-6">
         <div className="my-auto flex w-full max-w-lg flex-col items-center gap-4 sm:gap-5 md:gap-6">
           <div className="w-full animate-slide-up" style={{ animationDelay: "0.1s" }}>
             <div className="mb-3 flex items-center justify-center gap-2 sm:mb-4">

@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { usePreventMobileScroll } from "@/hooks/usePreventMobileScroll";
 import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "@/i18n/I18nProvider";
@@ -24,7 +23,6 @@ import {
 } from "@/components/UI/classTokens";
 
 const SyncPage = () => {
-  usePreventMobileScroll();
   const dispatch = useDispatch();
   const router = useRouter();
   const authState = useSelector((state: RootState) => state.auth);
@@ -99,7 +97,7 @@ const SyncPage = () => {
       <div className={appEntryPageShellClass}>
         <EntryPageHeader title={t("title")} fixed showBrandOnSubpage />
 
-        <div className={`flex-1 w-full min-h-0 overflow-hidden overflow-x-hidden md:flex md:items-center md:justify-center md:overflow-y-auto ${appEntryPageFixedHeaderOffsetClass}`}>
+        <div className={`flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center ${appEntryPageFixedHeaderOffsetClass}`}>
           <div className={appEntryPageInsetClass}>
             <div className={appEntryPageContentWrapClass}>
               <div className="flex w-full flex-col items-stretch gap-3 sm:gap-4 md:gap-6 lg:flex-row lg:gap-8 xl:gap-12 2xl:gap-16">

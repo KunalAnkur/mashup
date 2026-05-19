@@ -126,13 +126,13 @@ export const appHomeInputSurfaceClass =
 export const appLayoutContentLayerClass = "relative z-10 min-h-screen";
 
 export const appFixedViewportPageClass =
-  "relative h-screen overflow-hidden text-white";
+  "relative min-h-[100dvh] text-white md:h-screen md:overflow-hidden";
 
 export const appFlexibleViewportPageClass =
-  "relative min-h-screen overflow-hidden text-white";
+  "relative min-h-[100dvh] text-white md:overflow-hidden";
 
 export const appEntryPageShellClass =
-  "relative z-20 mx-auto flex h-screen w-full max-w-6xl flex-col overflow-hidden";
+  "relative z-20 mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col md:h-screen md:overflow-hidden";
 
 export const appEntryPageInsetClass =
   "w-full px-4 sm:px-6";
