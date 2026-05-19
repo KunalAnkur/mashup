@@ -7,8 +7,7 @@ export const movmashThemeGradientClass =
 export const movmashElevatedShadowClass =
   "shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40";
 
-export const movmashProminentCtaClass =
-  `bg-gradient-to-r ${movmashGradientStopsClass} hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-500/30`;
+export const movmashProminentCtaClass = `bg-gradient-to-r ${movmashGradientStopsClass} hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-500/30`;
 
 export const zincGlassSurfaceClass =
   "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15";
@@ -19,17 +18,13 @@ export const zincGlassMutedSurfaceClass =
 export const zincGlassFaintSurfaceClass =
   "bg-gradient-to-br from-zinc-800/5 via-zinc-700/5 to-zinc-800/5";
 
-export const zincGlassBlurredSurfaceClass =
-  `${zincGlassSurfaceClass} backdrop-blur-xl`;
+export const zincGlassBlurredSurfaceClass = `${zincGlassSurfaceClass} backdrop-blur-xl`;
 
-export const zincGlassMutedBlurredSurfaceClass =
-  `${zincGlassMutedSurfaceClass} backdrop-blur-xl`;
+export const zincGlassMutedBlurredSurfaceClass = `${zincGlassMutedSurfaceClass} backdrop-blur-xl`;
 
-export const zincGlassFaintBlurredSurfaceClass =
-  `${zincGlassFaintSurfaceClass} backdrop-blur-xl`;
+export const zincGlassFaintBlurredSurfaceClass = `${zincGlassFaintSurfaceClass} backdrop-blur-xl`;
 
-export const zincGlassBorderedSurfaceClass =
-  `${zincGlassBlurredSurfaceClass} border border-zinc-600/15`;
+export const zincGlassBorderedSurfaceClass = `${zincGlassBlurredSurfaceClass} border border-zinc-600/15`;
 
 export const zincGlassLgPanelSurfaceClass =
   "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-lg border border-zinc-600/15 rounded-lg md:rounded-xl lg:rounded-2xl";
@@ -53,8 +48,7 @@ export const appWhiteBorderClass = "border border-white/10";
 
 export const appFrostedBackdropClass = "backdrop-blur-xl";
 
-export const appBorderedFrostedSurfaceClass =
-  `${appWhiteBorderClass} ${appFrostedBackdropClass}`;
+export const appBorderedFrostedSurfaceClass = `${appWhiteBorderClass} ${appFrostedBackdropClass}`;
 
 export const appHoverRevealClass = "hover:bg-white/5 hover:text-white";
 
@@ -94,14 +88,11 @@ export const appDropdownMetaTextClass =
 
 export const appDropdownLabelClass = "min-w-0 text-[11px] md:text-xs";
 
-export const appDropdownActionLabelClass =
-  `${appDropdownLabelClass} font-medium`;
+export const appDropdownActionLabelClass = `${appDropdownLabelClass} font-medium`;
 
-export const appDropdownQuietActionButtonClass =
-  `${appDropdownRowClass} w-full text-left text-white/80 transition-all duration-200 ${appHoverRevealClass}`;
+export const appDropdownQuietActionButtonClass = `${appDropdownRowClass} w-full text-left text-white/80 transition-all duration-200 ${appHoverRevealClass}`;
 
-export const appDropdownDangerActionButtonClass =
-  `${appDropdownRowClass} w-full text-left text-white/80 transition-all duration-200 hover:bg-rose-500/10 hover:text-white`;
+export const appDropdownDangerActionButtonClass = `${appDropdownRowClass} w-full text-left text-white/80 transition-all duration-200 hover:bg-rose-500/10 hover:text-white`;
 
 export const appDropdownIconChipBaseClass =
   "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg leading-none";
@@ -117,11 +108,9 @@ export const appDropdownLogoutIconChipClass =
 export const appDropdownDisabledRowClass =
   "disabled:cursor-not-allowed disabled:opacity-50";
 
-export const appHomeEntryCardSurfaceClass =
-  `${zincGlassMutedBlurredSurfaceClass} hover:from-zinc-700/15 hover:via-zinc-600/15 hover:to-zinc-700/15`;
+export const appHomeEntryCardSurfaceClass = `${zincGlassMutedBlurredSurfaceClass} hover:from-zinc-700/15 hover:via-zinc-600/15 hover:to-zinc-700/15`;
 
-export const appHomeInputSurfaceClass =
-  `${zincGlassMutedBlurredSurfaceClass} transition-[background-color] duration-200 focus-within:from-zinc-700/15 focus-within:via-zinc-600/15 focus-within:to-zinc-700/15`;
+export const appHomeInputSurfaceClass = `${zincGlassMutedBlurredSurfaceClass} transition-[background-color] duration-200 focus-within:from-zinc-700/15 focus-within:via-zinc-600/15 focus-within:to-zinc-700/15`;
 
 export const appLayoutContentLayerClass = "relative z-10 min-h-screen";
 
@@ -134,8 +123,7 @@ export const appFlexibleViewportPageClass =
 export const appEntryPageShellClass =
   "relative z-20 mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col md:h-screen md:overflow-hidden";
 
-export const appEntryPageInsetClass =
-  "w-full px-4 sm:px-6";
+export const appEntryPageInsetClass = "w-full px-4 sm:px-6";
 
 export const appEntryPageContentWrapClass =
   "w-full pt-3 pb-4 sm:pt-4 sm:pb-6 md:pt-5 md:pb-8";
@@ -155,7 +143,7 @@ export const appEntryPageHeaderLeftSectionClass =
   "flex h-full min-w-0 items-center";
 
 export const appEntryPageHeaderTitleOverlayClass =
-  "pointer-events-none absolute inset-0 flex h-full items-center justify-center px-16 text-center sm:px-20 md:px-24";
+  "pointer-events-none absolute inset-0 flex h-full items-center justify-center px-12 text-center sm:px-20 md:px-24";
 
 export const appEntryPageHeaderRightSectionClass =
   "flex h-full min-w-0 items-center justify-end";
@@ -226,13 +214,13 @@ export const appSyncPlatformLabelClass =
   "mt-1 px-1 text-[10px] font-semibold leading-tight tracking-tight text-white/94 md:mt-2 md:text-xs lg:mt-2.5 lg:text-sm xl:text-[15px]";
 
 export const appSyncFieldInputClass =
-  "h-11 flex-1 min-w-0 rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.10),transparent_46%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.10),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] px-3 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl placeholder:text-white/36 transition-[filter,background] duration-200 focus:brightness-105 sm:h-[46px] sm:px-4";
+  "h-11 grow min-w-0 rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.10),transparent_46%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.10),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] px-4 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl placeholder:text-white/36 transition-[filter,background] duration-200 focus:brightness-105";
 
 export const appSyncSecondaryButtonClass =
-  "h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.08),rgba(168,85,247,0.06),rgba(244,63,94,0.08))] px-3 text-sm font-medium text-white/88 transition-[filter,background] duration-200 hover:brightness-105 hover:text-white sm:h-[46px] sm:px-4";
+  "h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.08),rgba(168,85,247,0.06),rgba(244,63,94,0.08))] px-3 text-sm font-medium text-white/88 transition-[filter,background] duration-200 hover:brightness-105 hover:text-white";
 
 export const appSyncPrimaryButtonClass =
-  "h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.94),rgba(168,85,247,0.88),rgba(244,63,94,0.9))] px-3 text-sm font-semibold tracking-tight text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:h-[46px] sm:px-4 md:px-6";
+  "h-11 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.94),rgba(168,85,247,0.88),rgba(244,63,94,0.9))] px-5 text-sm font-semibold tracking-tight text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
 
 export const appEntryFieldShellClass =
   "flex min-h-12 items-center rounded-2xl bg-white/[0.045] px-4 transition-colors duration-200 focus-within:bg-white/[0.07]";
@@ -258,8 +246,7 @@ export const appSyncPlaceholderRowClass =
 export const appSyncListShellClass =
   "min-h-[220px] flex-1 overflow-hidden sm:min-h-[200px]";
 
-export const appSyncListShellEmptyClass =
-  "flex-1 overflow-hidden rounded-2xl";
+export const appSyncListShellEmptyClass = "flex-1 overflow-hidden rounded-2xl";
 
 export const appSyncCardThumbnailClass =
   "relative h-[44px] w-[78px] shrink-0 overflow-hidden rounded-xl bg-[linear-gradient(180deg,rgba(24,24,31,0.88),rgba(10,10,14,0.92))]";
@@ -276,8 +263,7 @@ export const appStreamTopBarClass =
 export const appStreamActionButtonClass =
   "inline-flex h-10 items-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.14),rgba(168,85,247,0.08),rgba(244,63,94,0.14))] px-3.5 text-sm font-medium text-white/86 transition-[filter,background] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
 
-export const appStreamPanelClass =
-  "flex w-full flex-col";
+export const appStreamPanelClass = "flex w-full flex-col";
 
 export const appStreamListClass =
   "space-y-2 overflow-y-auto px-px pt-1 sm:space-y-2.5";
@@ -303,8 +289,7 @@ export const appStreamUploadDropzoneClass =
 export const appStreamInlineAdderClass =
   "relative flex flex-col items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.10),transparent_46%),linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.022))] transition-[filter,background] duration-200 hover:brightness-105";
 
-export const appStreamBottomActionRowClass =
-  "flex gap-2";
+export const appStreamBottomActionRowClass = "flex gap-2";
 
 export const appStreamGhostButtonClass =
   "h-11 w-full justify-center rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.08),rgba(168,85,247,0.06),rgba(244,63,94,0.08))] px-4 text-sm font-medium text-white/86 transition-[filter,background] duration-200 hover:brightness-105 hover:text-white";
