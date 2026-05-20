@@ -68,10 +68,10 @@ const LoginDropdownTrigger = ({
       <span className="flex h-5 w-5 items-center justify-center text-white/80">
         <LuLogIn size={13} />
       </span>
-      <span>{label}</span>
+      <span className="hidden sm:inline">{label}</span>
       <LuChevronDown
         size={14}
-        className={`transition-transform duration-200 ${isOpen ? "rotate-180 text-white" : "text-white/55"}`}
+        className={`hidden sm:block transition-transform duration-200 ${isOpen ? "rotate-180 text-white" : "text-white/55"}`}
       />
     </button>
     {isOpen && (

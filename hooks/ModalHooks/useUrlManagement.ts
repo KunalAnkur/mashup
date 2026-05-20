@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { AddedUrl } from "@/types/ModalTypes/addedUrlTypes";
@@ -36,9 +36,13 @@ export const useUrlManagement = (options?: UseUrlManagementOptions) => {
   const { onUrlAdded, persistToLocalStorage = !options?.onUrlAdded } = options || {};
   const authState = useSelector((state: RootState) => state.auth);
   const roomState = useSelector((state: RootState) => state.room);
-  const roomUrls = roomState.playlist
-    .filter((item) => item.source === "url")
-    .map((item) => item.link);
+  const roomUrls = useMemo(
+    () =>
+      roomState.playlist
+        .filter((item) => item.source === "url")
+        .map((item) => item.link),
+    [roomState.playlist]
+  );
   const [sourceUrlInput, setSourceUrlInput] = useState<string>("");
   const [addedUrls, setAddedUrls] = useState<AddedUrl[]>([]);
   const [isAddDisabled, setAddDisabled] = useState<boolean>(true);
