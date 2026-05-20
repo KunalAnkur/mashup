@@ -34,7 +34,7 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
   const t = useTranslations("sync");
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-3">
       <Input
         variant="raw"
         type="text"
@@ -47,7 +47,7 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
         disabled={isAdding}
       />
 
-      <div className="relative group shrink-0">
+      <div className="relative group shrink-0 sm:self-stretch">
         <Button
           onClick={onAddClick}
           icon={isAdding ? <ImSpinner2 className="animate-spin" /> : undefined}

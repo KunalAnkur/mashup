@@ -113,12 +113,12 @@ const Page = () => {
         message={roomState.settings.upgradeSubscriptionMessage}
       />
       
-      <div ref={containerRef} className={`${appFixedViewportPageClass} flex flex-col md:flex-row`}>
+      <div ref={containerRef} className={`${appFixedViewportPageClass} h-[100dvh] overflow-hidden flex flex-col md:flex-row`}>
         <div
           className={`
             relative z-10 bg-transparent transition-all duration-300
-            ${roomState.settings.panelCollapsed 
-              ? "flex-1 h-full w-full" 
+            ${roomState.settings.panelCollapsed
+              ? "flex-1 h-full w-full"
               : "flex-1 h-[40vh] md:h-full w-full"
             }
           `}
@@ -132,9 +132,9 @@ const Page = () => {
         <div
           className={`
             z-10 overflow-hidden bg-transparent transition-all duration-300 ease-in-out
-            ${roomState.settings.panelCollapsed 
-              ? "hidden" 
-            : `flex flex-col ${mobilePanelHeightClass} md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative`
+            ${roomState.settings.panelCollapsed
+              ? "hidden"
+              : `flex flex-col ${mobilePanelHeightClass} md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative`
             }
           `}
         >
