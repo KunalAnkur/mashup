@@ -6,11 +6,13 @@ import { useCallStream } from "@/context/CallStreamContext";
 import { useRoomContext } from "@/context/RoomContext";
 import { useSocket } from "@/context/SocketContext";
 import CallTile from "./CallTile";
-import { LuMic, LuMicOff, LuPhoneOff, LuVideo, LuVideoOff } from "react-icons/lu";
+import { LuMic, LuMicOff, LuVideo, LuVideoOff } from "react-icons/lu";
 
 interface CallTilesProps {
   compact?: boolean;
   showControls?: boolean;
+  layout?: "column" | "row";
+  fillContainer?: boolean;
 }
 
 
@@ -18,7 +20,12 @@ interface CallTilesProps {
  * Live call surface. It can render receive-only remote feeds before the local
  * user publishes, then adds the local preview once the user starts sharing.
  */
-export default function CallTiles({ compact = false, showControls = true }: CallTilesProps) {
+export default function CallTiles({
+  compact = false,
+  showControls = true,
+  layout = "column",
+  fillContainer = false,
+}: CallTilesProps) {
   const {
     isInCall, isJoining, isMicOn, isCameraOn,
     localStream, remoteParticipants,
@@ -31,14 +38,22 @@ export default function CallTiles({ compact = false, showControls = true }: Call
 
   const mySocketId = socket?.id;
   const localUsername = auth.user?.username ?? auth.user?.name ?? "You";
-  const participantNames = new Map(
-    participants.map((participant) => [participant.socketId, participant.username])
+  const participantBySocketId = new Map(
+    participants.map((participant) => [participant.socketId, participant])
   );
+
+  const getAvatarUrl = (username: string, profile?: string) => {
+    if (profile) return profile;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      username
+    )}&background=random&color=fff&size=200`;
+  };
 
   const localTile = isInCall || localStream ? {
     key: "local",
     stream: localStream,
     username: localUsername,
+    avatarUrl: getAvatarUrl(localUsername, auth.user?.profile),
     isLocal: true,
     // appears "in call" the moment we have a stream — so the user sees themselves
     // immediately while the SFU handshake is still completing
@@ -50,11 +65,13 @@ export default function CallTiles({ compact = false, showControls = true }: Call
   const remoteTiles = Array.from(remoteParticipants.values())
     .filter((callState) => callState.socketId !== mySocketId)
     .map((callState) => {
-      const username = participantNames.get(callState.socketId) ?? callState.username;
+      const participant = participantBySocketId.get(callState.socketId);
+      const username = participant?.username ?? callState.username;
       return {
         key: callState.socketId,
         stream: callState?.stream ?? null,
         username,
+        avatarUrl: getAvatarUrl(username, participant?.profile ?? callState.profile),
         isLocal: false,
         isInCall: true,
         isMuted: callState ? !callState.isMicOn : false,
@@ -68,37 +85,63 @@ export default function CallTiles({ compact = false, showControls = true }: Call
     return null;
   }
 
-  const gridCols =
-    allTiles.length === 1 ? "grid-cols-1" :
-    allTiles.length <= 4 ? "grid-cols-2" :
-    "grid-cols-3";
   const btnBase =
     "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-60";
   const activeBtn = "bg-white/[0.12] text-white hover:bg-white/[0.18]";
   const offBtn = "bg-red-500 text-white hover:bg-red-400";
+  const handleToggleMic = () => {
+    if (isMicOn && !isCameraOn) {
+      leaveCall();
+      return;
+    }
+
+    toggleMic();
+  };
+  const handleToggleCamera = () => {
+    if (isCameraOn && !isMicOn) {
+      leaveCall();
+      return;
+    }
+
+    toggleCamera();
+  };
+
+  const isRowLayout = layout === "row";
+  const rootClass = fillContainer ? "flex h-full min-h-0 flex-col gap-1" : "space-y-2";
+  const listClass = isRowLayout
+    ? "flex min-h-0 flex-1 flex-row gap-1 overflow-x-auto overflow-y-hidden"
+    : fillContainer
+      ? "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-0.5"
+      : "flex flex-col gap-1.5";
+  const tileShellClass = isRowLayout
+    ? "h-full min-w-[112px] flex-[1_0_132px]"
+    : "w-full";
 
   return (
-    <div className="rounded-2xl bg-white/[0.035] p-2 ring-1 ring-white/[0.08]">
-      <div className={`grid ${gridCols} gap-1.5`}>
+    <div className={rootClass}>
+      <div className={listClass}>
         {allTiles.map((tile) => (
-          <CallTile
-            key={tile.key}
-            stream={tile.stream}
-            username={tile.username}
-            isLocal={tile.isLocal}
-            isInCall={tile.isInCall}
-            isMuted={tile.isMuted}
-            isCameraOff={tile.isCameraOff}
-            size={compact ? "sm" : "md"}
-          />
+          <div key={tile.key} className={tileShellClass}>
+            <CallTile
+              stream={tile.stream}
+              username={tile.username}
+              isLocal={tile.isLocal}
+              isInCall={tile.isInCall}
+              isMuted={tile.isMuted}
+              isCameraOff={tile.isCameraOff}
+              avatarUrl={tile.avatarUrl}
+              size={compact ? "sm" : "md"}
+              fill={isRowLayout}
+            />
+          </div>
         ))}
       </div>
 
       {showControls && localTile && (
-        <div className="mt-2 flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <button
             type="button"
-            onClick={toggleMic}
+            onClick={handleToggleMic}
             disabled={isJoining}
             className={`${btnBase} ${isMicOn ? activeBtn : offBtn}`}
             aria-label={isMicOn ? "Mute microphone" : "Unmute microphone"}
@@ -108,22 +151,13 @@ export default function CallTiles({ compact = false, showControls = true }: Call
           </button>
           <button
             type="button"
-            onClick={toggleCamera}
+            onClick={handleToggleCamera}
             disabled={isJoining}
             className={`${btnBase} ${isCameraOn ? activeBtn : offBtn}`}
             aria-label={isCameraOn ? "Turn camera off" : "Turn camera on"}
             title={isCameraOn ? "Turn camera off" : "Turn camera on"}
           >
             {isCameraOn ? <LuVideo size={14} /> : <LuVideoOff size={14} />}
-          </button>
-          <button
-            type="button"
-            onClick={leaveCall}
-            className={`${btnBase} bg-red-500/95 text-white hover:bg-red-400`}
-            aria-label="Stop sharing"
-            title="Stop sharing"
-          >
-            <LuPhoneOff size={14} />
           </button>
         </div>
       )}

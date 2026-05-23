@@ -1,26 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { useCallStream } from "@/context/CallStreamContext";
 import { useRoomContext } from "@/context/RoomContext";
 import CallTiles from "../VideoCall/CallTiles";
 import CallUpsellTeaser from "../VideoCall/CallUpsellTeaser";
-import { LuLoader, LuMic, LuPhone, LuVideo } from "react-icons/lu";
-
-function Badge({
-  icon,
-  label,
-}: {
-  icon: ReactNode;
-  label: string;
-}) {
-  return (
-    <div className="inline-flex items-center gap-1 rounded-full bg-white/[0.05] px-2 py-1 text-[10px] font-semibold text-white/80 ring-1 ring-white/10">
-      <span className="text-white/60">{icon}</span>
-      <span className="leading-none truncate">{label}</span>
-    </div>
-  );
-}
+import { LuLoader, LuPhone, LuVideo } from "react-icons/lu";
 
 export default function PanelCallSection() {
   const {
@@ -34,7 +18,6 @@ export default function PanelCallSection() {
   const { participants } = useRoomContext();
 
   const hasActiveRemoteCall = remoteParticipants.size > 0;
-  const activeCallCount = remoteParticipants.size + (isInCall ? 1 : 0);
   const handleStartAudio = () => {
     void joinCall({ micOn: true, cameraOn: false });
   };
@@ -86,7 +69,9 @@ export default function PanelCallSection() {
                   {remoteParticipants.size} sharing in this room
                 </p>
               </div>
-              {startButtons}
+              <div className="flex shrink-0 items-center gap-1.5">
+                {startButtons}
+              </div>
             </div>
             <CallTiles compact showControls={false} />
           </div>
@@ -124,19 +109,6 @@ export default function PanelCallSection() {
         </div>
       ) : (
         <div>
-          <div className="mb-2 flex items-center justify-between gap-2 px-1">
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold leading-tight text-white/85">
-                Live call
-              </p>
-              <p className="mt-0.5 truncate text-[10px] leading-tight text-white/45">
-                {activeCallCount} in call
-              </p>
-            </div>
-            {remoteParticipants.size === 0 && (
-              <Badge icon={<LuMic size={12} />} label="Waiting" />
-            )}
-          </div>
           <CallTiles compact />
         </div>
       )}

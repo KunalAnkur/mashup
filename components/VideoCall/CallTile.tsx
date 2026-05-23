@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import {
   LuMicOff, LuVideoOff, LuVolumeX,
 } from "react-icons/lu";
+import Avatar from "@/components/UI/Avatar";
 
 interface CallTileProps {
   stream: MediaStream | null;
@@ -13,6 +14,8 @@ interface CallTileProps {
   isLocal?: boolean;
   isInCall?: boolean;
   size?: "sm" | "md";
+  avatarUrl?: string;
+  fill?: boolean;
 }
 
 export default function CallTile({
@@ -20,6 +23,8 @@ export default function CallTile({
   isMuted = false, isCameraOff = false,
   isLocal = false, isInCall = false,
   size = "md",
+  avatarUrl,
+  fill = false,
 }: CallTileProps) {
   const initials = username
     .split(" ")
@@ -30,7 +35,8 @@ export default function CallTile({
 
   const hasVideoTrack = !!stream?.getVideoTracks().length;
   const showVideo = !!stream && hasVideoTrack && !isCameraOff;
-  const avatarSize = size === "sm" ? "w-7 h-7 text-[10px]" : "w-10 h-10 text-sm";
+  const avatarSize = size === "sm" ? "h-12 w-12 text-sm" : "h-14 w-14 text-base";
+  const avatarPixels = size === "sm" ? 48 : 56;
 
   // ─── Autoplay handling ────────────────────────────────────────────────────
   // Joining the call IS a user gesture so play() normally succeeds. This
@@ -62,9 +68,9 @@ export default function CallTile({
 
   return (
     <div className={`
-      relative flex items-center justify-center rounded-xl overflow-hidden aspect-video w-full
-      ring-1 transition-all duration-300
-      ${isInCall ? "bg-zinc-950/75 ring-white/[0.10]" : "bg-zinc-900/30 ring-white/[0.04]"}
+      relative flex ${fill ? "h-full min-h-[72px]" : "aspect-video"} w-full items-center justify-center overflow-hidden rounded-lg
+      transition-all duration-300
+      ${isInCall ? "bg-zinc-950/75" : "bg-zinc-900/30"}
     `}>
       {showVideo && (
         <video
@@ -72,26 +78,34 @@ export default function CallTile({
           autoPlay
           playsInline
           muted={isLocal}
-          className={`w-full h-full object-cover ${isLocal ? "scale-x-[-1]" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover ${isLocal ? "scale-x-[-1]" : ""}`}
         />
       )}
 
+      <div className={`absolute inset-0 ${showVideo ? "bg-gradient-to-t from-black/60 via-transparent to-transparent" : "bg-white/[0.02]"}`} />
+
       {!showVideo && (
-        <div className={`flex flex-col items-center gap-1.5 transition-opacity duration-300 ${isInCall ? "opacity-100" : "opacity-30"}`}>
+        <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 transition-opacity duration-300 ${isInCall ? "opacity-100" : "opacity-30"}`}>
           <div
-            className={`${avatarSize} rounded-full flex items-center justify-center text-white font-semibold
+            className={`${avatarSize} overflow-hidden rounded-full flex items-center justify-center text-white font-semibold
               ${isInCall
                 ? "bg-gradient-to-br from-emerald-500/80 to-cyan-600/80 shadow-lg"
                 : "bg-zinc-700"}
             `}
           >
-            {initials}
+            {avatarUrl ? (
+              <Avatar
+                url={avatarUrl}
+                alt={username}
+                size={avatarPixels}
+              />
+            ) : (
+              initials
+            )}
           </div>
-          {isInCall && (
-            <span className="text-[9px] font-medium text-white/45">
-              Audio
-            </span>
-          )}
+          <div className="max-w-[80%] truncate text-center text-[11px] font-semibold leading-tight text-white/90">
+            {username}{isLocal ? " (you)" : ""}
+          </div>
         </div>
       )}
 
@@ -107,14 +121,15 @@ export default function CallTile({
         </button>
       )}
 
-      {/* Username — top-left */}
-      <div className="absolute top-1.5 left-2 z-10 pointer-events-none">
-        <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium truncate
-          ${isInCall ? "text-white/90 bg-black/40 backdrop-blur-sm" : "text-white/30"}
-        `}>
-          {username}{isLocal ? " (you)" : ""}
-        </span>
-      </div>
+      {showVideo && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex min-w-0 items-end px-2.5 py-2">
+          <div className="min-w-0">
+            <div className="max-w-[220px] truncate text-[11px] font-semibold leading-tight text-white/95 drop-shadow">
+              {username}{isLocal ? " (you)" : ""}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Read-only state badges */}
       {isInCall && (isMuted || isCameraOff) && (

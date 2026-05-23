@@ -78,6 +78,7 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
         const base: CallParticipant = {
           socketId,
           username: existing?.username ?? socketId,
+          profile: existing?.profile,
           isMicOn: existing?.isMicOn ?? true,
           isCameraOn: existing?.isCameraOn ?? true,
           stream: existing?.stream,
