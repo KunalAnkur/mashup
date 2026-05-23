@@ -10,31 +10,16 @@ import { SubscriptionTier } from "@/types/subscriptionTypes";
 import { useRoomContext } from "@/context/RoomContext";
 import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
-import { useCallSFU } from "@/hooks/useCallSFU";
-import { useCallP2P } from "@/hooks/useCallP2P";
+import { useAudioVideoCall } from "@/hooks/useAudioVideoCall";
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
-export interface CallParticipant {
-  socketId: string;
-  username: string;
-  profile?: string;
-  stream?: MediaStream;
-  isMicOn: boolean;
-  isCameraOn: boolean;
-}
+export type { CallParticipant } from "@/hooks/useAudioVideoCall";
+import type { CallParticipant } from "@/hooks/useAudioVideoCall";
 
-export interface CallStreamActions {
-  joinCall: (opts?: { micOn?: boolean; cameraOn?: boolean }) => Promise<void>;
-  leaveCall: () => void;
-  toggleMic: () => void;
-  toggleCamera: () => void;
-}
-
-export interface CallStreamContextType extends CallStreamActions {
+export interface CallStreamContextType {
   isInCall: boolean;
   isJoining: boolean;
-  callMode: "sfu" | "p2p" | null;
   isPremium: boolean;
   hostIsPremium: boolean;
   isHost: boolean;
@@ -42,6 +27,10 @@ export interface CallStreamContextType extends CallStreamActions {
   isCameraOn: boolean;
   localStream: MediaStream | null;
   remoteParticipants: Map<string, CallParticipant>;
+  joinCall: (opts?: { micOn?: boolean; cameraOn?: boolean }) => Promise<void>;
+  leaveCall: () => void;
+  toggleMic: () => void;
+  toggleCamera: () => void;
 }
 
 // ─── Context ─────────────────────────────────────────────────────────────────
@@ -51,7 +40,7 @@ const CallStreamContext = createContext<CallStreamContextType | null>(null);
 // ─── Provider ────────────────────────────────────────────────────────────────
 
 export function CallStreamProvider({ children }: { children: ReactNode }) {
-  const { isJoined, hostIsPremium, isHost, roomId: ctxRoomId } = useRoomContext();
+  const { isJoined, hostIsPremium, isHost } = useRoomContext();
   const { socket } = useSocket();
   const roomState = useSelector((state: RootState) => state.room);
   const roomId = roomState.roomId ?? null;
@@ -61,27 +50,27 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
   const isPremium = subscriptionTier === SubscriptionTier.PREMIUM;
 
   // ─── Shared state ──────────────────────────────────────────────────────────
+
   const [isInCall, setIsInCall] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
-  const [callMode, setCallMode] = useState<"sfu" | "p2p" | null>(null);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteParticipants, setRemoteParticipants] = useState<Map<string, CallParticipant>>(new Map());
 
-  // Refs so toggle callbacks always read current values without stale closures
+  // Refs so toggle callbacks read current values without stale closures
   const isMicOnRef = useRef(true);
   const isCameraOnRef = useRef(true);
   const localStreamRef = useRef<MediaStream | null>(null);
 
-  // ─── Shared callbacks ─────────────────────────────────────────────────────
+  // ─── Shared callbacks passed into the hook ────────────────────────────────
 
   const handleLocalStream = useCallback((stream: MediaStream | null) => {
     localStreamRef.current = stream;
     setLocalStream(stream);
   }, []);
 
-  const handleRemoteParticipantUpdate = useCallback(
+  const handleParticipantUpdate = useCallback(
     (socketId: string, updater: (prev: CallParticipant | undefined) => Partial<CallParticipant>) => {
       setRemoteParticipants((prev) => {
         const next = new Map(prev);
@@ -100,7 +89,7 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const handleRemoteParticipantRemove = useCallback((socketId: string) => {
+  const handleParticipantRemove = useCallback((socketId: string) => {
     setRemoteParticipants((prev) => {
       const next = new Map(prev);
       next.delete(socketId);
@@ -113,22 +102,29 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
     setIsJoining(false);
   }, []);
 
-  const handleCallLeft = useCallback(() => {
+  const handleCallLeft = useCallback((opts?: { keepRemoteParticipants?: boolean }) => {
     setIsInCall(false);
-    setCallMode(null);
     isMicOnRef.current = true;
     isCameraOnRef.current = true;
     setIsMicOn(true);
     setIsCameraOn(true);
-    setRemoteParticipants(new Map());
+    if (!opts?.keepRemoteParticipants) {
+      setRemoteParticipants(new Map());
+    }
   }, []);
 
-  // ─── Listen for participant join / leave / media-state from others ─────────
+  // ─── Socket: participant join / leave / media-state ────────────────────────
 
   useEffect(() => {
     if (!socket || !roomId || !isJoined) return;
 
-    const onParticipantJoined = (data: { socketId: string; username: string; profile?: string; isMicOn?: boolean; isCameraOn?: boolean }) => {
+    const onParticipantJoined = (data: {
+      socketId: string;
+      username: string;
+      profile?: string;
+      isMicOn?: boolean;
+      isCameraOn?: boolean;
+    }) => {
       setRemoteParticipants((prev) => {
         const next = new Map(prev);
         const existing = next.get(data.socketId);
@@ -136,7 +132,6 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
           socketId: data.socketId,
           username: data.username,
           profile: data.profile,
-          // Trust server-broadcast state if present (so initial off-state shows right away)
           isMicOn: data.isMicOn ?? existing?.isMicOn ?? true,
           isCameraOn: data.isCameraOn ?? existing?.isCameraOn ?? true,
           stream: existing?.stream,
@@ -174,28 +169,17 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
     };
   }, [socket, roomId, isJoined]);
 
-  // ─── Both hooks always mounted — gated by enabled prop ────────────────────
+  // ─── useAudioVideoCall — the single SFU hook ──────────────────────────────
 
-  const sfuActions = useCallSFU({
+  const callActions = useAudioVideoCall({
     roomId,
     enabled: isJoined && hostIsPremium,
-    onLocalStream: handleLocalStream,
-    onRemoteParticipantUpdate: handleRemoteParticipantUpdate,
-    onRemoteParticipantRemove: handleRemoteParticipantRemove,
-    onCallJoined: handleCallJoined,
-    onCallLeft: handleCallLeft,
     localStreamRef,
-  });
-
-  const p2pActions = useCallP2P({
-    roomId,
-    enabled: false, // P2P retired — host-premium SFU for all
     onLocalStream: handleLocalStream,
-    onRemoteParticipantUpdate: handleRemoteParticipantUpdate,
-    onRemoteParticipantRemove: handleRemoteParticipantRemove,
-    onCallJoined: handleCallJoined,
-    onCallLeft: handleCallLeft,
-    localStreamRef,
+    onParticipantUpdate: handleParticipantUpdate,
+    onParticipantRemove: handleParticipantRemove,
+    onJoined: handleCallJoined,
+    onLeft: handleCallLeft,
   });
 
   // ─── Unified actions ──────────────────────────────────────────────────────
@@ -204,21 +188,23 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
     if (isInCall || isJoining) return;
     const wantMic = opts?.micOn !== false;
     const wantCam = opts?.cameraOn !== false;
-    // Pre-set local state so the UI reflects the requested initial mode instantly
     isMicOnRef.current = wantMic;
     isCameraOnRef.current = wantCam;
     setIsMicOn(wantMic);
     setIsCameraOn(wantCam);
     setIsJoining(true);
-    setCallMode("sfu");
-    await sfuActions.joinCall({ micOn: wantMic, cameraOn: wantCam });
-  }, [isInCall, isJoining, sfuActions]);
+    try {
+      await callActions.joinCall({ micOn: wantMic, cameraOn: wantCam });
+    } finally {
+      setIsJoining(false);
+    }
+  }, [isInCall, isJoining, callActions]);
 
   const leaveCall = useCallback(() => {
-    sfuActions.leaveCall();
-  }, [sfuActions]);
+    callActions.leaveCall();
+  }, [callActions]);
 
-  // Fix: context owns the track toggle + broadcasts; hooks do NOT touch tracks.
+  // Context owns track state + broadcasts; hook only flips the underlying track
   const toggleMic = useCallback(() => {
     const track = localStreamRef.current?.getAudioTracks()[0];
     if (!track) return;
@@ -251,7 +237,7 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
 
   return (
     <CallStreamContext.Provider value={{
-      isInCall, isJoining, callMode, isPremium, hostIsPremium, isHost,
+      isInCall, isJoining, isPremium, hostIsPremium, isHost,
       isMicOn, isCameraOn, localStream, remoteParticipants,
       joinCall, leaveCall, toggleMic, toggleCamera,
     }}>

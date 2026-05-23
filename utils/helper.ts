@@ -624,3 +624,24 @@ export function getStreamTracks(stream: MediaStream) {
 
     return tracks;
 }
+
+/**
+ * Requests camera/mic access and returns the stream, or null if the user
+ * denies permission or no device is available (instead of throwing).
+ */
+export async function getUserMediaStream(opts: {
+  video?: boolean;
+  audio?: boolean;
+} = { video: true, audio: true }): Promise<MediaStream | null> {
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      video: opts.video !== false,
+      audio: opts.audio !== false,
+    });
+  } catch (e: any) {
+    if (e.name !== "NotAllowedError" && e.name !== "AbortError" && e.name !== "NotFoundError") {
+      console.error("[getUserMediaStream] Unexpected error:", e);
+    }
+    return null;
+  }
+}

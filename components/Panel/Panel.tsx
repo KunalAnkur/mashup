@@ -37,9 +37,7 @@ import { motion } from "framer-motion";
 import PanelHeaderActionButton from "./PanelHeaderActionButton";
 import useEmblaCarousel from "embla-carousel-react";
 import { movmashThemeGradientClass } from "../UI/classTokens";
-import CallTiles from "../VideoCall/CallTiles";
-import CallUpsellTeaser from "../VideoCall/CallUpsellTeaser";
-import { useCallStream } from "@/context/CallStreamContext";
+import PanelCallSection from "./PanelCallSection";
 
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
@@ -68,7 +66,6 @@ const Panel = () => {
   });
 
   const { leaveRoom, roomId, isJoined } = useRoomContext();
-  const { hostIsPremium } = useCallStream();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const router = useRouter();
   const roomState = useSelector((state: RootState) => state.room);
@@ -463,13 +460,9 @@ const Panel = () => {
 
         {/* ── Call section — below tabs, above chat ────────────────────── */}
         {isJoined && (
-          <div className="shrink-0">
-            {hostIsPremium
-              ? <CallTiles />        // premium room — live tiles + per-tile controls
-              : <CallUpsellTeaser /> // free room — inert preview + upgrade CTA
-            }
-          </div>
+          <PanelCallSection />
         )}
+
 
         {/* Content Area (Shared) */}
         <div className="flex-1 overflow-hidden">
