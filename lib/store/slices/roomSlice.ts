@@ -1,4 +1,4 @@
-import { AnyAction, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Playlist, RoomSetting, RoomState } from "@/types/storeTypes";
 import { RoomCreateResponse } from "@/types/responseTypes";
 
@@ -36,7 +36,7 @@ const roomSlice = createSlice({
       state.roomId = data.room_id;
       state.host = action.payload.authId === action.payload.data.user_id;
       state.playlist = state.host
-        ? data.playlist.map((item, index) => {
+        ? data.playlist.map((item) => {
             // if (index === 0) {
             //   return { ...item, selected: true };
             // }

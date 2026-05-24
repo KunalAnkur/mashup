@@ -68,4 +68,20 @@ export enum SocketEvent {
   P2P_PEER_LEFT = "p2pPeerLeft",
   P2P_STREAM_STARTED = "p2pStreamStarted",
   P2P_ROOM_CLOSED = "p2pRoomClosed",
+
+  // Video call events (bidirectional — premium uses SFU, free uses P2P)
+  CALL_JOIN = "callJoin",
+  CALL_LEAVE = "callLeave",
+  CALL_CONNECT_TRANSPORT = "callConnectTransport",
+  CALL_PRODUCE = "callProduce",
+  CALL_CONSUME = "callConsume",
+  CALL_UNPAUSE_CONSUMERS = "callUnpauseConsumers",
+  CALL_INCOMING_PRODUCER = "callIncomingProducer",
+  CALL_PARTICIPANT_JOINED = "callParticipantJoined",
+  CALL_PARTICIPANT_LEFT = "callParticipantLeft",
+  CALL_MEDIA_STATE = "callMediaState",
+  // P2P signaling for free-tier calls (separate from stream P2P events)
+  CALL_P2P_OFFER = "callP2pOffer",
+  CALL_P2P_ANSWER = "callP2pAnswer",
+  CALL_P2P_ICE = "callP2pIce",
 }

@@ -37,6 +37,7 @@ import { motion } from "framer-motion";
 import PanelHeaderActionButton from "./PanelHeaderActionButton";
 import useEmblaCarousel from "embla-carousel-react";
 import { movmashThemeGradientClass } from "../UI/classTokens";
+import PanelCallSection from "./PanelCallSection";
 
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
@@ -64,7 +65,7 @@ const Panel = () => {
     containScroll: "trimSnaps",
   });
 
-  const { leaveRoom, roomId } = useRoomContext();
+  const { leaveRoom, roomId, isJoined } = useRoomContext();
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const router = useRouter();
   const roomState = useSelector((state: RootState) => state.room);
@@ -456,6 +457,12 @@ const Panel = () => {
             </div>
           </div>
         </div>
+
+        {/* ── Call section — below tabs, above chat ────────────────────── */}
+        {isJoined && (
+          <PanelCallSection />
+        )}
+
 
         {/* Content Area (Shared) */}
         <div className="flex-1 overflow-hidden">
