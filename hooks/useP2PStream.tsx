@@ -39,7 +39,7 @@ export const useP2PStream = ({
     profile,
 }: UseP2PStreamParams) => {
     const { socket } = useSocket();
-    const { joinResponse } = useRoomContext();
+    const { joinResponse, participants } = useRoomContext();
     const tToast = useTranslations("toast");
 
     // State
@@ -62,6 +62,7 @@ export const useP2PStream = ({
     const onStreamPausedRef = useRef(onStreamPaused);
     const onStreamResumedRef = useRef(onStreamResumed);
     const onStreamStoppedRef = useRef(onStreamStopped);
+    const participantsRef = useRef(participants);
 
     // Update callback refs
     useEffect(() => { getStreamRef.current = getStream; }, [getStream]);
@@ -69,6 +70,7 @@ export const useP2PStream = ({
     useEffect(() => { onStreamPausedRef.current = onStreamPaused; }, [onStreamPaused]);
     useEffect(() => { onStreamResumedRef.current = onStreamResumed; }, [onStreamResumed]);
     useEffect(() => { onStreamStoppedRef.current = onStreamStopped; }, [onStreamStopped]);
+    useEffect(() => { participantsRef.current = participants; }, [participants]);
     useEffect(() => {
         if (joinResponse?.iceServers?.length) {
             iceServersRef.current = joinResponse.iceServers;
@@ -341,13 +343,16 @@ export const useP2PStream = ({
     const stopHostStream = useCallback((reason: string = "manual") => {
         if (!isHost || !roomId) return;
         console.log(`[P2P] Host stream stopped (${reason})`);
-        
+
         // Close all peer connections
         peerConnectionsRef.current.forEach((peerConn) => {
             peerConn.connection.close();
         });
         peerConnectionsRef.current.clear();
-        
+        localStreamRef.current = null;
+        // Reset initialized so a reshare triggers full re-initialization
+        setIsInitialized(false);
+
         socket?.emit(SocketEvent.STREAM_STOPPED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
     }, [isHost, roomId, socket]);
@@ -408,9 +413,22 @@ export const useP2PStream = ({
                 if (stream) {
                     localStreamRef.current = stream;
                     console.log("[P2P] Host initialized with local stream");
-                    
-                    // Notify room that stream is ready
+
+                    // Notify room that stream is ready (handles newly joining peers)
                     socket.emit(SocketEvent.P2P_STREAM_STARTED, { roomId });
+
+                    // Re-offer to all participants already in the room (reshare case)
+                    const currentParticipants = participantsRef.current;
+                    for (const participant of currentParticipants) {
+                        if (!participant.host && participant.socketId) {
+                            console.log(`[P2P] Re-offering to existing participant ${participant.socketId}`);
+                            const pc = createPeerConnection(participant.socketId);
+                            const peerConn: PeerConnection = { peerId: participant.socketId, connection: pc };
+                            peerConnectionsRef.current.set(participant.socketId, peerConn);
+                            addLocalStreamToPeer(pc, stream);
+                            await createAndSendOffer(participant.socketId, pc);
+                        }
+                    }
                 }
             } else {
                 // Consumer: Just mark as initialized, will connect when host sends offer
@@ -424,7 +442,7 @@ export const useP2PStream = ({
         } finally {
             initializingRef.current = false;
         }
-    }, [socket, roomId, isHost, enabled, isInitialized, replaceProducerTracks, tToast]);
+    }, [socket, roomId, isHost, enabled, isInitialized, replaceProducerTracks, createPeerConnection, addLocalStreamToPeer, createAndSendOffer, tToast]);
 
     const resetState = useCallback(() => {
         console.log("[P2P] Resetting state");
