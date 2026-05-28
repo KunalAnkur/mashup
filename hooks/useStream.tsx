@@ -148,6 +148,16 @@ export const useStream = ({
             console.log(`[STREAM] Host stream stopped (${reason})`);
         }
 
+        // Close the send transport — this propagates transportclose to server-side
+        // producers, cleaning them from peer.producers automatically
+        if (producerTransportRef.current && !producerTransportRef.current.closed) {
+            producerTransportRef.current.close();
+        }
+        producerTransportRef.current = null;
+        deviceRef.current = null;
+        // Reset so resharing triggers full re-initialization with a fresh transport
+        setIsInitialized(false);
+
         socket?.emit(SocketEvent.STREAM_STOPPED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
     }, [closeHostProducers, isHost, roomId, socket]);
