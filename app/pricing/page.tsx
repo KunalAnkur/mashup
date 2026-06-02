@@ -28,8 +28,10 @@ const plans = [
   {
     id: "free",
     name: "Free",
-    eyebrow: "Starter access",
+    hideName: false,
+    limitedPricing: false,
     value: "$0",
+    originalValue: null as string | null,
     valueMeta: "Start anytime",
     description:
       "Best for casual watch parties, testing the room flow, and quick sessions with friends.",
@@ -39,10 +41,9 @@ const plans = [
     cardClassName:
       "bg-white/[0.024] ring-1 ring-white/8 shadow-[0_22px_54px_rgba(0,0,0,0.18)]",
     features: [
-      "2 people per room",
+      "Small rooms — up to 2 people",
       "2-hour sessions",
       "Basic room UI",
-      // "No audio or video calls",
     ],
     ctaLabel: "Start free",
     ctaHref: "/",
@@ -50,8 +51,10 @@ const plans = [
   {
     id: "premium",
     name: "Premium",
-    eyebrow: "Best for creators and communities",
+    hideName: true,
+    limitedPricing: true,
     value: "$2.99",
+    originalValue: "$9.99",
     valueMeta: "per month",
     description:
       "Best for hosts who run bigger rooms, longer sessions, cleaner branding, and better control.",
@@ -62,9 +65,8 @@ const plans = [
     cardClassName:
       "bg-[linear-gradient(180deg,rgba(244,63,94,0.07)_0%,rgba(255,255,255,0.03)_24%,rgba(255,255,255,0.022)_100%)] ring-1 ring-rose-400/20 shadow-[0_26px_64px_rgba(0,0,0,0.24)]",
     features: [
-      "50+ people per room",
+      "Large rooms — 50+ people",
       "Unlimited time",
-      // "Audio and video calls",
       "Better room UI",
     ],
     ctaLabel: "Upgrade to Premium",
@@ -77,7 +79,6 @@ const pricingCardClassName =
   "relative overflow-hidden rounded-[2rem] px-5 py-5 sm:px-6 sm:py-6";
 const pricingBadgeClassName =
   "inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em]";
-const pricingEyebrowClassName = "mt-3 text-[13px] font-medium text-white/42";
 const pricingIconWrapClassName =
   "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[1.1rem]";
 const pricingValueRowClassName = "mt-6 flex items-end gap-2.5";
@@ -131,32 +132,37 @@ export default function PricingPage() {
                       >
                         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" />
 
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <span
-                              className={`${pricingBadgeClassName} ${plan.badgeClassName}`}
-                            >
-                              {plan.name}
-                            </span>
-                            <p className={pricingEyebrowClassName}>
-                              {plan.eyebrow}
-                            </p>
-                          </div>
+                        <span className={`${pricingIconWrapClassName} ${plan.iconClassName} absolute right-5 top-5 sm:right-6 sm:top-6`}>
+                          <Icon className="h-[18px] w-[18px]" />
+                        </span>
 
-                          <span
-                            className={`${pricingIconWrapClassName} ${plan.iconClassName}`}
-                          >
-                            <Icon className="h-[18px] w-[18px]" />
+                        {plan.limitedPricing && (
+                          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-300">
+                            <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+                            Limited pricing
+                          </div>
+                        )}
+
+                        {!plan.hideName && (
+                          <span className={`${pricingBadgeClassName} ${plan.badgeClassName}`}>
+                            {plan.name}
                           </span>
-                        </div>
+                        )}
 
                         <div className={pricingValueRowClassName}>
                           <span className={pricingValueClassName}>
                             {plan.value}
                           </span>
-                          <span className={pricingValueMetaClassName}>
-                            {plan.valueMeta}
-                          </span>
+                          <div className="flex flex-col gap-0.5 pb-1">
+                            {plan.originalValue && (
+                              <span className="text-[12px] font-medium leading-none text-white/36 line-through">
+                                {plan.originalValue}
+                              </span>
+                            )}
+                            <span className={pricingValueMetaClassName}>
+                              {plan.valueMeta}
+                            </span>
+                          </div>
                         </div>
 
                         <p className={pricingDescriptionClassName}>

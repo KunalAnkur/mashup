@@ -31,21 +31,20 @@ const freePlan = {
   price: "$0",
   cadence: "/month",
   perks: [
-    "2 people per room",
+    "Small rooms — up to 2 people",
     "2-hour sessions",
     "Basic room UI",
-    // "No audio or video calls",
   ],
 };
 
 const premiumPlan = {
   name: "Premium",
   price: "$2.99",
+  originalPrice: "$9.99",
   cadence: "/month",
   perks: [
-    "50+ people per room",
+    "Large rooms — 50+ people",
     "Unlimited time",
-    // "Audio and video calls",
     "Better room UI",
   ],
 };
@@ -109,7 +108,10 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 type PlanCardProps = {
   badge: string;
   name: string;
+  hideName?: boolean;
   price: string;
+  originalPrice?: string;
+  limitedPricing?: boolean;
   cadence: string;
   perks: string[];
   icon: React.ReactNode;
@@ -140,7 +142,10 @@ const planCardActionsClassName = "mt-6";
 function PlanCard({
   badge,
   name,
+  hideName,
   price,
+  originalPrice,
+  limitedPricing,
   cadence,
   perks,
   icon,
@@ -151,26 +156,34 @@ function PlanCard({
     <article className={`${planCardClassName} ${accentClassName}`}>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" />
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <span className={planCardBadgeClassName}>
-            {badge}
-          </span>
-          <h2 className={planCardNameClassName}>
-            {name}
-          </h2>
-        </div>
+      <span className={`${planCardIconClassName} absolute right-5 top-5 sm:right-6 sm:top-6`}>
+        {icon}
+      </span>
 
-        <span className={planCardIconClassName}>
-          {icon}
-        </span>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        {limitedPricing && (
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+            Limited pricing
+          </div>
+        )}
+        <span className={planCardBadgeClassName}>{badge}</span>
       </div>
 
+      {!hideName && (
+        <h2 className={planCardNameClassName}>{name}</h2>
+      )}
+
       <div className={planCardPriceRowClassName}>
-        <span className={planCardPriceClassName}>
-          {price}
-        </span>
-        <span className={planCardCadenceClassName}>{cadence}</span>
+        <span className={planCardPriceClassName}>{price}</span>
+        <div className="flex flex-col gap-0.5 pb-1">
+          {originalPrice && (
+            <span className="text-[12px] font-medium leading-none text-white/36 line-through">
+              {originalPrice}
+            </span>
+          )}
+          <span className={planCardCadenceClassName}>{cadence}</span>
+        </div>
       </div>
 
       <ul className={planCardPerksClassName}>
@@ -317,7 +330,10 @@ export default function SubscriptionPage() {
                     <PlanCard
                       badge="Upgrade"
                       name={premiumPlan.name}
+                      hideName
                       price={premiumPlan.price}
+                      originalPrice={premiumPlan.originalPrice}
+                      limitedPricing
                       cadence={premiumPlan.cadence}
                       perks={premiumPlan.perks}
                       icon={<LuCrown className="h-5 w-5" />}
