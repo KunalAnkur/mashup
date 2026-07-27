@@ -5,7 +5,10 @@
 
 export enum SubscriptionTier {
   FREE = 'free',
-  PREMIUM = 'premium'
+  /** @deprecated Use COUPLE instead. Kept so existing paying subscribers are never downgraded. */
+  PREMIUM = 'premium',
+  COUPLE = 'couple',
+  CROWD = 'crowd'
 }
 
 export enum SubscriptionStatus {
@@ -29,6 +32,7 @@ export interface SubscriptionFeatures {
   max_concurrent_rooms: number;
   max_file_size_mb: number;
   max_watch_hours_per_month: number; // -1 for unlimited
+  max_watch_minutes_per_day: number; // -1 for unlimited
   screen_share_quality: "720p" | "1080p" | "4k";
   can_record_sessions: boolean;
   priority_support: boolean;
@@ -41,10 +45,19 @@ export interface SubscriptionPlan {
   id: string;
   name: string;
   slug: string;
+  tier: SubscriptionTier;
   price: number;
   currency: string;
   features: SubscriptionFeatures;
   billing_cycle: BillingCycle;
+  display_order?: number;
+}
+
+export interface PendingPlan {
+  id: string;
+  name: string;
+  slug: string;
+  tier: SubscriptionTier;
 }
 
 export interface UserSubscription {
@@ -53,6 +66,8 @@ export interface UserSubscription {
   tier: SubscriptionTier;
   end_date: Date | string | null;
   plan: SubscriptionPlan;
+  pending_plan?: PendingPlan | null;
+  pending_change_effective_at?: Date | string | null;
 }
 
 export interface SubscriptionState {

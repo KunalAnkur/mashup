@@ -28,9 +28,14 @@
     "confirmLogoutMessage": "Çıkmak istediğinize emin misiniz? Ana sayfaya yönlendirileceksiniz.",
     "cancel": "İptal",
     "loggingOut": "Çıkış yapılıyor...",
+    "upgrade": "Yükselt",
+    "accountMenu": "Hesap menüsü",
+    "notAuthenticated": "Kimlik doğrulanmadı",
     "you": "Sen",
     "host": "Ev Sahibi",
     "loading": "Yükleniyor...",
+    "processing": "İşleniyor...",
+    "upgradeToPremium": "Premium'a Yükselt",
     "saving": "Kaydediliyor...",
     "saveChanges": "Değişiklikleri Kaydet",
     "edit": "Düzenle",
@@ -279,6 +284,11 @@
     "unableToStartStreaming": "Video yayını başlatılamadı. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.",
     "streamReconnectionFailed": "Akış yeniden bağlanamadı",
     "unableToReconnect": "Video akışına yeniden bağlanılamadı. Lütfen sayfayı yenileyin.",
+    "alreadySubscribed": "Zaten {plan} planındasın.",
+    "alreadySubscribedCancelled": "{plan} planın hâlâ aktif ve mevcut fatura döneminin sonunda sona erecek.",
+    "checkoutStartFailed": "Ödeme başlatılamadı",
+    "checkoutSessionFailed": "Ödeme oturumu oluşturulamadı",
+    "checkoutUrlMissing": "Ödeme adresi eksik",
     "failedToAddUrl": "URL eklenemedi. Lütfen tekrar deneyin.",
     "pleaseEnterUrl": "Lütfen bir URL girin",
     "invalidUrl": "Geçersiz URL. Lütfen desteklenen bir video URL'si girin.",
@@ -340,5 +350,98 @@
     "saving": "Kaydediliyor…",
     "settingsLabel": "Haberler ve güncellemeler",
     "settingsDescription": "Yeni özellikler ve izleme partisi ipuçları"
+  },
+  "pricing": {
+    "kicker": "Fiyatlandırma",
+    "loadError": "Fiyatlandırma şu anda kullanılamıyor. Lütfen kısa süre sonra tekrar deneyin.",
+    "currentPlanLabel": "Mevcut plan",
+    "switchPlanLabel": "Planı değiştir",
+    "title": "Planını seç",
+    "subtitle": "Free, hızlı bir izleme partisi için yeterli. Couple ve Crowd günlük limiti kaldırır; görüntülü arama, daha iyi kalite ve daha fazla kişi için yer ekler.",
+    "billingToggle": {
+      "monthly": "Aylık",
+      "yearly": "Yıllık",
+      "yearlySavings": "%30'a kadar tasarruf et"
+    },
+    "perMonth": "aylık",
+    "perYear": "yıllık",
+    "free": {
+      "name": "Free",
+      "meta": "Süresiz ücretsiz",
+      "description": "Hızlı bir izleme partisi veya Movmash'i denemek için en iyisi.",
+      "features": {
+        "participants": "Oda başına {count} kişi",
+        "dailyLimit": "Günde {minutes} dakika izleme süresi",
+        "screenShare": "{quality} ekran paylaşımı"
+      },
+      "cta": "Ücretsiz başla"
+    },
+    "couple": {
+      "name": "Couple Plan",
+      "description": "Sık sık birlikte izleyen çiftler ve yakın arkadaşlar için en iyisi.",
+      "features": {
+        "videoCall": "İzlerken görüntülü + sesli arama",
+        "participants": "Oda başına {count} kişi",
+        "unlimitedWatch": "Sınırsız izleme süresi",
+        "screenShare": "{quality} ekran paylaşımı",
+        "adFree": "Reklamsız"
+      },
+      "cta": "Couple'a yükselt"
+    },
+    "crowd": {
+      "name": "Crowd Plan",
+      "description": "Arkadaş grupları, hayran toplulukları ve daha büyük izleme partileri için en iyisi.",
+      "features": {
+        "videoCall": "İzlerken görüntülü + sesli arama",
+        "participants": "Oda başına {count} kişiye kadar",
+        "unlimitedWatch": "Sınırsız izleme süresi",
+        "screenShare": "{quality} ekran paylaşımı",
+        "adFree": "Reklamsız"
+      },
+      "cta": "Crowd'a yükselt"
+    }
+  },
+  "subscription": {
+    "title": "Abonelik",
+    "currentPlanBadge": "Mevcut plan",
+    "viewPlans": "Planları görüntüle",
+    "cancelPlan": "Planı iptal et",
+    "cancelsOn": "{date} tarihinde iptal edilecek",
+    "pendingChangeBanner": "{date} tarihinde {plan} planına geçilecek",
+    "undoPendingChange": "Geri al",
+    "features": {
+      "participants": "Oda başına {count} kişi",
+      "watchLimitDaily": "Günde {minutes} dakika izleme süresi",
+      "watchUnlimited": "Sınırsız izleme süresi",
+      "screenShare": "{quality} ekran paylaşımı",
+      "adFree": "Reklamsız"
+    },
+    "cancelModal": {
+      "title": "{plan} iptal edilsin mi?",
+      "message": "{plan} planın, mevcut fatura döneminin sonuna kadar aktif kalacak.",
+      "keepPlan": "Planı koru",
+      "cancelling": "İptal ediliyor..."
+    },
+    "toast": {
+      "cancelSuccess": "Planın, mevcut fatura döneminin sonunda yenilenmeyi durduracak.",
+      "cancelFailedTitle": "Abonelik iptali başarısız oldu",
+      "cancelFailedDefault": "Aboneliğin şu anda iptal edilemiyor.",
+      "pendingChangeCancelled": "Planlanan plan değişikliği iptal edildi.",
+      "pendingChangeCancelFailed": "Planlanan değişiklik şu anda iptal edilemiyor."
+    }
+  },
+  "planChange": {
+    "loadingPreview": "Fiyat kontrol ediliyor...",
+    "upgradeTitle": "{plan} planına geçilsin mi?",
+    "downgradeTitle": "{plan} planına geçilsin mi?",
+    "upgradeMessage": "Bugün {amount} ücret alınacak ve mevcut planındaki kalan günler taşınmayacak. Yenileme: {date}.",
+    "downgradeMessage": "{date} tarihinde {plan} planına geçeceksin. O zamana kadar mevcut planını korursun.",
+    "keepCurrentPlan": "Mevcut planı koru",
+    "confirmChange": "Geçişi onayla",
+    "confirming": "Geçiş yapılıyor...",
+    "upgradeStarted": "Planın değiştirildi.",
+    "downgradeStarted": "Plan değişikliğin planlandı.",
+    "changeFailedTitle": "Plan değişikliği başarısız oldu",
+    "changeFailedDefault": "Planın şu anda değiştirilemiyor. Lütfen tekrar dene."
   }
 }

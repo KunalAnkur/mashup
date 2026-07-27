@@ -30,7 +30,7 @@ import {
   DropdownHeaderRow,
   DropdownPanel,
 } from "./DropdownPrimitives";
-import { SubscriptionTier, SubscriptionStatus } from "@/types/subscriptionTypes";
+import { getTierDisplayName, hasActivePaidSubscription } from "@/utils/subscription";
 
 interface AvatarDropdownProps {
   size?: number;
@@ -65,10 +65,8 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
     }
   }, [subscriptionData, dispatch]);
 
-  const isPremiumUser =
-    subscription?.tier === SubscriptionTier.PREMIUM &&
-    subscription?.status !== SubscriptionStatus.EXPIRED &&
-    subscription?.status !== SubscriptionStatus.CANCELLED;
+  const isPremiumUser = hasActivePaidSubscription(subscription);
+  const tierDisplayName = getTierDisplayName(subscription?.tier);
 
   useDropdownDismiss({
     isOpen,
@@ -148,11 +146,11 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
           isDefault={!isAuthenticated || !user?.profile}
         />
 
-        {/* Premium crown badge */}
+        {/* Paid tier crown badge */}
         {isPremiumUser && (
           <span
             className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 shadow-md shadow-rose-500/40 ring-[1.5px] ring-black/40"
-            aria-label="Premium"
+            aria-label={tierDisplayName}
           >
             <LuCrown size={8} className="text-white" />
           </span>
@@ -169,7 +167,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
         <DropdownPanel
           id={dropdownMenuId}
           role="menu"
-          aria-label="Account menu"
+          aria-label={tCommon("accountMenu")}
           className="z-50 w-44 md:w-48"
         >
           {/* User Info Section */}
@@ -189,12 +187,12 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
               isPremiumUser ? (
                 <span className="inline-flex items-center gap-0.5 rounded-full bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-rose-300 ring-1 ring-rose-500/25">
                   <LuCrown size={8} />
-                  <span>Premium</span>
+                  <span>{tierDisplayName}</span>
                 </span>
               ) : showEmailField && user?.email ? user.email : null
             }
             metaClassName={`${appDropdownMetaTextClass} mt-0.5 truncate`}
-            secondary={!isAuthenticated ? "Not authenticated" : null}
+            secondary={!isAuthenticated ? tCommon("notAuthenticated") : null}
             secondaryClassName={`${appDropdownMetaTextClass} mt-0.5`}
           />
 
@@ -213,7 +211,7 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
                 ? <LuCrown size={13} className="block md:h-[13px] md:w-[13px]" />
                 : <LuSparkles size={13} className="block md:h-[13px] md:w-[13px]" />
             }
-            label={isPremiumUser ? "Premium" : "Upgrade"}
+            label={isPremiumUser ? tierDisplayName : tCommon("upgrade")}
           />
           <DropdownDivider />
           <DropdownActionRow

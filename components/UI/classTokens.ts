@@ -237,6 +237,14 @@ export const appEntrySecondaryButtonClass =
 export const appEntryPrimaryButtonClass =
   "h-12 justify-center rounded-2xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 px-5 text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50";
 
+export const pricingPaidCardSurfaceClass =
+  "bg-[linear-gradient(180deg,rgba(244,63,94,0.07)_0%,rgba(255,255,255,0.03)_24%,rgba(255,255,255,0.022)_100%)] ring-1 ring-rose-400/20 shadow-[0_26px_64px_rgba(0,0,0,0.24)]";
+
+export const pricingPaidIconSurfaceClass =
+  "bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 text-white shadow-[0_18px_36px_rgba(244,63,94,0.2)]";
+
+export const pricingPaidBadgeSurfaceClass = "bg-rose-500/12 text-rose-100";
+
 export const appSyncTooltipSurfaceClass =
   "rounded-xl bg-[linear-gradient(180deg,rgba(22,22,30,0.98),rgba(14,14,20,0.98))] px-3 py-2 text-[11px] text-white/76 shadow-xl shadow-black/25 backdrop-blur-xl";
 

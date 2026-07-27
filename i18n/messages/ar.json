@@ -28,9 +28,14 @@
     "confirmLogoutMessage": "هل أنت متأكد أنك تريد تسجيل الخروج؟ سيتم توجيهك إلى الصفحة الرئيسية.",
     "cancel": "إلغاء",
     "loggingOut": "جاري تسجيل الخروج...",
+    "upgrade": "ترقية",
+    "accountMenu": "قائمة الحساب",
+    "notAuthenticated": "غير مسجل الدخول",
     "you": "أنت",
     "host": "المضيف",
     "loading": "جاري التحميل...",
+    "processing": "جارٍ المعالجة...",
+    "upgradeToPremium": "الترقية إلى Premium",
     "saving": "جاري الحفظ...",
     "saveChanges": "حفظ التغييرات",
     "edit": "تعديل",
@@ -279,6 +284,11 @@
     "unableToStartStreaming": "تعذر بدء بث الفيديو. يرجى التحقق من اتصالك والمحاولة مرة أخرى.",
     "streamReconnectionFailed": "فشل إعادة الاتصال بالبث",
     "unableToReconnect": "تعذر إعادة الاتصال ببث الفيديو. يرجى تحديث الصفحة.",
+    "alreadySubscribed": "أنت مشترك بالفعل في خطة {plan}.",
+    "alreadySubscribedCancelled": "خطتك {plan} لا تزال نشطة وستنتهي في نهاية فترة الفوترة الحالية.",
+    "checkoutStartFailed": "تعذّر بدء الدفع",
+    "checkoutSessionFailed": "تعذّر إنشاء جلسة الدفع",
+    "checkoutUrlMissing": "رابط الدفع غير متوفر",
     "failedToAddUrl": "فشل إضافة الرابط. يرجى المحاولة مرة أخرى.",
     "pleaseEnterUrl": "يرجى إدخال رابط",
     "invalidUrl": "رابط غير صالح. يرجى إدخال رابط فيديو مدعوم.",
@@ -340,5 +350,98 @@
     "saving": "جارٍ الحفظ…",
     "settingsLabel": "أخبار وتحديثات",
     "settingsDescription": "تحديثات حول الميزات الجديدة ونصائح الحفلات"
+  },
+  "pricing": {
+    "kicker": "الأسعار",
+    "loadError": "الأسعار غير متاحة مؤقتاً. يرجى المحاولة مرة أخرى بعد قليل.",
+    "currentPlanLabel": "الخطة الحالية",
+    "switchPlanLabel": "تبديل الخطة",
+    "title": "اختر خطتك",
+    "subtitle": "الخطة المجانية تكفي لمشاهدة سريعة معاً. خطتا Couple وCrowd تلغيان الحد اليومي وتضيفان مكالمات الفيديو وجودة أفضل ومساحة لعدد أكبر من الأشخاص.",
+    "billingToggle": {
+      "monthly": "شهري",
+      "yearly": "سنوي",
+      "yearlySavings": "وفّر حتى 30%"
+    },
+    "perMonth": "شهرياً",
+    "perYear": "سنوياً",
+    "free": {
+      "name": "مجاني",
+      "meta": "مجاني للأبد",
+      "description": "الأفضل لمشاهدة سريعة أو لتجربة Movmash.",
+      "features": {
+        "participants": "{count} أشخاص لكل غرفة",
+        "dailyLimit": "{minutes} دقيقة مشاهدة يومياً",
+        "screenShare": "مشاركة شاشة بجودة {quality}"
+      },
+      "cta": "ابدأ مجاناً"
+    },
+    "couple": {
+      "name": "خطة Couple",
+      "description": "الأفضل للأزواج والأصدقاء المقربين الذين يشاهدون معاً كثيراً.",
+      "features": {
+        "videoCall": "مكالمة فيديو وصوت أثناء المشاهدة",
+        "participants": "{count} أشخاص لكل غرفة",
+        "unlimitedWatch": "وقت مشاهدة غير محدود",
+        "screenShare": "مشاركة شاشة بجودة {quality}",
+        "adFree": "بدون إعلانات"
+      },
+      "cta": "الترقية إلى Couple"
+    },
+    "crowd": {
+      "name": "خطة Crowd",
+      "description": "الأفضل لمجموعات الأصدقاء والمعجبين وحفلات المشاهدة الأكبر.",
+      "features": {
+        "videoCall": "مكالمة فيديو وصوت أثناء المشاهدة",
+        "participants": "حتى {count} أشخاص لكل غرفة",
+        "unlimitedWatch": "وقت مشاهدة غير محدود",
+        "screenShare": "مشاركة شاشة بجودة {quality}",
+        "adFree": "بدون إعلانات"
+      },
+      "cta": "الترقية إلى Crowd"
+    }
+  },
+  "subscription": {
+    "title": "الاشتراك",
+    "currentPlanBadge": "الخطة الحالية",
+    "viewPlans": "عرض الخطط",
+    "cancelPlan": "إلغاء الخطة",
+    "cancelsOn": "سيتم الإلغاء في {date}",
+    "pendingChangeBanner": "سيتم الانتقال إلى {plan} في {date}",
+    "undoPendingChange": "تراجع",
+    "features": {
+      "participants": "{count} أشخاص لكل غرفة",
+      "watchLimitDaily": "{minutes} دقيقة مشاهدة يومياً",
+      "watchUnlimited": "وقت مشاهدة غير محدود",
+      "screenShare": "مشاركة شاشة بجودة {quality}",
+      "adFree": "بدون إعلانات"
+    },
+    "cancelModal": {
+      "title": "إلغاء {plan}؟",
+      "message": "ستبقى خطة {plan} نشطة حتى نهاية فترة الفوترة الحالية.",
+      "keepPlan": "الاحتفاظ بالخطة",
+      "cancelling": "جارٍ الإلغاء..."
+    },
+    "toast": {
+      "cancelSuccess": "ستتوقف خطتك عن التجديد في نهاية فترة الفوترة الحالية.",
+      "cancelFailedTitle": "فشل إلغاء الاشتراك",
+      "cancelFailedDefault": "تعذّر إلغاء اشتراكك في الوقت الحالي.",
+      "pendingChangeCancelled": "تم إلغاء تغيير الخطة المجدول.",
+      "pendingChangeCancelFailed": "تعذّر إلغاء التغيير المجدول في الوقت الحالي."
+    }
+  },
+  "planChange": {
+    "loadingPreview": "جارٍ التحقق من السعر...",
+    "upgradeTitle": "التبديل إلى {plan}؟",
+    "downgradeTitle": "الانتقال إلى {plan}؟",
+    "upgradeMessage": "سيتم خصم {amount} اليوم ولن يتم ترحيل الأيام المتبقية من خطتك الحالية. يتجدد في {date}.",
+    "downgradeMessage": "ستنتقل إلى خطة {plan} في {date}. ستحتفظ بخطتك الحالية حتى ذلك الحين.",
+    "keepCurrentPlan": "الاحتفاظ بالخطة الحالية",
+    "confirmChange": "تأكيد التبديل",
+    "confirming": "جارٍ التبديل...",
+    "upgradeStarted": "تم تبديل خطتك.",
+    "downgradeStarted": "تم جدولة تغيير خطتك.",
+    "changeFailedTitle": "فشل تغيير الخطة",
+    "changeFailedDefault": "تعذّر تغيير خطتك في الوقت الحالي. يرجى المحاولة مرة أخرى."
   }
 }

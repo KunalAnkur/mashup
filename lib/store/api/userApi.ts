@@ -34,6 +34,24 @@ export interface GetSubscriptionResponse {
   data: UserSubscription;
 }
 
+// Postgres DECIMAL columns (plan.price) come back over the wire as strings (e.g. "6.99").
+function normalizeSubscriptionResponse(
+  response: GetSubscriptionResponse,
+): GetSubscriptionResponse {
+  if (!response?.data?.plan) return response;
+
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      plan: {
+        ...response.data.plan,
+        price: Number(response.data.plan.price),
+      },
+    },
+  };
+}
+
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
@@ -71,12 +89,14 @@ export const userApi = createApi({
         url: "/subscription/me",
         method: "GET",
       }),
+      transformResponse: normalizeSubscriptionResponse,
     }),
     cancelMySubscription: builder.mutation<GetSubscriptionResponse, void>({
       query: () => ({
         url: "/subscription/cancel",
         method: "POST",
       }),
+      transformResponse: normalizeSubscriptionResponse,
     }),
     updateMarketingPreference: builder.mutation<{ success: boolean }, { opt_in: boolean }>({
       query: ({ opt_in }) => ({
