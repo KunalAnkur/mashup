@@ -356,6 +356,7 @@
     "loadError": "Fiyatlandırma şu anda kullanılamıyor. Lütfen kısa süre sonra tekrar deneyin.",
     "currentPlanLabel": "Mevcut plan",
     "switchPlanLabel": "Planı değiştir",
+    "downgradeToFreeLabel": "Geçmek için planını iptal et",
     "title": "Planını seç",
     "subtitle": "Free, hızlı bir izleme partisi için yeterli. Couple ve Crowd günlük limiti kaldırır; görüntülü arama, daha iyi kalite ve daha fazla kişi için yer ekler.",
     "billingToggle": {
@@ -406,6 +407,7 @@
     "currentPlanBadge": "Mevcut plan",
     "viewPlans": "Planları görüntüle",
     "cancelPlan": "Planı iptal et",
+    "reactivatePlan": "Yeniden etkinleştir",
     "cancelsOn": "{date} tarihinde iptal edilecek",
     "pendingChangeBanner": "{date} tarihinde {plan} planına geçilecek",
     "undoPendingChange": "Geri al",
@@ -427,7 +429,27 @@
       "cancelFailedTitle": "Abonelik iptali başarısız oldu",
       "cancelFailedDefault": "Aboneliğin şu anda iptal edilemiyor.",
       "pendingChangeCancelled": "Planlanan plan değişikliği iptal edildi.",
-      "pendingChangeCancelFailed": "Planlanan değişiklik şu anda iptal edilemiyor."
+      "pendingChangeCancelFailed": "Planlanan değişiklik şu anda iptal edilemiyor.",
+      "reactivateSuccess": "Planın her zamanki gibi yenilenmeye devam edecek.",
+      "reactivateFailedTitle": "Yeniden etkinleştirme başarısız oldu",
+      "reactivateFailedDefault": "Aboneliğin şu anda yeniden etkinleştirilemiyor."
+    },
+    "transactions": {
+      "title": "Ödeme geçmişi",
+      "empty": "Henüz ödeme işlemi yok.",
+      "newSubscription": "Yeni abonelik",
+      "newSubscriptionTo": "{plan} aboneliği",
+      "upgrade": "Plan yükseltmesi",
+      "upgradeTo": "{plan} planına yükseltme",
+      "downgrade": "Plan düşürmesi",
+      "downgradeTo": "{plan} planına düşürme",
+      "status": {
+        "pending": "Beklemede",
+        "processing": "İşleniyor",
+        "completed": "Tamamlandı",
+        "failed": "Başarısız",
+        "refunded": "İade edildi"
+      }
     }
   },
   "planChange": {

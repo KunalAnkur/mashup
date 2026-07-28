@@ -14,6 +14,12 @@ import {
   appEntrySecondaryButtonClass,
   appFlexibleViewportPageClass,
   appPulseSurfaceClass,
+  appTransactionRowClass,
+  appTransactionStatusBadgeClass,
+  appTransactionStatusCompletedClass,
+  appTransactionStatusFailedClass,
+  appTransactionStatusNeutralClass,
+  appTransactionStatusProcessingClass,
   appWhiteBorderClass,
   pricingPaidCardSurfaceClass,
 } from "@/components/UI/classTokens";
@@ -21,8 +27,13 @@ import { RootState } from "@/lib/store";
 import {
   useCancelMySubscriptionMutation,
   useGetMySubscriptionQuery,
+  useReactivateMySubscriptionMutation,
 } from "@/lib/store/api/userApi";
-import { useCancelChangePlanMutation } from "@/lib/store/api/billingApi";
+import {
+  PaymentTransactionSummary,
+  useCancelChangePlanMutation,
+  useGetMyTransactionsQuery,
+} from "@/lib/store/api/billingApi";
 import { setSubscription } from "@/lib/store/slices/subscriptionSlice";
 import { useTranslations } from "@/i18n/I18nProvider";
 import {
@@ -31,8 +42,16 @@ import {
   hasActivePaidSubscription,
 } from "@/utils/subscription";
 import { getApiErrorMessage } from "@/utils/apiError";
-import { SubscriptionStatus } from "@/types/subscriptionTypes";
+import { PaymentStatus, SubscriptionStatus } from "@/types/subscriptionTypes";
 import { showError, showSuccess } from "@/utils/toast";
+
+const transactionStatusClassMap: Record<PaymentStatus, string> = {
+  [PaymentStatus.PROCESSING]: appTransactionStatusProcessingClass,
+  [PaymentStatus.PENDING]: appTransactionStatusProcessingClass,
+  [PaymentStatus.COMPLETED]: appTransactionStatusCompletedClass,
+  [PaymentStatus.FAILED]: appTransactionStatusFailedClass,
+  [PaymentStatus.REFUNDED]: appTransactionStatusNeutralClass,
+};
 
 const formatDate = (value?: string | Date | null) => {
   if (!value) {
@@ -83,10 +102,15 @@ export default function SubscriptionPage() {
   });
   const [cancelMySubscription, { isLoading: isCancelling }] =
     useCancelMySubscriptionMutation();
+  const [reactivateMySubscription, { isLoading: isReactivating }] =
+    useReactivateMySubscriptionMutation();
   const [cancelChangePlan, { isLoading: isCancellingChange }] =
     useCancelChangePlanMutation();
+  const { data: transactionsData, isLoading: isLoadingTransactions } =
+    useGetMyTransactionsQuery();
 
   const subscription = data?.data ?? storedSubscription;
+  const transactions = transactionsData?.data ?? [];
 
   useEffect(() => {
     if (data?.data) {
@@ -123,6 +147,18 @@ export default function SubscriptionPage() {
     return bullets;
   }, [plan, t]);
 
+  const getTransactionLabel = (transaction: PaymentTransactionSummary) => {
+    const plan = transaction.planName ?? transaction.planSlug;
+
+    if (transaction.direction === "upgrade") {
+      return plan ? t("transactions.upgradeTo", { plan }) : t("transactions.upgrade");
+    }
+    if (transaction.direction === "downgrade") {
+      return plan ? t("transactions.downgradeTo", { plan }) : t("transactions.downgrade");
+    }
+    return plan ? t("transactions.newSubscriptionTo", { plan }) : t("transactions.newSubscription");
+  };
+
   const handleCancelPendingChange = async () => {
     try {
       await cancelChangePlan().unwrap();
@@ -143,6 +179,17 @@ export default function SubscriptionPage() {
     } catch (cancelError: unknown) {
       const message = getApiErrorMessage(cancelError, t("toast.cancelFailedDefault"));
       showError(t("toast.cancelFailedTitle"), message);
+    }
+  };
+
+  const handleReactivateSubscription = async () => {
+    try {
+      const response = await reactivateMySubscription().unwrap();
+      dispatch(setSubscription(response.data));
+      showSuccess(t("toast.reactivateSuccess"));
+    } catch (reactivateError: unknown) {
+      const message = getApiErrorMessage(reactivateError, t("toast.reactivateFailedDefault"));
+      showError(t("toast.reactivateFailedTitle"), message);
     }
   };
 
@@ -230,13 +277,21 @@ export default function SubscriptionPage() {
                       </div>
                     ) : null}
 
-                    <div className={planCardActionsClassName}>
-                      {isCancellationScheduled && cancellationDate ? (
-                        <p className="text-[13px] text-white/56">
-                          {t("cancelsOn", { date: cancellationDate })}
-                        </p>
-                      ) : null}
+                    {isCancellationScheduled && cancellationDate ? (
+                      <div className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white/[0.04] px-4 py-3 text-[13px] text-white/68">
+                        <span>{t("cancelsOn", { date: cancellationDate })}</span>
+                        <button
+                          type="button"
+                          onClick={handleReactivateSubscription}
+                          disabled={isReactivating}
+                          className="font-semibold text-rose-300 transition-colors duration-200 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {isReactivating ? t("cancelModal.cancelling") : t("reactivatePlan")}
+                        </button>
+                      </div>
+                    ) : null}
 
+                    <div className={planCardActionsClassName}>
                       <Link
                         href="/pricing"
                         className={`${appEntryActionButtonBaseClass} ${appEntrySecondaryButtonClass} h-11 w-full rounded-[1.15rem] text-sm`}
@@ -257,6 +312,40 @@ export default function SubscriptionPage() {
                     </div>
                   </article>
                 )}
+
+                {isLoadingTransactions ? (
+                  <div className={`${skeletonCardClassName} h-[140px]`} />
+                ) : transactions.length > 0 ? (
+                  <div className="space-y-3">
+                    <h2 className="text-[13px] font-semibold uppercase tracking-[0.16em] text-white/48">
+                      {t("transactions.title")}
+                    </h2>
+                    <div className="space-y-2">
+                      {transactions.map((transaction) => (
+                        <div key={transaction.id} className={appTransactionRowClass}>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-medium text-white/88">
+                              {getTransactionLabel(transaction)}
+                            </span>
+                            <span className="text-white/48">
+                              {formatDate(transaction.createdAt)}
+                            </span>
+                          </div>
+                          <div className="flex flex-col items-end gap-1.5">
+                            <span className="font-medium text-white/88">
+                              {formatPlanPrice(transaction.amount, transaction.currency)}
+                            </span>
+                            <span
+                              className={`${appTransactionStatusBadgeClass} ${transactionStatusClassMap[transaction.status]}`}
+                            >
+                              {t(`transactions.status.${transaction.status}`)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </section>
             </div>
           </div>

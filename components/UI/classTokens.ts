@@ -354,3 +354,14 @@ export const appStreamScreenWarningSurfaceClass =
 
 export const appStreamScreenPrimaryButtonClass =
   "inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.94),rgba(168,85,247,0.88),rgba(244,63,94,0.90))] px-4 py-3.5 text-sm font-semibold text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-2xl sm:px-6 sm:py-4 sm:text-base md:px-8 md:py-5 md:text-lg";
+
+export const appTransactionRowClass =
+  "flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] px-4 py-3 text-[13px] text-white/74";
+
+export const appTransactionStatusBadgeClass =
+  "inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]";
+
+export const appTransactionStatusProcessingClass = "bg-amber-500/12 text-amber-200";
+export const appTransactionStatusCompletedClass = "bg-emerald-500/12 text-emerald-200";
+export const appTransactionStatusFailedClass = "bg-rose-500/14 text-rose-200";
+export const appTransactionStatusNeutralClass = "bg-white/[0.06] text-white/60";

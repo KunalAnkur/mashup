@@ -356,6 +356,7 @@
     "loadError": "Pricing is temporarily unavailable. Please try again shortly.",
     "currentPlanLabel": "Current plan",
     "switchPlanLabel": "Switch plan",
+    "downgradeToFreeLabel": "Cancel your plan to switch",
     "title": "Choose your plan",
     "subtitle": "Free works for a quick watch together. Couple and Crowd drop the daily limit and add video calls, better quality, and more room for people.",
     "billingToggle": {
@@ -406,6 +407,7 @@
     "currentPlanBadge": "Current plan",
     "viewPlans": "View plans",
     "cancelPlan": "Cancel plan",
+    "reactivatePlan": "Reactivate",
     "cancelsOn": "Cancels on {date}",
     "pendingChangeBanner": "Moving to {plan} on {date}",
     "undoPendingChange": "Undo",
@@ -427,7 +429,27 @@
       "cancelFailedTitle": "Subscription cancellation failed",
       "cancelFailedDefault": "Unable to cancel your subscription right now.",
       "pendingChangeCancelled": "Scheduled plan change cancelled.",
-      "pendingChangeCancelFailed": "Unable to cancel the scheduled change right now."
+      "pendingChangeCancelFailed": "Unable to cancel the scheduled change right now.",
+      "reactivateSuccess": "Your plan will continue to renew as usual.",
+      "reactivateFailedTitle": "Reactivation failed",
+      "reactivateFailedDefault": "Unable to reactivate your subscription right now."
+    },
+    "transactions": {
+      "title": "Payment activity",
+      "empty": "No payment activity yet.",
+      "newSubscription": "New subscription",
+      "newSubscriptionTo": "{plan} subscription",
+      "upgrade": "Plan upgrade",
+      "upgradeTo": "Upgrade to {plan}",
+      "downgrade": "Plan downgrade",
+      "downgradeTo": "Downgrade to {plan}",
+      "status": {
+        "pending": "Pending",
+        "processing": "Processing",
+        "completed": "Completed",
+        "failed": "Failed",
+        "refunded": "Refunded"
+      }
     }
   },
   "planChange": {

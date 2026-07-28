@@ -98,6 +98,13 @@ export const userApi = createApi({
       }),
       transformResponse: normalizeSubscriptionResponse,
     }),
+    reactivateMySubscription: builder.mutation<GetSubscriptionResponse, void>({
+      query: () => ({
+        url: "/subscription/reactivate",
+        method: "POST",
+      }),
+      transformResponse: normalizeSubscriptionResponse,
+    }),
     updateMarketingPreference: builder.mutation<{ success: boolean }, { opt_in: boolean }>({
       query: ({ opt_in }) => ({
         url: "/marketing-preference",
@@ -114,5 +121,6 @@ export const {
   useGetMySubscriptionQuery,
   useLazyGetMySubscriptionQuery,
   useCancelMySubscriptionMutation,
+  useReactivateMySubscriptionMutation,
   useUpdateMarketingPreferenceMutation,
 } = userApi;

@@ -356,6 +356,7 @@
     "loadError": "الأسعار غير متاحة مؤقتاً. يرجى المحاولة مرة أخرى بعد قليل.",
     "currentPlanLabel": "الخطة الحالية",
     "switchPlanLabel": "تبديل الخطة",
+    "downgradeToFreeLabel": "ألغِ خطتك للتبديل",
     "title": "اختر خطتك",
     "subtitle": "الخطة المجانية تكفي لمشاهدة سريعة معاً. خطتا Couple وCrowd تلغيان الحد اليومي وتضيفان مكالمات الفيديو وجودة أفضل ومساحة لعدد أكبر من الأشخاص.",
     "billingToggle": {
@@ -406,6 +407,7 @@
     "currentPlanBadge": "الخطة الحالية",
     "viewPlans": "عرض الخطط",
     "cancelPlan": "إلغاء الخطة",
+    "reactivatePlan": "إعادة التفعيل",
     "cancelsOn": "سيتم الإلغاء في {date}",
     "pendingChangeBanner": "سيتم الانتقال إلى {plan} في {date}",
     "undoPendingChange": "تراجع",
@@ -427,7 +429,27 @@
       "cancelFailedTitle": "فشل إلغاء الاشتراك",
       "cancelFailedDefault": "تعذّر إلغاء اشتراكك في الوقت الحالي.",
       "pendingChangeCancelled": "تم إلغاء تغيير الخطة المجدول.",
-      "pendingChangeCancelFailed": "تعذّر إلغاء التغيير المجدول في الوقت الحالي."
+      "pendingChangeCancelFailed": "تعذّر إلغاء التغيير المجدول في الوقت الحالي.",
+      "reactivateSuccess": "ستستمر خطتك في التجديد كالمعتاد.",
+      "reactivateFailedTitle": "فشلت إعادة التفعيل",
+      "reactivateFailedDefault": "تعذّرت إعادة تفعيل اشتراكك في الوقت الحالي."
+    },
+    "transactions": {
+      "title": "نشاط الدفع",
+      "empty": "لا يوجد نشاط دفع حتى الآن.",
+      "newSubscription": "اشتراك جديد",
+      "newSubscriptionTo": "اشتراك {plan}",
+      "upgrade": "ترقية الخطة",
+      "upgradeTo": "ترقية إلى {plan}",
+      "downgrade": "خفض مستوى الخطة",
+      "downgradeTo": "خفض إلى {plan}",
+      "status": {
+        "pending": "قيد الانتظار",
+        "processing": "قيد المعالجة",
+        "completed": "مكتمل",
+        "failed": "فشل",
+        "refunded": "تم الاسترداد"
+      }
     }
   },
   "planChange": {

@@ -1,9 +1,27 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "@/lib/store";
+import { PaymentStatus } from "@/types/subscriptionTypes";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export type PlanChangeDirection = "upgrade" | "downgrade";
+
+export interface PaymentTransactionSummary {
+  id: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  planSlug: string | null;
+  planName: string | null;
+  direction: PlanChangeDirection | null;
+  createdAt: string;
+}
+
+export interface TransactionHistoryResponse {
+  success: boolean;
+  message: string;
+  data: PaymentTransactionSummary[];
+}
 
 export interface PlanChangePreviewResponse {
   success: boolean;
@@ -34,6 +52,13 @@ function normalizePreview(response: PlanChangePreviewResponse): PlanChangePrevie
       targetPlan: { ...response.data.targetPlan, price: Number(response.data.targetPlan.price) },
       amountDueToday: Number(response.data.amountDueToday),
     },
+  };
+}
+
+function normalizeTransactions(response: TransactionHistoryResponse): TransactionHistoryResponse {
+  return {
+    ...response,
+    data: response.data.map((tx) => ({ ...tx, amount: Number(tx.amount) })),
   };
 }
 
@@ -71,6 +96,13 @@ export const billingApi = createApi({
         method: "POST",
       }),
     }),
+    getMyTransactions: builder.query<TransactionHistoryResponse, void>({
+      query: () => ({
+        url: "/transactions",
+        method: "GET",
+      }),
+      transformResponse: normalizeTransactions,
+    }),
   }),
 });
 
@@ -78,4 +110,5 @@ export const {
   useLazyPreviewChangePlanQuery,
   useChangePlanMutation,
   useCancelChangePlanMutation,
+  useGetMyTransactionsQuery,
 } = billingApi;

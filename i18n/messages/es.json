@@ -356,6 +356,7 @@
     "loadError": "Los precios no están disponibles en este momento. Inténtalo de nuevo en breve.",
     "currentPlanLabel": "Plan actual",
     "switchPlanLabel": "Cambiar plan",
+    "downgradeToFreeLabel": "Cancela tu plan para cambiar",
     "title": "Elige tu plan",
     "subtitle": "Free es suficiente para una sesión rápida juntos. Couple y Crowd eliminan el límite diario y añaden videollamadas, mejor calidad y más espacio para gente.",
     "billingToggle": {
@@ -406,6 +407,7 @@
     "currentPlanBadge": "Plan actual",
     "viewPlans": "Ver planes",
     "cancelPlan": "Cancelar plan",
+    "reactivatePlan": "Reactivar",
     "cancelsOn": "Se cancela el {date}",
     "pendingChangeBanner": "Pasarás al plan {plan} el {date}",
     "undoPendingChange": "Deshacer",
@@ -427,7 +429,27 @@
       "cancelFailedTitle": "No se pudo cancelar la suscripción",
       "cancelFailedDefault": "No es posible cancelar tu suscripción en este momento.",
       "pendingChangeCancelled": "Cambio de plan programado cancelado.",
-      "pendingChangeCancelFailed": "No es posible cancelar el cambio programado en este momento."
+      "pendingChangeCancelFailed": "No es posible cancelar el cambio programado en este momento.",
+      "reactivateSuccess": "Tu plan seguirá renovándose con normalidad.",
+      "reactivateFailedTitle": "No se pudo reactivar la suscripción",
+      "reactivateFailedDefault": "No es posible reactivar tu suscripción en este momento."
+    },
+    "transactions": {
+      "title": "Actividad de pagos",
+      "empty": "Todavía no hay actividad de pagos.",
+      "newSubscription": "Nueva suscripción",
+      "newSubscriptionTo": "Suscripción {plan}",
+      "upgrade": "Mejora de plan",
+      "upgradeTo": "Mejora a {plan}",
+      "downgrade": "Cambio a un plan inferior",
+      "downgradeTo": "Cambio a {plan}",
+      "status": {
+        "pending": "Pendiente",
+        "processing": "En proceso",
+        "completed": "Completado",
+        "failed": "Fallido",
+        "refunded": "Reembolsado"
+      }
     }
   },
   "planChange": {

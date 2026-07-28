@@ -25,6 +25,14 @@ export enum BillingCycle {
   LIFETIME = 'lifetime'
 }
 
+export enum PaymentStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  REFUNDED = 'refunded'
+}
+
 export interface SubscriptionFeatures {
   max_room_participants: number;
   max_watch_hours_per_session: number; // -1 for unlimited

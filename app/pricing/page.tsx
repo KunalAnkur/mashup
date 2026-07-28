@@ -277,6 +277,17 @@ export default function PricingPage() {
                               >
                                 {t("currentPlanLabel")}
                               </span>
+                            ) : isOnPaidPlan && !plan.isPaid ? (
+                              // Moving to Free isn't a Dodo plan change (Free has no Dodo
+                              // product) — it's a cancellation. Send them to /subscription,
+                              // which already has the real cancel flow.
+                              <Link
+                                href="/subscription"
+                                className={`${appEntryActionButtonBaseClass} ${appEntrySecondaryButtonClass} ${pricingCtaClassName}`}
+                              >
+                                <span>{t("downgradeToFreeLabel")}</span>
+                                <LuArrowRight className="text-base" />
+                              </Link>
                             ) : isOnPaidPlan ? (
                               <button
                                 type="button"
