@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, store } from "@/lib/store";
 import { Player } from "@/components/VideoPlayer";
+import { ControlComponents } from "@/components/VideoPlayer/Player";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
 import StreamPlayerEmptyState from "@/components/Container/StreamPlayerEmptyState";
 import type ReactPlayer from "react-player";
@@ -38,6 +39,7 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     
     const { isJoined, roomType, isHost, hostLeft, roomId, captureWatchTime } = useRoomContext();
     const dispatch = useDispatch()
+    const isPlaybackBlocked = roomState.settings.isPlaybackBlocked;
     // ============================================================================
     // Layer 1: Source Layer
     // ============================================================================
@@ -383,6 +385,8 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
         );
     }
 
+    const controlsConfig = helper.getPlayerControlsConfig(source, isHost);
+
     return (
         <div className="relative w-full h-full">
             <Player
@@ -395,7 +399,7 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
                     focused: roomState.focused,
                     screenSharing: isScreenSharing,
                     hostLeft: hostLeft,
-                    paused: isPaused
+                    paused: isPaused || isPlaybackBlocked
                 }).playing}
                 onReady={handleVideoReady}
                 onEnded={handleVideoEnded}
@@ -456,8 +460,8 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
                 hasVideoTrack={!activeItem?.onlyAudio}
                 onMute={setFocus}
                 onOpenStore={() => dispatch(toggleBottomSheet())}
-                disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
-                hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
+                disableControls={isPlaybackBlocked ? [...controlsConfig.disableControls, ControlComponents.PLAY] : controlsConfig.disableControls}
+                hideControls={isPlaybackBlocked ? [...controlsConfig.hideControls, ControlComponents.PLAY] : controlsConfig.hideControls}
                 autoResumeOnFullscreenExit={!isHost}
             >
                 <PlayerOverlay />

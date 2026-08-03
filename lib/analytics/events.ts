@@ -20,6 +20,7 @@ type InviteMethod = "copy_link" | "whatsapp" | "telegram" | "share_api";
 type ErrorArea = "room" | "video_sync" | "upload" | "network" | "auth";
 type AuthMethod = "google" | "google_one_tap" | "guest" | "email";
 type ProductSurface = "carousel" | "bottom_sheet";
+type UpgradePromptContext = "daily_limit" | "room_full" | "watch_time_session";
 
 // In-app sources (where in the app they signed up)
 type InAppSource = "landing" | "home" | "room_join" | "stream" | "sync" | "direct" | "invite_link";
@@ -575,6 +576,43 @@ export const trackProductOpened = ({
 
   safeCapture("product_opened", eventProps);
   logEvent("product_opened", eventProps);
+};
+
+// ============ WATCH LIMIT / UPGRADE FUNNEL EVENTS ============
+
+/** Track when a user's daily free watch-time limit actually stops playback */
+export const trackDailyLimitReached = (
+  roomId: string,
+  remainingMinutes: number,
+  limit: number
+) => {
+  safeCapture("daily_limit_reached", {
+    room_id: roomId,
+    remaining_minutes: remainingMinutes,
+    limit,
+  });
+  logEvent("daily_limit_reached", { room_id: roomId, remaining_minutes: remainingMinutes, limit });
+};
+
+/** Track any upgrade-prompt modal being shown, tagged by which flow triggered it */
+export const trackUpgradeModalShown = (context: UpgradePromptContext, roomId?: string | null) => {
+  safeCapture("upgrade_modal_shown", {
+    context,
+    room_id: roomId || undefined,
+  });
+  logEvent("upgrade_modal_shown", { context, room_id: roomId });
+};
+
+/** Track the upgrade CTA being clicked, tagged by which surface it was clicked from */
+export const trackUpgradeClicked = (
+  context: UpgradePromptContext | "panel_indicator",
+  roomId?: string | null
+) => {
+  safeCapture("upgrade_clicked", {
+    context,
+    room_id: roomId || undefined,
+  });
+  logEvent("upgrade_clicked", { context, room_id: roomId });
 };
 
 // ============ ERROR TRACKING ============

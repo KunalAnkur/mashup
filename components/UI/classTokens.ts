@@ -365,3 +365,8 @@ export const appTransactionStatusProcessingClass = "bg-amber-500/12 text-amber-2
 export const appTransactionStatusCompletedClass = "bg-emerald-500/12 text-emerald-200";
 export const appTransactionStatusFailedClass = "bg-rose-500/14 text-rose-200";
 export const appTransactionStatusNeutralClass = "bg-white/[0.06] text-white/60";
+
+export const appWatchLimitCardClass =
+  "rounded-2xl bg-white/[0.035] p-2.5 ring-1 ring-white/[0.08]";
+export const appWatchLimitCardUrgentClass =
+  "rounded-2xl bg-gradient-to-r from-rose-500/[0.08] via-rose-400/[0.06] to-transparent ring-1 ring-rose-400/15";

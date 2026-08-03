@@ -1,8 +1,11 @@
 "use client";
+import { useEffect } from "react";
 import { LuSparkles, LuCheck, LuInfo } from "react-icons/lu";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { trackUpgradeModalShown, trackUpgradeClicked } from "@/lib/analytics";
 import {
   Modal,
   ModalHeader,
@@ -29,6 +32,7 @@ const UpgradeSubscriptionModal = ({
   isHost: isHostProp,
 }: UpgradeSubscriptionModalProps) => {
   const tCommon = useTranslations("common");
+  const router = useRouter();
   const roomState = useSelector((state: RootState) => state.room);
   
   // Determine if user is host (from prop or room state)
@@ -41,11 +45,18 @@ const UpgradeSubscriptionModal = ({
   const displayMessage = message || (isHost ? defaultHostMessage : defaultGuestMessage);
   const modalTitle = isHost ? "Upgrade to Premium" : "Room is Full";
   const modalIcon = isHost ? <LuSparkles size={18} /> : <LuInfo size={18} />;
+  const analyticsContext = roomState.settings.upgradeSubscriptionContext || "room_full";
+
+  useEffect(() => {
+    if (isOpen) {
+      trackUpgradeModalShown(analyticsContext, roomState.roomId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const handleUpgrade = () => {
-    // TODO: Navigate to pricing/upgrade page
-    // For now, just close the modal
-    console.log("Navigate to upgrade page");
+    trackUpgradeClicked(analyticsContext, roomState.roomId);
+    router.push("/pricing");
     onClose();
   };
 

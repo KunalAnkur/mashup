@@ -58,6 +58,10 @@ export interface RoomState {
   hostPlayback: {
     playing: boolean;
   };
+  dailyUsage: {
+    remainingMinutes: number;
+    limit: number;
+  } | null;
 }
 
 export interface Product {
@@ -93,9 +97,16 @@ export type Playlist = {
 export type RoomSetting = {
   upgradeSubscriptionModal: boolean;
   upgradeSubscriptionMessage?: string;
+  upgradeSubscriptionContext?: "room_full" | "watch_time_session";
   panelCollapsed: boolean;
   bottomSheet: boolean;
   playerActive: boolean;
+  isPlaybackBlocked: boolean;
+  playbackBlockedInfo?: {
+    remainingMinutes: number;
+    limit: number;
+    planName: string;
+  };
 };
 
 /**

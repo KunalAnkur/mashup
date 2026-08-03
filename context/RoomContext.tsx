@@ -5,11 +5,11 @@ import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, store } from "@/lib/store";
-import { setHostPlaybackPlaying, updateRoomInfo, updateWatchTime, setUpgradeSubscriptionModal } from "@/lib/store/slices/roomSlice";
+import { setHostPlaybackPlaying, updateRoomInfo, updateWatchTime, setUpgradeSubscriptionModal, setPlaybackBlocked, setDailyUsage } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
 import type { PinnedChatMessage } from "@/types/chatTypes";
 import { showError } from "@/utils/toast";
-import { trackRoomJoined, trackRoomLeft } from "@/lib/analytics";
+import { trackRoomJoined, trackRoomLeft, trackDailyLimitReached } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 
 export type RoomType = "stream" | "sync";
@@ -195,7 +195,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                     console.log("Room joining not allowed", response);
                     dispatch(setUpgradeSubscriptionModal({
                         open: true,
-                        message: response?.message
+                        message: response?.message,
+                        context: "room_full"
                     }));
                 }
             }
@@ -431,13 +432,15 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                     case "NOT_ALLOWED":
                         dispatch(setUpgradeSubscriptionModal({
                             open: true,
-                            message: data?.message
+                            message: data?.message,
+                            context: "room_full"
                         }));
                         return
                     case "WATCH_TIME_LIMIT_EXCEEDED":
                         dispatch(setUpgradeSubscriptionModal({
                             open: true,
-                            message: data?.message
+                            message: data?.message,
+                            context: "watch_time_session"
                         }));
                         return;
                 
@@ -446,6 +449,22 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 }
             }
         }
+        // Daily watch-limit hit — applies to host and guest alike, unlike the modal-based
+        // per-session cap above. The player components force `playing` to false whenever
+        // this flag is set, so this must actually be set, not just shown as a dismissable toast.
+        const handleForcePausePlayback = (data: { remainingMinutes: number; limit: number; planName: string }) => {
+            dispatch(setPlaybackBlocked(data));
+            if (roomId) {
+                trackDailyLimitReached(roomId, data.remainingMinutes, data.limit);
+            }
+        };
+
+        // Live "X min left today" countdown for free users — fires on every daily-limit
+        // check, independent of whether the limit has actually been reached yet.
+        const handleUsageUpdated = (data: { remainingMinutes: number; limit: number }) => {
+            dispatch(setDailyUsage(data));
+        };
+
         socket.on(SocketEvent.HOST_LEFT, handleHostLeft);
         socket.on(SocketEvent.LEAVE_ROOM, handleRoomClosed);
         socket.on(SocketEvent.HOST_JOINED, handleHostJoined);
@@ -454,6 +473,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         socket.on(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
         socket.on(SocketEvent.HOST_PLAYBACK_STATE, handleHostPlaybackState);
         socket.on(SocketEvent.NOTIFY, handleOnNotify);
+        socket.on(SocketEvent.FORCE_PAUSE_PLAYBACK, handleForcePausePlayback);
+        socket.on(SocketEvent.USAGE_UPDATED, handleUsageUpdated);
         return () => {
             socket.off(SocketEvent.HOST_LEFT, handleHostLeft);
             socket.off(SocketEvent.LEAVE_ROOM, handleRoomClosed);
@@ -463,6 +484,8 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             socket.off(SocketEvent.PLAYLIST_UPDATED, handlePlaylistUpdated);
             socket.off(SocketEvent.HOST_PLAYBACK_STATE, handleHostPlaybackState);
             socket.off(SocketEvent.NOTIFY, handleOnNotify);
+            socket.off(SocketEvent.FORCE_PAUSE_PLAYBACK, handleForcePausePlayback);
+            socket.off(SocketEvent.USAGE_UPDATED, handleUsageUpdated);
         };
     }, [socket, roomId, isHost, roomType, dispatch]);
     

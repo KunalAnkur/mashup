@@ -153,7 +153,11 @@
     "leave": "Ayrıl",
     "activelyImproving": "Aktif Olarak Geliştiriliyor",
     "helpUsShapeMovmash": "Movmash'ı şekillendirmemize yardımcı olun",
-    "feedback": "Geri Bildirim"
+    "feedback": "Geri Bildirim",
+    "watchLimit": {
+      "minutesLeft": "Bugün {minutes} dakika kaldı",
+      "upgrade": "Yükselt"
+    }
   },
   "room": {
     "yourWatchPartyReady": "İzleme partiniz hazır!",
@@ -164,7 +168,12 @@
     "copyInviteLink": "Davet Bağlantısını Kopyala",
     "joinRoom": "Odaya Katıl",
     "joinMyWatchParty": "İzleme partime katıl!",
-    "joinMyWatchPartyOnMovmash": "Movmash'ta izleme partime katıl!"
+    "joinMyWatchPartyOnMovmash": "Movmash'ta izleme partime katıl!",
+    "watchLimit": {
+      "title": "Günlük limite ulaşıldı",
+      "message": "Bugün için {limit} dakikalık ücretsiz izleme sürenizi kullandınız. Sınırsız izleme süresi için {planName} planına yükseltin.",
+      "upgradeCta": "Şimdi Yükselt"
+    }
   },
   "sync": {
     "title": "Kaynak URL Girin",

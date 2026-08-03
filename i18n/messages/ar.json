@@ -153,7 +153,11 @@
     "leave": "مغادرة",
     "activelyImproving": "تحسين نشط",
     "helpUsShapeMovmash": "ساعدنا في تشكيل Movmash",
-    "feedback": "ملاحظات"
+    "feedback": "ملاحظات",
+    "watchLimit": {
+      "minutesLeft": "تبقى {minutes} دقيقة اليوم",
+      "upgrade": "الترقية"
+    }
   },
   "room": {
     "yourWatchPartyReady": "حفلة المشاهدة الخاصة بك جاهزة!",
@@ -164,7 +168,12 @@
     "copyInviteLink": "نسخ رابط الدعوة",
     "joinRoom": "الانضمام إلى الغرفة",
     "joinMyWatchParty": "انضم إلى حفلتي للمشاهدة!",
-    "joinMyWatchPartyOnMovmash": "انضم إلى حفلتي للمشاهدة على Movmash!"
+    "joinMyWatchPartyOnMovmash": "انضم إلى حفلتي للمشاهدة على Movmash!",
+    "watchLimit": {
+      "title": "تم بلوغ الحد اليومي",
+      "message": "لقد استخدمت {limit} دقيقة مجانية من وقت المشاهدة لهذا اليوم. قم بالترقية إلى {planName} للحصول على وقت مشاهدة غير محدود.",
+      "upgradeCta": "الترقية الآن"
+    }
   },
   "sync": {
     "title": "أدخل رابط المصدر",

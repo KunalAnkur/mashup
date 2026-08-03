@@ -153,7 +153,11 @@
     "leave": "Salir",
     "activelyImproving": "Mejorando Activamente",
     "helpUsShapeMovmash": "Ayúdanos a dar forma a Movmash",
-    "feedback": "Comentarios"
+    "feedback": "Comentarios",
+    "watchLimit": {
+      "minutesLeft": "{minutes} min restantes hoy",
+      "upgrade": "Actualizar"
+    }
   },
   "room": {
     "yourWatchPartyReady": "¡Tu fiesta de visualización está lista!",
@@ -164,7 +168,12 @@
     "copyInviteLink": "Copiar Enlace de Invitación",
     "joinRoom": "Unirse a la Sala",
     "joinMyWatchParty": "¡Únete a mi fiesta de visualización!",
-    "joinMyWatchPartyOnMovmash": "¡Únete a mi fiesta de visualización en Movmash!"
+    "joinMyWatchPartyOnMovmash": "¡Únete a mi fiesta de visualización en Movmash!",
+    "watchLimit": {
+      "title": "Límite diario alcanzado",
+      "message": "Has usado tus {limit} minutos gratuitos de tiempo de visualización de hoy. Actualiza a {planName} para tiempo de visualización ilimitado.",
+      "upgradeCta": "Actualizar Ahora"
+    }
   },
   "sync": {
     "title": "Ingresar URL de Origen",
