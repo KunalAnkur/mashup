@@ -5,7 +5,7 @@ import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, store } from "@/lib/store";
-import { setHostPlaybackPlaying, updateRoomInfo, updateWatchTime, setUpgradeSubscriptionModal, setPlaybackBlocked, setDailyUsage } from "@/lib/store/slices/roomSlice";
+import { setHostPlaybackPlaying, updateRoomInfo, setUpgradeSubscriptionModal, setPlaybackBlocked, setDailyUsage } from "@/lib/store/slices/roomSlice";
 import type { Playlist } from "@/types/storeTypes";
 import type { PinnedChatMessage } from "@/types/chatTypes";
 import { showError } from "@/utils/toast";
@@ -128,6 +128,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
 
     const joinAttemptedRef = useRef(false);
     const currentRoomRef = useRef<string | null>(null);
+    const watchTimeRef = useRef(0); // Seconds watched in the current session
 
     const joinRoom = useCallback(async () => {
         console.log("flow test - joinRoom called", { socket, roomId, username, playlist: roomState.playlist });
@@ -305,6 +306,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         if (roomId !== currentRoomRef.current) {
             joinAttemptedRef.current = false;
             currentRoomRef.current = null;
+            watchTimeRef.current = 0;
             setStreamDeliveryMode(null);
             dispatch(setHostPlaybackPlaying(false));
         }
@@ -525,15 +527,17 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         };
     }, [isJoined, socket, roomId, dispatch]);
 
+    // Seconds watched in this session only. Deliberately a ref, not Redux: the player
+    // reports progress once a second, and nothing renders this value — keeping it in the
+    // store re-rendered every consumer of the room slice on every tick.
     const captureWatchTime = useCallback(() => {
-        if (!roomState.hostPlayback.playing) return;
-        dispatch(updateWatchTime()); // Reset local watch time in Redux
-        if (!socket) return;
+        if (!roomState.hostPlayback.playing || !socket) return;
+        watchTimeRef.current += 1;
         socket.emit(SocketEvent.WATCH_TIME, {
-            watchTime: roomState.watchTime,
+            watchTime: watchTimeRef.current,
             roomId
         });
-    }, [socket, roomState.watchTime, dispatch, roomId, roomState.hostPlayback.playing]);
+    }, [socket, roomId, roomState.hostPlayback.playing]);
     return (
         <RoomContext.Provider value={{
             isJoined,

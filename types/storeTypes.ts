@@ -50,7 +50,6 @@ export interface RoomState {
   loading: boolean;
   focused: boolean;
   roomId: string | null;
-  watchTime: number;
   host: boolean;
   // selectedIndex: number;
   refer: boolean;

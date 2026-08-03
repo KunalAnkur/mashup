@@ -8,7 +8,6 @@ const initialState: RoomState = {
   playlist: [],
   host: false,
   refer: false,
-  watchTime: 0,
   settings: {
     upgradeSubscriptionModal: false,
     panelCollapsed: false,
@@ -48,7 +47,6 @@ const roomSlice = createSlice({
         : data.playlist;
       // Backend now uses type and source directly
       state.refer = false;
-      state.watchTime = action.payload.data.total_playtime_seconds;
       state.hostPlayback.playing = false;
       state.settings.bottomSheet = false;
       state.settings.isPlaybackBlocked = false;
@@ -116,9 +114,6 @@ const roomSlice = createSlice({
     setPlayerActive: (state, action: PayloadAction<boolean>) => {
       state.settings.playerActive = action.payload;
     },
-    updateWatchTime: (state) => {
-      state.watchTime++;
-    },
     setRefers: (
       state,
       action: PayloadAction<{
@@ -182,7 +177,6 @@ export const {
   setFocused,
   setPlaylist,
   setScreenSharing,
-  updateWatchTime,
   cleanScreenSourcePlaylist,
   setHostPlaybackPlaying,
   setUpgradeSubscriptionModal,
