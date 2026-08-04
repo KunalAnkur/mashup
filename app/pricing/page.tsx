@@ -211,6 +211,13 @@ export default function PricingPage() {
                         {t("billingToggle.yearlySavings")}
                       </span>
                     )}
+                    {/* Say what a yearly plan actually commits you to before checkout, not
+                        after (MOVMASH.md D3). */}
+                    <span className="text-[11px] leading-relaxed text-white/44">
+                      {billingCycle === "yearly"
+                        ? t("billingToggle.yearlyTerms")
+                        : t("billingToggle.monthlyTerms")}
+                    </span>
                   </div>
                 </section>
 

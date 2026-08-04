@@ -391,7 +391,9 @@
     "billingToggle": {
       "monthly": "Monthly",
       "yearly": "Yearly",
-      "yearlySavings": "Save up to 30%"
+      "yearlySavings": "Save up to 30%",
+      "monthlyTerms": "Billed monthly. Renews automatically until you cancel — cancel any time from your subscription page.",
+      "yearlyTerms": "Billed once for the full year. Renews automatically until you cancel — cancel any time from your subscription page."
     },
     "perMonth": "per month",
     "perYear": "per year",
@@ -438,6 +440,9 @@
     "cancelPlan": "Cancel plan",
     "reactivatePlan": "Reactivate",
     "cancelsOn": "Cancels on {date}",
+    "renewsOn": "Renews automatically on {date}.",
+    "renewsYearlyOn": "Renews automatically on {date} for another year.",
+    "cancelAnytimeHint": "Cancel any time before then — you keep access until that date.",
     "pendingChangeBanner": "Moving to {plan} on {date}",
     "undoPendingChange": "Undo",
     "features": {

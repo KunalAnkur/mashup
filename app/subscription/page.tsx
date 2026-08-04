@@ -123,6 +123,9 @@ export default function SubscriptionPage() {
     subscription?.status === SubscriptionStatus.CANCELLED;
   const canCancel = isPaid && !isCancellationScheduled;
   const cancellationDate = formatDate(subscription?.end_date);
+  // Same field, different meaning depending on auto_renew: end_date is when the plan lapses
+  // if cancelled, or when it renews if not.
+  const renewalDate = formatDate(subscription?.end_date);
   const plan = subscription?.plan;
   const tierDisplayName = getTierDisplayName(subscription?.tier);
   const pendingPlan = subscription?.pending_plan;
@@ -274,6 +277,21 @@ export default function SubscriptionPage() {
                         >
                           {isCancellingChange ? t("cancelModal.cancelling") : t("undoPendingChange")}
                         </button>
+                      </div>
+                    ) : null}
+
+                    {/* An active subscriber otherwise has no idea when they will next be
+                        charged — which matters most on yearly, where the next charge is large
+                        and far away (MOVMASH.md D3). Hidden once a cancellation or plan change
+                        is scheduled, since those banners already state what happens next. */}
+                    {isPaid && !isCancellationScheduled && !pendingPlan && renewalDate ? (
+                      <div className="mt-5 rounded-2xl bg-white/[0.04] px-4 py-3 text-[13px] leading-relaxed text-white/68">
+                        <span>
+                          {plan.billing_cycle === "yearly"
+                            ? t("renewsYearlyOn", { date: renewalDate })
+                            : t("renewsOn", { date: renewalDate })}
+                        </span>{" "}
+                        <span className="text-white/48">{t("cancelAnytimeHint")}</span>
                       </div>
                     ) : null}
 

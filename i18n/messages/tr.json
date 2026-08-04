@@ -391,7 +391,9 @@
     "billingToggle": {
       "monthly": "Aylık",
       "yearly": "Yıllık",
-      "yearlySavings": "%30'a kadar tasarruf et"
+      "yearlySavings": "%30'a kadar tasarruf et",
+      "monthlyTerms": "Aylık faturalandırılır. İptal edene kadar otomatik yenilenir — abonelik sayfandan istediğin zaman iptal edebilirsin.",
+      "yearlyTerms": "Tüm yıl için tek seferde faturalandırılır. İptal edene kadar otomatik yenilenir — abonelik sayfandan istediğin zaman iptal edebilirsin."
     },
     "perMonth": "aylık",
     "perYear": "yıllık",
@@ -438,6 +440,9 @@
     "cancelPlan": "Planı iptal et",
     "reactivatePlan": "Yeniden etkinleştir",
     "cancelsOn": "{date} tarihinde iptal edilecek",
+    "renewsOn": "{date} tarihinde otomatik olarak yenilenir.",
+    "renewsYearlyOn": "{date} tarihinde bir yıl daha otomatik olarak yenilenir.",
+    "cancelAnytimeHint": "O tarihe kadar istediğin zaman iptal edebilirsin — o güne kadar erişimin devam eder.",
     "pendingChangeBanner": "{date} tarihinde {plan} planına geçilecek",
     "undoPendingChange": "Geri al",
     "features": {

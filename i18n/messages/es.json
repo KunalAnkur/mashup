@@ -391,7 +391,9 @@
     "billingToggle": {
       "monthly": "Mensual",
       "yearly": "Anual",
-      "yearlySavings": "Ahorra hasta un 30%"
+      "yearlySavings": "Ahorra hasta un 30%",
+      "monthlyTerms": "Se factura mensualmente. Se renueva automáticamente hasta que canceles — puedes cancelar cuando quieras desde tu página de suscripción.",
+      "yearlyTerms": "Se factura una vez por el año completo. Se renueva automáticamente hasta que canceles — puedes cancelar cuando quieras desde tu página de suscripción."
     },
     "perMonth": "al mes",
     "perYear": "al año",
@@ -438,6 +440,9 @@
     "cancelPlan": "Cancelar plan",
     "reactivatePlan": "Reactivar",
     "cancelsOn": "Se cancela el {date}",
+    "renewsOn": "Se renueva automáticamente el {date}.",
+    "renewsYearlyOn": "Se renueva automáticamente el {date} por un año más.",
+    "cancelAnytimeHint": "Puedes cancelar en cualquier momento antes de esa fecha — mantienes el acceso hasta entonces.",
     "pendingChangeBanner": "Pasarás al plan {plan} el {date}",
     "undoPendingChange": "Deshacer",
     "features": {
