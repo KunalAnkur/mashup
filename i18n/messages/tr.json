@@ -172,7 +172,10 @@
     "watchLimit": {
       "title": "Günlük limite ulaşıldı",
       "message": "Bugün için {limit} dakikalık ücretsiz izleme sürenizi kullandınız. Sınırsız izleme süresi için {planName} planına yükseltin.",
-      "upgradeCta": "Şimdi Yükselt"
+      "upgradeCta": "Şimdi Yükselt",
+      "viewerTitle": "Oynatma duraklatıldı",
+      "viewerMessage": "Oda sahibi bugünkü {limit} ücretsiz dakikasını kullandı. Oynatma yarın veya o yükseltme yaptığı anda devam eder.",
+      "gotIt": "Anladım"
     }
   },
   "sync": {
@@ -306,6 +309,21 @@
     "failedToSelectFiles": "Dosya seçilemedi"
   },
   "auth": {
+    "guestSignIn": {
+      "whatHappensNext": "Sırada ne var",
+      "connecting": "Bağlanıyor...",
+      "connected": "Google hesabı bağlandı",
+      "notNow": "Şimdi değil",
+      "tryAgain": "Lütfen tekrar deneyin.",
+      "failedTitle": "Google ile giriş başarısız",
+      "failedBody": "Google ile devam edilemedi.",
+      "hostTitle": "Oda açmak için giriş yap",
+      "hostDescription": "İzleme partisi başlatmak için tam bir hesap gerekir. Odalara misafir olarak katılmaya devam edebilirsin — bu yalnızca kendi odanı açmak için.",
+      "hostNextStep": "Seni Google ile oturum açtıracağız, ardından odanı hemen açacağız.",
+      "checkoutTitle": "Google ile devam et",
+      "checkoutDescription": "Ödeme yalnızca tam hesaplar için kullanılabilir. Misafir oturumunla fiyatlara göz atabilirsin, ancak ödemeden önce Google ile devam etmen gerekir.",
+      "checkoutNextStep": "Seni Movmash içinde Google ile oturum açtıracağız, ardından doğrudan ödemeye geçeceğiz."
+    },
     "login": {
       "welcomeBack": "Tekrar hoş geldin!",
       "chooseHowToContinue": "Nasıl devam etmek istediğini seç",
@@ -313,7 +331,8 @@
       "termsOfService": "Hizmet Şartları",
       "and": "ve",
       "privacyPolicy": "Gizlilik Politikası",
-      "agreementSuffix": " kabul etmiş olursun."
+      "agreementSuffix": " kabul etmiş olursun.",
+      "marketingOptIn": "Bana ara sıra Movmash hakkında haberler ve ipuçları gönderin."
     },
     "signup": {
       "username": "Kullanıcı adı",

@@ -172,7 +172,10 @@
     "watchLimit": {
       "title": "Límite diario alcanzado",
       "message": "Has usado tus {limit} minutos gratuitos de tiempo de visualización de hoy. Actualiza a {planName} para tiempo de visualización ilimitado.",
-      "upgradeCta": "Actualizar Ahora"
+      "upgradeCta": "Actualizar Ahora",
+      "viewerTitle": "Reproducción pausada",
+      "viewerMessage": "El anfitrión ha usado sus {limit} minutos gratuitos de hoy. La reproducción se reanudará mañana, o en cuanto actualice su plan.",
+      "gotIt": "Entendido"
     }
   },
   "sync": {
@@ -306,6 +309,21 @@
     "failedToSelectFiles": "Error al seleccionar archivos"
   },
   "auth": {
+    "guestSignIn": {
+      "whatHappensNext": "Qué sucede después",
+      "connecting": "Conectando...",
+      "connected": "Cuenta de Google conectada",
+      "notNow": "Ahora no",
+      "tryAgain": "Inténtalo de nuevo.",
+      "failedTitle": "Error al iniciar sesión con Google",
+      "failedBody": "No se pudo continuar con Google.",
+      "hostTitle": "Inicia sesión para crear una sala",
+      "hostDescription": "Crear una fiesta de visualización requiere una cuenta completa. Puedes seguir uniéndote a salas como invitado — esto es solo para crear la tuya.",
+      "hostNextStep": "Te conectaremos con Google y abriremos tu sala de inmediato.",
+      "checkoutTitle": "Continuar con Google",
+      "checkoutDescription": "El pago solo está disponible para cuentas completas. Tu sesión de invitado puede ver los precios, pero necesitarás continuar con Google antes de pagar.",
+      "checkoutNextStep": "Te conectaremos con Google dentro de Movmash y continuaremos directamente al pago."
+    },
     "login": {
       "welcomeBack": "¡Qué bueno verte de nuevo!",
       "chooseHowToContinue": "Elige cómo quieres continuar",
@@ -313,7 +331,8 @@
       "termsOfService": "Términos del servicio",
       "and": "y la",
       "privacyPolicy": "Política de privacidad",
-      "agreementSuffix": " de Movmash."
+      "agreementSuffix": " de Movmash.",
+      "marketingOptIn": "Envíame novedades y consejos ocasionales sobre Movmash."
     },
     "signup": {
       "username": "Nombre de usuario",

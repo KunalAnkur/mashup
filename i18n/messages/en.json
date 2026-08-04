@@ -172,7 +172,10 @@
     "watchLimit": {
       "title": "Daily limit reached",
       "message": "You've used your {limit} free minutes of watch time for today. Upgrade to {planName} for unlimited watch time.",
-      "upgradeCta": "Upgrade Now"
+      "upgradeCta": "Upgrade Now",
+      "viewerTitle": "Playback paused",
+      "viewerMessage": "The host has used their {limit} free minutes for today. Playback resumes tomorrow, or as soon as they upgrade.",
+      "gotIt": "Got it"
     }
   },
   "sync": {
@@ -294,11 +297,11 @@
     "streamReconnectionFailed": "Stream reconnection failed",
     "unableToReconnect": "Unable to reconnect to video stream. Please refresh the page.",
     "alreadySubscribed": "You're already on the {plan} plan.",
-  "alreadySubscribedCancelled": "Your {plan} plan is already active and set to end at the close of the current billing period.",
-  "checkoutStartFailed": "Unable to start checkout",
-  "checkoutSessionFailed": "Failed to create checkout session",
-  "checkoutUrlMissing": "Missing checkout_url",
-  "failedToAddUrl": "Failed to add URL. Please try again.",
+    "alreadySubscribedCancelled": "Your {plan} plan is already active and set to end at the close of the current billing period.",
+    "checkoutStartFailed": "Unable to start checkout",
+    "checkoutSessionFailed": "Failed to create checkout session",
+    "checkoutUrlMissing": "Missing checkout_url",
+    "failedToAddUrl": "Failed to add URL. Please try again.",
     "pleaseEnterUrl": "Please enter a URL",
     "invalidUrl": "Invalid URL. Please enter a supported video URL.",
     "loginSuccessful": "Login successful",
@@ -306,6 +309,21 @@
     "failedToSelectFiles": "Failed to select files"
   },
   "auth": {
+    "guestSignIn": {
+      "whatHappensNext": "What happens next",
+      "connecting": "Connecting...",
+      "connected": "Google account connected",
+      "notNow": "Not now",
+      "tryAgain": "Please try again.",
+      "failedTitle": "Google sign-in failed",
+      "failedBody": "Unable to continue with Google.",
+      "hostTitle": "Sign in to host",
+      "hostDescription": "Hosting a watch party needs a full account. You can keep joining rooms as a guest — this is only for starting your own.",
+      "hostNextStep": "We'll sign you in with Google, then open your room right away.",
+      "checkoutTitle": "Continue with Google",
+      "checkoutDescription": "Checkout is only available for full accounts. Your guest session can browse pricing, but you'll need to continue with Google before payment.",
+      "checkoutNextStep": "We'll sign you in with Google inside Movmash, then continue directly into checkout."
+    },
     "login": {
       "welcomeBack": "Welcome back!",
       "chooseHowToContinue": "Choose how you'd like to continue",
@@ -313,7 +331,8 @@
       "termsOfService": "Terms of Service",
       "and": "and",
       "privacyPolicy": "Privacy Policy",
-      "agreementSuffix": "."
+      "agreementSuffix": ".",
+      "marketingOptIn": "Send me occasional news and tips about Movmash."
     },
     "signup": {
       "username": "Username",

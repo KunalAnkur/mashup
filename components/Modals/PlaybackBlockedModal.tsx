@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LuClock, LuSparkles } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
@@ -14,6 +14,8 @@ import {
   modalBrandActionButtonClass,
   modalConfirmSurfaceClass,
   modalBalancedContentClass,
+  modalDiscardActionButtonClass,
+  modalSubtleCloseButtonClass,
 } from "@/components/UI";
 
 interface PlaybackBlockedModalProps {
@@ -22,17 +24,26 @@ interface PlaybackBlockedModalProps {
   planName: string;
 }
 
-// Unlike UpgradeSubscriptionModal, this is intentionally non-dismissable — there is no
-// onClose passed to ModalHeader (no close button rendered) and both backdrop-click and
-// escape are disabled, since playback is genuinely blocked for the rest of the day, not
-// just an upsell the user can brush past.
+/**
+ * Shown when a room's daily watch allowance runs out. The allowance belongs to the host
+ * (MOVMASH.md §4.2), so the two roles need different treatment:
+ *
+ * - **Host** — they can actually fix this. Non-dismissable with an upgrade CTA, because
+ *   playback is genuinely blocked for the rest of the day.
+ * - **Everyone else** — upgrading their own account would not unblock the room, so offering
+ *   them an upgrade button would take money for nothing. They get an explanation they can
+ *   dismiss; the player stays blocked regardless of this modal.
+ */
 const PlaybackBlockedModal = ({ isOpen, limit, planName }: PlaybackBlockedModalProps) => {
   const t = useTranslations("room");
   const router = useRouter();
   const roomId = useSelector((state: RootState) => state.room.roomId);
+  const isHost = useSelector((state: RootState) => state.room.host);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
+      setDismissed(false);
       trackUpgradeModalShown("daily_limit", roomId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -40,15 +51,17 @@ const PlaybackBlockedModal = ({ isOpen, limit, planName }: PlaybackBlockedModalP
 
   const handleUpgradeClick = () => {
     trackUpgradeClicked("daily_limit", roomId);
+    // Guest hosts (rooms created before hosting required an account) land on /pricing and
+    // are prompted to sign in by the checkout button there, so no special case is needed.
     router.push("/pricing");
   };
 
   return (
     <Modal
-      open={isOpen}
-      onClose={() => {}}
-      closeOnBackdropClick={false}
-      closeOnEscape={false}
+      open={isOpen && !dismissed}
+      onClose={() => setDismissed(true)}
+      closeOnBackdropClick={!isHost}
+      closeOnEscape={!isHost}
       overlayClassName="playback-blocked-modal z-[99999]"
       panelClassName={`${modalConfirmSurfaceClass} max-w-md`}
     >
@@ -60,22 +73,35 @@ const PlaybackBlockedModal = ({ isOpen, limit, planName }: PlaybackBlockedModalP
               <LuClock size={18} />
             </div>
           }
-          title={t("watchLimit.title")}
+          title={isHost ? t("watchLimit.title") : t("watchLimit.viewerTitle")}
           titleClassName={`${modalAccentTitleClass} text-base md:text-lg`}
+          onClose={isHost ? undefined : () => setDismissed(true)}
+          closeButtonClassName={modalSubtleCloseButtonClass}
         />
 
         <div className={modalBalancedContentClass}>
           <p className="mb-4 text-xs leading-relaxed text-white/70 md:mb-5 md:text-sm">
-            {t("watchLimit.message", { limit, planName })}
+            {isHost
+              ? t("watchLimit.message", { limit, planName })
+              : t("watchLimit.viewerMessage", { limit })}
           </p>
 
-          <button
-            onClick={handleUpgradeClick}
-            className={`${modalBrandActionButtonClass} flex w-full items-center justify-center gap-1.5 font-semibold`}
-          >
-            <LuSparkles size={16} />
-            <span>{t("watchLimit.upgradeCta")}</span>
-          </button>
+          {isHost ? (
+            <button
+              onClick={handleUpgradeClick}
+              className={`${modalBrandActionButtonClass} flex w-full items-center justify-center gap-1.5 font-semibold`}
+            >
+              <LuSparkles size={16} />
+              <span>{t("watchLimit.upgradeCta")}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setDismissed(true)}
+              className={`${modalDiscardActionButtonClass} w-full`}
+            >
+              {t("watchLimit.gotIt")}
+            </button>
+          )}
         </div>
       </div>
     </Modal>

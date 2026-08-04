@@ -18,6 +18,9 @@ const URGENT_THRESHOLD_MINUTES = 5;
 export default function WatchLimitIndicator() {
   const dailyUsage = useSelector((state: RootState) => state.room.dailyUsage);
   const roomId = useSelector((state: RootState) => state.room.roomId);
+  // The allowance is the host's, so only they can act on it — a viewer upgrading their own
+  // account would not give this room any more minutes.
+  const isHost = useSelector((state: RootState) => state.room.host);
   const router = useRouter();
   const t = useTranslations("panel");
 
@@ -49,13 +52,15 @@ export default function WatchLimitIndicator() {
               {t("watchLimit.minutesLeft", { minutes: remainingMinutes })}
             </p>
           </div>
-          <button
-            onClick={handleUpgradeClick}
-            className="flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1.5 text-[10px] font-semibold text-amber-200 ring-1 ring-amber-400/20 transition-colors hover:bg-amber-500/25"
-          >
-            <LuSparkles size={10} />
-            {t("watchLimit.upgrade")}
-          </button>
+          {isHost && (
+            <button
+              onClick={handleUpgradeClick}
+              className="flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1.5 text-[10px] font-semibold text-amber-200 ring-1 ring-amber-400/20 transition-colors hover:bg-amber-500/25"
+            >
+              <LuSparkles size={10} />
+              {t("watchLimit.upgrade")}
+            </button>
+          )}
         </div>
       </div>
     </section>

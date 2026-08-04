@@ -2,7 +2,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter, usePathname, useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { RootState } from "@/lib/store";
+import { store, type RootState } from "@/lib/store";
 import { logout } from "@/lib/store/slices/authSlice";
 import { setRoom, setLoading as setRoomLoading } from "@/lib/store/slices/roomSlice";
 import { setSubscription, clearSubscription } from "@/lib/store/slices/subscriptionSlice";
@@ -10,6 +10,8 @@ import { useVerifyTokenMutation } from "@/lib/store/api/authApi";
 import { useCreateRoomMutation, useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { useLazyGetMySubscriptionQuery } from "@/lib/store/api/userApi";
 import RoomPreparingSplash from "@/components/Container/RoomPreparingSplash";
+import GuestSignInModal from "@/components/Billing/GuestSignInModal";
+import { useTranslations } from "@/i18n/I18nProvider";
 import { trackRoomCreated, trackRoomJoined } from "@/lib/analytics";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -25,6 +27,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { roomId: roomRoutId } = useParams();
   const searchParams = useSearchParams();
+  const tGuest = useTranslations("auth.guestSignIn");
+  const [showGuestHostModal, setShowGuestHostModal] = useState(false);
 
   const refreshAuthState = async () => {
     try {
@@ -79,12 +83,28 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     try {
       const playlist = roomState.playlist || [];
       if (!playlist.length) return null;
+
+      // Read auth from the store, not the render-time closure. The sign-in modal calls this
+      // straight after dispatching the new user, before React has re-rendered — a captured
+      // authState would still say "guest" here, bounce them back to the modal, and then stamp
+      // the room with the old guest id so they wouldn't even be its host.
+      const currentUser = store.getState().auth.user;
+
+      // Hosting needs a real account — the room's daily watch allowance is funded by its host,
+      // and a guest could re-mint one by clearing storage (MOVMASH.md §4.3). Guardian enforces
+      // this too; catching it here means a sign-in prompt instead of a 403. Joining is untouched.
+      if (currentUser?.isGuestUser) {
+        setShowGuestHostModal(true);
+        dispatch(setRoomLoading(false));
+        return null;
+      }
+
       dispatch(setRoomLoading(true));
       const response = await createRoomApi({
         playlist,
       }).unwrap();
       if (response.success) {
-        const roomWithAuth = { ...response, authId: authState.user!.id };
+        const roomWithAuth = { ...response, authId: currentUser!.id };
         dispatch(setRoom(roomWithAuth));
         
         // Track room creation
@@ -312,6 +332,21 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <GuestSignInModal
+        open={showGuestHostModal}
+        onClose={() => setShowGuestHostModal(false)}
+        title={tGuest("hostTitle")}
+        description={tGuest("hostDescription")}
+        nextStepText={tGuest("hostNextStep")}
+        onAuthenticated={async () => {
+          // Retry the creation that was blocked, now that they have a real account.
+          const result = await createRoomWithRefer();
+          if (result?.data?.room_id) {
+            router.replace(`/room/${result.data.room_id}`);
+          }
+        }}
+      />
+
       {shouldShowSkeleton ? (
         <div className="animate-fade-in">
           <RoomPreparingSplash />

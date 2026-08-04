@@ -4,7 +4,7 @@ import React, { useCallback, useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { RootState } from "@/lib/store";
-import GuestPremiumUpgradeModal from "@/components/Billing/GuestPremiumUpgradeModal";
+import GuestSignInModal from "@/components/Billing/GuestSignInModal";
 import {
   appEntryActionButtonBaseClass,
   appEntryPrimaryButtonClass,
@@ -34,6 +34,7 @@ export default function StartPremiumCheckoutButton({
   const router = useRouter();
   const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
+  const tGuest = useTranslations("auth.guestSignIn");
   const resolvedLabel = label ?? tCommon("upgradeToPremium");
   const authState = useSelector((state: RootState) => state.auth);
   const subscription = useSelector(
@@ -153,9 +154,12 @@ export default function StartPremiumCheckoutButton({
         <LuArrowRight className="text-base" />
       </button>
 
-      <GuestPremiumUpgradeModal
+      <GuestSignInModal
         open={showGuestUpgradeModal}
         onClose={() => setShowGuestUpgradeModal(false)}
+        title={tGuest("checkoutTitle")}
+        description={tGuest("checkoutDescription")}
+        nextStepText={tGuest("checkoutNextStep")}
         onAuthenticated={async (nextToken) => {
           await startCheckout(nextToken);
         }}

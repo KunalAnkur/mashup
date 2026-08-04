@@ -172,7 +172,10 @@
     "watchLimit": {
       "title": "تم بلوغ الحد اليومي",
       "message": "لقد استخدمت {limit} دقيقة مجانية من وقت المشاهدة لهذا اليوم. قم بالترقية إلى {planName} للحصول على وقت مشاهدة غير محدود.",
-      "upgradeCta": "الترقية الآن"
+      "upgradeCta": "الترقية الآن",
+      "viewerTitle": "تم إيقاف التشغيل مؤقتًا",
+      "viewerMessage": "استخدم مضيف الغرفة دقائقه المجانية البالغة {limit} لهذا اليوم. سيستأنف التشغيل غدًا، أو فور قيامه بالترقية.",
+      "gotIt": "حسنًا"
     }
   },
   "sync": {
@@ -306,6 +309,21 @@
     "failedToSelectFiles": "فشل اختيار الملفات"
   },
   "auth": {
+    "guestSignIn": {
+      "whatHappensNext": "ماذا يحدث بعد ذلك",
+      "connecting": "جارٍ الاتصال...",
+      "connected": "تم ربط حساب Google",
+      "notNow": "ليس الآن",
+      "tryAgain": "يرجى المحاولة مرة أخرى.",
+      "failedTitle": "فشل تسجيل الدخول بـ Google",
+      "failedBody": "تعذّرت المتابعة باستخدام Google.",
+      "hostTitle": "سجّل الدخول لإنشاء غرفة",
+      "hostDescription": "يتطلب إنشاء حفلة مشاهدة حسابًا كاملاً. يمكنك الاستمرار في الانضمام إلى الغرف كضيف — هذا فقط لإنشاء غرفتك الخاصة.",
+      "hostNextStep": "سنسجّل دخولك عبر Google، ثم نفتح غرفتك على الفور.",
+      "checkoutTitle": "المتابعة باستخدام Google",
+      "checkoutDescription": "الدفع متاح فقط للحسابات الكاملة. يمكن لجلستك كضيف تصفح الأسعار، لكن عليك المتابعة عبر Google قبل الدفع.",
+      "checkoutNextStep": "سنسجّل دخولك عبر Google داخل Movmash، ثم ننتقل مباشرة إلى الدفع."
+    },
     "login": {
       "welcomeBack": "مرحبًا بعودتك!",
       "chooseHowToContinue": "اختر كيف تريد المتابعة",
@@ -313,7 +331,8 @@
       "termsOfService": "شروط الخدمة",
       "and": "و",
       "privacyPolicy": "سياسة الخصوصية",
-      "agreementSuffix": " الخاصة بـ Movmash."
+      "agreementSuffix": " الخاصة بـ Movmash.",
+      "marketingOptIn": "أرسل لي أحيانًا أخبارًا ونصائح حول Movmash."
     },
     "signup": {
       "username": "اسم المستخدم",

@@ -17,22 +17,37 @@ import {
   modalDiscardActionButtonClass,
   modalSubtleCloseButtonClass,
 } from "@/components/UI";
+import { useTranslations } from "@/i18n/I18nProvider";
 import { useAuthProviderMutation } from "@/lib/store/api/authApi";
 import { setGoogleUser, setUser } from "@/lib/store/slices/authSlice";
 import { showError, showSuccess } from "@/utils/toast";
 
-type GuestPremiumUpgradeModalProps = {
+/**
+ * Prompts a guest to attach a real Google account, then resumes whatever they were doing via
+ * `onAuthenticated`. Shared by every action a guest can't complete — hosting a room and
+ * checkout — since both need an identifiable, billable account (MOVMASH.md §4.3).
+ * Copy is supplied by the caller so the reason shown matches the action that was blocked.
+ */
+type GuestSignInModalProps = {
   open: boolean;
   onClose: () => void;
   onAuthenticated?: (token: string) => void | Promise<void>;
+  title: string;
+  description: string;
+  nextStepText: string;
 };
 
-export default function GuestPremiumUpgradeModal({
+export default function GuestSignInModal({
   open,
   onClose,
   onAuthenticated,
-}: GuestPremiumUpgradeModalProps) {
+  title,
+  description,
+  nextStepText,
+}: GuestSignInModalProps) {
   const dispatch = useDispatch();
+  const tCommon = useTranslations("common");
+  const tAuth = useTranslations("auth.guestSignIn");
   const [authProvider] = useAuthProviderMutation();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
@@ -57,13 +72,13 @@ export default function GuestPremiumUpgradeModal({
         }),
       );
 
-      showSuccess("Google account connected");
+      showSuccess(tAuth("connected"));
       onClose();
       await onAuthenticated?.(response.data.token);
     } catch (error: any) {
       const message =
-        error?.data?.message || error?.message || "Unable to continue with Google.";
-      showError("Google sign-in failed", message);
+        error?.data?.message || error?.message || tAuth("failedBody");
+      showError(tAuth("failedTitle"), message);
     } finally {
       setIsAuthenticating(false);
     }
@@ -86,18 +101,14 @@ export default function GuestPremiumUpgradeModal({
               <LuCrown size={18} />
             </div>
           }
-          title="Continue with Google"
+          title={title}
           titleClassName={`${modalAccentTitleClass} text-base md:text-lg`}
           onClose={isAuthenticating ? undefined : onClose}
           closeButtonClassName={modalSubtleCloseButtonClass}
         />
 
         <div className={modalBalancedContentClass}>
-          <p className="text-sm leading-7 text-white/72">
-            Premium checkout is only available for full accounts. Your current
-            guest session can browse pricing, but you&apos;ll need to continue
-            with Google before payment.
-          </p>
+          <p className="text-sm leading-7 text-white/72">{description}</p>
 
           <div className="mt-4 rounded-2xl bg-white/[0.045] p-4">
             <div className="flex items-start gap-3">
@@ -106,22 +117,19 @@ export default function GuestPremiumUpgradeModal({
               </span>
               <div>
                 <p className="text-sm font-semibold text-white">
-                  What happens next
+                  {tAuth("whatHappensNext")}
                 </p>
-                <p className="mt-1 text-xs leading-6 text-white/60">
-                  We&apos;ll sign you in with Google inside Movmash, then continue
-                  directly into the Premium checkout flow.
-                </p>
+                <p className="mt-1 text-xs leading-6 text-white/60">{nextStepText}</p>
               </div>
             </div>
           </div>
 
           <div className="mt-5 space-y-3">
             <GoogleButton
-              name={isAuthenticating ? "Connecting..." : "Continue with Google"}
+              name={isAuthenticating ? tAuth("connecting") : tCommon("continueWithGoogle")}
               onSuccess={handleGoogleSuccess}
               onError={() => {
-                showError("Google sign-in failed", "Please try again.");
+                showError(tAuth("failedTitle"), tAuth("tryAgain"));
               }}
               disabled={isAuthenticating}
               icon={
@@ -138,7 +146,7 @@ export default function GuestPremiumUpgradeModal({
               disabled={isAuthenticating}
               className={`${modalDiscardActionButtonClass} w-full disabled:cursor-not-allowed disabled:opacity-50`}
             >
-              Not now
+              {tAuth("notNow")}
             </button>
           </div>
         </div>
