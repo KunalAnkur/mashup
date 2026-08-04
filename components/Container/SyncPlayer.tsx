@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import type ReactPlayer from "react-player";
 import { Player } from "@/components/VideoPlayer";
+import { ControlComponents } from "@/components/VideoPlayer/Player";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
 import { useSync } from "@/hooks";
 import { useRoomContext } from "@/context/RoomContext";
@@ -106,6 +107,7 @@ const SyncPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
   });
 
   const controlsConfig = helper.getPlayerControlsConfig(videoUrl, isHost, hostLeft ?? false);
+  const isPlaybackBlocked = roomState.settings.isPlaybackBlocked;
 
   //** Pause video if it is playing when subscription modal comes up */
   useEffect(() => {
@@ -118,7 +120,7 @@ const SyncPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
   return (
     <Player
       playerRef={playerRef}
-      playing={isPlaying}
+      playing={isPlaying && !isPlaybackBlocked}
       onPlay={onPlay}
       onProgress={captureWatchTime}
       onPause={onPause}
@@ -130,8 +132,8 @@ const SyncPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
       muted={initialStateForRender.muted}
       hasUserInteracted={roomState.focused}
       onMute={setFocus}
-      disableControls={controlsConfig.disableControls}
-      hideControls={controlsConfig.hideControls}
+      disableControls={isPlaybackBlocked ? [...controlsConfig.disableControls, ControlComponents.PLAY] : controlsConfig.disableControls}
+      hideControls={isPlaybackBlocked ? [...controlsConfig.hideControls, ControlComponents.PLAY] : controlsConfig.hideControls}
       onOpenStore={() =>  dispatch(toggleBottomSheet())}
       disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
       autoResumeOnFullscreenExit={!isHost}

@@ -38,6 +38,7 @@ import PanelHeaderActionButton from "./PanelHeaderActionButton";
 import useEmblaCarousel from "embla-carousel-react";
 import { movmashThemeGradientClass } from "../UI/classTokens";
 import PanelCallSection from "./PanelCallSection";
+import WatchLimitIndicator from "./WatchLimitIndicator";
 
 const mobileTabRailClass =
   "flex min-w-0 items-center gap-1 overflow-x-auto rounded-full bg-white/[0.035] p-1.5 backdrop-blur-xl scrollbar-hide";
@@ -461,6 +462,9 @@ const Panel = () => {
         {/* ── Call section — below tabs, above chat ────────────────────── */}
         {isJoined && (
           <PanelCallSection />
+        )}
+        {isJoined && (
+          <WatchLimitIndicator />
         )}
 
 

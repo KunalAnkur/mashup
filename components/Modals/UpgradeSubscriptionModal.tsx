@@ -1,8 +1,10 @@
 "use client";
+import { useEffect } from "react";
 import { LuSparkles, LuCheck, LuInfo } from "react-icons/lu";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { trackUpgradeModalShown, trackUpgradeClicked } from "@/lib/analytics";
 import {
   Modal,
   ModalHeader,
@@ -20,6 +22,9 @@ interface UpgradeSubscriptionModalProps {
   onClose: () => void;
   message?: string;
   isHost?: boolean;
+  /** What the user was trying to do. Drives the copy — asking about calls should not be
+   *  told the room is full, which is what happened when every caller shared one message. */
+  context?: "room_full" | "calls" | "watch_limit";
 }
 
 const UpgradeSubscriptionModal = ({
@@ -27,33 +32,56 @@ const UpgradeSubscriptionModal = ({
   onClose,
   message,
   isHost: isHostProp,
+  context = "room_full",
 }: UpgradeSubscriptionModalProps) => {
   const tCommon = useTranslations("common");
+  const t = useTranslations("room.upgrade");
   const roomState = useSelector((state: RootState) => state.room);
-  
+
   // Determine if user is host (from prop or room state)
   const isHost = isHostProp !== undefined ? isHostProp : roomState.host;
 
-  // Different messages for host vs guest
-  const defaultHostMessage = "Your room has reached its participant limit. Upgrade to Premium to host watch parties with up to 50 participants!";
-  const defaultGuestMessage = "This room is full. The host needs to upgrade to Premium to allow more participants.";
-  
-  const displayMessage = message || (isHost ? defaultHostMessage : defaultGuestMessage);
-  const modalTitle = isHost ? "Upgrade to Premium" : "Room is Full";
+  // Copy per context. `watch_limit` has no guest variant on purpose: the allowance belongs
+  // to the host, so only they are ever shown this prompt.
+  const copy = {
+    calls: { title: t("callsTitle"), message: t("callsMessage") },
+    watch_limit: { title: t("watchLimitTitle"), message: t("watchLimitMessage") },
+    room_full: {
+      title: isHost ? t("roomFullTitle") : t("guestRoomFullTitle"),
+      message: isHost ? t("roomFullMessage") : t("guestRoomFullMessage"),
+    },
+  }[context];
+
+  const displayMessage = message || copy.message;
+  const modalTitle = copy.title;
   const modalIcon = isHost ? <LuSparkles size={18} /> : <LuInfo size={18} />;
+  const analyticsContext =
+    context === "room_full"
+      ? roomState.settings.upgradeSubscriptionContext || "room_full"
+      : context;
+
+  useEffect(() => {
+    if (isOpen) {
+      trackUpgradeModalShown(analyticsContext, roomState.roomId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const handleUpgrade = () => {
-    // TODO: Navigate to pricing/upgrade page
-    // For now, just close the modal
-    console.log("Navigate to upgrade page");
+    trackUpgradeClicked(analyticsContext, roomState.roomId);
+    // New tab, not router.push: every context here fires from inside a live room, and
+    // navigating away drops the host out of the watch party to go read pricing.
+    window.open("/pricing", "_blank", "noopener,noreferrer");
     onClose();
   };
 
-  const premiumFeatures = [
-    "Host rooms with up to 50 participants",
-    "Watch parties with more friends",
-    "Priority support",
-    "Ad-free experience",
+  // Benefits shared by every paid plan. Deliberately no participant count: that number
+  // differs per tier and has already changed once, so /pricing is where it belongs.
+  const paidPlanBenefits = [
+    t("benefits.videoCalls"),
+    t("benefits.unlimitedWatch"),
+    t("benefits.morePeople"),
+    t("benefits.quality"),
   ];
 
   return (
@@ -85,13 +113,13 @@ const UpgradeSubscriptionModal = ({
             {displayMessage}
           </p>
 
-          {/* Premium Features - Only show for host */}
+          {/* Paid-plan benefits — only the host can act on them */}
           {isHost && (
             <div className="mb-4 space-y-2 rounded-xl bg-white/[0.045] p-4 md:mb-5">
               <h4 className="mb-3 text-sm font-semibold text-white">
-                Premium Features:
+                {t("benefitsHeading")}
               </h4>
-              {premiumFeatures.map((feature, index) => (
+              {paidPlanBenefits.map((feature, index) => (
                 <div key={index} className="flex items-start gap-2">
                   <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-pink-500/20 via-rose-500/20 to-purple-500/20">
                     <LuCheck size={12} className="text-pink-400" />
@@ -117,7 +145,7 @@ const UpgradeSubscriptionModal = ({
                   className={`${modalBrandActionButtonClass} flex flex-1 items-center justify-center gap-1.5 font-semibold`}
                 >
                   <LuSparkles size={16} />
-                  <span>Upgrade Now</span>
+                  <span>{t("upgradeNow")}</span>
                 </button>
               </>
             ) : (

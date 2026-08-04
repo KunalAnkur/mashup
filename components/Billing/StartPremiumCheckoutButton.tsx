@@ -4,32 +4,40 @@ import React, { useCallback, useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { RootState } from "@/lib/store";
-import GuestPremiumUpgradeModal from "@/components/Billing/GuestPremiumUpgradeModal";
+import GuestSignInModal from "@/components/Billing/GuestSignInModal";
 import {
   appEntryActionButtonBaseClass,
   appEntryPrimaryButtonClass,
 } from "@/components/UI/classTokens";
 import { LuArrowRight } from "react-icons/lu";
 import { showError, showInfo } from "@/utils/toast";
-import {
-  SubscriptionStatus,
-  SubscriptionTier,
-} from "@/types/subscriptionTypes";
+import { SubscriptionStatus } from "@/types/subscriptionTypes";
+import { useTranslations } from "@/i18n/I18nProvider";
 
 type Props = {
   className?: string;
   label?: string;
+  /** Required: this used to default to "premium", a deprecated tier nobody can buy, so a
+   *  caller that forgot it would silently start a checkout for the wrong plan. */
+  planSlug: string;
+  planName?: string;
   successUrl?: string;
   cancelUrl?: string;
 };
 
 export default function StartPremiumCheckoutButton({
   className,
-  label = "Upgrade to Premium",
+  label,
+  planSlug,
+  planName,
   successUrl,
   cancelUrl,
 }: Props) {
   const router = useRouter();
+  const tCommon = useTranslations("common");
+  const tToast = useTranslations("toast");
+  const tGuest = useTranslations("auth.guestSignIn");
+  const resolvedLabel = label ?? tCommon("upgradePlan");
   const authState = useSelector((state: RootState) => state.auth);
   const subscription = useSelector(
     (state: RootState) => state.subscription.subscription,
@@ -71,28 +79,28 @@ export default function StartPremiumCheckoutButton({
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            plan_slug: "premium",
+            plan_slug: planSlug,
             success_url: resolveCallbackUrl("/pricing/success", successUrl),
             cancel_url: resolveCallbackUrl("/pricing/failure", cancelUrl),
           }),
         });
         const json = await resp.json();
         if (!resp.ok || !json?.success) {
-          throw new Error(json?.message || "Failed to create checkout session");
+          throw new Error(json?.message || tToast("checkoutSessionFailed"));
         }
         const checkoutUrl: string | undefined = json?.data?.checkout_url;
-        if (!checkoutUrl) throw new Error("Missing checkout_url");
+        if (!checkoutUrl) throw new Error(tToast("checkoutUrlMissing"));
         window.location.href = checkoutUrl;
       } catch (error: any) {
         showError(
-          "Unable to start checkout",
-          error?.message || "Please try again.",
+          tToast("checkoutStartFailed"),
+          error?.message || tToast("tryAgain"),
         );
       } finally {
         setLoading(false);
       }
     },
-    [authState.token, cancelUrl, resolveCallbackUrl, router, successUrl],
+    [authState.token, cancelUrl, planSlug, resolveCallbackUrl, router, successUrl, tToast],
   );
 
   const handleClick = useCallback(async () => {
@@ -101,15 +109,18 @@ export default function StartPremiumCheckoutButton({
       return;
     }
 
-    const isPremiumUser =
-      subscription?.tier === SubscriptionTier.PREMIUM &&
+    const isSamePlan =
+      subscription?.plan?.slug === planSlug &&
       subscription.status !== SubscriptionStatus.EXPIRED;
 
-    if (isPremiumUser) {
+    if (isSamePlan) {
       showInfo(
-        subscription?.status === SubscriptionStatus.CANCELLED
-          ? "Your Premium plan is already active and set to end at the close of the current billing period."
-          : "You are already enrolled in this plan.",
+        tToast(
+          subscription?.status === SubscriptionStatus.CANCELLED
+            ? "alreadySubscribedCancelled"
+            : "alreadySubscribed",
+          { plan: planName ?? resolvedLabel },
+        ),
       );
       return;
     }
@@ -124,6 +135,10 @@ export default function StartPremiumCheckoutButton({
     authState.isAuthenticated,
     authState.token,
     authState.user,
+    resolvedLabel,
+    planName,
+    planSlug,
+    tToast,
     router,
     startCheckout,
     subscription,
@@ -137,13 +152,16 @@ export default function StartPremiumCheckoutButton({
         disabled={loading}
         className={`${appEntryActionButtonBaseClass} ${appEntryPrimaryButtonClass} w-full ${className ?? ""}`}
       >
-        <span>{loading ? "Processing..." : label}</span>
+        <span>{loading ? tCommon("processing") : resolvedLabel}</span>
         <LuArrowRight className="text-base" />
       </button>
 
-      <GuestPremiumUpgradeModal
+      <GuestSignInModal
         open={showGuestUpgradeModal}
         onClose={() => setShowGuestUpgradeModal(false)}
+        title={tGuest("checkoutTitle")}
+        description={tGuest("checkoutDescription")}
+        nextStepText={tGuest("checkoutNextStep")}
         onAuthenticated={async (nextToken) => {
           await startCheckout(nextToken);
         }}

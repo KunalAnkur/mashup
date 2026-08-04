@@ -37,9 +37,11 @@ export default function SuccessPage() {
     status === "";
 
   const title = isProcessing ? "Payment processing" : "Payment successful";
+  // Plan-neutral: this page is reached from Couple and Crowd checkouts, so naming a tier
+  // here would be wrong for most buyers ("Premium" is a deprecated tier nobody can buy).
   const message = isProcessing
-    ? "We're finalizing your Premium subscription. This may take up to a minute. You'll see Premium unlock automatically once complete."
-    : "Your Premium subscription is being activated. If it doesn't reflect immediately, refresh your account or revisit in a moment.";
+    ? "We're finalizing your subscription. This may take up to a minute — your new plan will unlock automatically once it's done."
+    : "Your subscription is being activated. If it doesn't show up straight away, refresh your account or check back in a moment.";
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-6">

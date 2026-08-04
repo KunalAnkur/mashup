@@ -28,9 +28,13 @@
     "confirmLogoutMessage": "Are you sure you want to logout? You will be redirected to the home page.",
     "cancel": "Cancel",
     "loggingOut": "Logging out...",
+    "upgrade": "Upgrade",
+    "accountMenu": "Account menu",
+    "notAuthenticated": "Not authenticated",
     "you": "You",
     "host": "Host",
     "loading": "Loading...",
+    "processing": "Processing...",
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "edit": "Edit",
@@ -49,7 +53,8 @@
     "continueAsGuest": "Continue as Guest",
     "or": "or",
     "linkCopied": "Link copied!",
-    "copyLink": "Copy Link"
+    "copyLink": "Copy Link",
+    "upgradePlan": "Upgrade plan"
   },
   "panel": {
     "playlist": {
@@ -148,7 +153,14 @@
     "leave": "Leave",
     "activelyImproving": "Actively Improving",
     "helpUsShapeMovmash": "Help us shape Movmash",
-    "feedback": "Feedback"
+    "feedback": "Feedback",
+    "watchLimit": {
+      "minutesLeft": "{minutes} min left today",
+      "hostMinutesLeft": "Host has {minutes} min left today",
+      "upgrade": "Upgrade",
+      "nudgeTitle": "{minutes} minutes left today",
+      "nudgeMessage": "Upgrade now to keep watching without interruption."
+    }
   },
   "room": {
     "yourWatchPartyReady": "Your watch party is ready!",
@@ -159,7 +171,39 @@
     "copyInviteLink": "Copy Invite Link",
     "joinRoom": "Join Room",
     "joinMyWatchParty": "Join my watch party!",
-    "joinMyWatchPartyOnMovmash": "Join my watch party on Movmash!"
+    "joinMyWatchPartyOnMovmash": "Join my watch party on Movmash!",
+    "watchLimit": {
+      "title": "Daily limit reached",
+      "message": "You've used your {limit} free minutes of watch time for today. Upgrade to {planName} for unlimited watch time.",
+      "upgradeCta": "Upgrade Now",
+      "viewerTitle": "Playback paused",
+      "viewerMessage": "The host has used their {limit} free minutes for today. Playback resumes tomorrow, or as soon as they upgrade.",
+      "gotIt": "Got it"
+    },
+    "callUpsell": {
+      "title": "Video and audio calls",
+      "hostHint": "Upgrade to enable calls for this room",
+      "guestHint": "The host needs a paid plan to enable calls",
+      "upgrade": "Upgrade"
+    },
+    "upgrade": {
+      "callsTitle": "Add video calls",
+      "callsMessage": "Video and voice calls come with the Couple and Crowd plans. Upgrade to turn them on for this room.",
+      "watchLimitTitle": "More watch time",
+      "watchLimitMessage": "This room runs on the host's daily watch limit. Couple and Crowd remove it, so you can finish what you started.",
+      "roomFullTitle": "Upgrade your plan",
+      "roomFullMessage": "Your room is at its participant limit. A bigger plan lets you host watch parties with more people.",
+      "guestRoomFullTitle": "Room is full",
+      "guestRoomFullMessage": "This room is full. The host needs a bigger plan to let more people in.",
+      "benefitsHeading": "What you get",
+      "upgradeNow": "See plans",
+      "benefits": {
+        "videoCalls": "Video + voice call while you watch",
+        "unlimitedWatch": "Unlimited watch time",
+        "morePeople": "More people per room",
+        "quality": "1080p screen sharing"
+      }
+    }
   },
   "sync": {
     "title": "Enter Source URL",
@@ -279,6 +323,11 @@
     "unableToStartStreaming": "Unable to start video streaming. Please check your connection and try again.",
     "streamReconnectionFailed": "Stream reconnection failed",
     "unableToReconnect": "Unable to reconnect to video stream. Please refresh the page.",
+    "alreadySubscribed": "You're already on the {plan} plan.",
+    "alreadySubscribedCancelled": "Your {plan} plan is already active and set to end at the close of the current billing period.",
+    "checkoutStartFailed": "Unable to start checkout",
+    "checkoutSessionFailed": "Failed to create checkout session",
+    "checkoutUrlMissing": "Missing checkout_url",
     "failedToAddUrl": "Failed to add URL. Please try again.",
     "pleaseEnterUrl": "Please enter a URL",
     "invalidUrl": "Invalid URL. Please enter a supported video URL.",
@@ -287,6 +336,21 @@
     "failedToSelectFiles": "Failed to select files"
   },
   "auth": {
+    "guestSignIn": {
+      "whatHappensNext": "What happens next",
+      "connecting": "Connecting...",
+      "connected": "Google account connected",
+      "notNow": "Not now",
+      "tryAgain": "Please try again.",
+      "failedTitle": "Google sign-in failed",
+      "failedBody": "Unable to continue with Google.",
+      "hostTitle": "Sign in to host",
+      "hostDescription": "Hosting a watch party needs a full account. You can keep joining rooms as a guest — this is only for starting your own.",
+      "hostNextStep": "We'll sign you in with Google, then open your room right away.",
+      "checkoutTitle": "Continue with Google",
+      "checkoutDescription": "Checkout is only available for full accounts. Your guest session can browse pricing, but you'll need to continue with Google before payment.",
+      "checkoutNextStep": "We'll sign you in with Google inside Movmash, then continue directly into checkout."
+    },
     "login": {
       "welcomeBack": "Welcome back!",
       "chooseHowToContinue": "Choose how you'd like to continue",
@@ -294,7 +358,8 @@
       "termsOfService": "Terms of Service",
       "and": "and",
       "privacyPolicy": "Privacy Policy",
-      "agreementSuffix": "."
+      "agreementSuffix": ".",
+      "marketingOptIn": "Send me occasional news and tips about Movmash."
     },
     "signup": {
       "username": "Username",
@@ -340,5 +405,123 @@
     "saving": "Saving…",
     "settingsLabel": "News & updates",
     "settingsDescription": "Updates on new features and watch party tips"
+  },
+  "pricing": {
+    "kicker": "Pricing",
+    "loadError": "Pricing is temporarily unavailable. Please try again shortly.",
+    "currentPlanLabel": "Current plan",
+    "switchPlanLabel": "Switch plan",
+    "downgradeToFreeLabel": "Cancel your plan to switch",
+    "title": "Choose your plan",
+    "subtitle": "Free is enough to try Movmash. Couple and Crowd remove the daily limit and add video calls.",
+    "billingToggle": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "monthlyTerms": "Billed monthly. Renews automatically — cancel any time.",
+      "yearlyTerms": "Billed once for the year. Renews automatically — cancel any time."
+    },
+    "perMonth": "per month",
+    "perYear": "per year",
+    "free": {
+      "name": "Free",
+      "meta": "Free forever",
+      "description": "Best for a quick watch party or trying Movmash out.",
+      "features": {
+        "participants": "{count} people per room",
+        "dailyLimit": "{minutes} minutes of watch time per day",
+        "screenShare": "{quality} screen sharing"
+      },
+      "cta": "Start free"
+    },
+    "couple": {
+      "name": "Couple Plan",
+      "description": "Best for couples and close friends who watch together often.",
+      "features": {
+        "videoCall": "Video + voice call while you watch",
+        "participants": "{count} people per room",
+        "unlimitedWatch": "Unlimited watch time",
+        "screenShare": "{quality} screen sharing"
+      },
+      "cta": "Upgrade to Couple"
+    },
+    "crowd": {
+      "name": "Crowd Plan",
+      "description": "Best for friend groups, fandoms, and bigger watch parties.",
+      "features": {
+        "videoCall": "Video + voice call while you watch",
+        "participants": "Up to {count} people per room",
+        "unlimitedWatch": "Unlimited watch time",
+        "screenShare": "{quality} screen sharing"
+      },
+      "cta": "Upgrade to Crowd"
+    },
+    "billedYearly": "{amount} billed yearly",
+    "popularBadge": "Popular"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "currentPlanBadge": "Current plan",
+    "viewPlans": "View plans",
+    "cancelPlan": "Cancel plan",
+    "reactivatePlan": "Reactivate",
+    "cancelsOn": "Cancels on {date}",
+    "renewsOn": "Renews automatically on {date}.",
+    "renewsYearlyOn": "Renews automatically on {date} for another year.",
+    "cancelAnytimeHint": "Cancel any time before then — you keep access until that date.",
+    "pendingChangeBanner": "Moving to {plan} on {date}",
+    "undoPendingChange": "Undo",
+    "features": {
+      "participants": "{count} people per room",
+      "watchLimitDaily": "{minutes} minutes of watch time per day",
+      "watchUnlimited": "Unlimited watch time",
+      "screenShare": "{quality} screen sharing"
+    },
+    "cancelModal": {
+      "title": "Cancel {plan}?",
+      "message": "Your {plan} plan will stay active until the current billing period ends.",
+      "keepPlan": "Keep plan",
+      "cancelling": "Cancelling..."
+    },
+    "toast": {
+      "cancelSuccess": "Your plan will stop renewing at the end of the current billing period.",
+      "cancelFailedTitle": "Subscription cancellation failed",
+      "cancelFailedDefault": "Unable to cancel your subscription right now.",
+      "pendingChangeCancelled": "Scheduled plan change cancelled.",
+      "pendingChangeCancelFailed": "Unable to cancel the scheduled change right now.",
+      "reactivateSuccess": "Your plan will continue to renew as usual.",
+      "reactivateFailedTitle": "Reactivation failed",
+      "reactivateFailedDefault": "Unable to reactivate your subscription right now."
+    },
+    "transactions": {
+      "title": "Payment activity",
+      "empty": "No payment activity yet.",
+      "newSubscription": "New subscription",
+      "newSubscriptionTo": "{plan} subscription",
+      "upgrade": "Plan upgrade",
+      "upgradeTo": "Upgrade to {plan}",
+      "downgrade": "Plan downgrade",
+      "downgradeTo": "Downgrade to {plan}",
+      "status": {
+        "pending": "Pending",
+        "processing": "Processing",
+        "completed": "Completed",
+        "failed": "Failed",
+        "refunded": "Refunded"
+      }
+    }
+  },
+  "planChange": {
+    "loadingPreview": "Checking pricing...",
+    "upgradeTitle": "Switch to {plan}?",
+    "downgradeTitle": "Move to {plan}?",
+    "upgradeMessage": "You'll be charged {amount} today and your remaining days on your current plan won't carry over. Renews {date}.",
+    "downgradeMessage": "You'll move to {plan} on {date}. You'll keep your current plan until then.",
+    "keepCurrentPlan": "Keep current plan",
+    "confirmChange": "Confirm switch",
+    "confirming": "Switching...",
+    "upgradeStarted": "Your plan has been switched.",
+    "downgradeStarted": "Your plan change is scheduled.",
+    "changeFailedTitle": "Plan change failed",
+    "changeFailedDefault": "Unable to change your plan right now. Please try again."
   }
 }

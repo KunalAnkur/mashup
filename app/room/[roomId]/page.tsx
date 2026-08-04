@@ -12,6 +12,7 @@ import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { useFileContext } from "@/context/FileContext";
 import ProductBottomSheet from "@/components/Product/ProductBottomSheet";
 import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionModal";
+import PlaybackBlockedModal from "@/components/Modals/PlaybackBlockedModal";
 import { appFixedViewportPageClass } from "@/components/UI/classTokens";
 import FloatingCallOverlay from "@/components/VideoCall/FloatingCallOverlay";
 const Page = () => {
@@ -112,7 +113,14 @@ const Page = () => {
         onClose={handleCloseUpgradeModal}
         message={roomState.settings.upgradeSubscriptionMessage}
       />
-      
+
+      {/* Daily watch-limit block — non-dismissable, unlike the modal above */}
+      <PlaybackBlockedModal
+        isOpen={roomState.settings.isPlaybackBlocked}
+        limit={roomState.settings.playbackBlockedInfo?.limit ?? 0}
+        planName={roomState.settings.playbackBlockedInfo?.planName ?? "Free"}
+      />
+
       <div ref={containerRef} className={`${appFixedViewportPageClass} h-[100dvh] overflow-hidden flex flex-col md:flex-row`}>
         <div
           className={`

@@ -2,9 +2,9 @@ import { Avatar, Button, Anchor, Separator, Logo, Input } from "./UI";
 import { PartyCard, HostDetails, Footer } from "./Card";
 import { Sidebar } from "./Sidebar";
 import { HomeContent, PlayerWrapper } from "./Container";
-import { AvatarContainer, LoginContainer, SignupContainer, Skeleton } from "./Container";
+import { AvatarContainer, LoginContainer } from "./Container";
 import { Notification, AuthHeader } from "./UI";
-import { SourceSelection, UrlSelection, AuthWrapper, FileSelection } from "./Onboard";
+import { SourceSelection, UrlSelection, FileSelection } from "./Onboard";
 import ProfileHeader from "./Header/ProfileHeader";
 import LogoHeader from "./Header/LogoHeader";
 import AvatarDropdown from "./UI/AvatarDropdown";
@@ -24,13 +24,10 @@ export {
   AvatarContainer,
   Notification,
   LoginContainer,
-  SignupContainer,
   AuthHeader,
   SourceSelection,
   UrlSelection,
-  AuthWrapper,
   FileSelection,
-  Skeleton,
   PlayerWrapper,
   ProfileHeader,
   LogoHeader,

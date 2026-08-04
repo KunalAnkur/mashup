@@ -28,9 +28,13 @@
     "confirmLogoutMessage": "¿Estás seguro de que quieres cerrar sesión? Serás redirigido a la página principal.",
     "cancel": "Cancelar",
     "loggingOut": "Cerrando sesión...",
+    "upgrade": "Mejorar",
+    "accountMenu": "Menú de cuenta",
+    "notAuthenticated": "No autenticado",
     "you": "Tú",
     "host": "Anfitrión",
     "loading": "Cargando...",
+    "processing": "Procesando...",
     "saving": "Guardando...",
     "saveChanges": "Guardar Cambios",
     "edit": "Editar",
@@ -49,7 +53,8 @@
     "continueAsGuest": "Continuar como Invitado",
     "or": "o",
     "linkCopied": "¡Enlace copiado!",
-    "copyLink": "Copiar enlace"
+    "copyLink": "Copiar enlace",
+    "upgradePlan": "Mejorar plan"
   },
   "panel": {
     "playlist": {
@@ -148,7 +153,14 @@
     "leave": "Salir",
     "activelyImproving": "Mejorando Activamente",
     "helpUsShapeMovmash": "Ayúdanos a dar forma a Movmash",
-    "feedback": "Comentarios"
+    "feedback": "Comentarios",
+    "watchLimit": {
+      "minutesLeft": "{minutes} min restantes hoy",
+      "hostMinutesLeft": "Al anfitrión le quedan {minutes} min hoy",
+      "upgrade": "Actualizar",
+      "nudgeTitle": "Quedan {minutes} minutos hoy",
+      "nudgeMessage": "Actualiza ahora para seguir viendo sin interrupciones."
+    }
   },
   "room": {
     "yourWatchPartyReady": "¡Tu fiesta de visualización está lista!",
@@ -159,7 +171,39 @@
     "copyInviteLink": "Copiar Enlace de Invitación",
     "joinRoom": "Unirse a la Sala",
     "joinMyWatchParty": "¡Únete a mi fiesta de visualización!",
-    "joinMyWatchPartyOnMovmash": "¡Únete a mi fiesta de visualización en Movmash!"
+    "joinMyWatchPartyOnMovmash": "¡Únete a mi fiesta de visualización en Movmash!",
+    "watchLimit": {
+      "title": "Límite diario alcanzado",
+      "message": "Has usado tus {limit} minutos gratuitos de tiempo de visualización de hoy. Actualiza a {planName} para tiempo de visualización ilimitado.",
+      "upgradeCta": "Actualizar Ahora",
+      "viewerTitle": "Reproducción pausada",
+      "viewerMessage": "El anfitrión ha usado sus {limit} minutos gratuitos de hoy. La reproducción se reanudará mañana, o en cuanto actualice su plan.",
+      "gotIt": "Entendido"
+    },
+    "callUpsell": {
+      "title": "Llamadas de video y audio",
+      "hostHint": "Mejora tu plan para activar las llamadas en esta sala",
+      "guestHint": "El anfitrión necesita un plan de pago para activar las llamadas",
+      "upgrade": "Mejorar"
+    },
+    "upgrade": {
+      "callsTitle": "Añade videollamadas",
+      "callsMessage": "Las llamadas de video y voz vienen con los planes Couple y Crowd. Mejora tu plan para activarlas en esta sala.",
+      "watchLimitTitle": "Más tiempo de visualización",
+      "watchLimitMessage": "Esta sala usa el límite diario de visualización del anfitrión. Couple y Crowd lo eliminan, así puedes terminar lo que empezaste.",
+      "roomFullTitle": "Mejora tu plan",
+      "roomFullMessage": "Tu sala alcanzó su límite de participantes. Un plan mayor te permite organizar fiestas con más gente.",
+      "guestRoomFullTitle": "La sala está llena",
+      "guestRoomFullMessage": "Esta sala está llena. El anfitrión necesita un plan mayor para dejar entrar a más gente.",
+      "benefitsHeading": "Qué incluye",
+      "upgradeNow": "Ver planes",
+      "benefits": {
+        "videoCalls": "Videollamada + voz mientras ves",
+        "unlimitedWatch": "Tiempo de visualización ilimitado",
+        "morePeople": "Más personas por sala",
+        "quality": "Pantalla compartida en 1080p"
+      }
+    }
   },
   "sync": {
     "title": "Ingresar URL de Origen",
@@ -279,6 +323,11 @@
     "unableToStartStreaming": "No se pudo iniciar la transmisión de video. Por favor, verifica tu conexión e inténtalo de nuevo.",
     "streamReconnectionFailed": "Error al reconectar transmisión",
     "unableToReconnect": "No se pudo reconectar a la transmisión de video. Por favor, actualiza la página.",
+    "alreadySubscribed": "Ya tienes el plan {plan}.",
+    "alreadySubscribedCancelled": "Tu plan {plan} sigue activo y terminará al final del periodo de facturación actual.",
+    "checkoutStartFailed": "No se pudo iniciar el pago",
+    "checkoutSessionFailed": "No se pudo crear la sesión de pago",
+    "checkoutUrlMissing": "Falta la URL de pago",
     "failedToAddUrl": "Error al agregar URL. Por favor, inténtalo de nuevo.",
     "pleaseEnterUrl": "Por favor, ingresa una URL",
     "invalidUrl": "URL inválida. Por favor, ingresa una URL de video soportada.",
@@ -287,6 +336,21 @@
     "failedToSelectFiles": "Error al seleccionar archivos"
   },
   "auth": {
+    "guestSignIn": {
+      "whatHappensNext": "Qué sucede después",
+      "connecting": "Conectando...",
+      "connected": "Cuenta de Google conectada",
+      "notNow": "Ahora no",
+      "tryAgain": "Inténtalo de nuevo.",
+      "failedTitle": "Error al iniciar sesión con Google",
+      "failedBody": "No se pudo continuar con Google.",
+      "hostTitle": "Inicia sesión para crear una sala",
+      "hostDescription": "Crear una fiesta de visualización requiere una cuenta completa. Puedes seguir uniéndote a salas como invitado — esto es solo para crear la tuya.",
+      "hostNextStep": "Te conectaremos con Google y abriremos tu sala de inmediato.",
+      "checkoutTitle": "Continuar con Google",
+      "checkoutDescription": "El pago solo está disponible para cuentas completas. Tu sesión de invitado puede ver los precios, pero necesitarás continuar con Google antes de pagar.",
+      "checkoutNextStep": "Te conectaremos con Google dentro de Movmash y continuaremos directamente al pago."
+    },
     "login": {
       "welcomeBack": "¡Qué bueno verte de nuevo!",
       "chooseHowToContinue": "Elige cómo quieres continuar",
@@ -294,7 +358,8 @@
       "termsOfService": "Términos del servicio",
       "and": "y la",
       "privacyPolicy": "Política de privacidad",
-      "agreementSuffix": " de Movmash."
+      "agreementSuffix": " de Movmash.",
+      "marketingOptIn": "Envíame novedades y consejos ocasionales sobre Movmash."
     },
     "signup": {
       "username": "Nombre de usuario",
@@ -340,5 +405,123 @@
     "saving": "Guardando…",
     "settingsLabel": "Noticias y novedades",
     "settingsDescription": "Novedades sobre funciones y consejos de Watch Party"
+  },
+  "pricing": {
+    "kicker": "Precios",
+    "loadError": "Los precios no están disponibles en este momento. Inténtalo de nuevo en breve.",
+    "currentPlanLabel": "Plan actual",
+    "switchPlanLabel": "Cambiar plan",
+    "downgradeToFreeLabel": "Cancela tu plan para cambiar",
+    "title": "Elige tu plan",
+    "subtitle": "Con Free basta para probar Movmash. Couple y Crowd quitan el límite diario y añaden videollamadas.",
+    "billingToggle": {
+      "monthly": "Mensual",
+      "yearly": "Anual",
+      "monthlyTerms": "Facturación mensual. Se renueva automáticamente — cancela cuando quieras.",
+      "yearlyTerms": "Un solo cargo al año. Se renueva automáticamente — cancela cuando quieras."
+    },
+    "perMonth": "al mes",
+    "perYear": "al año",
+    "free": {
+      "name": "Free",
+      "meta": "Gratis para siempre",
+      "description": "Ideal para una sesión rápida o para probar Movmash.",
+      "features": {
+        "participants": "{count} personas por sala",
+        "dailyLimit": "{minutes} minutos de visualización al día",
+        "screenShare": "Compartir pantalla en {quality}"
+      },
+      "cta": "Empezar gratis"
+    },
+    "couple": {
+      "name": "Plan Couple",
+      "description": "Ideal para parejas y amigos cercanos que ven contenido juntos a menudo.",
+      "features": {
+        "videoCall": "Videollamada y llamada de voz mientras ves",
+        "participants": "{count} personas por sala",
+        "unlimitedWatch": "Tiempo de visualización ilimitado",
+        "screenShare": "Compartir pantalla en {quality}"
+      },
+      "cta": "Mejorar a Couple"
+    },
+    "crowd": {
+      "name": "Plan Crowd",
+      "description": "Ideal para grupos de amigos, fandoms y fiestas de cine más grandes.",
+      "features": {
+        "videoCall": "Videollamada y llamada de voz mientras ves",
+        "participants": "Hasta {count} personas por sala",
+        "unlimitedWatch": "Tiempo de visualización ilimitado",
+        "screenShare": "Compartir pantalla en {quality}"
+      },
+      "cta": "Mejorar a Crowd"
+    },
+    "billedYearly": "{amount} facturado anualmente",
+    "popularBadge": "Popular"
+  },
+  "subscription": {
+    "title": "Suscripción",
+    "currentPlanBadge": "Plan actual",
+    "viewPlans": "Ver planes",
+    "cancelPlan": "Cancelar plan",
+    "reactivatePlan": "Reactivar",
+    "cancelsOn": "Se cancela el {date}",
+    "renewsOn": "Se renueva automáticamente el {date}.",
+    "renewsYearlyOn": "Se renueva automáticamente el {date} por un año más.",
+    "cancelAnytimeHint": "Puedes cancelar en cualquier momento antes de esa fecha — mantienes el acceso hasta entonces.",
+    "pendingChangeBanner": "Pasarás al plan {plan} el {date}",
+    "undoPendingChange": "Deshacer",
+    "features": {
+      "participants": "{count} personas por sala",
+      "watchLimitDaily": "{minutes} minutos de visualización al día",
+      "watchUnlimited": "Tiempo de visualización ilimitado",
+      "screenShare": "Compartir pantalla en {quality}"
+    },
+    "cancelModal": {
+      "title": "¿Cancelar {plan}?",
+      "message": "Tu plan {plan} seguirá activo hasta que termine el periodo de facturación actual.",
+      "keepPlan": "Mantener plan",
+      "cancelling": "Cancelando..."
+    },
+    "toast": {
+      "cancelSuccess": "Tu plan dejará de renovarse al final del periodo de facturación actual.",
+      "cancelFailedTitle": "No se pudo cancelar la suscripción",
+      "cancelFailedDefault": "No es posible cancelar tu suscripción en este momento.",
+      "pendingChangeCancelled": "Cambio de plan programado cancelado.",
+      "pendingChangeCancelFailed": "No es posible cancelar el cambio programado en este momento.",
+      "reactivateSuccess": "Tu plan seguirá renovándose con normalidad.",
+      "reactivateFailedTitle": "No se pudo reactivar la suscripción",
+      "reactivateFailedDefault": "No es posible reactivar tu suscripción en este momento."
+    },
+    "transactions": {
+      "title": "Actividad de pagos",
+      "empty": "Todavía no hay actividad de pagos.",
+      "newSubscription": "Nueva suscripción",
+      "newSubscriptionTo": "Suscripción {plan}",
+      "upgrade": "Mejora de plan",
+      "upgradeTo": "Mejora a {plan}",
+      "downgrade": "Cambio a un plan inferior",
+      "downgradeTo": "Cambio a {plan}",
+      "status": {
+        "pending": "Pendiente",
+        "processing": "En proceso",
+        "completed": "Completado",
+        "failed": "Fallido",
+        "refunded": "Reembolsado"
+      }
+    }
+  },
+  "planChange": {
+    "loadingPreview": "Comprobando el precio...",
+    "upgradeTitle": "¿Cambiar a {plan}?",
+    "downgradeTitle": "¿Mover a {plan}?",
+    "upgradeMessage": "Se te cobrará {amount} hoy y los días restantes de tu plan actual no se trasladarán. Se renueva el {date}.",
+    "downgradeMessage": "Pasarás al plan {plan} el {date}. Hasta entonces conservas tu plan actual.",
+    "keepCurrentPlan": "Mantener plan actual",
+    "confirmChange": "Confirmar cambio",
+    "confirming": "Cambiando...",
+    "upgradeStarted": "Tu plan se ha cambiado.",
+    "downgradeStarted": "Tu cambio de plan está programado.",
+    "changeFailedTitle": "Error al cambiar de plan",
+    "changeFailedDefault": "No es posible cambiar tu plan en este momento. Inténtalo de nuevo."
   }
 }

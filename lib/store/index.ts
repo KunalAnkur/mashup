@@ -22,6 +22,8 @@ import { userApi } from "./api/userApi";
 import { urlApi } from "./api/urlApi";
 import { feedbackApi } from "./api/feedbackApi";
 import { productApi } from "./api/productApi";
+import { subscriptionPlanApi } from "./api/subscriptionPlanApi";
+import { billingApi } from "./api/billingApi";
 
 // 1. Combine reducers
 const rootReducer = combineReducers({
@@ -36,6 +38,8 @@ const rootReducer = combineReducers({
   [urlApi.reducerPath]: urlApi.reducer,
   [feedbackApi.reducerPath]: feedbackApi.reducer,
   [productApi.reducerPath]: productApi.reducer,
+  [subscriptionPlanApi.reducerPath]: subscriptionPlanApi.reducer,
+  [billingApi.reducerPath]: billingApi.reducer,
 });
 
 // 2. Persist config
@@ -62,7 +66,9 @@ export const store = configureStore({
       userApi.middleware,
       urlApi.middleware,
       feedbackApi.middleware,
-      productApi.middleware
+      productApi.middleware,
+      subscriptionPlanApi.middleware,
+      billingApi.middleware
     ),
   devTools: process.env.NODE_ENV !== "production",
 });

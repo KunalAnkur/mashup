@@ -116,6 +116,7 @@ Primary backlog lives in [tasks/notion-backlog.md](./tasks/notion-backlog.md).
   - Run an app-wide alignment/spacing cleanup toward shared layout patterns instead of margin/padding drift.
   - Do a broader architecture cleanup around `stream` / `sync` page ownership.
 - Localization work now requires both dictionary sync and a code-usage audit; matching locale file structure alone is not enough.
+- The daily watch limit now has three escalation tiers, and new limit UI should slot into one of them rather than adding a fourth surface: ambient panel card (always, `WatchLimitIndicator`), a one-shot host-only toast nudge at 10 minutes remaining (`showActionToast`, guarded by `room.watchLimitNudgeShown`), and the blocking modal at zero. The 10-minute threshold is a starting guess — tune it from `watch_limit_nudge_shown` vs. `upgrade_clicked` / `daily_limit_reached`.
 
 ## Execution Reminders
 

@@ -16,6 +16,9 @@ export enum SocketEvent {
   PLAYLIST_UPDATED = "playlistUpdated",
   WATCH_TIME = "watchTime",
   HOST_PLAYBACK_STATE = "hostPlaybackState",
+  WATCH_LIMIT_REACHED = "watchLimitReached", // Free-tier daily watch limit hit — informational
+  FORCE_PAUSE_PLAYBACK = "forcePausePlayback", // Must actually stop playback and block resume
+  USAGE_UPDATED = "usageUpdated", // Live remaining-minutes countdown, sent on every daily-limit check
   // Video selection events
   SELECT_VIDEO = "selectVideo",
   VIDEO_SELECTED = "videoSelected",

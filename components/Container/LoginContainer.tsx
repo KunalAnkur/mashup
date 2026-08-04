@@ -17,11 +17,6 @@ import { trackLogin, trackSignup } from "@/lib/analytics";
 import { zincGlassStrongBorderedSurfaceClass } from "@/components/UI/classTokens";
 
 
-type Prop = {
-  setContainer?: (container: "login" | "signup") => void | null;
-  isModel?: boolean;
-};
-
 const guestContinueButtonClass =
   "w-full bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 backdrop-blur-xl border border-zinc-600/15 hover:from-purple-600/20 hover:via-pink-600/20 hover:to-fuchsia-600/20 hover:border-purple-500/30 text-white font-semibold text-sm px-6 py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed";
 const loginContainerSurfaceClass =
@@ -36,7 +31,7 @@ type GoogleAuthUserInfo = {
   sub: string;
 };
 
-const LoginContainer = ({}: Prop) => {
+const LoginContainer = () => {
   const searchParams = useSearchParams();
   const redirectParam = searchParams?.get("redirect");
 
@@ -50,6 +45,8 @@ const LoginContainer = ({}: Prop) => {
   const [authProvider] = useAuthProviderMutation();
   const [continueAsGuest, { isLoading: isGuestLoading }] = useContinueAsGuestMutation();
   const [isGuestProcessing, setIsGuestProcessing] = useState(false);
+  // GDPR requires opt-in, so this must default to false and never be pre-checked.
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const dispatch = useDispatch();
 
   const handleGoogleAuthSuccess = async (userInfo: GoogleAuthUserInfo) => {
@@ -60,6 +57,9 @@ const LoginContainer = ({}: Prop) => {
         picture: userInfo.picture,
         sub: userInfo.sub,
         provider_name: "google",
+        // Guardian only records this when the account is created — signing in again with
+        // the box unchecked will not opt an existing user out.
+        marketing_emails_opt_in: marketingOptIn,
       }).unwrap();
 
       dispatch(setUser(response));
@@ -135,6 +135,19 @@ const LoginContainer = ({}: Prop) => {
               console.log("Google authentication failed");
             }}
           />
+
+          {/* Marketing opt-in — unchecked by default (GDPR). Only recorded for new accounts. */}
+          <label className="flex cursor-pointer items-start gap-2.5 px-0.5">
+            <input
+              type="checkbox"
+              checked={marketingOptIn}
+              onChange={(e) => setMarketingOptIn(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-pink-500"
+            />
+            <span className="text-xs leading-relaxed text-white/60">
+              {tAuth("marketingOptIn")}
+            </span>
+          </label>
 
           {/* Separator */}
           <div className="flex items-center gap-3 py-0.5">

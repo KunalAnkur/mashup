@@ -28,9 +28,13 @@
     "confirmLogoutMessage": "Çıkmak istediğinize emin misiniz? Ana sayfaya yönlendirileceksiniz.",
     "cancel": "İptal",
     "loggingOut": "Çıkış yapılıyor...",
+    "upgrade": "Yükselt",
+    "accountMenu": "Hesap menüsü",
+    "notAuthenticated": "Kimlik doğrulanmadı",
     "you": "Sen",
     "host": "Ev Sahibi",
     "loading": "Yükleniyor...",
+    "processing": "İşleniyor...",
     "saving": "Kaydediliyor...",
     "saveChanges": "Değişiklikleri Kaydet",
     "edit": "Düzenle",
@@ -49,7 +53,8 @@
     "continueAsGuest": "Misafir Olarak Devam Et",
     "or": "veya",
     "linkCopied": "Bağlantı kopyalandı!",
-    "copyLink": "Bağlantıyı Kopyala"
+    "copyLink": "Bağlantıyı Kopyala",
+    "upgradePlan": "Planı yükselt"
   },
   "panel": {
     "playlist": {
@@ -148,7 +153,14 @@
     "leave": "Ayrıl",
     "activelyImproving": "Aktif Olarak Geliştiriliyor",
     "helpUsShapeMovmash": "Movmash'ı şekillendirmemize yardımcı olun",
-    "feedback": "Geri Bildirim"
+    "feedback": "Geri Bildirim",
+    "watchLimit": {
+      "minutesLeft": "Bugün {minutes} dakika kaldı",
+      "hostMinutesLeft": "Oda sahibinin bugün {minutes} dakikası kaldı",
+      "upgrade": "Yükselt",
+      "nudgeTitle": "Bugün {minutes} dakika kaldı",
+      "nudgeMessage": "Kesintisiz izlemeye devam etmek için şimdi yükseltin."
+    }
   },
   "room": {
     "yourWatchPartyReady": "İzleme partiniz hazır!",
@@ -159,7 +171,39 @@
     "copyInviteLink": "Davet Bağlantısını Kopyala",
     "joinRoom": "Odaya Katıl",
     "joinMyWatchParty": "İzleme partime katıl!",
-    "joinMyWatchPartyOnMovmash": "Movmash'ta izleme partime katıl!"
+    "joinMyWatchPartyOnMovmash": "Movmash'ta izleme partime katıl!",
+    "watchLimit": {
+      "title": "Günlük limite ulaşıldı",
+      "message": "Bugün için {limit} dakikalık ücretsiz izleme sürenizi kullandınız. Sınırsız izleme süresi için {planName} planına yükseltin.",
+      "upgradeCta": "Şimdi Yükselt",
+      "viewerTitle": "Oynatma duraklatıldı",
+      "viewerMessage": "Oda sahibi bugünkü {limit} ücretsiz dakikasını kullandı. Oynatma yarın veya o yükseltme yaptığı anda devam eder.",
+      "gotIt": "Anladım"
+    },
+    "callUpsell": {
+      "title": "Görüntülü ve sesli arama",
+      "hostHint": "Bu odada aramaları açmak için yükselt",
+      "guestHint": "Aramaları açmak için oda sahibinin ücretli bir plana ihtiyacı var",
+      "upgrade": "Yükselt"
+    },
+    "upgrade": {
+      "callsTitle": "Görüntülü arama ekle",
+      "callsMessage": "Görüntülü ve sesli aramalar Couple ve Crowd planlarıyla gelir. Bu odada açmak için yükselt.",
+      "watchLimitTitle": "Daha fazla izleme süresi",
+      "watchLimitMessage": "Bu oda, oda sahibinin günlük izleme sınırına bağlıdır. Couple ve Crowd bu sınırı kaldırır, böylece başladığın şeyi bitirebilirsin.",
+      "roomFullTitle": "Planını yükselt",
+      "roomFullMessage": "Odan katılımcı sınırına ulaştı. Daha büyük bir plan ile daha fazla kişiyle izleme partisi düzenleyebilirsin.",
+      "guestRoomFullTitle": "Oda dolu",
+      "guestRoomFullMessage": "Bu oda dolu. Daha fazla kişinin katılması için oda sahibinin daha büyük bir plana ihtiyacı var.",
+      "benefitsHeading": "Neler elde edersin",
+      "upgradeNow": "Planları gör",
+      "benefits": {
+        "videoCalls": "İzlerken görüntülü + sesli arama",
+        "unlimitedWatch": "Sınırsız izleme süresi",
+        "morePeople": "Oda başına daha fazla kişi",
+        "quality": "1080p ekran paylaşımı"
+      }
+    }
   },
   "sync": {
     "title": "Kaynak URL Girin",
@@ -279,6 +323,11 @@
     "unableToStartStreaming": "Video yayını başlatılamadı. Lütfen bağlantınızı kontrol edin ve tekrar deneyin.",
     "streamReconnectionFailed": "Akış yeniden bağlanamadı",
     "unableToReconnect": "Video akışına yeniden bağlanılamadı. Lütfen sayfayı yenileyin.",
+    "alreadySubscribed": "Zaten {plan} planındasın.",
+    "alreadySubscribedCancelled": "{plan} planın hâlâ aktif ve mevcut fatura döneminin sonunda sona erecek.",
+    "checkoutStartFailed": "Ödeme başlatılamadı",
+    "checkoutSessionFailed": "Ödeme oturumu oluşturulamadı",
+    "checkoutUrlMissing": "Ödeme adresi eksik",
     "failedToAddUrl": "URL eklenemedi. Lütfen tekrar deneyin.",
     "pleaseEnterUrl": "Lütfen bir URL girin",
     "invalidUrl": "Geçersiz URL. Lütfen desteklenen bir video URL'si girin.",
@@ -287,6 +336,21 @@
     "failedToSelectFiles": "Dosya seçilemedi"
   },
   "auth": {
+    "guestSignIn": {
+      "whatHappensNext": "Sırada ne var",
+      "connecting": "Bağlanıyor...",
+      "connected": "Google hesabı bağlandı",
+      "notNow": "Şimdi değil",
+      "tryAgain": "Lütfen tekrar deneyin.",
+      "failedTitle": "Google ile giriş başarısız",
+      "failedBody": "Google ile devam edilemedi.",
+      "hostTitle": "Oda açmak için giriş yap",
+      "hostDescription": "İzleme partisi başlatmak için tam bir hesap gerekir. Odalara misafir olarak katılmaya devam edebilirsin — bu yalnızca kendi odanı açmak için.",
+      "hostNextStep": "Seni Google ile oturum açtıracağız, ardından odanı hemen açacağız.",
+      "checkoutTitle": "Google ile devam et",
+      "checkoutDescription": "Ödeme yalnızca tam hesaplar için kullanılabilir. Misafir oturumunla fiyatlara göz atabilirsin, ancak ödemeden önce Google ile devam etmen gerekir.",
+      "checkoutNextStep": "Seni Movmash içinde Google ile oturum açtıracağız, ardından doğrudan ödemeye geçeceğiz."
+    },
     "login": {
       "welcomeBack": "Tekrar hoş geldin!",
       "chooseHowToContinue": "Nasıl devam etmek istediğini seç",
@@ -294,7 +358,8 @@
       "termsOfService": "Hizmet Şartları",
       "and": "ve",
       "privacyPolicy": "Gizlilik Politikası",
-      "agreementSuffix": " kabul etmiş olursun."
+      "agreementSuffix": " kabul etmiş olursun.",
+      "marketingOptIn": "Bana ara sıra Movmash hakkında haberler ve ipuçları gönderin."
     },
     "signup": {
       "username": "Kullanıcı adı",
@@ -340,5 +405,123 @@
     "saving": "Kaydediliyor…",
     "settingsLabel": "Haberler ve güncellemeler",
     "settingsDescription": "Yeni özellikler ve izleme partisi ipuçları"
+  },
+  "pricing": {
+    "kicker": "Fiyatlandırma",
+    "loadError": "Fiyatlandırma şu anda kullanılamıyor. Lütfen kısa süre sonra tekrar deneyin.",
+    "currentPlanLabel": "Mevcut plan",
+    "switchPlanLabel": "Planı değiştir",
+    "downgradeToFreeLabel": "Geçmek için planını iptal et",
+    "title": "Planını seç",
+    "subtitle": "Movmash'i denemek için Ücretsiz yeterli. Couple ve Crowd günlük limiti kaldırır ve görüntülü aramayı ekler.",
+    "billingToggle": {
+      "monthly": "Aylık",
+      "yearly": "Yıllık",
+      "monthlyTerms": "Aylık faturalandırılır. Otomatik yenilenir — istediğin zaman iptal et.",
+      "yearlyTerms": "Yıllık tek seferde faturalandırılır. Otomatik yenilenir — istediğin zaman iptal et."
+    },
+    "perMonth": "aylık",
+    "perYear": "yıllık",
+    "free": {
+      "name": "Free",
+      "meta": "Süresiz ücretsiz",
+      "description": "Hızlı bir izleme partisi veya Movmash'i denemek için en iyisi.",
+      "features": {
+        "participants": "Oda başına {count} kişi",
+        "dailyLimit": "Günde {minutes} dakika izleme süresi",
+        "screenShare": "{quality} ekran paylaşımı"
+      },
+      "cta": "Ücretsiz başla"
+    },
+    "couple": {
+      "name": "Couple Plan",
+      "description": "Sık sık birlikte izleyen çiftler ve yakın arkadaşlar için en iyisi.",
+      "features": {
+        "videoCall": "İzlerken görüntülü + sesli arama",
+        "participants": "Oda başına {count} kişi",
+        "unlimitedWatch": "Sınırsız izleme süresi",
+        "screenShare": "{quality} ekran paylaşımı"
+      },
+      "cta": "Couple'a yükselt"
+    },
+    "crowd": {
+      "name": "Crowd Plan",
+      "description": "Arkadaş grupları, hayran toplulukları ve daha büyük izleme partileri için en iyisi.",
+      "features": {
+        "videoCall": "İzlerken görüntülü + sesli arama",
+        "participants": "Oda başına {count} kişiye kadar",
+        "unlimitedWatch": "Sınırsız izleme süresi",
+        "screenShare": "{quality} ekran paylaşımı"
+      },
+      "cta": "Crowd'a yükselt"
+    },
+    "billedYearly": "yıllık {amount} faturalandırılır",
+    "popularBadge": "Popüler"
+  },
+  "subscription": {
+    "title": "Abonelik",
+    "currentPlanBadge": "Mevcut plan",
+    "viewPlans": "Planları görüntüle",
+    "cancelPlan": "Planı iptal et",
+    "reactivatePlan": "Yeniden etkinleştir",
+    "cancelsOn": "{date} tarihinde iptal edilecek",
+    "renewsOn": "{date} tarihinde otomatik olarak yenilenir.",
+    "renewsYearlyOn": "{date} tarihinde bir yıl daha otomatik olarak yenilenir.",
+    "cancelAnytimeHint": "O tarihe kadar istediğin zaman iptal edebilirsin — o güne kadar erişimin devam eder.",
+    "pendingChangeBanner": "{date} tarihinde {plan} planına geçilecek",
+    "undoPendingChange": "Geri al",
+    "features": {
+      "participants": "Oda başına {count} kişi",
+      "watchLimitDaily": "Günde {minutes} dakika izleme süresi",
+      "watchUnlimited": "Sınırsız izleme süresi",
+      "screenShare": "{quality} ekran paylaşımı"
+    },
+    "cancelModal": {
+      "title": "{plan} iptal edilsin mi?",
+      "message": "{plan} planın, mevcut fatura döneminin sonuna kadar aktif kalacak.",
+      "keepPlan": "Planı koru",
+      "cancelling": "İptal ediliyor..."
+    },
+    "toast": {
+      "cancelSuccess": "Planın, mevcut fatura döneminin sonunda yenilenmeyi durduracak.",
+      "cancelFailedTitle": "Abonelik iptali başarısız oldu",
+      "cancelFailedDefault": "Aboneliğin şu anda iptal edilemiyor.",
+      "pendingChangeCancelled": "Planlanan plan değişikliği iptal edildi.",
+      "pendingChangeCancelFailed": "Planlanan değişiklik şu anda iptal edilemiyor.",
+      "reactivateSuccess": "Planın her zamanki gibi yenilenmeye devam edecek.",
+      "reactivateFailedTitle": "Yeniden etkinleştirme başarısız oldu",
+      "reactivateFailedDefault": "Aboneliğin şu anda yeniden etkinleştirilemiyor."
+    },
+    "transactions": {
+      "title": "Ödeme geçmişi",
+      "empty": "Henüz ödeme işlemi yok.",
+      "newSubscription": "Yeni abonelik",
+      "newSubscriptionTo": "{plan} aboneliği",
+      "upgrade": "Plan yükseltmesi",
+      "upgradeTo": "{plan} planına yükseltme",
+      "downgrade": "Plan düşürmesi",
+      "downgradeTo": "{plan} planına düşürme",
+      "status": {
+        "pending": "Beklemede",
+        "processing": "İşleniyor",
+        "completed": "Tamamlandı",
+        "failed": "Başarısız",
+        "refunded": "İade edildi"
+      }
+    }
+  },
+  "planChange": {
+    "loadingPreview": "Fiyat kontrol ediliyor...",
+    "upgradeTitle": "{plan} planına geçilsin mi?",
+    "downgradeTitle": "{plan} planına geçilsin mi?",
+    "upgradeMessage": "Bugün {amount} ücret alınacak ve mevcut planındaki kalan günler taşınmayacak. Yenileme: {date}.",
+    "downgradeMessage": "{date} tarihinde {plan} planına geçeceksin. O zamana kadar mevcut planını korursun.",
+    "keepCurrentPlan": "Mevcut planı koru",
+    "confirmChange": "Geçişi onayla",
+    "confirming": "Geçiş yapılıyor...",
+    "upgradeStarted": "Planın değiştirildi.",
+    "downgradeStarted": "Plan değişikliğin planlandı.",
+    "changeFailedTitle": "Plan değişikliği başarısız oldu",
+    "changeFailedDefault": "Planın şu anda değiştirilemiyor. Lütfen tekrar dene."
   }
 }

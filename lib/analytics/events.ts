@@ -20,6 +20,12 @@ type InviteMethod = "copy_link" | "whatsapp" | "telegram" | "share_api";
 type ErrorArea = "room" | "video_sync" | "upload" | "network" | "auth";
 type AuthMethod = "google" | "google_one_tap" | "guest" | "email";
 type ProductSurface = "carousel" | "bottom_sheet";
+type UpgradePromptContext =
+  | "daily_limit"
+  | "room_full"
+  | "watch_time_session"
+  | "calls"
+  | "watch_limit";
 
 // In-app sources (where in the app they signed up)
 type InAppSource = "landing" | "home" | "room_join" | "stream" | "sync" | "direct" | "invite_link";
@@ -575,6 +581,66 @@ export const trackProductOpened = ({
 
   safeCapture("product_opened", eventProps);
   logEvent("product_opened", eventProps);
+};
+
+// ============ WATCH LIMIT / UPGRADE FUNNEL EVENTS ============
+
+/** Track when a user's daily free watch-time limit actually stops playback */
+export const trackDailyLimitReached = (
+  roomId: string,
+  remainingMinutes: number,
+  limit: number
+) => {
+  safeCapture("daily_limit_reached", {
+    room_id: roomId,
+    remaining_minutes: remainingMinutes,
+    limit,
+  });
+  logEvent("daily_limit_reached", { room_id: roomId, remaining_minutes: remainingMinutes, limit });
+};
+
+/**
+ * Track the one-shot low-minutes nudge. Separate from `upgrade_modal_shown` on purpose: this
+ * fires before playback is affected, so it is the top of the funnel that `daily_limit_reached`
+ * sits at the bottom of — pairing the two is how the threshold gets tuned.
+ */
+export const trackWatchLimitNudgeShown = (
+  roomId: string | null,
+  remainingMinutes: number,
+  limit: number
+) => {
+  safeCapture("watch_limit_nudge_shown", {
+    room_id: roomId || undefined,
+    remaining_minutes: remainingMinutes,
+    limit,
+  });
+  logEvent("watch_limit_nudge_shown", {
+    room_id: roomId,
+    remaining_minutes: remainingMinutes,
+    limit,
+  });
+};
+
+/** Track any upgrade-prompt modal being shown, tagged by which flow triggered it */
+export const trackUpgradeModalShown = (context: UpgradePromptContext, roomId?: string | null) => {
+  safeCapture("upgrade_modal_shown", {
+    context,
+    room_id: roomId || undefined,
+  });
+  logEvent("upgrade_modal_shown", { context, room_id: roomId });
+};
+
+/** Track the upgrade CTA being clicked, tagged by which flow triggered it. Shares
+ *  UpgradePromptContext with trackUpgradeModalShown so shown→clicked is a real funnel. */
+export const trackUpgradeClicked = (
+  context: UpgradePromptContext,
+  roomId?: string | null
+) => {
+  safeCapture("upgrade_clicked", {
+    context,
+    room_id: roomId || undefined,
+  });
+  logEvent("upgrade_clicked", { context, room_id: roomId });
 };
 
 // ============ ERROR TRACKING ============

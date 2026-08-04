@@ -8,7 +8,6 @@ const initialState: RoomState = {
   playlist: [],
   host: false,
   refer: false,
-  watchTime: 0,
   settings: {
     upgradeSubscriptionModal: false,
     panelCollapsed: false,
@@ -18,12 +17,15 @@ const initialState: RoomState = {
      * *This will handle the panel height accordingly
     */
     playerActive: true,
+    isPlaybackBlocked: false,
   },
   loading: false,
   focused: false,
   hostPlayback: {
     playing: false,
   },
+  dailyUsage: null,
+  watchLimitNudgeShown: false,
 };
 
 const roomSlice = createSlice({
@@ -46,9 +48,12 @@ const roomSlice = createSlice({
         : data.playlist;
       // Backend now uses type and source directly
       state.refer = false;
-      state.watchTime = action.payload.data.total_playtime_seconds;
       state.hostPlayback.playing = false;
       state.settings.bottomSheet = false;
+      state.settings.isPlaybackBlocked = false;
+      state.settings.playbackBlockedInfo = undefined;
+      state.dailyUsage = null;
+      state.watchLimitNudgeShown = false;
       state.loading = false;
       // state.selectedIndex = data.playlist.findIndex((item) => item.selected) || 0;
     },
@@ -58,6 +63,10 @@ const roomSlice = createSlice({
       state.roomId = null;
       state.hostPlayback.playing = false;
       state.settings.bottomSheet = false;
+      state.settings.isPlaybackBlocked = false;
+      state.settings.playbackBlockedInfo = undefined;
+      state.dailyUsage = null;
+      state.watchLimitNudgeShown = false;
       // state.event = action.payload;
     },
     setPlaylist: (state, action: PayloadAction<Playlist[]>) => {
@@ -108,9 +117,6 @@ const roomSlice = createSlice({
     setPlayerActive: (state, action: PayloadAction<boolean>) => {
       state.settings.playerActive = action.payload;
     },
-    updateWatchTime: (state) => {
-      state.watchTime++;
-    },
     setRefers: (
       state,
       action: PayloadAction<{
@@ -125,11 +131,33 @@ const roomSlice = createSlice({
     setHostPlaybackPlaying: (state, action: PayloadAction<boolean>) => {
       state.hostPlayback.playing = action.payload;
     },
-    setUpgradeSubscriptionModal: (state, action: PayloadAction<{ open: boolean; message?: string }>) => {
+    setUpgradeSubscriptionModal: (
+      state,
+      action: PayloadAction<{ open: boolean; message?: string; context?: "room_full" | "watch_time_session" }>,
+    ) => {
       state.settings.upgradeSubscriptionModal = action.payload.open;
       if (action.payload.message) {
         state.settings.upgradeSubscriptionMessage = action.payload.message;
       }
+      if (action.payload.context) {
+        state.settings.upgradeSubscriptionContext = action.payload.context;
+      }
+    },
+    setPlaybackBlocked: (
+      state,
+      action: PayloadAction<{ remainingMinutes: number; limit: number; planName: string }>,
+    ) => {
+      state.settings.isPlaybackBlocked = true;
+      state.settings.playbackBlockedInfo = action.payload;
+    },
+    setDailyUsage: (
+      state,
+      action: PayloadAction<{ remainingMinutes: number; limit: number }>,
+    ) => {
+      state.dailyUsage = action.payload;
+    },
+    markWatchLimitNudgeShown: (state) => {
+      state.watchLimitNudgeShown = true;
     },
   },
   // extraReducers: (builder) => {
@@ -155,9 +183,11 @@ export const {
   setFocused,
   setPlaylist,
   setScreenSharing,
-  updateWatchTime,
   cleanScreenSourcePlaylist,
   setHostPlaybackPlaying,
   setUpgradeSubscriptionModal,
+  setPlaybackBlocked,
+  setDailyUsage,
+  markWatchLimitNudgeShown,
 } = roomSlice.actions;
 export default roomSlice;

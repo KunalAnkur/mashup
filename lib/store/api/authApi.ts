@@ -129,9 +129,11 @@ export const authApi = createApi({
         picture?: string;
         sub: string;
         provider_name: string;
+        /** Only applied when this call creates a new account; guardian ignores it on login. */
+        marketing_emails_opt_in?: boolean;
       }
     >({
-      query: ({ email, name, picture, sub, provider_name }) => ({
+      query: ({ email, name, picture, sub, provider_name, marketing_emails_opt_in }) => ({
         url: "/auth-provider",
         method: "POST",
         body: {
@@ -143,6 +145,7 @@ export const authApi = createApi({
             provider_name,
             provider_user_id: sub,
           },
+          marketing_emails_opt_in,
         },
       }),
     }),
