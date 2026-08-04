@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { LuClock, LuSparkles } from "react-icons/lu";
-import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useTranslations } from "@/i18n/I18nProvider";
@@ -36,7 +35,6 @@ interface PlaybackBlockedModalProps {
  */
 const PlaybackBlockedModal = ({ isOpen, limit, planName }: PlaybackBlockedModalProps) => {
   const t = useTranslations("room");
-  const router = useRouter();
   const roomId = useSelector((state: RootState) => state.room.roomId);
   const isHost = useSelector((state: RootState) => state.room.host);
   const [dismissed, setDismissed] = useState(false);
@@ -58,7 +56,9 @@ const PlaybackBlockedModal = ({ isOpen, limit, planName }: PlaybackBlockedModalP
     trackUpgradeClicked("daily_limit", roomId);
     // Guest hosts (rooms created before hosting required an account) land on /pricing and
     // are prompted to sign in by the checkout button there, so no special case is needed.
-    router.push("/pricing");
+    // New tab: playback is stopped room-wide and everyone is waiting on this host, so
+    // navigating away would abandon the room they came here to unblock.
+    window.open("/pricing", "_blank", "noopener,noreferrer");
   };
 
   return (

@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
 import { LuSparkles, LuCheck, LuInfo } from "react-icons/lu";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
@@ -37,7 +36,6 @@ const UpgradeSubscriptionModal = ({
 }: UpgradeSubscriptionModalProps) => {
   const tCommon = useTranslations("common");
   const t = useTranslations("room.upgrade");
-  const router = useRouter();
   const roomState = useSelector((state: RootState) => state.room);
 
   // Determine if user is host (from prop or room state)
@@ -71,7 +69,9 @@ const UpgradeSubscriptionModal = ({
 
   const handleUpgrade = () => {
     trackUpgradeClicked(analyticsContext, roomState.roomId);
-    router.push("/pricing");
+    // New tab, not router.push: every context here fires from inside a live room, and
+    // navigating away drops the host out of the watch party to go read pricing.
+    window.open("/pricing", "_blank", "noopener,noreferrer");
     onClose();
   };
 
