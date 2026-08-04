@@ -44,7 +44,12 @@ const PlaybackBlockedModal = ({ isOpen, limit, planName }: PlaybackBlockedModalP
   useEffect(() => {
     if (isOpen) {
       setDismissed(false);
-      trackUpgradeModalShown("daily_limit", roomId);
+      // Host only. A viewer sees the same modal, but with no upgrade button — counting that
+      // as an upgrade prompt would both inflate the funnel by room size and record an offer
+      // that was never made, understating click-through against it.
+      if (isHost) {
+        trackUpgradeModalShown("daily_limit", roomId);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);

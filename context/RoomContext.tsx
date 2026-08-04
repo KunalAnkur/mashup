@@ -456,7 +456,10 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         // this flag is set, so this must actually be set, not just shown as a dismissable toast.
         const handleForcePausePlayback = (data: { remainingMinutes: number; limit: number; planName: string }) => {
             dispatch(setPlaybackBlocked(data));
-            if (roomId) {
+            // Log once per limit hit, not once per person in the room. This event is broadcast
+            // room-wide so everyone stops together, but the allowance is the host's — counting
+            // it on every client would scale the funnel's denominator with room size.
+            if (roomId && isHost) {
                 trackDailyLimitReached(roomId, data.remainingMinutes, data.limit);
             }
         };
