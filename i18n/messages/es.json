@@ -156,6 +156,7 @@
     "feedback": "Comentarios",
     "watchLimit": {
       "minutesLeft": "{minutes} min restantes hoy",
+      "hostMinutesLeft": "Al anfitrión le quedan {minutes} min hoy",
       "upgrade": "Actualizar"
     }
   },

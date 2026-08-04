@@ -156,6 +156,7 @@
     "feedback": "ملاحظات",
     "watchLimit": {
       "minutesLeft": "تبقى {minutes} دقيقة اليوم",
+      "hostMinutesLeft": "تبقى لمضيف الغرفة {minutes} دقيقة اليوم",
       "upgrade": "الترقية"
     }
   },

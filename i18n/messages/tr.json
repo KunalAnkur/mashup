@@ -156,6 +156,7 @@
     "feedback": "Geri Bildirim",
     "watchLimit": {
       "minutesLeft": "Bugün {minutes} dakika kaldı",
+      "hostMinutesLeft": "Oda sahibinin bugün {minutes} dakikası kaldı",
       "upgrade": "Yükselt"
     }
   },

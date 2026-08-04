@@ -49,7 +49,12 @@ export default function WatchLimitIndicator() {
               className={`truncate text-[11px] font-semibold leading-tight ${isUrgent ? "text-rose-200" : "text-white/85"
                 }`}
             >
-              {t("watchLimit.minutesLeft", { minutes: remainingMinutes })}
+              {/* The allowance is the host's. Saying just "43 min left" to a viewer reads as
+                  their own quota, which is untouched — they could host their own room with a
+                  full 45 right now. */}
+              {t(isHost ? "watchLimit.minutesLeft" : "watchLimit.hostMinutesLeft", {
+                minutes: remainingMinutes,
+              })}
             </p>
           </div>
           {isHost && (

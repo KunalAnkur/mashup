@@ -156,6 +156,7 @@
     "feedback": "Feedback",
     "watchLimit": {
       "minutesLeft": "{minutes} min left today",
+      "hostMinutesLeft": "Host has {minutes} min left today",
       "upgrade": "Upgrade"
     }
   },
