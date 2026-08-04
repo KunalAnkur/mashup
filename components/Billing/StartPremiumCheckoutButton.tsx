@@ -17,7 +17,9 @@ import { useTranslations } from "@/i18n/I18nProvider";
 type Props = {
   className?: string;
   label?: string;
-  planSlug?: string;
+  /** Required: this used to default to "premium", a deprecated tier nobody can buy, so a
+   *  caller that forgot it would silently start a checkout for the wrong plan. */
+  planSlug: string;
   planName?: string;
   successUrl?: string;
   cancelUrl?: string;
@@ -26,7 +28,7 @@ type Props = {
 export default function StartPremiumCheckoutButton({
   className,
   label,
-  planSlug = "premium",
+  planSlug,
   planName,
   successUrl,
   cancelUrl,
@@ -35,7 +37,7 @@ export default function StartPremiumCheckoutButton({
   const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
   const tGuest = useTranslations("auth.guestSignIn");
-  const resolvedLabel = label ?? tCommon("upgradeToPremium");
+  const resolvedLabel = label ?? tCommon("upgradePlan");
   const authState = useSelector((state: RootState) => state.auth);
   const subscription = useSelector(
     (state: RootState) => state.subscription.subscription,

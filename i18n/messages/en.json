@@ -35,7 +35,6 @@
     "host": "Host",
     "loading": "Loading...",
     "processing": "Processing...",
-    "upgradeToPremium": "Upgrade to Premium",
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "edit": "Edit",
@@ -54,7 +53,8 @@
     "continueAsGuest": "Continue as Guest",
     "or": "or",
     "linkCopied": "Link copied!",
-    "copyLink": "Copy Link"
+    "copyLink": "Copy Link",
+    "upgradePlan": "Upgrade plan"
   },
   "panel": {
     "playlist": {
@@ -177,6 +177,30 @@
       "viewerTitle": "Playback paused",
       "viewerMessage": "The host has used their {limit} free minutes for today. Playback resumes tomorrow, or as soon as they upgrade.",
       "gotIt": "Got it"
+    },
+    "callUpsell": {
+      "title": "Video and audio calls",
+      "hostHint": "Upgrade to enable calls for this room",
+      "guestHint": "The host needs a paid plan to enable calls",
+      "upgrade": "Upgrade"
+    },
+    "upgrade": {
+      "callsTitle": "Add video calls",
+      "callsMessage": "Video and voice calls come with the Couple and Crowd plans. Upgrade to turn them on for this room.",
+      "watchLimitTitle": "More watch time",
+      "watchLimitMessage": "This room runs on the host's daily watch limit. Couple and Crowd remove it, so you can finish what you started.",
+      "roomFullTitle": "Upgrade your plan",
+      "roomFullMessage": "Your room is at its participant limit. A bigger plan lets you host watch parties with more people.",
+      "guestRoomFullTitle": "Room is full",
+      "guestRoomFullMessage": "This room is full. The host needs a bigger plan to let more people in.",
+      "benefitsHeading": "What you get",
+      "upgradeNow": "See plans",
+      "benefits": {
+        "videoCalls": "Video + voice call while you watch",
+        "unlimitedWatch": "Unlimited watch time",
+        "morePeople": "More people per room",
+        "quality": "1080p screen sharing"
+      }
     }
   },
   "sync": {

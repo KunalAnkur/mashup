@@ -35,7 +35,6 @@
     "host": "Anfitrión",
     "loading": "Cargando...",
     "processing": "Procesando...",
-    "upgradeToPremium": "Mejorar a Premium",
     "saving": "Guardando...",
     "saveChanges": "Guardar Cambios",
     "edit": "Editar",
@@ -54,7 +53,8 @@
     "continueAsGuest": "Continuar como Invitado",
     "or": "o",
     "linkCopied": "¡Enlace copiado!",
-    "copyLink": "Copiar enlace"
+    "copyLink": "Copiar enlace",
+    "upgradePlan": "Mejorar plan"
   },
   "panel": {
     "playlist": {
@@ -177,6 +177,30 @@
       "viewerTitle": "Reproducción pausada",
       "viewerMessage": "El anfitrión ha usado sus {limit} minutos gratuitos de hoy. La reproducción se reanudará mañana, o en cuanto actualice su plan.",
       "gotIt": "Entendido"
+    },
+    "callUpsell": {
+      "title": "Llamadas de video y audio",
+      "hostHint": "Mejora tu plan para activar las llamadas en esta sala",
+      "guestHint": "El anfitrión necesita un plan de pago para activar las llamadas",
+      "upgrade": "Mejorar"
+    },
+    "upgrade": {
+      "callsTitle": "Añade videollamadas",
+      "callsMessage": "Las llamadas de video y voz vienen con los planes Couple y Crowd. Mejora tu plan para activarlas en esta sala.",
+      "watchLimitTitle": "Más tiempo de visualización",
+      "watchLimitMessage": "Esta sala usa el límite diario de visualización del anfitrión. Couple y Crowd lo eliminan, así puedes terminar lo que empezaste.",
+      "roomFullTitle": "Mejora tu plan",
+      "roomFullMessage": "Tu sala alcanzó su límite de participantes. Un plan mayor te permite organizar fiestas con más gente.",
+      "guestRoomFullTitle": "La sala está llena",
+      "guestRoomFullMessage": "Esta sala está llena. El anfitrión necesita un plan mayor para dejar entrar a más gente.",
+      "benefitsHeading": "Qué incluye",
+      "upgradeNow": "Ver planes",
+      "benefits": {
+        "videoCalls": "Videollamada + voz mientras ves",
+        "unlimitedWatch": "Tiempo de visualización ilimitado",
+        "morePeople": "Más personas por sala",
+        "quality": "Pantalla compartida en 1080p"
+      }
     }
   },
   "sync": {

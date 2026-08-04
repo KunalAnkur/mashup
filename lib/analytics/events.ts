@@ -20,7 +20,12 @@ type InviteMethod = "copy_link" | "whatsapp" | "telegram" | "share_api";
 type ErrorArea = "room" | "video_sync" | "upload" | "network" | "auth";
 type AuthMethod = "google" | "google_one_tap" | "guest" | "email";
 type ProductSurface = "carousel" | "bottom_sheet";
-type UpgradePromptContext = "daily_limit" | "room_full" | "watch_time_session";
+type UpgradePromptContext =
+  | "daily_limit"
+  | "room_full"
+  | "watch_time_session"
+  | "calls"
+  | "watch_limit";
 
 // In-app sources (where in the app they signed up)
 type InAppSource = "landing" | "home" | "room_join" | "stream" | "sync" | "direct" | "invite_link";
@@ -603,9 +608,10 @@ export const trackUpgradeModalShown = (context: UpgradePromptContext, roomId?: s
   logEvent("upgrade_modal_shown", { context, room_id: roomId });
 };
 
-/** Track the upgrade CTA being clicked, tagged by which surface it was clicked from */
+/** Track the upgrade CTA being clicked, tagged by which flow triggered it. Shares
+ *  UpgradePromptContext with trackUpgradeModalShown so shown→clicked is a real funnel. */
 export const trackUpgradeClicked = (
-  context: UpgradePromptContext | "panel_indicator",
+  context: UpgradePromptContext,
   roomId?: string | null
 ) => {
   safeCapture("upgrade_clicked", {

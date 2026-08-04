@@ -35,7 +35,6 @@
     "host": "Ev Sahibi",
     "loading": "Yükleniyor...",
     "processing": "İşleniyor...",
-    "upgradeToPremium": "Premium'a Yükselt",
     "saving": "Kaydediliyor...",
     "saveChanges": "Değişiklikleri Kaydet",
     "edit": "Düzenle",
@@ -54,7 +53,8 @@
     "continueAsGuest": "Misafir Olarak Devam Et",
     "or": "veya",
     "linkCopied": "Bağlantı kopyalandı!",
-    "copyLink": "Bağlantıyı Kopyala"
+    "copyLink": "Bağlantıyı Kopyala",
+    "upgradePlan": "Planı yükselt"
   },
   "panel": {
     "playlist": {
@@ -177,6 +177,30 @@
       "viewerTitle": "Oynatma duraklatıldı",
       "viewerMessage": "Oda sahibi bugünkü {limit} ücretsiz dakikasını kullandı. Oynatma yarın veya o yükseltme yaptığı anda devam eder.",
       "gotIt": "Anladım"
+    },
+    "callUpsell": {
+      "title": "Görüntülü ve sesli arama",
+      "hostHint": "Bu odada aramaları açmak için yükselt",
+      "guestHint": "Aramaları açmak için oda sahibinin ücretli bir plana ihtiyacı var",
+      "upgrade": "Yükselt"
+    },
+    "upgrade": {
+      "callsTitle": "Görüntülü arama ekle",
+      "callsMessage": "Görüntülü ve sesli aramalar Couple ve Crowd planlarıyla gelir. Bu odada açmak için yükselt.",
+      "watchLimitTitle": "Daha fazla izleme süresi",
+      "watchLimitMessage": "Bu oda, oda sahibinin günlük izleme sınırına bağlıdır. Couple ve Crowd bu sınırı kaldırır, böylece başladığın şeyi bitirebilirsin.",
+      "roomFullTitle": "Planını yükselt",
+      "roomFullMessage": "Odan katılımcı sınırına ulaştı. Daha büyük bir plan ile daha fazla kişiyle izleme partisi düzenleyebilirsin.",
+      "guestRoomFullTitle": "Oda dolu",
+      "guestRoomFullMessage": "Bu oda dolu. Daha fazla kişinin katılması için oda sahibinin daha büyük bir plana ihtiyacı var.",
+      "benefitsHeading": "Neler elde edersin",
+      "upgradeNow": "Planları gör",
+      "benefits": {
+        "videoCalls": "İzlerken görüntülü + sesli arama",
+        "unlimitedWatch": "Sınırsız izleme süresi",
+        "morePeople": "Oda başına daha fazla kişi",
+        "quality": "1080p ekran paylaşımı"
+      }
     }
   },
   "sync": {

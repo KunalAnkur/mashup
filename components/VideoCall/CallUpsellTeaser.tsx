@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { LuSparkles, LuVideo } from "react-icons/lu";
 import { useCallStream } from "@/context/CallStreamContext";
+import { useTranslations } from "@/i18n/I18nProvider";
 import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionModal";
 
 export default function CallUpsellTeaser() {
   const { isHost } = useCallStream();
+  const t = useTranslations("room.callUpsell");
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -18,12 +20,10 @@ export default function CallUpsellTeaser() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[11px] font-semibold leading-tight text-white/85">
-              Video and audio calls
+              {t("title")}
             </p>
             <p className="mt-0.5 truncate text-[10px] leading-tight text-white/45">
-              {isHost
-                ? "Upgrade to enable calls for this room"
-                : "Host needs Premium to enable calls"}
+              {isHost ? t("hostHint") : t("guestHint")}
             </p>
           </div>
           {isHost && (
@@ -32,7 +32,7 @@ export default function CallUpsellTeaser() {
               className="flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1.5 text-[10px] font-semibold text-amber-200 ring-1 ring-amber-400/20 transition-colors hover:bg-amber-500/25"
             >
               <LuSparkles size={10} />
-              Upgrade
+              {t("upgrade")}
             </button>
           )}
         </div>
@@ -42,6 +42,7 @@ export default function CallUpsellTeaser() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         isHost={true}
+        context="calls"
       />
     </>
   );
