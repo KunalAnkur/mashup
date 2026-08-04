@@ -387,13 +387,12 @@
     "switchPlanLabel": "Cambiar plan",
     "downgradeToFreeLabel": "Cancela tu plan para cambiar",
     "title": "Elige tu plan",
-    "subtitle": "Free es suficiente para una sesión rápida juntos. Couple y Crowd eliminan el límite diario y añaden videollamadas, mejor calidad y más espacio para gente.",
+    "subtitle": "Con Free basta para probar Movmash. Couple y Crowd quitan el límite diario y añaden videollamadas.",
     "billingToggle": {
       "monthly": "Mensual",
       "yearly": "Anual",
-      "yearlySavings": "Ahorra hasta un 30%",
-      "monthlyTerms": "Se factura mensualmente. Se renueva automáticamente hasta que canceles — puedes cancelar cuando quieras desde tu página de suscripción.",
-      "yearlyTerms": "Se factura una vez por el año completo. Se renueva automáticamente hasta que canceles — puedes cancelar cuando quieras desde tu página de suscripción."
+      "monthlyTerms": "Facturación mensual. Se renueva automáticamente — cancela cuando quieras.",
+      "yearlyTerms": "Un solo cargo al año. Se renueva automáticamente — cancela cuando quieras."
     },
     "perMonth": "al mes",
     "perYear": "al año",
@@ -415,8 +414,7 @@
         "videoCall": "Videollamada y llamada de voz mientras ves",
         "participants": "{count} personas por sala",
         "unlimitedWatch": "Tiempo de visualización ilimitado",
-        "screenShare": "Compartir pantalla en {quality}",
-        "adFree": "Sin anuncios"
+        "screenShare": "Compartir pantalla en {quality}"
       },
       "cta": "Mejorar a Couple"
     },
@@ -427,11 +425,12 @@
         "videoCall": "Videollamada y llamada de voz mientras ves",
         "participants": "Hasta {count} personas por sala",
         "unlimitedWatch": "Tiempo de visualización ilimitado",
-        "screenShare": "Compartir pantalla en {quality}",
-        "adFree": "Sin anuncios"
+        "screenShare": "Compartir pantalla en {quality}"
       },
       "cta": "Mejorar a Crowd"
-    }
+    },
+    "billedYearly": "{amount} facturado anualmente",
+    "popularBadge": "Popular"
   },
   "subscription": {
     "title": "Suscripción",
@@ -449,8 +448,7 @@
       "participants": "{count} personas por sala",
       "watchLimitDaily": "{minutes} minutos de visualización al día",
       "watchUnlimited": "Tiempo de visualización ilimitado",
-      "screenShare": "Compartir pantalla en {quality}",
-      "adFree": "Sin anuncios"
+      "screenShare": "Compartir pantalla en {quality}"
     },
     "cancelModal": {
       "title": "¿Cancelar {plan}?",

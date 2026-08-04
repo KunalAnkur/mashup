@@ -64,7 +64,6 @@ const UpgradeSubscriptionModal = ({
     "Host rooms with up to 50 participants",
     "Watch parties with more friends",
     "Priority support",
-    "Ad-free experience",
   ];
 
   return (

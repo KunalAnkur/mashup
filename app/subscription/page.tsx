@@ -143,9 +143,9 @@ export default function SubscriptionPage() {
       t("features.screenShare", { quality: features.screen_share_quality }),
     ];
 
-    if (features.ad_free_experience) {
-      bullets.push(t("features.adFree"));
-    }
+    // No "ad-free" bullet: Movmash shows no ads on any plan, including Free, so listing it
+    // as a paid perk implies Free is ad-supported. The ad_free_experience flag still exists
+    // on plans in case that ever changes.
 
     return bullets;
   }, [plan, t]);

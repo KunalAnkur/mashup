@@ -14,7 +14,15 @@ function normalizePlans(payload: unknown): SubscriptionPlan[] {
     .filter((item): item is Record<string, unknown> => isRecord(item))
     .map((item) => ({
       ...item,
+      // Postgres DECIMAL arrives as a string over JSON; the derived figures are already
+      // numbers from guardian but are coerced too so nothing downstream has to guess.
       price: Number(item.price),
+      monthly_equivalent_price:
+        item.monthly_equivalent_price != null ? Number(item.monthly_equivalent_price) : undefined,
+      compare_at_monthly_price:
+        item.compare_at_monthly_price != null ? Number(item.compare_at_monthly_price) : null,
+      savings_percent: item.savings_percent != null ? Number(item.savings_percent) : null,
+      billed_amount: item.billed_amount != null ? Number(item.billed_amount) : undefined,
     })) as SubscriptionPlan[];
 }
 

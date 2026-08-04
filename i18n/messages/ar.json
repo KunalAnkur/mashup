@@ -387,13 +387,12 @@
     "switchPlanLabel": "تبديل الخطة",
     "downgradeToFreeLabel": "ألغِ خطتك للتبديل",
     "title": "اختر خطتك",
-    "subtitle": "الخطة المجانية تكفي لمشاهدة سريعة معاً. خطتا Couple وCrowd تلغيان الحد اليومي وتضيفان مكالمات الفيديو وجودة أفضل ومساحة لعدد أكبر من الأشخاص.",
+    "subtitle": "الخطة المجانية تكفي لتجربة Movmash. تزيل خطتا Couple وCrowd الحد اليومي وتضيفان مكالمات الفيديو.",
     "billingToggle": {
       "monthly": "شهري",
       "yearly": "سنوي",
-      "yearlySavings": "وفّر حتى 30%",
-      "monthlyTerms": "تتم الفوترة شهريًا. يتم التجديد تلقائيًا حتى تقوم بالإلغاء — يمكنك الإلغاء في أي وقت من صفحة اشتراكك.",
-      "yearlyTerms": "تتم الفوترة مرة واحدة عن السنة كاملة. يتم التجديد تلقائيًا حتى تقوم بالإلغاء — يمكنك الإلغاء في أي وقت من صفحة اشتراكك."
+      "monthlyTerms": "فوترة شهرية. يتجدد تلقائيًا — ألغِ في أي وقت.",
+      "yearlyTerms": "دفعة واحدة سنويًا. يتجدد تلقائيًا — ألغِ في أي وقت."
     },
     "perMonth": "شهرياً",
     "perYear": "سنوياً",
@@ -415,8 +414,7 @@
         "videoCall": "مكالمة فيديو وصوت أثناء المشاهدة",
         "participants": "{count} أشخاص لكل غرفة",
         "unlimitedWatch": "وقت مشاهدة غير محدود",
-        "screenShare": "مشاركة شاشة بجودة {quality}",
-        "adFree": "بدون إعلانات"
+        "screenShare": "مشاركة شاشة بجودة {quality}"
       },
       "cta": "الترقية إلى Couple"
     },
@@ -427,11 +425,12 @@
         "videoCall": "مكالمة فيديو وصوت أثناء المشاهدة",
         "participants": "حتى {count} أشخاص لكل غرفة",
         "unlimitedWatch": "وقت مشاهدة غير محدود",
-        "screenShare": "مشاركة شاشة بجودة {quality}",
-        "adFree": "بدون إعلانات"
+        "screenShare": "مشاركة شاشة بجودة {quality}"
       },
       "cta": "الترقية إلى Crowd"
-    }
+    },
+    "billedYearly": "{amount} تُدفع سنويًا",
+    "popularBadge": "الأكثر شيوعًا"
   },
   "subscription": {
     "title": "الاشتراك",
@@ -449,8 +448,7 @@
       "participants": "{count} أشخاص لكل غرفة",
       "watchLimitDaily": "{minutes} دقيقة مشاهدة يومياً",
       "watchUnlimited": "وقت مشاهدة غير محدود",
-      "screenShare": "مشاركة شاشة بجودة {quality}",
-      "adFree": "بدون إعلانات"
+      "screenShare": "مشاركة شاشة بجودة {quality}"
     },
     "cancelModal": {
       "title": "إلغاء {plan}؟",

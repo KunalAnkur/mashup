@@ -387,13 +387,12 @@
     "switchPlanLabel": "Switch plan",
     "downgradeToFreeLabel": "Cancel your plan to switch",
     "title": "Choose your plan",
-    "subtitle": "Free works for a quick watch together. Couple and Crowd drop the daily limit and add video calls, better quality, and more room for people.",
+    "subtitle": "Free is enough to try Movmash. Couple and Crowd remove the daily limit and add video calls.",
     "billingToggle": {
       "monthly": "Monthly",
       "yearly": "Yearly",
-      "yearlySavings": "Save up to 30%",
-      "monthlyTerms": "Billed monthly. Renews automatically until you cancel — cancel any time from your subscription page.",
-      "yearlyTerms": "Billed once for the full year. Renews automatically until you cancel — cancel any time from your subscription page."
+      "monthlyTerms": "Billed monthly. Renews automatically — cancel any time.",
+      "yearlyTerms": "Billed once for the year. Renews automatically — cancel any time."
     },
     "perMonth": "per month",
     "perYear": "per year",
@@ -415,8 +414,7 @@
         "videoCall": "Video + voice call while you watch",
         "participants": "{count} people per room",
         "unlimitedWatch": "Unlimited watch time",
-        "screenShare": "{quality} screen sharing",
-        "adFree": "Ad-free"
+        "screenShare": "{quality} screen sharing"
       },
       "cta": "Upgrade to Couple"
     },
@@ -427,11 +425,12 @@
         "videoCall": "Video + voice call while you watch",
         "participants": "Up to {count} people per room",
         "unlimitedWatch": "Unlimited watch time",
-        "screenShare": "{quality} screen sharing",
-        "adFree": "Ad-free"
+        "screenShare": "{quality} screen sharing"
       },
       "cta": "Upgrade to Crowd"
-    }
+    },
+    "billedYearly": "{amount} billed yearly",
+    "popularBadge": "Popular"
   },
   "subscription": {
     "title": "Subscription",
@@ -449,8 +448,7 @@
       "participants": "{count} people per room",
       "watchLimitDaily": "{minutes} minutes of watch time per day",
       "watchUnlimited": "Unlimited watch time",
-      "screenShare": "{quality} screen sharing",
-      "adFree": "Ad-free"
+      "screenShare": "{quality} screen sharing"
     },
     "cancelModal": {
       "title": "Cancel {plan}?",

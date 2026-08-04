@@ -59,6 +59,16 @@ export interface SubscriptionPlan {
   features: SubscriptionFeatures;
   billing_cycle: BillingCycle;
   display_order?: number;
+  is_popular?: boolean;
+  /**
+   * Display figures computed by guardian (`getPublicPlanCatalog`). Deliberately not derived
+   * here: costume and spotlight would each re-implement the arithmetic and drift, which is
+   * how the old hardcoded "Save up to 30%" ended up contradicting the real 48%/28%.
+   */
+  monthly_equivalent_price?: number;
+  compare_at_monthly_price?: number | null;
+  savings_percent?: number | null;
+  billed_amount?: number;
 }
 
 export interface PendingPlan {

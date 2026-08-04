@@ -387,13 +387,12 @@
     "switchPlanLabel": "Planı değiştir",
     "downgradeToFreeLabel": "Geçmek için planını iptal et",
     "title": "Planını seç",
-    "subtitle": "Free, hızlı bir izleme partisi için yeterli. Couple ve Crowd günlük limiti kaldırır; görüntülü arama, daha iyi kalite ve daha fazla kişi için yer ekler.",
+    "subtitle": "Movmash'i denemek için Ücretsiz yeterli. Couple ve Crowd günlük limiti kaldırır ve görüntülü aramayı ekler.",
     "billingToggle": {
       "monthly": "Aylık",
       "yearly": "Yıllık",
-      "yearlySavings": "%30'a kadar tasarruf et",
-      "monthlyTerms": "Aylık faturalandırılır. İptal edene kadar otomatik yenilenir — abonelik sayfandan istediğin zaman iptal edebilirsin.",
-      "yearlyTerms": "Tüm yıl için tek seferde faturalandırılır. İptal edene kadar otomatik yenilenir — abonelik sayfandan istediğin zaman iptal edebilirsin."
+      "monthlyTerms": "Aylık faturalandırılır. Otomatik yenilenir — istediğin zaman iptal et.",
+      "yearlyTerms": "Yıllık tek seferde faturalandırılır. Otomatik yenilenir — istediğin zaman iptal et."
     },
     "perMonth": "aylık",
     "perYear": "yıllık",
@@ -415,8 +414,7 @@
         "videoCall": "İzlerken görüntülü + sesli arama",
         "participants": "Oda başına {count} kişi",
         "unlimitedWatch": "Sınırsız izleme süresi",
-        "screenShare": "{quality} ekran paylaşımı",
-        "adFree": "Reklamsız"
+        "screenShare": "{quality} ekran paylaşımı"
       },
       "cta": "Couple'a yükselt"
     },
@@ -427,11 +425,12 @@
         "videoCall": "İzlerken görüntülü + sesli arama",
         "participants": "Oda başına {count} kişiye kadar",
         "unlimitedWatch": "Sınırsız izleme süresi",
-        "screenShare": "{quality} ekran paylaşımı",
-        "adFree": "Reklamsız"
+        "screenShare": "{quality} ekran paylaşımı"
       },
       "cta": "Crowd'a yükselt"
-    }
+    },
+    "billedYearly": "yıllık {amount} faturalandırılır",
+    "popularBadge": "Popüler"
   },
   "subscription": {
     "title": "Abonelik",
@@ -449,8 +448,7 @@
       "participants": "Oda başına {count} kişi",
       "watchLimitDaily": "Günde {minutes} dakika izleme süresi",
       "watchUnlimited": "Sınırsız izleme süresi",
-      "screenShare": "{quality} ekran paylaşımı",
-      "adFree": "Reklamsız"
+      "screenShare": "{quality} ekran paylaşımı"
     },
     "cancelModal": {
       "title": "{plan} iptal edilsin mi?",

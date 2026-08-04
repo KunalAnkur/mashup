@@ -28,8 +28,10 @@ import {
 type BillingCycle = "monthly" | "yearly";
 
 const pricingGridClassName = "grid gap-4 lg:grid-cols-3";
+// flex column so the CTA can be pushed to the bottom: Free has fewer features than the paid
+// plans, and without this its button stops mid-card while the others sit at the base.
 const pricingCardClassName =
-  "relative overflow-hidden rounded-[2rem] px-5 py-5 sm:px-6 sm:py-6";
+  "relative flex flex-col overflow-hidden rounded-[2rem] px-5 py-5 sm:px-6 sm:py-6";
 const pricingBadgeClassName =
   "inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em]";
 const pricingIconWrapClassName =
@@ -38,6 +40,11 @@ const pricingValueRowClassName = "mt-6 flex items-end gap-2.5";
 const pricingValueClassName =
   "font-parkinsans text-[2.35rem] font-semibold leading-none tracking-[-0.05em] text-white md:text-[2.7rem]";
 const pricingValueMetaClassName = "pb-1 text-[13px] text-white/42";
+const pricingCompareAtClass =
+  "pb-1 font-parkinsans text-[1.6rem] font-semibold leading-none tracking-[-0.04em] text-white/28 line-through md:text-[1.85rem]";
+const pricingBilledNoteClass = "mt-1.5 text-[12px] leading-tight text-white/38";
+const pricingPopularBadgeClass =
+  "inline-flex items-center rounded-full bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-pink-200 ring-1 ring-pink-400/25";
 const pricingDescriptionClassName =
   "mt-3 max-w-[30rem] text-[13px] leading-6 text-white/60 md:text-sm md:leading-6";
 const pricingFeaturesClassName = "mt-6 space-y-2.5";
@@ -45,7 +52,8 @@ const pricingFeatureItemClassName =
   "flex items-start gap-3 text-[13px] leading-5 text-white/72 md:text-sm md:leading-6";
 const pricingFeatureIconClassName =
   "mt-0.5 flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/78";
-const pricingCtaWrapClassName = "mt-6";
+// mt-auto pins the CTA to the card bottom regardless of how many features are listed.
+const pricingCtaWrapClassName = "mt-auto pt-6";
 const pricingCtaClassName =
   "!h-11 w-full !rounded-[1.15rem] text-sm font-parkinsans";
 
@@ -69,7 +77,9 @@ const skeletonCardClassName = `${pricingCardClassName} ${appPulseSurfaceClass} h
 
 export default function PricingPage() {
   const t = useTranslations("pricing");
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
+  // Yearly first: it is the better value and the plan we want chosen, so it should be the
+  // state people land on rather than one they have to discover.
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
   const { data: catalogPlans, isLoading, isError } = useGetSubscriptionPlansQuery();
   const { data: mySubscription } = useGetMySubscriptionQuery();
   const [changeTarget, setChangeTarget] = useState<{ slug: string; name: string } | null>(null);
@@ -89,7 +99,24 @@ export default function PricingPage() {
   const plans = useMemo(() => {
     if (!freePlan || !couplePlan || !crowdPlan) return [];
 
-    const periodLabel = billingCycle === "monthly" ? t("perMonth") : t("perYear");
+    // Every paid plan shows a per-month figure so tiers compare like for like; the yearly
+    // one strikes through the monthly rate it undercuts. All values come from guardian.
+    const paidPricing = (plan: typeof couplePlan) => ({
+      value: formatPlanPrice(plan.monthly_equivalent_price ?? plan.price, plan.currency),
+      valueMeta: t("perMonth"),
+      compareAtValue:
+        plan.compare_at_monthly_price != null
+          ? formatPlanPrice(plan.compare_at_monthly_price, plan.currency)
+          : null,
+      billedNote:
+        plan.billing_cycle === "yearly"
+          ? t("billedYearly", {
+              amount: formatPlanPrice(plan.billed_amount ?? plan.price, plan.currency),
+            })
+          : null,
+      savingsPercent: plan.savings_percent ?? null,
+      isPopular: plan.is_popular === true,
+    });
 
     return [
       {
@@ -99,6 +126,10 @@ export default function PricingPage() {
         hideName: false,
         value: formatPlanPrice(freePlan.price, freePlan.currency),
         valueMeta: t("free.meta"),
+        compareAtValue: null,
+        billedNote: null,
+        savingsPercent: null,
+        isPopular: false,
         description: t("free.description"),
         icon: LuSparkles,
         iconClassName: freeIconClassName,
@@ -117,8 +148,7 @@ export default function PricingPage() {
         slug: couplePlan.slug,
         name: t("couple.name"),
         hideName: false,
-        value: formatPlanPrice(couplePlan.price, couplePlan.currency),
-        valueMeta: periodLabel,
+        ...paidPricing(couplePlan),
         description: t("couple.description"),
         icon: LuHeart,
         iconClassName: pricingPaidIconSurfaceClass,
@@ -129,7 +159,6 @@ export default function PricingPage() {
           t("couple.features.participants", { count: couplePlan.features.max_room_participants }),
           t("couple.features.unlimitedWatch"),
           t("couple.features.screenShare", { quality: couplePlan.features.screen_share_quality }),
-          t("couple.features.adFree"),
         ],
         ctaLabel: t("couple.cta"),
         isPaid: true as const,
@@ -139,8 +168,7 @@ export default function PricingPage() {
         slug: crowdPlan.slug,
         name: t("crowd.name"),
         hideName: false,
-        value: formatPlanPrice(crowdPlan.price, crowdPlan.currency),
-        valueMeta: periodLabel,
+        ...paidPricing(crowdPlan),
         description: t("crowd.description"),
         icon: LuUsers,
         iconClassName: pricingPaidIconSurfaceClass,
@@ -151,7 +179,6 @@ export default function PricingPage() {
           t("crowd.features.participants", { count: crowdPlan.features.max_room_participants }),
           t("crowd.features.unlimitedWatch"),
           t("crowd.features.screenShare", { quality: crowdPlan.features.screen_share_quality }),
-          t("crowd.features.adFree"),
         ],
         ctaLabel: t("crowd.cta"),
         isPaid: true as const,
@@ -182,18 +209,9 @@ export default function PricingPage() {
                   </p>
 
                   <div className="mt-5 flex flex-col items-center gap-2">
+                    {/* Yearly sits first: it is the default and the option we want chosen,
+                        so it reads before the alternative rather than after it. */}
                     <div className={billingToggleShellClassName}>
-                      <button
-                        type="button"
-                        onClick={() => setBillingCycle("monthly")}
-                        className={`${billingToggleButtonClassName} ${
-                          billingCycle === "monthly"
-                            ? billingToggleActiveClassName
-                            : billingToggleInactiveClassName
-                        }`}
-                      >
-                        {t("billingToggle.monthly")}
-                      </button>
                       <button
                         type="button"
                         onClick={() => setBillingCycle("yearly")}
@@ -205,12 +223,18 @@ export default function PricingPage() {
                       >
                         {t("billingToggle.yearly")}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setBillingCycle("monthly")}
+                        className={`${billingToggleButtonClassName} ${
+                          billingCycle === "monthly"
+                            ? billingToggleActiveClassName
+                            : billingToggleInactiveClassName
+                        }`}
+                      >
+                        {t("billingToggle.monthly")}
+                      </button>
                     </div>
-                    {billingCycle === "yearly" && (
-                      <span className="text-[11px] font-medium text-rose-300">
-                        {t("billingToggle.yearlySavings")}
-                      </span>
-                    )}
                     {/* Say what a yearly plan actually commits you to before checkout, not
                         after (MOVMASH.md D3). */}
                     <span className="text-[11px] leading-relaxed text-white/44">
@@ -249,20 +273,34 @@ export default function PricingPage() {
                             <Icon className="h-[18px] w-[18px]" />
                           </span>
 
-                          {!plan.hideName && (
-                            <span className={`${pricingBadgeClassName} ${plan.badgeClassName}`}>
-                              {plan.name}
-                            </span>
-                          )}
-
-                          <div className={pricingValueRowClassName}>
-                            <span className={pricingValueClassName}>{plan.value}</span>
-                            <div className="flex flex-col gap-0.5 pb-1">
-                              <span className={pricingValueMetaClassName}>
-                                {plan.valueMeta}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {!plan.hideName && (
+                              <span className={`${pricingBadgeClassName} ${plan.badgeClassName}`}>
+                                {plan.name}
                               </span>
-                            </div>
+                            )}
+                            {plan.isPopular && (
+                              <span className={pricingPopularBadgeClass}>
+                                {t("popularBadge")}
+                              </span>
+                            )}
                           </div>
+
+                          {/* One idea per line: the price on top, what you are actually
+                              charged underneath. Stacking the billed note beside the price
+                              forced it to wrap and made the block feel crowded. */}
+                          <div className={pricingValueRowClassName}>
+                            {/* Struck-through monthly rate this plan undercuts — the saving is
+                                legible at a glance rather than hidden behind a percentage. */}
+                            {plan.compareAtValue && (
+                              <span className={pricingCompareAtClass}>{plan.compareAtValue}</span>
+                            )}
+                            <span className={pricingValueClassName}>{plan.value}</span>
+                            <span className={pricingValueMetaClassName}>{plan.valueMeta}</span>
+                          </div>
+                          {plan.billedNote && (
+                            <p className={pricingBilledNoteClass}>{plan.billedNote}</p>
+                          )}
 
                           <p className={pricingDescriptionClassName}>{plan.description}</p>
 
