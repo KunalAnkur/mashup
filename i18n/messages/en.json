@@ -157,7 +157,9 @@
     "watchLimit": {
       "minutesLeft": "{minutes} min left today",
       "hostMinutesLeft": "Host has {minutes} min left today",
-      "upgrade": "Upgrade"
+      "upgrade": "Upgrade",
+      "nudgeTitle": "{minutes} minutes left today",
+      "nudgeMessage": "Upgrade now to keep watching without interruption."
     }
   },
   "room": {

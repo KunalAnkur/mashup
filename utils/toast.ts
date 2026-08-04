@@ -174,6 +174,69 @@ export const showInfo = (message: string, duration?: number) => {
 };
 
 /**
+ * Show a toast with a primary action button.
+ *
+ * For prompts the user can act on without leaving what they are doing — unlike `showError`
+ * / `showInfo`, which only report. The action dismisses the toast itself, so callers pass a
+ * plain handler and do not manage the toast id.
+ *
+ * All copy is caller-supplied and must already be translated.
+ */
+export const showActionToast = (
+  title: string,
+  description: string,
+  actionLabel: string,
+  onAction: () => void,
+  duration = 10000
+) => {
+  return toast(
+    (t) =>
+      React.createElement(
+        'div',
+        { className: 'flex items-center justify-between w-full gap-3' },
+        React.createElement(
+          'div',
+          { className: 'flex-1 min-w-0 flex flex-col justify-center' },
+          React.createElement('p', { className: 'font-semibold text-white/70 text-sm' }, title),
+          React.createElement('p', { className: 'text-white/50 text-xs leading-relaxed' }, description)
+        ),
+        React.createElement(
+          'button',
+          {
+            onClick: () => {
+              toast.dismiss(t.id);
+              onAction();
+            },
+            className:
+              'flex-shrink-0 rounded-full bg-amber-500/15 px-3 py-1.5 text-[11px] font-semibold text-amber-200 ring-1 ring-amber-400/20 transition-colors hover:bg-amber-500/25 cursor-pointer',
+          },
+          actionLabel
+        ),
+        React.createElement(
+          'button',
+          {
+            onClick: () => toast.dismiss(t.id),
+            className: 'flex-shrink-0 text-white/50 hover:text-white/80 transition-colors cursor-pointer',
+            'aria-label': 'Close',
+          },
+          React.createElement('span', { className: 'text-sm font-bold' }, '✕')
+        )
+      ),
+    {
+      duration,
+      icon: undefined,
+      style: {
+        background: '#1f1f23',
+        borderRadius: '16px',
+        padding: '8px 10px',
+        maxWidth: '420px',
+      },
+      className: 'custom-error-toast',
+    }
+  );
+};
+
+/**
  * Show a loading toast notification
  */
 export const showLoading = (message: string) => {

@@ -61,6 +61,10 @@ export interface RoomState {
     remainingMinutes: number;
     limit: number;
   } | null;
+  /** One-shot guard for the low-minutes upgrade nudge, so the per-minute countdown does not
+   *  re-fire it every tick. Lives here rather than in a component ref because the panel can
+   *  unmount (mobile bottom sheet, tab switches) and a ref would reset with it. */
+  watchLimitNudgeShown: boolean;
 }
 
 export interface Product {

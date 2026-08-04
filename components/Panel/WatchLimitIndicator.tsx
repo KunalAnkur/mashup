@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { LuClock, LuSparkles } from "react-icons/lu";
 import { RootState } from "@/lib/store";
+import { markWatchLimitNudgeShown } from "@/lib/store/slices/roomSlice";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { trackWatchLimitNudgeShown } from "@/lib/analytics";
+import { showActionToast } from "@/utils/toast";
 import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionModal";
 import {
   appWatchLimitCardClass,
@@ -12,6 +15,10 @@ import {
 } from "@/components/UI/classTokens";
 
 const URGENT_THRESHOLD_MINUTES = 5;
+// The card has been sitting in the panel since minute one, so by the time it matters it has
+// become furniture. One toast breaks through that once, early enough that the host can still
+// upgrade before the room stalls mid-scene — 5 min is urgent but too late to act on.
+const NUDGE_THRESHOLD_MINUTES = 10;
 
 // Only renders once the backend has reported a capped daily usage — unlimited plans
 // never receive a `usageUpdated` event, so this naturally stays hidden for them.
@@ -20,8 +27,31 @@ export default function WatchLimitIndicator() {
   // The allowance is the host's, so only they can act on it — a viewer upgrading their own
   // account would not give this room any more minutes.
   const isHost = useSelector((state: RootState) => state.room.host);
+  const roomId = useSelector((state: RootState) => state.room.roomId);
+  const nudgeShown = useSelector((state: RootState) => state.room.watchLimitNudgeShown);
   const t = useTranslations("panel");
+  const dispatch = useDispatch();
   const [modalOpen, setModalOpen] = useState(false);
+
+  // One-shot upgrade nudge as the allowance runs low. Host only — a viewer cannot buy their
+  // way out of someone else's limit, so for them this would be pure interruption. At zero the
+  // blocking modal takes over, so stay out of its way.
+  useEffect(() => {
+    if (!isHost || nudgeShown || !dailyUsage) return;
+
+    const { remainingMinutes, limit } = dailyUsage;
+    if (remainingMinutes <= 0 || remainingMinutes > NUDGE_THRESHOLD_MINUTES) return;
+
+    dispatch(markWatchLimitNudgeShown());
+    trackWatchLimitNudgeShown(roomId, remainingMinutes, limit);
+    showActionToast(
+      t("watchLimit.nudgeTitle", { minutes: remainingMinutes }),
+      t("watchLimit.nudgeMessage"),
+      t("watchLimit.upgrade"),
+      () => setModalOpen(true)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dailyUsage, isHost, nudgeShown]);
 
   if (!dailyUsage) return null;
 

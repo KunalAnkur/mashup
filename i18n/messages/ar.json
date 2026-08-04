@@ -157,7 +157,9 @@
     "watchLimit": {
       "minutesLeft": "تبقى {minutes} دقيقة اليوم",
       "hostMinutesLeft": "تبقى لمضيف الغرفة {minutes} دقيقة اليوم",
-      "upgrade": "الترقية"
+      "upgrade": "الترقية",
+      "nudgeTitle": "تبقى {minutes} دقيقة اليوم",
+      "nudgeMessage": "قم بالترقية الآن لمواصلة المشاهدة دون انقطاع."
     }
   },
   "room": {

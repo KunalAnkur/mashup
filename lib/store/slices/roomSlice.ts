@@ -25,6 +25,7 @@ const initialState: RoomState = {
     playing: false,
   },
   dailyUsage: null,
+  watchLimitNudgeShown: false,
 };
 
 const roomSlice = createSlice({
@@ -52,6 +53,7 @@ const roomSlice = createSlice({
       state.settings.isPlaybackBlocked = false;
       state.settings.playbackBlockedInfo = undefined;
       state.dailyUsage = null;
+      state.watchLimitNudgeShown = false;
       state.loading = false;
       // state.selectedIndex = data.playlist.findIndex((item) => item.selected) || 0;
     },
@@ -64,6 +66,7 @@ const roomSlice = createSlice({
       state.settings.isPlaybackBlocked = false;
       state.settings.playbackBlockedInfo = undefined;
       state.dailyUsage = null;
+      state.watchLimitNudgeShown = false;
       // state.event = action.payload;
     },
     setPlaylist: (state, action: PayloadAction<Playlist[]>) => {
@@ -153,6 +156,9 @@ const roomSlice = createSlice({
     ) => {
       state.dailyUsage = action.payload;
     },
+    markWatchLimitNudgeShown: (state) => {
+      state.watchLimitNudgeShown = true;
+    },
   },
   // extraReducers: (builder) => {
   //   builder.addMatcher(
@@ -182,5 +188,6 @@ export const {
   setUpgradeSubscriptionModal,
   setPlaybackBlocked,
   setDailyUsage,
+  markWatchLimitNudgeShown,
 } = roomSlice.actions;
 export default roomSlice;

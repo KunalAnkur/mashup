@@ -157,7 +157,9 @@
     "watchLimit": {
       "minutesLeft": "Bugün {minutes} dakika kaldı",
       "hostMinutesLeft": "Oda sahibinin bugün {minutes} dakikası kaldı",
-      "upgrade": "Yükselt"
+      "upgrade": "Yükselt",
+      "nudgeTitle": "Bugün {minutes} dakika kaldı",
+      "nudgeMessage": "Kesintisiz izlemeye devam etmek için şimdi yükseltin."
     }
   },
   "room": {

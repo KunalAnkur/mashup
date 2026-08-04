@@ -157,7 +157,9 @@
     "watchLimit": {
       "minutesLeft": "{minutes} min restantes hoy",
       "hostMinutesLeft": "Al anfitrión le quedan {minutes} min hoy",
-      "upgrade": "Actualizar"
+      "upgrade": "Actualizar",
+      "nudgeTitle": "Quedan {minutes} minutos hoy",
+      "nudgeMessage": "Actualiza ahora para seguir viendo sin interrupciones."
     }
   },
   "room": {

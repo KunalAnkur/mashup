@@ -599,6 +599,28 @@ export const trackDailyLimitReached = (
   logEvent("daily_limit_reached", { room_id: roomId, remaining_minutes: remainingMinutes, limit });
 };
 
+/**
+ * Track the one-shot low-minutes nudge. Separate from `upgrade_modal_shown` on purpose: this
+ * fires before playback is affected, so it is the top of the funnel that `daily_limit_reached`
+ * sits at the bottom of — pairing the two is how the threshold gets tuned.
+ */
+export const trackWatchLimitNudgeShown = (
+  roomId: string | null,
+  remainingMinutes: number,
+  limit: number
+) => {
+  safeCapture("watch_limit_nudge_shown", {
+    room_id: roomId || undefined,
+    remaining_minutes: remainingMinutes,
+    limit,
+  });
+  logEvent("watch_limit_nudge_shown", {
+    room_id: roomId,
+    remaining_minutes: remainingMinutes,
+    limit,
+  });
+};
+
 /** Track any upgrade-prompt modal being shown, tagged by which flow triggered it */
 export const trackUpgradeModalShown = (context: UpgradePromptContext, roomId?: string | null) => {
   safeCapture("upgrade_modal_shown", {
