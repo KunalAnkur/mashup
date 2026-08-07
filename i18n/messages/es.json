@@ -205,7 +205,6 @@
       }
     },
     "reconnectingBanner": "Reconectando...",
-    "serverUpdatingBanner": "Movmash se está actualizando. Reconectando...",
     "connectionLostReload": "No se pudo reconectar. Actualiza la página."
   },
   "sync": {
@@ -338,7 +337,7 @@
     "authenticationFailed": "Error de autenticación",
     "failedToSelectFiles": "Error al seleccionar archivos",
     "reconnected": "Reconectado",
-    "serverUpdating": "Movmash se está actualizando. Reconectando automáticamente..."
+    "reconnecting": "Reconectando..."
   },
   "auth": {
     "guestSignIn": {

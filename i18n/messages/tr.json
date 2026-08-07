@@ -205,7 +205,6 @@
       }
     },
     "reconnectingBanner": "Yeniden bağlanılıyor...",
-    "serverUpdatingBanner": "Movmash güncelleniyor. Yeniden bağlanılıyor...",
     "connectionLostReload": "Yeniden bağlanılamadı. Lütfen sayfayı yenileyin."
   },
   "sync": {
@@ -338,7 +337,7 @@
     "authenticationFailed": "Kimlik doğrulama başarısız",
     "failedToSelectFiles": "Dosya seçilemedi",
     "reconnected": "Yeniden bağlanıldı",
-    "serverUpdating": "Movmash güncelleniyor. Otomatik olarak yeniden bağlanıyorsunuz..."
+    "reconnecting": "Yeniden bağlanılıyor..."
   },
   "auth": {
     "guestSignIn": {

@@ -65,10 +65,12 @@ interface RoomContextType {
     streamDeliveryMode: StreamDeliveryMode | null;
     hostLeft: boolean;
     roomClosed: boolean;
-    /** Connection dropped mid-session and is recovering. The room is still ours — wait, don't exit. */
+    /**
+     * Connection dropped mid-session and is recovering. The room is still ours — wait, don't
+     * exit. Deliberately does not distinguish a deploy from a network drop: the cause is ours
+     * to handle, and the UI says "Reconnecting..." either way.
+     */
     isReconnecting: boolean;
-    /** The drop was announced by the server as a deploy, so it is expected and short. */
-    serverRestarting: boolean;
     /** Recovery gave up. The room is genuinely lost. */
     connectionFailed: boolean;
     joinResponse: JoinResponse | null;
@@ -87,7 +89,7 @@ interface RoomContextType {
 const RoomContext = createContext<RoomContextType | null>(null);
 
 export const RoomProvider = ({ children }: { children: ReactNode }) => {
-    const { socket, isConnected, isReconnecting, serverRestarting, connectionFailed } = useSocket();
+    const { socket, isConnected, isReconnecting, connectionFailed } = useSocket();
     const dispatch = useDispatch();
 
     const roomState = useSelector((state: RootState) => state.room);
@@ -580,7 +582,6 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             // Only surfaced as "reconnecting" for someone who was actually in the room; a user
             // who never joined should just see the normal join/loading path.
             isReconnecting: isReconnecting && hasJoinedRef.current,
-            serverRestarting,
             connectionFailed,
             joinResponse,
             roomId,

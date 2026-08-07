@@ -205,7 +205,6 @@
       }
     },
     "reconnectingBanner": "جارٍ إعادة الاتصال...",
-    "serverUpdatingBanner": "يجري تحديث موفماش. جارٍ إعادة الاتصال...",
     "connectionLostReload": "تعذّرت إعادة الاتصال. يرجى تحديث الصفحة."
   },
   "sync": {
@@ -338,7 +337,7 @@
     "authenticationFailed": "فشل المصادقة",
     "failedToSelectFiles": "فشل اختيار الملفات",
     "reconnected": "تم إعادة الاتصال",
-    "serverUpdating": "يجري تحديث موفماش. تتم إعادة الاتصال تلقائيًا..."
+    "reconnecting": "جارٍ إعادة الاتصال..."
   },
   "auth": {
     "guestSignIn": {

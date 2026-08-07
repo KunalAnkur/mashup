@@ -156,7 +156,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             if (!outageNotifiedRef.current) {
                 outageNotifiedRef.current = true;
                 if (serverRestartingRef.current) {
-                    showInfo(t("serverUpdating"));
+                    showInfo(t("reconnecting"));
                 } else {
                     showError(t("connectionLost"), t("tryingToReconnect"));
                 }
@@ -186,7 +186,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             if (!outageNotifiedRef.current) {
                 outageNotifiedRef.current = true;
                 if (serverRestartingRef.current || authUnavailable) {
-                    showInfo(t("serverUpdating"));
+                    showInfo(t("reconnecting"));
                 } else {
                     showError(t("failedToConnect"), t("checkInternetConnection"));
                 }
