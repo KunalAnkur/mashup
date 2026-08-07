@@ -6,7 +6,7 @@ import CallTiles from "../VideoCall/CallTiles";
 import CallUpsellTeaser from "../VideoCall/CallUpsellTeaser";
 import { LuLoader, LuPhone, LuVideo } from "react-icons/lu";
 
-export default function PanelCallSection() {
+export default function hostIsPremium() {
   const {
     isJoining,
     isInCall,

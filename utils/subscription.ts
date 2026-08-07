@@ -14,6 +14,22 @@ export function isPaidTier(tier?: SubscriptionTier | null): boolean {
   return !!tier && PAID_TIERS.includes(tier);
 }
 
+/**
+ * Whether a host on this tier streams through the SFU rather than directly to each viewer.
+ *
+ * Crowd only. Over P2P the host uploads a separate copy of the video to every viewer, so a
+ * ten-person room would need ten times their upload; a Couple room has exactly one viewer,
+ * where direct is cheaper and lower latency. `premium` is the deprecated alias for Couple and
+ * takes the direct path with it.
+ *
+ * Must stay in step with `usesSfuStream` in
+ * `communication/src/types/subscription.types.ts` — the server's answer is authoritative and
+ * arrives in the join ack, so this only fills the gap before it lands.
+ */
+export function usesSfuStream(tier?: SubscriptionTier | null): boolean {
+  return tier === SubscriptionTier.CROWD;
+}
+
 export function hasActivePaidSubscription(
   subscription?: UserSubscription | null,
 ): boolean {

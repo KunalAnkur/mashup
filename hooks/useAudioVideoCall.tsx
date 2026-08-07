@@ -31,6 +31,15 @@ export interface CallActions {
   leaveCall: () => void;
   toggleMic: () => void;
   toggleCamera: () => void;
+  /**
+   * Acquire a track that was not asked for when the call started, add it to the local stream,
+   * and publish it — turning the camera on partway through an audio-only call.
+   *
+   * Optional because it only applies to a transport that requests exactly what the user chose.
+   * The SFU path always acquires both and merely disables one, so it never has a track to add.
+   * Returns null when the device is unavailable or permission is refused.
+   */
+  ensureTrack?: (kind: "audio" | "video") => Promise<MediaStreamTrack | null>;
 }
 
 export interface UseAudioVideoCallParams {

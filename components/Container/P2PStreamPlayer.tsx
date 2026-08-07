@@ -34,6 +34,8 @@ const P2PStreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     const videoStartedTrackedRef = useRef(false);
     const syncStartedTrackedRef = useRef(false);
     const pendingInitializationRef = useRef(false);
+    /** True while a video-ready initialization is mid-flight, so duplicates are dropped. */
+    const videoReadyInFlightRef = useRef(false);
     const autoStoppedForMissingSourceRef = useRef(false);
     
     const { isJoined, roomType, isHost, hostLeft, roomId, captureWatchTime } = useRoomContext();
@@ -156,27 +158,44 @@ const P2PStreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
             return;
         }
         
-        await new Promise(r => setTimeout(r, 800));
-        
-        if (!isJoined) {
-            console.log("[P2PStreamPlayer] Not joined after delay - aborting initialization");
-            pendingInitializationRef.current = true;
+        // Everything above is synchronous, so nothing can interleave. The wait below can, and
+        // the flags this function checks are only cleared at the very end — so a second
+        // `onReady` arriving during the wait passed the same guard, waited its own 800ms, and
+        // initialised all over again. ReactPlayer fires `onReady` on more than just first load,
+        // which is how one share turned into five renegotiations and five orphaned peer
+        // connections. Claim the work for the duration instead.
+        if (videoReadyInFlightRef.current) {
+            console.log("[P2PStreamPlayer] Video ready ignored - initialization already in flight");
             return;
         }
-        
-        if (!isInitialSetupRef.current && !isScreenSharing) {
-            const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
-            if (video && video.paused) {
-                console.log("[P2PStreamPlayer] Video is paused - deferring");
-                pendingVideoReadyRef.current = true;
+        videoReadyInFlightRef.current = true;
+
+        try {
+            await new Promise(r => setTimeout(r, 800));
+
+            if (!isJoined) {
+                console.log("[P2PStreamPlayer] Not joined after delay - aborting initialization");
+                pendingInitializationRef.current = true;
                 return;
             }
+
+            if (!isInitialSetupRef.current && !isScreenSharing) {
+                const video = playerRef.current?.getInternalPlayer() as HTMLVideoElement | null;
+                if (video && video.paused) {
+                    console.log("[P2PStreamPlayer] Video is paused - deferring");
+                    pendingVideoReadyRef.current = true;
+                    return;
+                }
+            }
+
+            initializeFromJoinResponse();
+            pendingInitializationRef.current = false;
+            lastInitializedItemIdRef.current = currentItemId;
+            isInitialSetupRef.current = false;
+        } finally {
+            // Released even on the deferral paths above, so their retry can still run.
+            videoReadyInFlightRef.current = false;
         }
-        
-        initializeFromJoinResponse();
-        pendingInitializationRef.current = false;
-        lastInitializedItemIdRef.current = currentItemId;
-        isInitialSetupRef.current = false;
     }, [activeItem, onVideoReady, initializeFromJoinResponse, isHost, isJoined, isScreenSharing]);
     
     // ============================================================================

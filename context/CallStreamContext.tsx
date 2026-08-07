@@ -6,11 +6,12 @@ import {
 } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { SubscriptionTier } from "@/types/subscriptionTypes";
+import { hasActivePaidSubscription } from "@/utils/subscription";
 import { useRoomContext } from "@/context/RoomContext";
 import { useSocket } from "@/context/SocketContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useAudioVideoCall } from "@/hooks/useAudioVideoCall";
+import { useP2PCall } from "@/hooks/useP2PCall";
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -40,14 +41,16 @@ const CallStreamContext = createContext<CallStreamContextType | null>(null);
 // ─── Provider ────────────────────────────────────────────────────────────────
 
 export function CallStreamProvider({ children }: { children: ReactNode }) {
-  const { isJoined, hostIsPremium, isHost } = useRoomContext();
+  const { isJoined, hostIsPremium, isHost, callDeliveryMode } = useRoomContext();
   const { socket } = useSocket();
   const roomState = useSelector((state: RootState) => state.room);
   const roomId = roomState.roomId ?? null;
-  const subscriptionTier = useSelector(
-    (state: RootState) => state.subscription.subscription?.tier
+  const subscription = useSelector(
+    (state: RootState) => state.subscription.subscription
   );
-  const isPremium = subscriptionTier === SubscriptionTier.PREMIUM;
+  // Any paying plan, not one specific tier: calls belong to Couple and Crowd alike, and
+  // `premium` is only the deprecated alias for Couple (MOVMASH.md §4.1).
+  const isPremium = hasActivePaidSubscription(subscription);
 
   // ─── Shared state ──────────────────────────────────────────────────────────
 
@@ -170,11 +173,21 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
     };
   }, [socket, roomId, isJoined]);
 
-  // ─── useAudioVideoCall — the single SFU hook ──────────────────────────────
+  // ─── Transport: SFU for Crowd, P2P for Couple ─────────────────────────────
+  //
+  // Both hooks are instantiated because hooks cannot be called conditionally, but only one is
+  // ever enabled — the other sits inert and touches nothing. The room's delivery mode arrives
+  // in the room-join ack, so the choice is already settled before anyone can press call.
+  //
+  // Their shapes are identical on purpose: everything downstream of here works the same either
+  // way and has no idea which transport is carrying the media.
 
-  const callActions = useAudioVideoCall({
+  const callEnabled = isJoined && hostIsPremium;
+  const isP2PCall = callDeliveryMode === "p2p";
+
+  const sfuActions = useAudioVideoCall({
     roomId,
-    enabled: isJoined && hostIsPremium,
+    enabled: callEnabled && !isP2PCall,
     localStreamRef,
     onLocalStream: handleLocalStream,
     onParticipantUpdate: handleParticipantUpdate,
@@ -182,6 +195,19 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
     onJoined: handleCallJoined,
     onLeft: handleCallLeft,
   });
+
+  const p2pActions = useP2PCall({
+    roomId,
+    enabled: callEnabled && isP2PCall,
+    localStreamRef,
+    onLocalStream: handleLocalStream,
+    onParticipantUpdate: handleParticipantUpdate,
+    onParticipantRemove: handleParticipantRemove,
+    onJoined: handleCallJoined,
+    onLeft: handleCallLeft,
+  });
+
+  const callActions = isP2PCall ? p2pActions : sfuActions;
 
   // ─── Unified actions ──────────────────────────────────────────────────────
 
@@ -206,27 +232,24 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
   }, [callActions]);
 
   // Context owns track state + broadcasts; hook only flips the underlying track
-  const toggleMic = useCallback(() => {
-    const track = localStreamRef.current?.getAudioTracks()[0];
-    if (!track) return;
-    track.enabled = !track.enabled;
-    isMicOnRef.current = track.enabled;
-    setIsMicOn(track.enabled);
-    if (socket && roomId) {
-      socket.emit(SocketEvent.CALL_MEDIA_STATE, {
-        roomId,
-        isMicOn: isMicOnRef.current,
-        isCameraOn: isCameraOnRef.current,
-      });
-    }
-  }, [socket, roomId]);
+  // Same shape as the camera: a video-only call has no microphone track to un-mute, so
+  // enabling the mic has to acquire one first.
+  const toggleMic = useCallback(async () => {
+    const existing = localStreamRef.current?.getAudioTracks()[0];
+    let enabled: boolean;
 
-  const toggleCamera = useCallback(() => {
-    const track = localStreamRef.current?.getVideoTracks()[0];
-    if (!track) return;
-    track.enabled = !track.enabled;
-    isCameraOnRef.current = track.enabled;
-    setIsCameraOn(track.enabled);
+    if (existing) {
+      existing.enabled = !existing.enabled;
+      enabled = existing.enabled;
+    } else {
+      const track = await callActions.ensureTrack?.("audio");
+      if (!track) return;
+      track.enabled = true;
+      enabled = true;
+    }
+
+    isMicOnRef.current = enabled;
+    setIsMicOn(enabled);
     if (socket && roomId) {
       socket.emit(SocketEvent.CALL_MEDIA_STATE, {
         roomId,
@@ -234,7 +257,41 @@ export function CallStreamProvider({ children }: { children: ReactNode }) {
         isCameraOn: isCameraOnRef.current,
       });
     }
-  }, [socket, roomId]);
+  }, [socket, roomId, callActions]);
+
+  /**
+   * Turning the camera on may mean *acquiring* it, not just un-muting.
+   *
+   * A P2P call only requests the devices the user chose, so an audio-only call genuinely has
+   * no video track. `ensureTrack` gets one and publishes it mid-call. The SFU path always
+   * holds both and does not implement it, so this falls through to the plain toggle there.
+   */
+  const toggleCamera = useCallback(async () => {
+    const existing = localStreamRef.current?.getVideoTracks()[0];
+    let enabled: boolean;
+
+    if (existing) {
+      existing.enabled = !existing.enabled;
+      enabled = existing.enabled;
+    } else {
+      const track = await callActions.ensureTrack?.("video");
+      if (!track) return;
+      // Freshly acquired, so it is on — flipping here would immediately hide what the user
+      // just asked to show.
+      track.enabled = true;
+      enabled = true;
+    }
+
+    isCameraOnRef.current = enabled;
+    setIsCameraOn(enabled);
+    if (socket && roomId) {
+      socket.emit(SocketEvent.CALL_MEDIA_STATE, {
+        roomId,
+        isMicOn: isMicOnRef.current,
+        isCameraOn: isCameraOnRef.current,
+      });
+    }
+  }, [socket, roomId, callActions]);
 
   return (
     <CallStreamContext.Provider value={{

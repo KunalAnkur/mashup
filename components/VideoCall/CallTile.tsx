@@ -72,13 +72,21 @@ export default function CallTile({
       transition-all duration-300
       ${isInCall ? "bg-zinc-950/75" : "bg-zinc-900/30"}
     `}>
-      {showVideo && (
+      {/*
+        Mounted whenever there is a stream, not only when there is a picture to show.
+
+        This element is what actually plays the media, so unmounting it with the camera off
+        silenced the participant as well — an audio-only call had nothing anywhere to come out
+        of. When there is no video we keep it mounted and merely invisible, letting the avatar
+        below cover it, so the audio keeps playing.
+      */}
+      {stream && (
         <video
           ref={setVideoEl}
           autoPlay
           playsInline
           muted={isLocal}
-          className={`absolute inset-0 h-full w-full object-cover ${isLocal ? "scale-x-[-1]" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover ${isLocal ? "scale-x-[-1]" : ""} ${showVideo ? "" : "opacity-0"}`}
         />
       )}
 

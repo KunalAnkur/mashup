@@ -23,6 +23,17 @@ interface PeerConnection {
     peerId: string;
     connection: RTCPeerConnection;
     stream?: MediaStream;
+    /**
+     * ICE candidates that arrived before this connection had a remote description.
+     *
+     * Trickle ICE starts the instant a peer sets its *local* description, so its candidates
+     * are on the wire well before the other end has applied the offer or answer they belong
+     * to. `addIceCandidate` throws with no remote description set, so they wait here and are
+     * flushed the moment one exists. Dropping them instead leaves both ends with no candidate
+     * pairs, and the connection negotiates perfectly, delivers tracks, and then carries no
+     * media at all.
+     */
+    pendingCandidates: RTCIceCandidateInit[];
 }
 
 export const useP2PStream = ({
@@ -44,6 +55,15 @@ export const useP2PStream = ({
 
     // State
     const [isInitialized, setIsInitialized] = useState(false);
+    /**
+     * Synchronous mirror of `isInitialized`.
+     *
+     * The guard below has to be correct the instant it runs. React state is only correct after
+     * the next render, so two calls landing in the same tick both saw `false`, both ran a full
+     * initialisation, and each replaced the peer connection of the one before — leaving orphans
+     * that keep gathering and trickling ICE for a connection nobody uses.
+     */
+    const isInitializedRef = useRef(false);
     const [trackUpdateCounter, setTrackUpdateCounter] = useState(0);
 
     // Refs for peer connections
@@ -55,6 +75,12 @@ export const useP2PStream = ({
         { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
     ]);
+    /**
+     * Candidates that arrived for a peer we have no connection object for yet — a candidate can
+     * overtake the offer that would have created it. Merged into the connection's own queue as
+     * soon as one exists.
+     */
+    const orphanCandidatesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
 
     // Callback refs to avoid stale closures
     const getStreamRef = useRef(getStream);
@@ -104,6 +130,27 @@ export const useP2PStream = ({
         const track = dst.stream.getAudioTracks()[0];
         track.enabled = true;
         return track;
+    }, []);
+
+    /**
+     * Close and forget any connection we already hold for this peer.
+     *
+     * Replacing the map entry without this leaves the previous RTCPeerConnection alive and
+     * unreferenced: it keeps its transports open and keeps trickling ICE candidates for a
+     * session neither side is using, which is what filled the console with duplicate
+     * "Sending ICE candidate" lines.
+     */
+    const closeExistingPeer = useCallback((peerId: string) => {
+        const existing = peerConnectionsRef.current.get(peerId);
+        if (!existing) return;
+
+        try {
+            existing.connection.close();
+        } catch {
+            // Already closed by the browser; nothing to do.
+        }
+        peerConnectionsRef.current.delete(peerId);
+        console.log(`[P2P] Closed stale connection for ${peerId} before replacing it`);
     }, []);
 
     /**
@@ -205,6 +252,32 @@ export const useP2PStream = ({
     }, [socket, roomId, tToast]);
 
     /**
+     * Apply every candidate held for a peer. Called immediately after a remote description is
+     * set, which is the first moment the connection will accept them.
+     */
+    const flushPendingCandidates = useCallback(async (peerConn: PeerConnection) => {
+        const orphaned = orphanCandidatesRef.current.get(peerConn.peerId);
+        if (orphaned?.length) {
+            peerConn.pendingCandidates.push(...orphaned);
+            orphanCandidatesRef.current.delete(peerConn.peerId);
+        }
+
+        if (!peerConn.pendingCandidates.length) return;
+
+        const queued = peerConn.pendingCandidates;
+        peerConn.pendingCandidates = [];
+        console.log(`[P2P] Flushing ${queued.length} queued ICE candidate(s) for ${peerConn.peerId}`);
+
+        for (const candidate of queued) {
+            try {
+                await peerConn.connection.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (error) {
+                console.error(`[P2P] Error adding queued ICE candidate from ${peerConn.peerId}:`, error);
+            }
+        }
+    }, []);
+
+    /**
      * Handles incoming offer from a peer
      */
     const handleOffer = useCallback(async (
@@ -217,13 +290,16 @@ export const useP2PStream = ({
             let peerConn = peerConnectionsRef.current.get(fromPeerId);
             if (!peerConn) {
                 const pc = createPeerConnection(fromPeerId);
-                peerConn = { peerId: fromPeerId, connection: pc };
+                peerConn = { peerId: fromPeerId, connection: pc, pendingCandidates: [] };
                 peerConnectionsRef.current.set(fromPeerId, peerConn);
             }
 
             const pc = peerConn.connection;
             await pc.setRemoteDescription(new RTCSessionDescription(offer));
-            
+            // The offering side has been trickling candidates since before this point; apply
+            // whatever arrived while we had nothing to attach them to.
+            await flushPendingCandidates(peerConn);
+
             // Create and send answer
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
@@ -239,7 +315,7 @@ export const useP2PStream = ({
         } catch (error) {
             console.error(`[P2P] Error handling offer from ${fromPeerId}:`, error);
         }
-    }, [socket, roomId, createPeerConnection]);
+    }, [socket, roomId, createPeerConnection, flushPendingCandidates]);
 
     /**
      * Handles incoming answer from a peer
@@ -254,11 +330,14 @@ export const useP2PStream = ({
             if (peerConn) {
                 await peerConn.connection.setRemoteDescription(new RTCSessionDescription(answer));
                 console.log(`[P2P] Set remote description for ${fromPeerId}`);
+                // The answering side started trickling as soon as it set its local description,
+                // so its candidates were already queued before this line ran.
+                await flushPendingCandidates(peerConn);
             }
         } catch (error) {
             console.error(`[P2P] Error handling answer from ${fromPeerId}:`, error);
         }
-    }, []);
+    }, [flushPendingCandidates]);
 
     /**
      * Handles incoming ICE candidate from a peer
@@ -269,14 +348,34 @@ export const useP2PStream = ({
     ) => {
         try {
             const peerConn = peerConnectionsRef.current.get(fromPeerId);
-            if (peerConn && peerConn.connection.remoteDescription) {
-                await peerConn.connection.addIceCandidate(new RTCIceCandidate(candidate));
-                console.log(`[P2P] Added ICE candidate from ${fromPeerId}`);
+
+            // The connection may not exist yet: candidates can overtake the offer that
+            // created it. Hold them keyed by peer so they survive until it does.
+            if (!peerConn) {
+                const queued = orphanCandidatesRef.current.get(fromPeerId) ?? [];
+                queued.push(candidate);
+                orphanCandidatesRef.current.set(fromPeerId, queued);
+                console.log(`[P2P] Queued early ICE candidate from ${fromPeerId} (no connection yet)`);
+                return;
             }
+
+            // `addIceCandidate` throws without a remote description, and the remote one arrives
+            // after the peer has already started trickling. Queue rather than drop — discarding
+            // them leaves no candidate pairs, and the call then negotiates and delivers tracks
+            // while carrying no media whatsoever.
+            if (!peerConn.connection.remoteDescription) {
+                peerConn.pendingCandidates.push(candidate);
+                console.log(`[P2P] Queued ICE candidate from ${fromPeerId} (awaiting remote description)`);
+                return;
+            }
+
+            await peerConn.connection.addIceCandidate(new RTCIceCandidate(candidate));
+            console.log(`[P2P] Added ICE candidate from ${fromPeerId}`);
         } catch (error) {
             console.error(`[P2P] Error adding ICE candidate from ${fromPeerId}:`, error);
         }
     }, []);
+
 
     /**
      * Handles new peer joining (host initiates connection)
@@ -298,10 +397,12 @@ export const useP2PStream = ({
         }
 
         // Create peer connection
+        closeExistingPeer(data.peerId);
         const pc = createPeerConnection(data.peerId);
         const peerConn: PeerConnection = {
             peerId: data.peerId,
             connection: pc,
+            pendingCandidates: [],
         };
         peerConnectionsRef.current.set(data.peerId, peerConn);
 
@@ -310,7 +411,7 @@ export const useP2PStream = ({
 
         // Create and send offer
         await createAndSendOffer(data.peerId, pc);
-    }, [isHost, roomId, createPeerConnection, addLocalStreamToPeer, createAndSendOffer]);
+    }, [isHost, roomId, createPeerConnection, addLocalStreamToPeer, createAndSendOffer, closeExistingPeer]);
 
     /**
      * Handles peer leaving
@@ -352,6 +453,7 @@ export const useP2PStream = ({
         localStreamRef.current = null;
         // Reset initialized so a reshare triggers full re-initialization
         setIsInitialized(false);
+        isInitializedRef.current = false;
 
         socket?.emit(SocketEvent.STREAM_STOPPED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
@@ -393,7 +495,7 @@ export const useP2PStream = ({
         
         if (!socket || !roomId || !enabled) return;
         
-        if (initializingRef.current || isInitialized) {
+        if (initializingRef.current || isInitializedRef.current) {
             if (!isHost) return;
             
             // For host: replace tracks if stream changed
@@ -422,8 +524,9 @@ export const useP2PStream = ({
                     for (const participant of currentParticipants) {
                         if (!participant.host && participant.socketId) {
                             console.log(`[P2P] Re-offering to existing participant ${participant.socketId}`);
+                            closeExistingPeer(participant.socketId);
                             const pc = createPeerConnection(participant.socketId);
-                            const peerConn: PeerConnection = { peerId: participant.socketId, connection: pc };
+                            const peerConn: PeerConnection = { peerId: participant.socketId, connection: pc, pendingCandidates: [] };
                             peerConnectionsRef.current.set(participant.socketId, peerConn);
                             addLocalStreamToPeer(pc, stream);
                             await createAndSendOffer(participant.socketId, pc);
@@ -436,13 +539,14 @@ export const useP2PStream = ({
             }
 
             setIsInitialized(true);
+            isInitializedRef.current = true;
         } catch (error) {
             console.error("[P2P] Init error:", error);
             showError(tToast("streamInitializationFailed"), tToast("unableToStartStreaming"));
         } finally {
             initializingRef.current = false;
         }
-    }, [socket, roomId, isHost, enabled, isInitialized, replaceProducerTracks, createPeerConnection, addLocalStreamToPeer, createAndSendOffer, tToast]);
+    }, [socket, roomId, isHost, enabled, replaceProducerTracks, createPeerConnection, addLocalStreamToPeer, createAndSendOffer, closeExistingPeer, tToast]);
 
     const resetState = useCallback(() => {
         console.log("[P2P] Resetting state");
@@ -456,6 +560,7 @@ export const useP2PStream = ({
         localStreamRef.current = null;
         initializingRef.current = false;
         setIsInitialized(false);
+        isInitializedRef.current = false;
     }, []);
 
     // ============================================================================

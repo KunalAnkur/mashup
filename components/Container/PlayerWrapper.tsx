@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import StreamPlayerEmptyState from "./StreamPlayerEmptyState";
 import { RoomType, useRoomContext } from "@/context/RoomContext";
 import { setFocused } from "@/lib/store/slices/roomSlice";
-import { SubscriptionTier } from "@/types/subscriptionTypes";
+import { usesSfuStream } from "@/utils/subscription";
 
 type PlayerWrapperProps = {
   fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -39,9 +39,14 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
     }
   }, [content?.type]);
   const currentType = content?.type ?? lastKnownType; // "stream" | "sync"
-  const isPremiumUser = subscriptionState.subscription?.tier === SubscriptionTier.CROWD || subscriptionState.subscription?.tier === SubscriptionTier.PREMIUM;
+  // Fallback only — the server decides the delivery mode and sends it in the join ack. This
+  // covers the window before that arrives, so it has to mirror the server's rule exactly
+  // (`usesSfuStream` in communication/src/types/subscription.types.ts): Crowd relays through
+  // the SFU, everyone else connects directly. Disagreeing here would mount the wrong player
+  // for a moment and start a negotiation the other side is not having.
+  const hostUsesSfu = usesSfuStream(subscriptionState.subscription?.tier);
   const effectiveStreamDeliveryMode =
-    streamDeliveryMode || (roomState.host && isPremiumUser ? "sfu" : "p2p");
+    streamDeliveryMode || (roomState.host && hostUsesSfu ? "sfu" : "p2p");
   // Generate key for StreamPlayer based on host status and onlyAudio transitions
   // const getStreamPlayerKey = (): string => {
   //   // For non-host: check onlyAudio transitions

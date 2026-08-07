@@ -14,6 +14,8 @@ import { useTranslations } from "@/i18n/I18nProvider";
 
 export type RoomType = "stream" | "sync";
 export type StreamDeliveryMode = "p2p" | "sfu";
+/** Transport carrying call media. Mirrors StreamDeliveryMode but is decided separately. */
+export type CallDeliveryMode = "p2p" | "sfu";
 export interface UserInfo {
     socketId: string;
     roomId: string;
@@ -55,6 +57,7 @@ interface JoinResponse {
         playing: boolean;
     };
     hostIsPremium?: boolean;
+    callDeliveryMode?: CallDeliveryMode | null;
     error?: string;
 }
 
@@ -77,6 +80,12 @@ interface RoomContextType {
     roomId: string | null;
     isHost: boolean;
     hostIsPremium: boolean;
+    /**
+     * How call media travels for this room: `sfu` for Crowd, `p2p` for Couple, null when the
+     * host has no paid plan and calls are unavailable. Decided by the host's tier, so it is
+     * the same for everyone in the room.
+     */
+    callDeliveryMode: CallDeliveryMode | null;
     username: string;
     leaveRoom: () => void;
     updatePlaylist: (urls: string[]) => void;
@@ -110,6 +119,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const [isJoined, setIsJoined] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [hostIsPremium, setHostIsPremium] = useState(false);
+    const [callDeliveryMode, setCallDeliveryMode] = useState<CallDeliveryMode | null>(null);
     const tToast = useTranslations("toast");
     const [roomType, setRoomType] = useState<RoomType | null>(null);
     const [streamDeliveryMode, setStreamDeliveryMode] = useState<StreamDeliveryMode | null>(null);
@@ -187,6 +197,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 setRoomType(response.roomType || derivedRoomType);
                 setStreamDeliveryMode(response.streamDeliveryMode || null);
                 setHostIsPremium(response.hostIsPremium === true);
+                setCallDeliveryMode(response.callDeliveryMode ?? null);
                 setJoinResponse(response);
                 dispatch(setHostPlaybackPlaying(response.hostPlayback?.playing === true));
                 setParticipants(response.users || []);
@@ -590,6 +601,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             roomId,
             isHost,
             hostIsPremium,
+            callDeliveryMode,
             username,
             leaveRoom,
             updatePlaylist,
