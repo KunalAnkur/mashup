@@ -203,7 +203,10 @@
         "morePeople": "Oda başına daha fazla kişi",
         "quality": "1080p ekran paylaşımı"
       }
-    }
+    },
+    "reconnectingBanner": "Yeniden bağlanılıyor...",
+    "serverUpdatingBanner": "Movmash güncelleniyor. Yeniden bağlanılıyor...",
+    "connectionLostReload": "Yeniden bağlanılamadı. Lütfen sayfayı yenileyin."
   },
   "sync": {
     "title": "Kaynak URL Girin",
@@ -333,7 +336,9 @@
     "invalidUrl": "Geçersiz URL. Lütfen desteklenen bir video URL'si girin.",
     "loginSuccessful": "Giriş başarılı",
     "authenticationFailed": "Kimlik doğrulama başarısız",
-    "failedToSelectFiles": "Dosya seçilemedi"
+    "failedToSelectFiles": "Dosya seçilemedi",
+    "reconnected": "Yeniden bağlanıldı",
+    "serverUpdating": "Movmash güncelleniyor. Otomatik olarak yeniden bağlanıyorsunuz..."
   },
   "auth": {
     "guestSignIn": {

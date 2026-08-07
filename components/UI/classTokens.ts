@@ -370,3 +370,18 @@ export const appWatchLimitCardClass =
   "rounded-2xl bg-white/[0.035] p-2.5 ring-1 ring-white/[0.08]";
 export const appWatchLimitCardUrgentClass =
   "rounded-2xl bg-gradient-to-r from-rose-500/[0.08] via-rose-400/[0.06] to-transparent ring-1 ring-rose-400/15";
+
+// Reconnect banner — shown over the player while the socket is recovering (deploy restart or
+// network drop). Deliberately a non-blocking floating pill rather than a modal: the room is
+// still the user's, playback state is preserved, and recovery is usually a few seconds.
+export const appReconnectBannerWrapClass =
+  "pointer-events-none absolute inset-x-0 top-3 z-50 flex justify-center px-3";
+
+export const appReconnectBannerClass =
+  "pointer-events-auto flex items-center gap-2.5 rounded-full bg-[linear-gradient(180deg,rgba(22,22,30,0.94),rgba(14,14,20,0.94))] px-4 py-2 text-[12px] font-medium text-white/80 shadow-lg shadow-black/30 backdrop-blur-xl ring-1 ring-white/[0.08] sm:text-[13px]";
+
+export const appReconnectBannerFailedClass =
+  "pointer-events-auto flex items-center gap-2.5 rounded-full bg-[linear-gradient(180deg,rgba(60,20,28,0.94),rgba(40,14,20,0.94))] px-4 py-2 text-[12px] font-medium text-rose-100 shadow-lg shadow-black/30 backdrop-blur-xl ring-1 ring-rose-400/20 sm:text-[13px]";
+
+export const appReconnectBannerSpinnerClass =
+  "h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-white/25 border-t-white/80";

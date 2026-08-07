@@ -3,6 +3,9 @@ export enum SocketEvent {
   DISCONNECT = "disconnect",
   CONNECTION = "connection",
   SOCKET_ERROR = "socket_error",
+  // Server is going down for a deploy/restart. The disconnect that follows is expected and
+  // short — hold room state and wait for the automatic rejoin instead of tearing the room down.
+  SERVER_RESTARTING = "serverRestarting",
   // Room & sync
   JOIN_ROOM = "joinroom",
   ONPLAY = "onplay",
