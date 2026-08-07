@@ -907,3 +907,27 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Use the same accent family with different intensity instead of copying every exact stream token 1:1.
   - If platform brand colors must stay, unify them with a shared overlay/gloss layer instead of replacing the platform identities entirely.
 - Follow-up action: Reuse “shared palette, preserved structure” as the default path when aligning `/sync` with future entry-page color updates.
+
+## 2026-08-07 (A Socket Drop Is Not The User Leaving The Room)
+
+- Date: 2026-08-07
+- Context: Users were being ejected from live rooms (`/stream` and `/sync` alike) every time the `communication` service was redeployed.
+- Error: `RoomContext`'s disconnect effect cleared `roomType`, `streamDeliveryMode`, `joinResponse`, and `participants` on *any* disconnect. The client reconnects and rejoins on its own within seconds, but the UI had already collapsed, so a routine ~15s deploy gap looked identical to being kicked out.
+- Root cause: Transient loss of transport was treated as terminal loss of session. There was no state distinguishing "recovering" from "gone".
+- Prevention checklist:
+  - On disconnect, release only the join guards (`isJoined`, `joinAttemptedRef`) so auto-join can re-run. Keep everything the next join ack will overwrite anyway.
+  - Reserve teardown for `connectionFailed` — retries actually exhausted — not for `!isConnected`.
+  - Never put a value that changes identity on re-render (a `useTranslations` fn, an inline object) in the dependency array of an effect that owns the socket lifecycle; its cleanup disconnects a socket that may be mid-reconnect.
+  - Socket.IO does **not** auto-retry a handshake the server's auth middleware rejected (`socket.active === false`). If auth depends on another service, drive that retry manually or clients stay dead until reload.
+- Follow-up action: Room state still lives only in `communication`'s process memory, so chat history and host identity are lost across a restart even though the socket now recovers. Persisting `RoomManager`/`ChatHandler` state to Redis is the remaining piece.
+
+## 2026-08-07 (Dead UI: RoomPreparingSplash)
+
+- Date: 2026-08-07
+- Context: Auditing which components react to `isJoined` while fixing reconnect behavior.
+- Error: `components/Container/RoomPreparingSplash.tsx` is defined and exported but imported nowhere — it is not part of any render path.
+- Root cause: Left behind after an earlier room-loading rework.
+- Prevention checklist:
+  - Do not target `RoomPreparingSplash` when changing room loading/reconnect UI; it will have no effect.
+  - Verify real imports before assuming a `Container/` component is on screen.
+- Follow-up action: Confirm it is genuinely unwanted, then delete it along with any stale support types.

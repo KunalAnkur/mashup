@@ -203,7 +203,10 @@
         "morePeople": "More people per room",
         "quality": "1080p screen sharing"
       }
-    }
+    },
+    "reconnectingBanner": "Reconnecting...",
+    "serverUpdatingBanner": "Movmash is updating. Reconnecting...",
+    "connectionLostReload": "Couldn't reconnect. Please refresh the page."
   },
   "sync": {
     "title": "Enter Source URL",
@@ -333,7 +336,9 @@
     "invalidUrl": "Invalid URL. Please enter a supported video URL.",
     "loginSuccessful": "Login successful",
     "authenticationFailed": "Authentication failed",
-    "failedToSelectFiles": "Failed to select files"
+    "failedToSelectFiles": "Failed to select files",
+    "reconnected": "Reconnected",
+    "serverUpdating": "Movmash is updating. Reconnecting you automatically..."
   },
   "auth": {
     "guestSignIn": {

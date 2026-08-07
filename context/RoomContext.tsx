@@ -65,6 +65,12 @@ interface RoomContextType {
     streamDeliveryMode: StreamDeliveryMode | null;
     hostLeft: boolean;
     roomClosed: boolean;
+    /** Connection dropped mid-session and is recovering. The room is still ours — wait, don't exit. */
+    isReconnecting: boolean;
+    /** The drop was announced by the server as a deploy, so it is expected and short. */
+    serverRestarting: boolean;
+    /** Recovery gave up. The room is genuinely lost. */
+    connectionFailed: boolean;
     joinResponse: JoinResponse | null;
     roomId: string | null;
     isHost: boolean;
@@ -81,7 +87,7 @@ interface RoomContextType {
 const RoomContext = createContext<RoomContextType | null>(null);
 
 export const RoomProvider = ({ children }: { children: ReactNode }) => {
-    const { socket, isConnected } = useSocket();
+    const { socket, isConnected, isReconnecting, serverRestarting, connectionFailed } = useSocket();
     const dispatch = useDispatch();
 
     const roomState = useSelector((state: RootState) => state.room);
@@ -129,6 +135,9 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     const joinAttemptedRef = useRef(false);
     const currentRoomRef = useRef<string | null>(null);
     const watchTimeRef = useRef(0); // Seconds watched in the current session
+    // Sticky across disconnects, unlike `isJoined`: it records that this user was in the room
+    // before the drop, which is what distinguishes "reconnecting" from "not joined yet".
+    const hasJoinedRef = useRef(false);
 
     const joinRoom = useCallback(async () => {
         console.log("flow test - joinRoom called", { socket, roomId, username, playlist: roomState.playlist });
@@ -171,6 +180,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             }) as JoinResponse;
             if (response?.success) {
                 setIsJoined(true);
+                hasJoinedRef.current = true;
                 currentRoomRef.current = roomId;
                 setRoomType(response.roomType || derivedRoomType);
                 setStreamDeliveryMode(response.streamDeliveryMode || null);
@@ -213,24 +223,40 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [socket, roomId, isHost, username, email, profile, roomState.playlist, roomTypeFromState, isJoined, dispatch]);
 
-    // If the socket disconnects (e.g., internet drop), reset local "joined" state
-    // so that the auto-join effect can re-run once the connection is restored.
+    // If the socket disconnects (internet drop, or a deploy restarting the service), release
+    // only the join guards so the auto-join effect can re-run once the connection is back.
+    //
+    // Deliberately NOT cleared here: roomType, streamDeliveryMode, joinResponse, participants,
+    // hostIsPremium. Wiping those made every blip — including the ~15s gap while the
+    // communication service redeploys — render as if the user had been kicked out of the room,
+    // even though the client reconnects and rejoins on its own moments later. They are all
+    // overwritten by the next successful join ack anyway.
     useEffect(() => {
         if (isConnected) return;
 
-        // Clear join guards/state; we can't emit LEAVE_ROOM when offline anyway.
         setIsLoading(false);
         setIsJoined(false);
-        setRoomType(null);
-        setStreamDeliveryMode(null);
-        setHostLeft(false);
-        setRoomClosed(false);
+        // Playback stops while offline: nothing is in sync with the host, and watch time must
+        // not accrue against the room's allowance for time nobody is connected for.
         dispatch(setHostPlaybackPlaying(false));
-        setJoinResponse(null);
-        setParticipants([]);
         joinAttemptedRef.current = false;
         currentRoomRef.current = null;
     }, [isConnected, dispatch]);
+
+    // Recovery has actually given up (retries exhausted, or the server rejected us for a
+    // reason that will not resolve). Only now is the room genuinely gone, so this is where the
+    // teardown that used to run on every disconnect belongs.
+    useEffect(() => {
+        if (!connectionFailed) return;
+
+        setRoomType(null);
+        setStreamDeliveryMode(null);
+        setHostLeft(false);
+        setRoomClosed(true);
+        setJoinResponse(null);
+        setParticipants([]);
+        setHostIsPremium(false);
+    }, [connectionFailed]);
 
     const updatePlaylist = useCallback(
         async (urls: string[]) => {
@@ -288,6 +314,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         setJoinResponse(null);
         joinAttemptedRef.current = false;
         currentRoomRef.current = null;
+        hasJoinedRef.current = false;
         // dispatch(exitRoom());
     }, [socket, roomId, roomState, dispatch]);
 
@@ -307,6 +334,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             joinAttemptedRef.current = false;
             currentRoomRef.current = null;
             watchTimeRef.current = 0;
+            hasJoinedRef.current = false;
             setStreamDeliveryMode(null);
             dispatch(setHostPlaybackPlaying(false));
         }
@@ -549,6 +577,11 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             streamDeliveryMode,
             hostLeft,
             roomClosed,
+            // Only surfaced as "reconnecting" for someone who was actually in the room; a user
+            // who never joined should just see the normal join/loading path.
+            isReconnecting: isReconnecting && hasJoinedRef.current,
+            serverRestarting,
+            connectionFailed,
             joinResponse,
             roomId,
             isHost,

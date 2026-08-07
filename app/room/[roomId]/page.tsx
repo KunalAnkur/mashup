@@ -15,6 +15,7 @@ import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionMod
 import PlaybackBlockedModal from "@/components/Modals/PlaybackBlockedModal";
 import { appFixedViewportPageClass } from "@/components/UI/classTokens";
 import FloatingCallOverlay from "@/components/VideoCall/FloatingCallOverlay";
+import ReconnectingBanner from "@/components/Party/ReconnectingBanner";
 const Page = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
@@ -132,6 +133,8 @@ const Page = () => {
           `}
         >
           <PlayerWrapper fullscreenTargetRef={containerRef} />
+          {/* Socket recovery status — inside this container so it stays visible in fullscreen */}
+          <ReconnectingBanner />
           {/* Flying Emoji Animations - Inside fullscreen container to work in fullscreen mode */}
           <ReactionsContainer />
           <ProductBottomSheet />
