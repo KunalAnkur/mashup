@@ -931,3 +931,17 @@ Use this file to record mistakes, root causes, and prevention steps.
   - Do not target `RoomPreparingSplash` when changing room loading/reconnect UI; it will have no effect.
   - Verify real imports before assuming a `Container/` component is on screen.
 - Follow-up action: Confirm it is genuinely unwanted, then delete it along with any stale support types.
+
+## 2026-08-07 (P2P Host Reconnect Never Re-Offered The Stream)
+
+- Date: 2026-08-07
+- Context: After a host's internet dropped and came back, the host rejoined the room and appeared in the participant list, but no participant could see their stream any more.
+- Error: `useP2PStream` had no reconnect-driven initialization. The host's only init triggers live in `P2PStreamPlayer` and are driven by the video element becoming ready or the playlist item changing — neither of which happens on a reconnect. The `isJoined`-driven effect is explicitly non-host (`if (isHost) return`).
+- Root cause: `useP2PStream` was derived from `useStream`, but `useStream`'s reconnect effect (the `reconnectCountRef > 0` guard) was not carried across. Result: a premium/SFU host recovered from a network drop and a free/P2P host did not.
+- Why it stayed hidden: guests never initiate an offer by design, so the failure is a silent deadlock — the server correctly reports `p2pPeerLeft` then `p2pPeerJoined` with the host's new socket id, and both sides then wait for the other. Verified with a socket-level test: signalling was intact, and no offer was ever sent.
+- Prevention checklist:
+  - Anything torn down on `!enabled` must have a matching re-establish path on `enabled` going true again. Reset and re-init should be added as a pair.
+  - A reconnect gives the host a NEW socket id, so every peer-keyed map on both sides is stale. Treat reconnect as "renegotiate from scratch", not "resume".
+  - When P2P and SFU hooks share a shape, diff their lifecycle effects before assuming parity — a missing effect in one is invisible until the matching tier is exercised.
+  - Prefer driving stream setup from connection/room state rather than from DOM readiness events; DOM events do not re-fire on a reconnect.
+- Follow-up action: MediaSoup/WebRTC state is inherently process- and connection-local, so stream re-establishment can never be free. Keep the goal at "re-establishes automatically within seconds", not "survives".

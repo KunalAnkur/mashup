@@ -541,6 +541,41 @@ export const useP2PStream = ({
         }
     }, [enabled, resetState]);
 
+    // Held in a ref so the reconnect effect below can call the latest version without taking
+    // it as a dependency — its identity changes on nearly every render, which would make the
+    // effect re-run constantly and re-offer to every peer each time.
+    const initializeRef = useRef(initializeFromJoinResponse);
+    useEffect(() => {
+        initializeRef.current = initializeFromJoinResponse;
+    }, [initializeFromJoinResponse]);
+
+    /**
+     * Re-establish the host's outbound stream after a reconnect.
+     *
+     * Every other host initialization path is triggered by something that does not happen when
+     * a connection comes back: the video element becoming ready, or the playlist item
+     * changing. But the drop tore everything down — `resetState` closed every peer connection,
+     * the server dropped this peer and told the guests the host had left, and the host returns
+     * on a brand new socket id that none of the guests' old connections point at.
+     *
+     * Guests never initiate; by design only the host sends an offer. So without this the host
+     * comes back, appears in the participant list, sends nothing, and everyone waits forever.
+     * The SFU hook has had the equivalent of this all along (useStream.tsx); the P2P path was
+     * missing it, which is why a premium host recovered from a network drop and a free one
+     * did not.
+     */
+    const hasBeenEnabledRef = useRef(false);
+    useEffect(() => {
+        if (!socket || !enabled || !isHost) return;
+
+        // Skip the first enable: that is the initial join, which the video-ready path owns.
+        if (hasBeenEnabledRef.current) {
+            console.log("[P2P] Host reconnected - re-establishing outbound stream");
+            void initializeRef.current();
+        }
+        hasBeenEnabledRef.current = true;
+    }, [socket, enabled, isHost]);
+
     // Cleanup on unmount
     useEffect(() => () => resetState(), [resetState]);
 
