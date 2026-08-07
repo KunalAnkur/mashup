@@ -362,10 +362,13 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             }
         };
 
+        // The host arriving is the inverse of them leaving: whatever `hostLeft` closed, this
+        // reopens. Setting `roomClosed` true here was a typo for false — a room cannot be
+        // closed by its host walking in.
         const handleHostJoined = (data: { roomId: string }) => {
             if (!data.roomId || data.roomId === roomId) {
                 setHostLeft(false);
-                setRoomClosed(true);
+                setRoomClosed(false);
             }
         };
 
