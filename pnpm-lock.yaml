@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@movmash/arcade-client':
-        specifier: ^0.1.0
-        version: 0.1.2(react@19.1.0)
+        specifier: ^0.1.3
+        version: 0.1.3(react@19.1.0)
       '@next/third-parties':
         specifier: ^16.0.8
         version: 16.1.1(next@16.0.8(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
@@ -353,10 +353,13 @@ packages:
   '@movmash/activity-sdk@0.1.2':
     resolution: {integrity: sha512-4h24r/cWX0/MpFXqO50kI5Ns2ciqV6engMSu1XEuo8R8ALVmaPbs7m50alUVWlt3HOCVL9H4Y6f5gRn4iK3wAw==, tarball: https://npm.pkg.github.com/download/@movmash/activity-sdk/0.1.2/ba1fb8700bd560cf41a8663a2c808dee260f980a}
 
-  '@movmash/arcade-client@0.1.2':
-    resolution: {integrity: sha512-nl3bQzhXaw20cF0yRZE2kFdor1SFLSxIkZ+ro5kJ4P4pj9vVVgZ+Kj9bTOjYEmWpFva7SU/inO/KyXC0WJ0Ffw==, tarball: https://npm.pkg.github.com/download/@movmash/arcade-client/0.1.2/928d1903e8107803b6a9b5067324c42dd55cb11b}
+  '@movmash/arcade-client@0.1.3':
+    resolution: {integrity: sha512-8CKBJMLIY7wvf+89OZu5N3q2/aXPG4V6iCdT4evLsRQmInCVQCSTD/JqaPll3I8B848SwddZNLIe9QYA1eeyXQ==, tarball: https://npm.pkg.github.com/download/@movmash/arcade-client/0.1.3/983a92570b5b9e601a4d278d12614efb2f9473a4}
     peerDependencies:
       react: '>=18'
+
+  '@movmash/game-connect4@1.0.0':
+    resolution: {integrity: sha512-hlABltrAc3dn96B1nw7AYRSTegjBv9LvJRbF1584PDfuwwfNrMKbuwaI8frzsL8LtS3igE5rM7Hre8M9qn4H8g==, tarball: https://npm.pkg.github.com/download/@movmash/game-connect4/1.0.0/aaeb143f62053121e9dfa0019172d37a68dee159}
 
   '@movmash/game-tictactoe@1.2.0':
     resolution: {integrity: sha512-4MdgvcZFZ6H8yMtnrPTD40vKgNaHSEeyuIcg5WRBjxgJDgQ5swREHojn4rCPmQBRX7orUHyQJZ5+ZMw95DTT9Q==, tarball: https://npm.pkg.github.com/download/@movmash/game-tictactoe/1.2.0/41a75526c34eb5ecf25e64ef18f175c711777c40}
@@ -2774,11 +2777,16 @@ snapshots:
 
   '@movmash/activity-sdk@0.1.2': {}
 
-  '@movmash/arcade-client@0.1.2(react@19.1.0)':
+  '@movmash/arcade-client@0.1.3(react@19.1.0)':
     dependencies:
       '@movmash/activity-sdk': 0.1.2
+      '@movmash/game-connect4': 1.0.0
       '@movmash/game-tictactoe': 1.2.0
       react: 19.1.0
+
+  '@movmash/game-connect4@1.0.0':
+    dependencies:
+      '@movmash/activity-sdk': 0.1.2
 
   '@movmash/game-tictactoe@1.2.0':
     dependencies:
