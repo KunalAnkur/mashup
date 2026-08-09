@@ -77,6 +77,13 @@ export const appDropdownContentClass = "flex flex-col gap-0.5 p-2";
 export const appDropdownRowClass =
   "flex items-center gap-2.5 rounded-xl px-2.5 py-2";
 
+// Compact row/chip/label variants — opt-in via DropdownActionRow's `compact` prop, used
+// by the sidebar's LoginDropdown instances only. Kept as fully separate class strings
+// (never appended alongside the default ones) so there's no same-property Tailwind
+// cascade conflict — see feedback_portaled_modal_dismiss_bug for why that matters.
+export const appDropdownRowCompactClass =
+  "flex items-center gap-2 rounded-lg px-2 py-1.5";
+
 export const appDropdownDividerClass = "h-px w-full bg-white/8";
 
 export const appSeparatorLineClass = "h-px flex-1 bg-white/10";
@@ -90,12 +97,19 @@ export const appDropdownLabelClass = "min-w-0 text-[11px] md:text-xs";
 
 export const appDropdownActionLabelClass = `${appDropdownLabelClass} font-medium`;
 
+export const appDropdownActionLabelCompactClass = "min-w-0 text-[12px] font-medium";
+
 export const appDropdownQuietActionButtonClass = `${appDropdownRowClass} w-full text-left text-white/80 transition-all duration-200 ${appHoverRevealClass}`;
+
+export const appDropdownQuietActionButtonCompactClass = `${appDropdownRowCompactClass} w-full text-left text-white/80 transition-all duration-200 ${appHoverRevealClass}`;
 
 export const appDropdownDangerActionButtonClass = `${appDropdownRowClass} w-full text-left text-white/80 transition-all duration-200 hover:bg-rose-500/10 hover:text-white`;
 
 export const appDropdownIconChipBaseClass =
   "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg leading-none";
+
+export const appDropdownIconChipCompactBaseClass =
+  "flex h-6 w-6 shrink-0 items-center justify-center rounded-md leading-none";
 
 export const appDropdownGoogleIconChipClass = appWhiteEmphasisSurfaceClass;
 
@@ -311,49 +325,43 @@ export const appStreamScreenShareButtonClass =
 export const appStreamScreenShareIconClass =
   "mb-3 flex h-16 w-16 items-center justify-center text-violet-200 sm:mb-4 sm:h-20 sm:w-20";
 
-export const appStreamScreenHeroSurfaceClass =
-  "rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.08),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.08),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:rounded-2xl";
+export const appStreamScreenHeroSurfaceClass = "rounded-dashMd bg-dashSurface";
 
+// Left-aligned, matching the rest of the dashboard's top-left content start point —
+// this used to be mx-auto + items-center + text-center, which centered the whole
+// "before preview" block on the page while every other screen starts flush left.
 export const appStreamScreenOpenSectionClass =
-  "mx-auto flex w-full max-w-2xl flex-col items-center gap-4 text-center sm:gap-5 md:gap-6";
+  "flex w-full max-w-2xl flex-col items-start gap-4 text-left sm:gap-5 md:gap-6";
 
 export const appStreamScreenIntroWidthClass = "w-full max-w-md";
 
-export const appStreamScreenIntroClusterClass =
-  "mx-auto flex w-full max-w-md items-center justify-center text-center";
+export const appStreamScreenIntroClusterClass = "flex w-full items-start text-left";
 
 export const appStreamScreenIntroCopyClass =
-  "flex min-w-0 w-full flex-col items-center text-center";
+  "flex min-w-0 w-full flex-col items-start text-left";
 
 export const appStreamScreenStepCardClass =
-  "rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.06),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.06),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.025))] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.045)] transition-[filter,background] duration-200 hover:brightness-105 sm:rounded-2xl";
+  "rounded-dashMd bg-dashSurface transition-colors duration-200 hover:bg-dashSurfaceAlt";
 
 export const appStreamScreenStepBadgeClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(56,189,248,0.22),rgba(168,85,247,0.18),rgba(244,63,94,0.20))] text-base font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] sm:mb-4 sm:h-12 sm:w-12 sm:text-lg";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-base font-semibold text-white sm:mb-4 sm:h-12 sm:w-12 sm:text-lg";
 
 export const appStreamScreenSupportCopyClass =
-  "text-xs leading-6 text-white/78 sm:text-[13px] md:text-sm";
+  "text-xs leading-6 text-dashTextDim sm:text-[13px] md:text-sm";
 
-export const appStreamScreenInfoSurfaceClass =
-  "rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.025))] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.045)] sm:rounded-2xl";
+export const appStreamScreenInfoSurfaceClass = "rounded-dashMd bg-dashSurface";
 
-export const appStreamScreenPreviewStatusClass =
-  "rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.07),transparent_44%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.08),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.028))] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] sm:rounded-2xl";
+export const appStreamScreenPreviewStatusClass = "rounded-dashMd bg-dashSurface";
 
-export const appStreamScreenPreviewFrameClass =
-  "overflow-hidden rounded-xl bg-[linear-gradient(180deg,rgba(10,10,14,0.94),rgba(5,5,8,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:rounded-2xl";
+export const appStreamScreenPreviewFrameClass = "overflow-hidden rounded-dashMd bg-black";
 
-export const appStreamScreenAudioOnlyStateClass =
-  "bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.14),transparent_46%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.14),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))]";
+export const appStreamScreenAudioOnlyStateClass = "bg-dashSurface";
 
-export const appStreamScreenToggleSurfaceClass =
-  "rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.045)] sm:rounded-2xl";
+export const appStreamScreenToggleSurfaceClass = "rounded-dashSm bg-dashSurfaceAlt";
 
-export const appStreamScreenWarningSurfaceClass =
-  "rounded-xl bg-[linear-gradient(180deg,rgba(245,158,11,0.13),rgba(217,119,6,0.08))] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:rounded-2xl";
+export const appStreamScreenWarningSurfaceClass = "rounded-dashSm bg-amber-500/10";
 
-export const appStreamScreenPrimaryButtonClass =
-  "inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.94),rgba(168,85,247,0.88),rgba(244,63,94,0.90))] px-4 py-3.5 text-sm font-semibold text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-2xl sm:px-6 sm:py-4 sm:text-base md:px-8 md:py-5 md:text-lg";
+export const appStreamScreenPrimaryButtonClass = `inline-flex w-full items-center justify-center gap-2 rounded-dashMd bg-gradient-to-r ${movmashGradientStopsClass} px-4 py-3.5 text-sm font-semibold text-white transition-[filter,opacity] duration-200 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:py-4 sm:text-base md:px-8 md:py-5 md:text-lg`;
 
 export const appTransactionRowClass =
   "flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] px-4 py-3 text-[13px] text-white/74";
@@ -385,3 +393,308 @@ export const appReconnectBannerFailedClass =
 
 export const appReconnectBannerSpinnerClass =
   "h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-white/25 border-t-white/80";
+
+// ---------------------------------------------------------------------------
+// Dashboard redesign (movmash_mockup_local.html) — flat, opaque surfaces, no
+// backdrop-blur. Kept separate from the zincGlass* family above: screens migrate
+// to these one at a time, and the two systems intentionally look different until
+// the old one is retired.
+// ---------------------------------------------------------------------------
+
+export const dashSurfaceCardClass = "bg-dashSurface rounded-dashMd";
+
+export const dashSurfaceCardAltClass = "bg-dashSurfaceAlt rounded-dashMd";
+
+export const dashSurfaceBorderedCardClass = `${dashSurfaceCardClass} border border-dashBorder`;
+
+export const dashSurfacePanelClass = "bg-dashSurface rounded-dashLg";
+
+export const dashTextDimClass = "text-dashTextDim";
+
+export const dashTextMuteClass = "text-dashTextMute";
+
+export const dashNavItemActiveClass =
+  "text-dashText bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))]";
+
+export const dashNavItemHoverClass = "text-dashTextDim hover:bg-white/[0.045] hover:text-dashText";
+
+// Action tiles (home "Stream / Sync / Games" cards): flat surface, single pink icon
+// accent, one soft glow revealed on hover — replaces the old per-card glass/multi-color
+// gradient treatment.
+export const dashActionTileClass =
+  "bg-dashSurface hover:bg-[linear-gradient(135deg,rgba(219,39,119,0.07),rgba(192,38,211,0.05))] rounded-dashMd relative overflow-hidden transition-[background-image] duration-300";
+
+export const dashActionTileGlowClass =
+  "pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(219,39,119,0.22),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100";
+
+export const dashActionTileIconWrapClass = "flex items-center justify-center text-pink-600";
+
+export const dashActionTileLabelClass = "text-[13.5px] font-semibold tracking-tight text-dashText";
+
+export const dashJoinFieldWrapClass =
+  "flex flex-1 items-center rounded-dashSm bg-dashSurfaceAlt transition-colors duration-200 focus-within:outline focus-within:outline-2 focus-within:outline-pink-600/55";
+
+export const dashJoinInputFieldClass =
+  "h-[50px] w-full appearance-none bg-transparent text-base text-dashText outline-none placeholder:text-dashTextMute";
+
+// ---------------------------------------------------------------------------
+// Sidebar dashboard shell (movmash_mockup_local.html left rail + account zone).
+// ---------------------------------------------------------------------------
+
+export const dashShellGridClass =
+  "grid grid-cols-[clamp(226px,14vw,320px)_minmax(0,1fr)] gap-[clamp(24px,1.6vw,34px)] items-stretch p-4 max-[1080px]:grid-cols-[200px_minmax(0,1fr)] max-[760px]:grid-cols-1 max-[760px]:gap-5 max-[760px]:px-4 max-[760px]:pt-[72px] max-[760px]:pb-[78px]";
+
+export const dashRailLeftClass =
+  "relative flex flex-col overflow-hidden pt-2 pr-4 pl-1 max-[760px]:hidden";
+
+export const dashRailSepAClass =
+  "pointer-events-none absolute right-0 top-6 bottom-6 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent max-[760px]:hidden";
+
+export const dashRailSepBClass =
+  "pointer-events-none absolute right-0 top-12 bottom-12 w-px opacity-40 shadow-[0_0_14px_rgba(255,255,255,0.10)] bg-white/10 max-[760px]:hidden";
+
+export const dashLogoRowClass = "flex items-center gap-2.5 px-1.5 pt-1 pb-4 shrink-0";
+
+export const dashLogoWordClass = "text-[17px] font-bold tracking-[-0.01em] text-dashText";
+
+export const dashNavClass = "flex flex-col gap-0.5 shrink-0";
+
+export const dashNavItemBaseClass =
+  "flex w-full items-center gap-2.5 rounded-dashSm px-2.5 py-2.5 text-[13.5px] font-medium transition-colors duration-150";
+
+export const dashNavItemBadgeClass =
+  "ml-auto rounded-full bg-secondary px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white";
+
+export const dashNavChevClass = "ml-auto shrink-0 text-dashTextMute transition-transform duration-200";
+
+export const dashSubmenuOuterClass = "grid transition-[grid-template-rows] duration-200 ease-out";
+
+export const dashSubmenuListClass = "flex flex-col gap-px overflow-hidden py-1 pr-1 pl-[30px]";
+
+export const dashSubmenuItemClass =
+  "flex w-full items-center gap-2.5 rounded-lg px-2 py-[7px] text-left text-[13px] transition-colors duration-150 hover:bg-white/[0.045] hover:text-dashText";
+
+export const dashSubmenuItemDefaultClass = "text-dashTextMute";
+
+export const dashSubmenuItemActiveClass =
+  "text-dashText bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))]";
+
+export const dashCozyCardClass = "mt-auto flex shrink-0 flex-col";
+
+export const dashCozyArtClass =
+  "relative h-[210px] overflow-hidden rounded-2xl bg-[radial-gradient(160px_120px_at_80%_8%,rgba(192,38,211,0.5),transparent_70%),radial-gradient(190px_130px_at_10%_55%,rgba(225,29,72,0.4),transparent_70%),linear-gradient(135deg,#2a1229_0%,#1a0d1e_45%,#120a14_100%)]";
+
+export const dashCozyScrimClass =
+  "pointer-events-none absolute inset-x-0 bottom-0 h-[72%] bg-gradient-to-b from-transparent to-[rgba(9,7,11,0.9)]";
+
+export const dashCozyCopyClass = "absolute inset-x-[14px] bottom-[14px]";
+
+export const dashCozyTitleClass = "m-0 text-[14px] font-bold leading-[1.35] text-white";
+
+export const dashCozyDescriptionClass = "mt-1.5 text-[11.5px] leading-[1.5] text-white/70";
+
+export const dashAccountZoneClass = "flex shrink-0 flex-col gap-2.5";
+
+export const dashUpgradeButtonClass =
+  "flex items-center justify-center gap-1.5 rounded-dashSm bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))] px-3 py-2.5 text-[12.5px] font-semibold text-white transition-colors duration-150 hover:bg-[linear-gradient(100deg,rgba(225,29,72,0.4),rgba(219,39,119,0.34),rgba(192,38,211,0.32))]";
+
+// py-1.5 (not the more common py-2) keeps this row's height close to
+// dashLoginTriggerClass's, so the account-zone slot doesn't visibly jump in height when
+// swapping between the logged-out Login button and this logged-in row.
+export const dashProfileTriggerClass =
+  "flex w-full items-center gap-2 rounded-dashSm bg-white/[0.045] px-2 py-1.5 text-left transition-colors duration-150 hover:bg-white/[0.075]";
+
+// Guest login trigger — deliberately sized to match dashUpgradeButtonClass (same
+// px-3 py-2.5 / text-[12.5px] / gap-1.5 / justify-center) rather than reusing
+// dashProfileTriggerClass, which is sized for the logged-in row (avatar chip + name +
+// chevron) and looks oversized for a plain icon + "Login" label.
+export const dashLoginTriggerClass =
+  "flex w-full items-center justify-center gap-1.5 rounded-dashSm bg-white/[0.045] px-3 py-2.5 text-[12.5px] font-semibold text-dashText transition-colors duration-150 hover:bg-white/[0.075]";
+
+export const dashAvatarChipClass =
+  "flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-secondary text-[12.5px] font-bold text-white";
+
+// Smaller chip used only by the sidebar's account-zone trigger row (see
+// dashProfileTriggerClass above) so that row's height stays close to the logged-out
+// Login button's — SidebarProfileMenu's popover header keeps the full-size chip.
+export const dashAvatarChipCompactClass =
+  "flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[8px] bg-secondary text-[10px] font-bold text-white";
+
+export const dashProfileMetaClass = "flex min-w-0 flex-col leading-tight";
+
+export const dashProfileNameClass = "truncate text-[13.5px] font-semibold text-dashText";
+
+export const dashProfileHandleClass = "truncate text-[11.5px] text-dashTextMute";
+
+export const dashPopoverPanelClass =
+  "absolute inset-x-0 bottom-[calc(100%+10px)] z-[60] flex flex-col gap-px rounded-dashSm border border-dashBorder bg-dashSurface p-1.5";
+
+export const dashPopoverRowClass =
+  "flex w-full items-center gap-3 rounded-xl px-2 py-[7px] text-left text-[13px] font-medium text-dashText transition-colors duration-150 hover:bg-white/[0.045]";
+
+export const dashPopoverRowIconClass =
+  "flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] bg-dashSurfaceAlt text-pink-600";
+
+export const dashPopoverRowIconUpgradeClass =
+  "flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-white";
+
+export const dashPopoverDividerClass = "mx-1 my-1 h-px bg-dashBorder";
+
+export const dashPopoverDangerRowClass = `${dashPopoverRowClass} text-rose-600`;
+
+export const dashPopoverBackdropClass = "fixed inset-0 z-[55]";
+
+// ---------------------------------------------------------------------------
+// Mobile top bar / bottom tab bar / full-screen profile sheet.
+// ---------------------------------------------------------------------------
+
+export const dashMobileTopbarClass =
+  "fixed inset-x-0 top-0 z-40 hidden h-[58px] items-center border-b border-dashBorder bg-primaryDark px-3.5 max-[760px]:flex";
+
+export const dashMobileBottombarClass =
+  "fixed inset-x-0 bottom-0 z-40 hidden h-[62px] items-stretch border-t border-dashBorder bg-primaryDark px-1 py-1.5 max-[760px]:flex";
+
+export const dashMobileTabItemClass =
+  "flex flex-1 flex-col items-center justify-center gap-0.5 rounded-xl text-[10px] font-semibold text-dashTextMute";
+
+export const dashMobileTabItemActiveClass = "text-pink-600";
+
+export const dashMobileProfileSheetClass =
+  "fixed inset-x-0 top-[58px] bottom-[62px] z-[42] overflow-y-auto bg-primaryDark px-4 py-6";
+
+// Forces the shared LoginDropdown panel (normally a blurred dark-glass gradient, tuned for
+// the top-bar header) onto the flat dash-surface language used everywhere else in the
+// sidebar/mobile shell. `!` is required — the base panel sets its look via bg-[...]/rounded-2xl/
+// backdrop-blur, which plain utility ordering can't reliably beat.
+export const dashLoginPopoverOverrideClass =
+  "!bg-none !bg-dashSurface !backdrop-blur-none !rounded-dashSm !border !border-dashBorder";
+
+// ---------------------------------------------------------------------------
+// Home hero banner (demo-video placeholder area, movmash_mockup_local.html .hero).
+// No real demo video exists yet — this is deliberately the mockup's placeholder
+// treatment, not a stand-in for a video player.
+// ---------------------------------------------------------------------------
+
+export const dashHeroClass =
+  "relative flex-1 min-h-[260px] max-h-[640px] overflow-hidden rounded-dashLg bg-[radial-gradient(600px_260px_at_80%_0%,rgba(192,38,211,0.24),transparent_60%),radial-gradient(500px_260px_at_10%_100%,rgba(225,29,72,0.24),transparent_60%),linear-gradient(160deg,#1c1120_0%,#100b12_60%,var(--dash-surface)_100%)]";
+
+export const dashHeroPlayButtonClass =
+  "absolute left-1/2 top-1/2 flex h-[62px] w-[62px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 backdrop-blur-[4px]";
+
+export const dashHeroCopyClass = "absolute bottom-5 left-[22px] max-w-[60%]";
+
+export const dashHeroTitleClass =
+  "m-0 text-[clamp(24px,3vw,34px)] font-extrabold leading-[1.08] text-dashText";
+
+export const dashHeroAccentClass =
+  "bg-secondary bg-clip-text text-transparent";
+
+export const dashHeroDescriptionClass =
+  "mt-2 flex items-center gap-1.5 text-[13px] text-dashTextDim";
+
+// Mobile: hero shrinks to a fixed aspect band instead of flexing to fill space
+// (movmash_mockup_local.html's @media (max-width:760px) .hero rule).
+export const dashHeroMobileClass =
+  "max-[760px]:h-[46vw] max-[760px]:max-h-[240px] max-[760px]:min-h-0 max-[760px]:flex-none";
+
+// ---------------------------------------------------------------------------
+// Home dashboard layout — the two-column split (main content + right rail)
+// that sits inside DashboardShell's single main column. Kept local to the home
+// page rather than built into DashboardShell, since only home needs a right
+// rail — every other dashboard route stays single-column.
+// ---------------------------------------------------------------------------
+
+export const dashHomeGridClass =
+  "grid flex-1 grid-cols-[minmax(0,1fr)_clamp(272px,16vw,380px)] items-stretch gap-[clamp(24px,1.6vw,34px)] max-[1080px]:grid-cols-1";
+
+export const dashHomeMainColClass = "flex min-w-0 flex-col gap-[18px]";
+
+export const dashHomeRailColClass = "flex flex-col gap-4";
+
+// Shared top-left-aligned content wrapper for dashboard subpages (/sync, /stream,
+// /stream/screen, /games) — deliberately does NOT center content vertically/horizontally,
+// so every route reached from the sidebar starts at the same top-left position instead of
+// some being vertically centered and others not.
+export const dashPageContentWrapClass = "flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden";
+
+// Tighter title-to-subtitle gap for the same 4 dashboard subpages — a scoped copy of
+// appSectionTitleWrapClass (not a shared-token edit) so the unrelated device-modal
+// SectionTitle.tsx keeps its own larger spacing untouched.
+export const dashPageTitleWrapClass = "mb-2 flex items-center sm:mb-2.5 md:mb-3";
+
+// Shared section head ("Actions", "Popular Games", "Virtual Gifts", "For You Two").
+export const dashSectionHeadClass = "mb-3 flex items-baseline justify-between";
+
+export const dashSectionHeadTitleClass = "m-0 text-base font-bold text-dashText";
+
+export const dashSectionHeadLinkClass =
+  "bg-secondary bg-clip-text text-[12.5px] font-semibold text-transparent transition-[filter] duration-150 hover:brightness-125";
+
+// Actions grid — 3 icon tiles + 1 join-by-code tile, all 4 cells the same size.
+// (Games isn't a tile here — it already has its own preview section below.)
+export const dashActionsGridClass = "grid grid-cols-2 gap-3 min-[561px]:grid-cols-4";
+
+export const dashActionTileSizeClass = "min-h-[clamp(150px,9vw,200px)]";
+
+export const dashJoinTileClass =
+  "relative flex min-h-[clamp(150px,9vw,200px)] flex-col items-stretch justify-center gap-2.5 rounded-dashMd bg-dashSurface p-3.5";
+
+export const dashJoinTileHeaderClass = "text-center text-[11.5px] font-semibold leading-[1.3] text-dashText";
+
+// Fixed height shared by the input wrap and the submit button below, so the two are
+// guaranteed the same height regardless of each element's own line-height/font
+// (padding alone doesn't guarantee that — an <input>'s intrinsic line box and a
+// <button>'s text don't necessarily render the same height at equal padding).
+const dashJoinTileControlHeightClass = "h-9";
+
+// The visible input surface: a wrapper div carries the background, because Input's
+// variant="raw" always adds its own bg-transparent — putting a background straight on
+// the <input> would fight that class for the same CSS property with no reliable winner
+// (see feedback_portaled_modal_dismiss_bug for the same class of bug elsewhere).
+export const dashJoinTileInputWrapClass =
+  `flex w-full items-center ${dashJoinTileControlHeightClass} rounded-[9px] bg-dashSurfaceAlt px-2.5 focus-within:outline focus-within:outline-2 focus-within:outline-pink-600/55`;
+
+export const dashJoinTileInputClass =
+  "w-full text-[12px] tracking-[0.03em] text-dashText tabular-nums placeholder:text-dashTextMute placeholder:tracking-normal";
+
+export const dashJoinTileSubmitClass =
+  `flex w-full items-center justify-center ${dashJoinTileControlHeightClass} rounded-[9px] bg-secondary px-2.5 text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50`;
+
+// Popular Games preview grid (compact cards, distinct from the full /games catalog page).
+export const dashGamesGridClass =
+  "grid grid-cols-2 gap-3.5 min-[901px]:grid-cols-4";
+
+export const dashGameCardClass =
+  "overflow-hidden rounded-dashMd border border-dashBorder bg-dashSurface";
+
+export const dashGameCardThumbClass =
+  "flex h-[clamp(92px,7vw,130px)] items-center justify-center text-white/90";
+
+export const dashGameCardMetaClass = "px-3 pb-3 pt-2.5";
+
+export const dashGameCardNameClass = "text-[13.5px] font-bold text-dashText";
+
+export const dashGameCardSubClass = "mt-0.5 text-[11.5px] text-dashTextMute";
+
+// Right rail panel (For You Two — the only rail panel; Virtual Gifts was removed, no
+// real feature backs it).
+export const dashPanelClass = "rounded-dashLg bg-dashSurface p-3.5";
+
+export const dashProductRowClass = "flex items-center gap-2.5 px-0.5 py-2";
+
+export const dashProductThumbClass =
+  "h-10 w-10 shrink-0 overflow-hidden rounded-[10px] bg-dashSurfaceAlt";
+
+export const dashProductThumbImgClass = "h-full w-full object-cover";
+
+// min-w-0 is required here: a flex item's default min-width is auto (content size), so
+// without it a long product name pushes the row wider instead of truncating, and the
+// link icon gets shoved out of its fixed position on the right.
+export const dashProductTextColClass = "min-w-0 flex-1";
+
+export const dashProductNameClass = "line-clamp-1 text-[12.5px] font-semibold leading-[1.3] text-dashText";
+
+export const dashProductPriceClass = "text-[11px] tabular-nums text-dashTextMute";
+
+export const dashProductLinkClass =
+  "ml-auto flex shrink-0 items-center gap-[3px] whitespace-nowrap text-[11px] font-semibold text-pink-600 transition-colors duration-150 hover:text-fuchsia-500";

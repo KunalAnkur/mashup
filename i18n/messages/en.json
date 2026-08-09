@@ -1,13 +1,11 @@
 {
   "home": {
     "brand": "Movmash",
-    "createParty": "Create Party",
-    "createPartyDescription": "Start a new session by streaming content, syncing playback, or playing a game.",
-    "stream": "Stream",
-    "sync": "Sync",
-    "or": "or",
-    "joinParty": "Join Party",
-    "joinPartyDescription": "Enter a Room ID to join an existing session.",
+    "actionsTitle": "Actions",
+    "screenShare": "Screen Share",
+    "fileShare": "File Share",
+    "addUrl": "Add URL",
+    "joinWithCode": "Join with a Code",
     "roomIdPlaceholder": "Room ID",
     "join": "Join",
     "joining": "Joining...",
@@ -17,7 +15,26 @@
       "networkError": "Network error. Please try again.",
       "joinFailed": "Failed to join room. Please try again."
     },
-    "games": "Games"
+    "heroTitleLine1": "Watch together.",
+    "heroTitleAccent": "Anywhere.",
+    "heroDescription": "Real-time sync. Private rooms. Made for long distance hearts.",
+    "popularGames": "Popular Games",
+    "viewAll": "View all",
+    "seeAll": "See all",
+    "forYouTwo": "For You Two"
+  },
+  "sidebar": {
+    "home": "Home",
+    "watchTogether": "Watch Together",
+    "game": "Game",
+    "profile": "Profile",
+    "about": "About",
+    "cozyTitle": "Long distance is shorter with Movmash",
+    "cozyDescription": "Private rooms. Real-time sync. Made for hearts that watch together.",
+    "joinWithCode": "Join with a Code",
+    "purchaseHistory": "Purchase History",
+    "helpSupport": "Help & Support",
+    "aboutMovmash": "About Movmash"
   },
   "language": {
     "select": "Select Language",

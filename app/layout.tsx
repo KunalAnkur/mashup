@@ -8,7 +8,6 @@ import OrganizationSchema from "@/components/SEO/OrganizationSchema";
 import WebsiteSchema from "@/components/SEO/WebsiteSchema";
 import WebPageSchema from "@/components/SEO/WebPageSchema";
 import BreadcrumbSchema from "@/components/SEO/BreadcrumbSchema";
-import EntryPageBackdrop from "@/components/UI/EntryPageBackdrop";
 import { appLayoutContentLayerClass } from "@/components/UI/classTokens";
 import "./globals.css";
 import ClientRoot from "./ClientRoot";
@@ -120,7 +119,6 @@ export default async function RootLayout({
         className="relative bg-primaryDark font-parkinsans antialiased text-smoothWhite"
         suppressHydrationWarning
       >
-        <EntryPageBackdrop />
         <div className={appLayoutContentLayerClass}>
           <OrganizationSchema />
           <WebsiteSchema />

@@ -27,6 +27,19 @@
     #ed0028 64%,
     #f70000 100%
   );
+
+  /* Dashboard redesign tokens (movmash_mockup_local.html) — additive, do not repurpose
+     the tokens above. Existing pages keep using --smoothWhite / zincGlass* until they are
+     migrated screen by screen. */
+  --dash-surface: #100e13;
+  --dash-surface-2: #1a171d;
+  --dash-border: rgba(255, 255, 255, 0.08);
+  --dash-text: #f6f4f2;
+  --dash-text-dim: #b7b2ba;
+  --dash-text-mute: #79737d;
+  --dash-radius-lg: 22px;
+  --dash-radius-md: 14px;
+  --dash-radius-sm: 10px;
 }
 
 @layer utilities {

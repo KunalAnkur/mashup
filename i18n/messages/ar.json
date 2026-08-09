@@ -1,13 +1,11 @@
 {
   "home": {
     "brand": "موفماش",
-    "createParty": "إنشاء حفلة",
-    "createPartyDescription": "ابدأ جلسة جديدة ببث محتوى أو مزامنة التشغيل أو لعب لعبة.",
-    "stream": "بث",
-    "sync": "مزامنة",
-    "or": "أو",
-    "joinParty": "انضم للحفلة",
-    "joinPartyDescription": "أدخل معرف الغرفة للانضمام إلى جلسة موجودة.",
+    "actionsTitle": "إجراءات",
+    "screenShare": "مشاركة الشاشة",
+    "fileShare": "مشاركة الملف",
+    "addUrl": "إضافة رابط",
+    "joinWithCode": "الانضمام برمز",
     "roomIdPlaceholder": "معرف الغرفة",
     "join": "انضم",
     "joining": "جاري الانضمام...",
@@ -17,7 +15,26 @@
       "networkError": "خطأ في الشبكة. يرجى المحاولة مرة أخرى.",
       "joinFailed": "فشل الانضمام إلى الغرفة. يرجى المحاولة مرة أخرى."
     },
-    "games": "الألعاب"
+    "heroTitleLine1": "شاهدا معًا.",
+    "heroTitleAccent": "من أي مكان.",
+    "heroDescription": "مزامنة فورية. غرف خاصة. لمن يفصل بينهما مسافة.",
+    "popularGames": "الألعاب الشائعة",
+    "viewAll": "عرض الكل",
+    "seeAll": "عرض الكل",
+    "forYouTwo": "لكما أنتما"
+  },
+  "sidebar": {
+    "home": "الرئيسية",
+    "watchTogether": "المشاهدة معًا",
+    "game": "لعبة",
+    "profile": "الملف الشخصي",
+    "about": "حول",
+    "cozyTitle": "المسافة تصبح أقصر مع موفماش",
+    "cozyDescription": "غرف خاصة. مزامنة فورية. لمن يشاهدون معًا.",
+    "joinWithCode": "الانضمام برمز",
+    "purchaseHistory": "سجل المشتريات",
+    "helpSupport": "المساعدة والدعم",
+    "aboutMovmash": "عن موفماش"
   },
   "language": {
     "select": "اختر اللغة",

@@ -1,13 +1,11 @@
 {
   "home": {
     "brand": "Movmash",
-    "createParty": "Crear Fiesta",
-    "createPartyDescription": "Empieza una sesión transmitiendo contenido, sincronizando la reproducción o jugando.",
-    "stream": "Transmitir",
-    "sync": "Sincronizar",
-    "or": "o",
-    "joinParty": "Unirse a la Fiesta",
-    "joinPartyDescription": "Ingresa un ID de sala para unirte a una sesión existente.",
+    "actionsTitle": "Acciones",
+    "screenShare": "Compartir Pantalla",
+    "fileShare": "Compartir Archivo",
+    "addUrl": "Agregar URL",
+    "joinWithCode": "Unirse con un Código",
     "roomIdPlaceholder": "ID de Sala",
     "join": "Unirse",
     "joining": "Uniéndose...",
@@ -17,7 +15,26 @@
       "networkError": "Error de red. Por favor, inténtalo de nuevo.",
       "joinFailed": "Error al unirse a la sala. Por favor, inténtalo de nuevo."
     },
-    "games": "Juegos"
+    "heroTitleLine1": "Mira junto a ellos.",
+    "heroTitleAccent": "Desde cualquier lugar.",
+    "heroDescription": "Sincronización en tiempo real. Salas privadas. Para corazones a distancia.",
+    "popularGames": "Juegos Populares",
+    "viewAll": "Ver todo",
+    "seeAll": "Ver todo",
+    "forYouTwo": "Para Ustedes Dos"
+  },
+  "sidebar": {
+    "home": "Inicio",
+    "watchTogether": "Ver Juntos",
+    "game": "Juego",
+    "profile": "Perfil",
+    "about": "Acerca de",
+    "cozyTitle": "La distancia es más corta con Movmash",
+    "cozyDescription": "Salas privadas. Sincronización en tiempo real. Hecho para corazones que ven juntos.",
+    "joinWithCode": "Unirse con un Código",
+    "purchaseHistory": "Historial de Compras",
+    "helpSupport": "Ayuda y Soporte",
+    "aboutMovmash": "Acerca de Movmash"
   },
   "language": {
     "select": "Seleccionar Idioma",

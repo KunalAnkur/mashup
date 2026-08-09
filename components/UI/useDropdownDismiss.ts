@@ -28,6 +28,15 @@ export const useDropdownDismiss = ({
         return;
       }
 
+      // A Modal (see components/UI/Modal.tsx) portals to document.body and marks its overlay
+      // with data-global-modal="true", so it's never a DOM descendant of any dropdown ref even
+      // when opened from inside one. Without this check, opening a Modal from a dropdown/popover
+      // makes its own confirm button register as an "outside" click and dismiss the dropdown
+      // before onConfirm runs.
+      if (target instanceof Element && target.closest('[data-global-modal="true"]')) {
+        return;
+      }
+
       const clickedInside = refs.some(
         (ref) => ref.current && ref.current.contains(target)
       );

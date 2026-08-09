@@ -7,11 +7,14 @@ import {
 } from "react";
 import {
   appDropdownActionLabelClass,
+  appDropdownActionLabelCompactClass,
   appDropdownContentClass,
   appDropdownDangerActionButtonClass,
   appDropdownDividerClass,
   appDropdownIconChipBaseClass,
+  appDropdownIconChipCompactBaseClass,
   appDropdownQuietActionButtonClass,
+  appDropdownQuietActionButtonCompactClass,
   appDropdownRowClass,
   appDropdownSurfaceClass,
 } from "./classTokens";
@@ -27,7 +30,9 @@ type DropdownRowProps = HTMLAttributes<HTMLDivElement>;
 
 type DropdownDividerProps = HTMLAttributes<HTMLDivElement>;
 
-type DropdownIconChipProps = HTMLAttributes<HTMLDivElement>;
+type DropdownIconChipProps = HTMLAttributes<HTMLDivElement> & {
+  compact?: boolean;
+};
 
 type DropdownActionRowProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -38,6 +43,7 @@ type DropdownActionRowProps = Omit<
   variant?: "quiet" | "danger";
   iconChipClassName?: string;
   labelClassName?: string;
+  compact?: boolean;
 };
 
 type DropdownHeaderRowProps = HTMLAttributes<HTMLDivElement> & {
@@ -84,10 +90,14 @@ export const DropdownDivider = ({
 export const DropdownIconChip = ({
   children,
   className,
+  compact = false,
   ...props
 }: DropdownIconChipProps) => (
   <div
-    className={joinClassNames(appDropdownIconChipBaseClass, className)}
+    className={joinClassNames(
+      compact ? appDropdownIconChipCompactBaseClass : appDropdownIconChipBaseClass,
+      className
+    )}
     {...props}
   >
     {children}
@@ -101,6 +111,7 @@ export const DropdownActionRow = ({
   className,
   iconChipClassName,
   labelClassName,
+  compact = false,
   type = "button",
   ...props
 }: DropdownActionRowProps) => (
@@ -109,14 +120,21 @@ export const DropdownActionRow = ({
     className={joinClassNames(
       variant === "danger"
         ? appDropdownDangerActionButtonClass
-        : appDropdownQuietActionButtonClass,
+        : compact
+          ? appDropdownQuietActionButtonCompactClass
+          : appDropdownQuietActionButtonClass,
       className
     )}
     {...props}
   >
-    <DropdownIconChip className={iconChipClassName}>{icon}</DropdownIconChip>
+    <DropdownIconChip compact={compact} className={iconChipClassName}>
+      {icon}
+    </DropdownIconChip>
     <span
-      className={joinClassNames(appDropdownActionLabelClass, labelClassName)}
+      className={joinClassNames(
+        compact ? appDropdownActionLabelCompactClass : appDropdownActionLabelClass,
+        labelClassName
+      )}
     >
       {label}
     </span>

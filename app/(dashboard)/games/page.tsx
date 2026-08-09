@@ -9,16 +9,13 @@ import { ImSpinner2 } from "react-icons/im";
 
 import { RootState } from "@/lib/store";
 import { useI18n, useTranslations } from "@/i18n/I18nProvider";
-import { EntryPageHeader } from "@/components/UI";
 import { useOpenActivityRoom } from "@/components/Activity/useOpenActivityRoom";
 import { trackCTAClicked } from "@/lib/analytics";
 import {
-  appEntryPageContentWrapClass,
-  appEntryPageFixedHeaderOffsetClass,
-  appEntryPageInsetClass,
-  appEntryPageShellClass,
-  appFixedViewportPageClass,
   appHomeEntryCardSurfaceClass,
+  appSectionTitleTextClass,
+  dashPageTitleWrapClass,
+  dashPageContentWrapClass,
   movmashProminentCtaClass,
 } from "@/components/UI/classTokens";
 
@@ -64,25 +61,20 @@ export default function GamesPage() {
   };
 
   return (
-    <div className={appFixedViewportPageClass}>
-      <div className={appEntryPageShellClass}>
-        <EntryPageHeader title={t("title")} fixed showBrandOnSubpage />
-
-        <div
-          className={`flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center ${appEntryPageFixedHeaderOffsetClass}`}
-        >
-          <div className={appEntryPageInsetClass}>
-            <div className={appEntryPageContentWrapClass}>
-              <p className="mx-auto mb-6 max-w-md text-center text-sm leading-6 text-white/50">
-                {t("subtitle")}
-              </p>
+      <div className={dashPageContentWrapClass}>
+          <div className={dashPageTitleWrapClass}>
+            <h1 className={appSectionTitleTextClass}>{t("title")}</h1>
+          </div>
+          <p className="mb-6 max-w-md text-sm leading-6 text-white/50">
+            {t("subtitle")}
+          </p>
 
               {games.length === 0 ? (
                 <p className="py-16 text-center text-sm text-white/40">{t("empty")}</p>
               ) : (
                 // auto-fit with a capped track centres a single card and grids a full
                 // catalogue evenly, without having to count items
-                <div className="grid justify-center gap-3 [grid-template-columns:repeat(auto-fit,minmax(260px,340px))]">
+                <div className="grid justify-start gap-3 [grid-template-columns:repeat(auto-fit,minmax(260px,340px))]">
                   {games.map((entry) => (
                     <article key={entry.gameId} className={cardClass}>
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(52,211,153,0.10),transparent_45%)] opacity-90" />
@@ -144,10 +136,6 @@ export default function GamesPage() {
                   ))}
                 </div>
               )}
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
   );
 }

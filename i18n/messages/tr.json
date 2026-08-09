@@ -1,13 +1,11 @@
 {
   "home": {
     "brand": "Movmash",
-    "createParty": "Parti Oluştur",
-    "createPartyDescription": "İçerik yayınlayarak, oynatmayı eşitleyerek ya da oyun oynayarak yeni bir oturum başlat.",
-    "stream": "Yayın",
-    "sync": "Senkron",
-    "or": "veya",
-    "joinParty": "Partiye Katıl",
-    "joinPartyDescription": "Mevcut bir oturuma katılmak için Oda ID'sini girin.",
+    "actionsTitle": "İşlemler",
+    "screenShare": "Ekran Paylaşımı",
+    "fileShare": "Dosya Paylaşımı",
+    "addUrl": "URL Ekle",
+    "joinWithCode": "Kodla Katıl",
     "roomIdPlaceholder": "Oda ID",
     "join": "Katıl",
     "joining": "Katılınıyor...",
@@ -17,7 +15,26 @@
       "networkError": "Ağ hatası. Lütfen tekrar deneyin.",
       "joinFailed": "Odaya katılma başarısız. Lütfen tekrar deneyin."
     },
-    "games": "Oyunlar"
+    "heroTitleLine1": "Birlikte izle.",
+    "heroTitleAccent": "Her yerden.",
+    "heroDescription": "Gerçek zamanlı senkron. Özel odalar. Uzak mesafe kalpleri için.",
+    "popularGames": "Popüler Oyunlar",
+    "viewAll": "Tümünü gör",
+    "seeAll": "Tümünü gör",
+    "forYouTwo": "İkiniz İçin"
+  },
+  "sidebar": {
+    "home": "Ana Sayfa",
+    "watchTogether": "Birlikte İzle",
+    "game": "Oyun",
+    "profile": "Profil",
+    "about": "Hakkında",
+    "cozyTitle": "Uzak mesafeler Movmash ile kısalır",
+    "cozyDescription": "Özel odalar. Gerçek zamanlı senkron. Birlikte izleyen kalpler için.",
+    "joinWithCode": "Kodla Katıl",
+    "purchaseHistory": "Satın Alma Geçmişi",
+    "helpSupport": "Yardım ve Destek",
+    "aboutMovmash": "Movmash Hakkında"
   },
   "language": {
     "select": "Dil Seçin",

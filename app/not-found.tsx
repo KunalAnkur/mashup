@@ -4,17 +4,14 @@ import Link from "next/link";
 import { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LuArrowLeft, LuHouse } from "react-icons/lu";
-import { EntryPageHeader } from "@/components/UI";
+import DashboardShell from "@/components/Sidebar/DashboardShell";
 import { useTranslations } from "@/i18n/I18nProvider";
 import {
   appEntryActionButtonBaseClass,
   appEntryPageContentWrapClass,
-  appEntryPageFixedHeaderOffsetClass,
   appEntryPageInsetClass,
-  appEntryPageShellClass,
   appEntryPrimaryButtonClass,
   appEntrySecondaryButtonClass,
-  appFixedViewportPageClass,
   appNotFoundActionRowClass,
   appNotFoundBodyClass,
   appNotFoundCodeClass,
@@ -43,16 +40,11 @@ const NotFound = () => {
   }, [router]);
 
   return (
-    <div className={appFixedViewportPageClass}>
-      <div className={appEntryPageShellClass}>
-        <EntryPageHeader fixed />
-
-        <div
-          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden ${appEntryPageFixedHeaderOffsetClass}`}
-        >
-          <div className={appEntryPageInsetClass}>
-            <div className={appEntryPageContentWrapClass}>
-              <div className="flex min-h-[calc(100vh-8.5rem)] items-center justify-center sm:min-h-[calc(100vh-9rem)]">
+    <DashboardShell>
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+        <div className={appEntryPageInsetClass}>
+          <div className={appEntryPageContentWrapClass}>
+            <div className="flex min-h-[calc(100vh-8.5rem)] items-center justify-center sm:min-h-[calc(100vh-9rem)]">
                 <div className={appNotFoundContentClass}>
                   <h1 className={appNotFoundCodeClass}>404</h1>
 
@@ -91,8 +83,7 @@ const NotFound = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </DashboardShell>
   );
 };
 

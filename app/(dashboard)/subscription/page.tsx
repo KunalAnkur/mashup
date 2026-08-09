@@ -4,15 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { LuArrowRight, LuCheck, LuCrown, LuSparkles } from "react-icons/lu";
-import { EntryPageHeader, Modal, ModalConfirmContent } from "@/components/UI";
+import { Modal, ModalConfirmContent } from "@/components/UI";
 import {
   appEntryActionButtonBaseClass,
   appEntryPageContentWrapClass,
-  appEntryPageFixedHeaderOffsetClass,
   appEntryPageInsetClass,
-  appEntryPageShellClass,
   appEntrySecondaryButtonClass,
-  appFlexibleViewportPageClass,
   appPulseSurfaceClass,
   appTransactionRowClass,
   appTransactionStatusBadgeClass,
@@ -197,13 +194,8 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className={appFlexibleViewportPageClass}>
-      <div className={appEntryPageShellClass}>
-        <EntryPageHeader title={t("title")} fixed showBrandOnSubpage />
-
-        <main
-          className={`flex-1 overflow-y-auto overflow-x-hidden ${appEntryPageFixedHeaderOffsetClass}`}
-        >
+    <>
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className={appEntryPageInsetClass}>
             <div className={appEntryPageContentWrapClass}>
               <section className="mx-auto max-w-xl space-y-5 pb-6 pt-5 md:space-y-6 md:pb-8 md:pt-8">
@@ -367,8 +359,7 @@ export default function SubscriptionPage() {
               </section>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
 
       <Modal
         open={showCancelConfirm}
@@ -389,6 +380,6 @@ export default function SubscriptionPage() {
           confirmDisabled={isCancelling}
         />
       </Modal>
-    </div>
+    </>
   );
 }

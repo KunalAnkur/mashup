@@ -29,6 +29,8 @@ type LoginDropdownProps = {
   onClose?: () => void;
   id?: string;
   ariaLabel?: string;
+  panelClassName?: string;
+  compact?: boolean;
 };
 
 type GoogleAuthUserInfo = {
@@ -38,7 +40,7 @@ type GoogleAuthUserInfo = {
   sub: string;
 };
 
-const LoginDropdown = ({ onClose, id, ariaLabel }: LoginDropdownProps) => {
+const LoginDropdown = ({ onClose, id, ariaLabel, panelClassName, compact = false }: LoginDropdownProps) => {
   const dispatch = useDispatch();
   const [authProvider] = useAuthProviderMutation();
   const [continueAsGuest, { isLoading: isGuestLoading }] =
@@ -125,7 +127,7 @@ const LoginDropdown = ({ onClose, id, ariaLabel }: LoginDropdownProps) => {
       key: "google",
       onClick: () => googleLogin(),
       iconChipClassName: appDropdownGoogleIconChipClass,
-      icon: <FcGoogle size={16} />,
+      icon: <FcGoogle size={compact ? 13 : 16} />,
       label: tCommon("continueWithGoogle"),
       disabled: false,
       className: undefined,
@@ -136,9 +138,9 @@ const LoginDropdown = ({ onClose, id, ariaLabel }: LoginDropdownProps) => {
       iconChipClassName: appDropdownGuestIconChipClass,
       icon:
         isGuestProcessing || isGuestLoading ? (
-          <ImSpinner2 className="animate-spin" size={14} />
+          <ImSpinner2 className="animate-spin" size={compact ? 12 : 14} />
         ) : (
-          <LuUserRound size={14} />
+          <LuUserRound size={compact ? 12 : 14} />
         ),
       label:
         isGuestProcessing || isGuestLoading
@@ -150,7 +152,12 @@ const LoginDropdown = ({ onClose, id, ariaLabel }: LoginDropdownProps) => {
   ];
 
   return (
-    <DropdownPanel id={id} role="menu" aria-label={panelAriaLabel} className="z-50">
+    <DropdownPanel
+      id={id}
+      role="menu"
+      aria-label={panelAriaLabel}
+      className={`z-50 ${panelClassName || ""}`}
+    >
       {actionItems.map((action, index) => (
         <Fragment key={action.key}>
           {index > 0 && <DropdownDivider />}
@@ -162,11 +169,12 @@ const LoginDropdown = ({ onClose, id, ariaLabel }: LoginDropdownProps) => {
             label={action.label}
             disabled={action.disabled}
             className={action.className}
+            compact={compact}
           />
         </Fragment>
       ))}
       <div className="px-3 pb-3 pt-2">
-        <p className="text-center text-[10px] leading-relaxed text-white/28">
+        <p className="text-center text-[9px] leading-relaxed text-white/28">
           By continuing you agree to our{" "}
           <a href="https://movmash.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/50 transition-colors">
             Terms

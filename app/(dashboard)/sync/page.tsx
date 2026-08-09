@@ -12,14 +12,11 @@ import {
   getPlatformById,
   getUrlDisplayName,
 } from "@/components/Modals/UrlModalComponents";
-import { EntryPageHeader } from "@/components/UI";
 import { Playlist } from "@/types/storeTypes";
 import {
-  appEntryPageContentWrapClass,
-  appEntryPageFixedHeaderOffsetClass,
-  appEntryPageInsetClass,
-  appEntryPageShellClass,
-  appFixedViewportPageClass,
+  appSectionTitleTextClass,
+  dashPageTitleWrapClass,
+  dashPageContentWrapClass,
 } from "@/components/UI/classTokens";
 
 const SyncPage = () => {
@@ -93,40 +90,33 @@ const SyncPage = () => {
   };
 
   return (
-    <div className={appFixedViewportPageClass}>
-      <div className={appEntryPageShellClass}>
-        <EntryPageHeader title={t("title")} fixed showBrandOnSubpage />
+    <div className={dashPageContentWrapClass}>
+      <div className={dashPageTitleWrapClass}>
+        <h1 className={appSectionTitleTextClass}>{t("title")}</h1>
+      </div>
+      <div className="flex w-full flex-col items-stretch gap-3 sm:gap-4 md:gap-6 lg:flex-row lg:gap-8 xl:gap-12 2xl:gap-16">
+        <div className="hidden lg:block lg:w-1/2 lg:self-stretch">
+          <SupportedPlatformsGrid />
+        </div>
 
-        <div className={`flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden md:flex md:items-center md:justify-center ${appEntryPageFixedHeaderOffsetClass}`}>
-          <div className={appEntryPageInsetClass}>
-            <div className={appEntryPageContentWrapClass}>
-              <div className="flex w-full flex-col items-stretch gap-3 sm:gap-4 md:gap-6 lg:flex-row lg:gap-8 xl:gap-12 2xl:gap-16">
-                <div className="hidden lg:block lg:w-1/2 lg:self-stretch">
-                  <SupportedPlatformsGrid />
-                </div>
-
-                <div className="flex w-full min-h-0 flex-col lg:w-1/2 lg:self-stretch">
-                  <UrlInputSection
-                    sourceUrlInput={sourceUrlInput}
-                    onSourceUrlChange={handleOnSourceUrlChange}
-                    onKeyDown={handleKeyDown}
-                    onAddUrl={handleAddUrl}
-                    isAddDisabled={isAddDisabled}
-                    tooltipMessage={tooltipMessage}
-                    addedUrls={addedUrls}
-                    loadingMetadata={loadingMetadata}
-                    onRemoveUrl={handleRemoveUrl}
-                    onCancel={handleBack}
-                    onEnterRoom={handleOnEnterRoom}
-                    getPlatformById={getPlatformById}
-                    getUrlDisplayName={getUrlDisplayName}
-                    isAdding={isAdding}
-                    isEntering={isEntering}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="flex w-full min-h-0 flex-col lg:w-1/2 lg:self-stretch">
+          <UrlInputSection
+            sourceUrlInput={sourceUrlInput}
+            onSourceUrlChange={handleOnSourceUrlChange}
+            onKeyDown={handleKeyDown}
+            onAddUrl={handleAddUrl}
+            isAddDisabled={isAddDisabled}
+            tooltipMessage={tooltipMessage}
+            addedUrls={addedUrls}
+            loadingMetadata={loadingMetadata}
+            onRemoveUrl={handleRemoveUrl}
+            onCancel={handleBack}
+            onEnterRoom={handleOnEnterRoom}
+            getPlatformById={getPlatformById}
+            getUrlDisplayName={getUrlDisplayName}
+            isAdding={isAdding}
+            isEntering={isEntering}
+          />
         </div>
       </div>
     </div>

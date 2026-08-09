@@ -1,6 +1,5 @@
 import { Avatar, Button, Anchor, Separator, Logo, Input } from "./UI";
 import { PartyCard, HostDetails, Footer } from "./Card";
-import { Sidebar } from "./Sidebar";
 import { HomeContent, PlayerWrapper } from "./Container";
 import { AvatarContainer, LoginContainer } from "./Container";
 import { Notification, AuthHeader } from "./UI";
@@ -19,7 +18,6 @@ export {
   HostDetails,
   Footer,
   Input,
-  Sidebar,
   HomeContent,
   AvatarContainer,
   Notification,
