@@ -69,7 +69,9 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({
     const tStream = useTranslations("stream");
     const handleClick = () => {
         if (isClickable && onSelect) {
-            onSelect(content.id, source);
+            // The playlist tab is hidden in activity rooms, so `source` is always
+            // a media source here; the guard keeps the type honest.
+            if (source !== "game") onSelect(content.id, source);
         }
     };
     const isPlaybackActive = isSelected && hostPlaybackPlaying;

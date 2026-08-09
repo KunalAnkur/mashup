@@ -34,7 +34,9 @@ const PlayerWrapper = ({ fullscreenTargetRef }: PlayerWrapperProps) => {
   }, [roomState.playlist]);
 
   useEffect(() => {
-    if (content?.type) {
+    // Activity rooms never mount this component; the guard is here so the media
+    // player's own type stays honest about what it can render.
+    if (content?.type === "stream" || content?.type === "sync") {
       setLastKnownType(content.type);
     }
   }, [content?.type]);

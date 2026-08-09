@@ -12,9 +12,9 @@ import posthog from "posthog-js";
 // ============ TYPES ============
 
 type PageName = "landing" | "home" | "room" | "stream" | "sync" | "login" | "signup";
-type CTAName = "create_room" | "join_room" | "stream" | "sync" | "login" | "signup" | "copy_link";
-type RoomType = "stream" | "sync";
-type VideoSource = "file" | "url" | "screen";
+type CTAName = "create_room" | "join_room" | "stream" | "sync" | "games" | "games_start" | "login" | "signup" | "copy_link";
+type RoomType = "stream" | "sync" | "activity";
+type VideoSource = "file" | "url" | "screen" | "game";
 type UserRole = "host" | "guest";
 type InviteMethod = "copy_link" | "whatsapp" | "telegram" | "share_api";
 type ErrorArea = "room" | "video_sync" | "upload" | "network" | "auth";

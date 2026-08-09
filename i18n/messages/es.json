@@ -2,7 +2,7 @@
   "home": {
     "brand": "Movmash",
     "createParty": "Crear Fiesta",
-    "createPartyDescription": "Inicia una nueva sesión transmitiendo contenido o sincronizando la reproducción.",
+    "createPartyDescription": "Empieza una sesión transmitiendo contenido, sincronizando la reproducción o jugando.",
     "stream": "Transmitir",
     "sync": "Sincronizar",
     "or": "o",
@@ -16,7 +16,8 @@
       "roomNotFound": "Sala no encontrada. Por favor, verifica el ID de la sala.",
       "networkError": "Error de red. Por favor, inténtalo de nuevo.",
       "joinFailed": "Error al unirse a la sala. Por favor, inténtalo de nuevo."
-    }
+    },
+    "games": "Juegos"
   },
   "language": {
     "select": "Seleccionar Idioma",
@@ -527,5 +528,31 @@
     "downgradeStarted": "Tu cambio de plan está programado.",
     "changeFailedTitle": "Error al cambiar de plan",
     "changeFailedDefault": "No es posible cambiar tu plan en este momento. Inténtalo de nuevo."
+  },
+  "games": {
+    "title": "Juegos",
+    "subtitle": "Elige algo para jugar juntos. Se abre una sala con el juego al frente y el chat al lado.",
+    "players": "{min}–{max} jugadores",
+    "playersExact": "{min} jugadores",
+    "start": "Empezar juego",
+    "starting": "Abriendo sala...",
+    "premium": "Premium",
+    "premiumHint": "Mejora tu plan para jugar a este",
+    "empty": "Aún no hay juegos. Vuelve pronto.",
+    "categories": {
+      "turn-based": "Por turnos",
+      "real-time": "En tiempo real",
+      "collaborative": "Colaborativo",
+      "quiz": "Trivia"
+    },
+    "room": {
+      "chooseGame": "Elige un juego para empezar",
+      "waiting": "Abriendo el juego...",
+      "joinInvite": "{name} empezó {game}",
+      "join": "Unirse",
+      "unavailable": "Los juegos no están disponibles ahora. Inténtalo en un momento.",
+      "loadingBoard": "Cargando el tablero...",
+      "playAgain": "Jugar de nuevo"
+    }
   }
 }

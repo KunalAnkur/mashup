@@ -112,8 +112,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         if (firstItem && response.data?.room_id) {
           trackRoomCreated(
             response.data.room_id,
-            firstItem.type as "stream" | "sync",
-            firstItem.source as "file" | "url" | "screen",
+            firstItem.type,
+            firstItem.source,
             "home"
           );
         }
@@ -218,12 +218,18 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         // Otherwise, stay on home page (source selection)
       }
 
-      // Handle /stream, /stream/files, /stream/[source], and /sync routes - create room if authenticated and has refer data
+      // Handle /stream, /stream/files, /stream/[source], /sync and /games routes — create
+      // room if authenticated and has refer data. /games goes through the same path so an
+      // activity room is a normal room: same sign-in redirect, same guest-host prompt,
+      // same persistence.
       const isStreamRoute =
         pathname === "/stream" ||
         pathname === "/stream/files" ||
         (pathname?.startsWith("/stream/") && pathname !== "/stream/files");
-      if ((isStreamRoute || pathname === "/sync") && authState.isAuthenticated) {
+      if (
+        (isStreamRoute || pathname === "/sync" || pathname === "/games") &&
+        authState.isAuthenticated
+      ) {
         if (roomState.refer && hasPlaylist) {
           const result = await createRoomWithRefer();
           if (result && result.data?.room_id) {

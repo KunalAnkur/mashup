@@ -154,7 +154,8 @@ export function useStreamSource({
         } else {
             sourceRef.current?.cleanup();
             sourceRef.current = createStreamSource({
-                source: activeItem.source,
+                // Never reached in an activity room — that surface has no stream source.
+                source: activeItem.source === "game" ? "url" : activeItem.source,
                 screenStream,
                 videoElement: video,
             });

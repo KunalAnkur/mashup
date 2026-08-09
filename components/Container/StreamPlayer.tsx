@@ -245,7 +245,8 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
         // * This effect listens for changes in the active item's source (file, URL, screen) and triggers a play event when switching to screen sharing.
         if (!isHost) return;
 
-        const currentSource = activeItem?.source ?? null;
+        const currentSource =
+            activeItem?.source === "game" ? null : (activeItem?.source ?? null);
         const switchedToScreen =
             previousSourceRef.current !== "screen" && currentSource === "screen";
         previousSourceRef.current = currentSource;

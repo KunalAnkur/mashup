@@ -15,6 +15,7 @@ import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionMod
 import PlaybackBlockedModal from "@/components/Modals/PlaybackBlockedModal";
 import { appFixedViewportPageClass } from "@/components/UI/classTokens";
 import FloatingCallOverlay from "@/components/VideoCall/FloatingCallOverlay";
+import ActivityRoomSurface from "@/components/Activity/ActivityRoomSurface";
 import ReconnectingBanner from "@/components/Party/ReconnectingBanner";
 const Page = () => {
   const dispatch = useDispatch();
@@ -96,9 +97,21 @@ const Page = () => {
 
   }, [files, isHost, isInitialFilesLoaded, roomState.playlist, dispatch])
 
+  /**
+   * Activity rooms put a game where the player goes. Everything else about the room —
+   * the panel, the layout, chat, invites, participant limits — is unchanged, which is
+   * why this is one flag rather than a second kind of room.
+   */
+  const isActivityRoom = roomState.playlist.some((item) => item.type === "activity");
+
+  // `playerActive` is only ever set by the stream player's empty state, which never
+  // mounts here — so an activity room would inherit whatever the last media room left
+  // behind. A game always fills its surface, so treat it as active.
+  const surfaceIsActive = isActivityRoom || roomState.settings.playerActive;
+
   const mobilePanelHeightClass = roomState.settings.bottomSheet
     ? "h-[40vh]"
-    : roomState.settings.playerActive
+    : surfaceIsActive
       ? "h-[75vh]"
       : "h-[60vh]";
 
@@ -132,7 +145,11 @@ const Page = () => {
             }
           `}
         >
-          <PlayerWrapper fullscreenTargetRef={containerRef} />
+          {isActivityRoom ? (
+            <ActivityRoomSurface />
+          ) : (
+            <PlayerWrapper fullscreenTargetRef={containerRef} />
+          )}
           {/* Socket recovery status — inside this container so it stays visible in fullscreen */}
           <ReconnectingBanner />
           {/* Flying Emoji Animations - Inside fullscreen container to work in fullscreen mode */}

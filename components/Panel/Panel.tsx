@@ -81,9 +81,12 @@ const Panel = () => {
 
   const visibleTabs = useMemo(() => {
     const isStreaming = roomState.playlist.some((item) => item.type === "stream");
+    const isActivity = roomState.playlist.some((item) => item.type === "activity");
 
     return Object.values(Tabs).filter((tab) => {
       if (tab === Tabs.PLAYLIST) {
+        // Nothing to queue in an activity room — the game is the content.
+        if (isActivity) return false;
         return isStreaming ? host : true;
       }
       return true;

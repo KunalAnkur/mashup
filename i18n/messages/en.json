@@ -2,7 +2,7 @@
   "home": {
     "brand": "Movmash",
     "createParty": "Create Party",
-    "createPartyDescription": "Start a new session by streaming content or syncing playback.",
+    "createPartyDescription": "Start a new session by streaming content, syncing playback, or playing a game.",
     "stream": "Stream",
     "sync": "Sync",
     "or": "or",
@@ -16,7 +16,8 @@
       "roomNotFound": "Room not found. Please check the Room ID.",
       "networkError": "Network error. Please try again.",
       "joinFailed": "Failed to join room. Please try again."
-    }
+    },
+    "games": "Games"
   },
   "language": {
     "select": "Select Language",
@@ -527,5 +528,31 @@
     "downgradeStarted": "Your plan change is scheduled.",
     "changeFailedTitle": "Plan change failed",
     "changeFailedDefault": "Unable to change your plan right now. Please try again."
+  },
+  "games": {
+    "title": "Games",
+    "subtitle": "Pick something to play together. A room opens with the game in front and chat beside it.",
+    "players": "{min}–{max} players",
+    "playersExact": "{min} players",
+    "start": "Start game",
+    "starting": "Opening room...",
+    "premium": "Premium",
+    "premiumHint": "Upgrade to play this one",
+    "empty": "No games available yet. Check back soon.",
+    "categories": {
+      "turn-based": "Turn-based",
+      "real-time": "Real-time",
+      "collaborative": "Collaborative",
+      "quiz": "Quiz"
+    },
+    "room": {
+      "chooseGame": "Choose a game to get started",
+      "waiting": "Opening the game...",
+      "joinInvite": "{name} started {game}",
+      "join": "Join",
+      "unavailable": "Games are unavailable right now. Try again in a moment.",
+      "loadingBoard": "Loading the board...",
+      "playAgain": "Play again"
+    }
   }
 }

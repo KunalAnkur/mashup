@@ -89,8 +89,13 @@ export interface ProductState {
 
 export type Playlist = {
   id: string;
-  type: "stream" | "sync";
-  source: "file" | "url" | "screen";
+  /**
+   * What kind of room this content makes. "activity" is a game rather than media —
+   * a platform-level concept (what is on the main surface), not a game-level one, so
+   * adding a game never touches this union.
+   */
+  type: "stream" | "sync" | "activity";
+  source: "file" | "url" | "screen" | "game";
   onlyAudio: boolean;
   link: string;
   selected: boolean;

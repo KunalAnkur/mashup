@@ -2,7 +2,7 @@
   "home": {
     "brand": "Movmash",
     "createParty": "Parti Oluştur",
-    "createPartyDescription": "İçerik yayınlayarak veya oynatmayı senkronize ederek yeni bir oturum başlat.",
+    "createPartyDescription": "İçerik yayınlayarak, oynatmayı eşitleyerek ya da oyun oynayarak yeni bir oturum başlat.",
     "stream": "Yayın",
     "sync": "Senkron",
     "or": "veya",
@@ -16,7 +16,8 @@
       "roomNotFound": "Oda bulunamadı. Lütfen Oda ID'sini kontrol edin.",
       "networkError": "Ağ hatası. Lütfen tekrar deneyin.",
       "joinFailed": "Odaya katılma başarısız. Lütfen tekrar deneyin."
-    }
+    },
+    "games": "Oyunlar"
   },
   "language": {
     "select": "Dil Seçin",
@@ -527,5 +528,31 @@
     "downgradeStarted": "Plan değişikliğin planlandı.",
     "changeFailedTitle": "Plan değişikliği başarısız oldu",
     "changeFailedDefault": "Planın şu anda değiştirilemiyor. Lütfen tekrar dene."
+  },
+  "games": {
+    "title": "Oyunlar",
+    "subtitle": "Birlikte oynayacağınız bir şey seçin. Oyun önde, sohbet yanında bir oda açılır.",
+    "players": "{min}–{max} oyuncu",
+    "playersExact": "{min} oyuncu",
+    "start": "Oyunu başlat",
+    "starting": "Oda açılıyor...",
+    "premium": "Premium",
+    "premiumHint": "Bunu oynamak için yükselt",
+    "empty": "Henüz oyun yok. Yakında tekrar bakın.",
+    "categories": {
+      "turn-based": "Sıra tabanlı",
+      "real-time": "Gerçek zamanlı",
+      "collaborative": "Ortak",
+      "quiz": "Bilgi yarışması"
+    },
+    "room": {
+      "chooseGame": "Başlamak için bir oyun seçin",
+      "waiting": "Oyun açılıyor...",
+      "joinInvite": "{name} {game} başlattı",
+      "join": "Katıl",
+      "unavailable": "Oyunlar şu anda kullanılamıyor. Birazdan tekrar deneyin.",
+      "loadingBoard": "Tahta yükleniyor...",
+      "playAgain": "Tekrar oyna"
+    }
   }
 }

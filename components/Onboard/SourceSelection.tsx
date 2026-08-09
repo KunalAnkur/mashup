@@ -1,6 +1,6 @@
 "use client";
 
-import { FaBroadcastTower, FaSync } from "react-icons/fa";
+import { FaBroadcastTower, FaSync, FaDice } from "react-icons/fa";
 import { useState, useCallback } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { useRouter } from "next/navigation";
@@ -47,6 +47,11 @@ const SourceSelection = () => {
   const handleOnURLSelection = useCallback(() => {
     trackCTAClicked("sync");
     router.push("/sync");
+  }, [router]);
+
+  const handleOnGamesSelection = useCallback(() => {
+    trackCTAClicked("games");
+    router.push("/games");
   }, [router]);
 
   const handleOnRoomIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,7 +121,7 @@ const SourceSelection = () => {
             <div className="mt-4 flex w-full flex-col items-stretch justify-center gap-3 sm:flex-row sm:gap-4">
               <button
                 onClick={handleOnUploadSelection}
-                className={`${cardBaseClass} animate-scale-in sm:w-1/2`}
+                className={`${cardBaseClass} animate-scale-in sm:w-1/3`}
                 style={{ animationDelay: "0.2s" }}
               >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.12),transparent_44%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.12),transparent_42%)] opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
@@ -132,7 +137,7 @@ const SourceSelection = () => {
 
               <button
                 onClick={handleOnURLSelection}
-                className={`${cardBaseClass} animate-scale-in sm:w-1/2`}
+                className={`${cardBaseClass} animate-scale-in sm:w-1/3`}
                 style={{ animationDelay: "0.3s" }}
               >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(217,70,239,0.14),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_40%)] opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
@@ -142,6 +147,22 @@ const SourceSelection = () => {
                   </div>
                   <span className="text-base font-medium tracking-tight sm:text-lg">
                     {t("sync")}
+                  </span>
+                </div>
+              </button>
+
+              <button
+                onClick={handleOnGamesSelection}
+                className={`${cardBaseClass} animate-scale-in sm:w-1/3`}
+                style={{ animationDelay: "0.35s" }}
+              >
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(52,211,153,0.13),transparent_43%),radial-gradient(circle_at_bottom_right,rgba(251,113,133,0.11),transparent_41%)] opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className={cardInnerClass}>
+                  <div className={`${cardIconWrapClass} text-emerald-200 group-hover:text-white`}>
+                    <FaDice className="text-xl sm:text-2xl" />
+                  </div>
+                  <span className="text-base font-medium tracking-tight sm:text-lg">
+                    {t("games")}
                   </span>
                 </div>
               </button>

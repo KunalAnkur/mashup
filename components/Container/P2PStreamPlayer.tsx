@@ -219,7 +219,8 @@ const P2PStreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     useEffect(() => {
         if (!isHost) return;
 
-        const currentSource = activeItem?.source ?? null;
+        const currentSource =
+            activeItem?.source === "game" ? null : (activeItem?.source ?? null);
         const switchedToScreen =
             previousSourceRef.current !== "screen" && currentSource === "screen";
         previousSourceRef.current = currentSource;

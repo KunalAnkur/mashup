@@ -178,7 +178,9 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
                 source:
                     selected?.source === "screen"
                         ? "stream"
-                        : selected?.source ?? (derivedRoomType === "sync" ? "url" : "file"),
+                        : selected?.source === "game"
+                          ? undefined
+                          : selected?.source ?? (derivedRoomType === "sync" ? "url" : "file"),
             };
 
             const response = await socket.emitWithAck(SocketEvent.JOIN_ROOM, {
