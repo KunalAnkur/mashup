@@ -124,6 +124,16 @@ const VideoPlayer = ({
     const isSeekingRef = useRef(false);
     const ignoreProgressRef = useRef(false);
     const userMutedRef = useRef(false);
+    // Whether the current externally-driven playback has already been announced via onPlay.
+    // Starts false so a player that mounts already playing still counts as a start.
+    const externalStartAnnouncedRef = useRef(false);
+    // onPlay is read through a ref so announcing it cannot become a dependency of the
+    // external-prop sync below: a parent re-creating its onPlay would otherwise re-run that
+    // effect and force `playing` back to externalPlaying, overriding a local pause.
+    const onPlayRef = useRef(onPlay);
+    useEffect(() => {
+        onPlayRef.current = onPlay;
+    }, [onPlay]);
 
     const resumePlaybackIfNeeded = useCallback(() => {
         if (!autoResumeOnFullscreenExit) return;
@@ -147,11 +157,61 @@ const VideoPlayer = ({
     }, [autoResumeOnFullscreenExit, externalPlaying, playing, playerRef]);
 
     // Sync with external props
-    useEffect(() => setPlaying(externalPlaying), [externalPlaying]);
+    useEffect(() => {
+        setPlaying(externalPlaying);
+
+        // Playback that nobody pressed play for still has to announce itself. A screen share is
+        // live the moment it is captured, so it arrives here as externalPlaying=true and never
+        // passes through togglePlay, the native-controls sync, or seek-resume — the three routes
+        // that fire onPlay today. That silence is what stopped the watch timer: the host's onPlay
+        // is what emits HOST_PLAYBACK_STATE{playing:true}, and RoomContext.captureWatchTime
+        // reports watchTime only while hostPlayback.playing is set. A screen-sharing host was
+        // therefore metered at zero minutes a day, while file and URL sources — which do go
+        // through a play button — metered correctly.
+        if (externalPlaying && !externalStartAnnouncedRef.current) {
+            externalStartAnnouncedRef.current = true;
+            onPlayRef.current?.("external");
+        } else if (!externalPlaying) {
+            externalStartAnnouncedRef.current = false;
+        }
+    }, [externalPlaying]);
     useEffect(() => setVolume(externalVolume), [externalVolume]);
     useEffect(() => setProgress(externalProgress), [externalProgress]);
     useEffect(() => setDuration(externalDuration), [externalDuration]);
     useEffect(() => setMuted(externalMuted), [externalMuted])
+
+    /**
+     * Re-attach a replaced MediaStream to the media element.
+     *
+     * ReactPlayer decides whether to reload by deep-comparing the old and new `url` with
+     * react-fast-compare. Every property of a MediaStream lives on its prototype, so two
+     * different streams compare as two empty objects — equal — and the element silently keeps
+     * the first srcObject it was ever given. Verified against react-fast-compare 3.2.2:
+     * `equal(streamA, streamB)` is true.
+     *
+     * A viewer only ever gets one attach out of that, and whatever arrived first is what they
+     * watch forever. It is the reason a bad first stream — a set consumed while the host was
+     * still producing, so audio only, or one whose producers died with the previous session —
+     * shows as a permanently black player even though the corrected stream did arrive and the
+     * consumers are healthy. Nothing in the console reports it: from useStream's side the
+     * stream was handed over and accepted.
+     */
+    useEffect(() => {
+        if (typeof MediaStream === "undefined" || !(url instanceof MediaStream)) return;
+
+        const mediaElement = playerRef.current?.getInternalPlayer() as HTMLMediaElement | null;
+        // Nothing mounted yet, or ReactPlayer already attached this exact stream on load.
+        if (!mediaElement || mediaElement.srcObject === url) return;
+
+        mediaElement.srcObject = url;
+        if (externalPlaying || playing) {
+            // Assigning srcObject resets the element, and ReactPlayer will not call play() for a
+            // change it does not believe happened.
+            mediaElement.play().catch((error) => {
+                console.debug("[Player] Re-attached stream failed to play:", error);
+            });
+        }
+    }, [url, externalPlaying, playing, playerRef]);
     useEffect(() => {
         playingRef.current = playing;
     }, [playing]);

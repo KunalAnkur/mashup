@@ -5,8 +5,6 @@ import { Transport, Producer, Consumer } from "mediasoup-client/types";
 import { SocketEvent } from "@/types/socketEvents";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
-import { RootState } from "@/lib/store";
-import { useSelector } from "react-redux";
 
 interface UseStreamParams {
     roomId: string | null;
@@ -18,9 +16,6 @@ interface UseStreamParams {
     // onStreamHasVideo?: (hasVideoTrack: boolean) => void;
     isHost: boolean;
     enabled?: boolean;
-    username: string;
-    email?: string;
-    profile?: string;
 }
 
 export const useStream = ({
@@ -33,12 +28,8 @@ export const useStream = ({
     // onStreamHasVideo,
     isHost,
     enabled = true,
-    username,
-    email,
-    profile,
 }: UseStreamParams) => {
     const { socket } = useSocket();
-    const roomState = useSelector((state: RootState) => state.room);
     const tToast = useTranslations("toast");
 
     const [trackUpdateCounter, setTrackUpdateCounter] = useState(0);
@@ -55,6 +46,9 @@ export const useStream = ({
     const consumersRef = useRef<Consumer[]>([]);
     const initializingRef = useRef(false);
     const isSeekingRef = useRef(false);
+    // Set when playback started before this socket was in the room, so the announcement can be
+    // replayed once it is. See resumeProducers.
+    const pendingPlaybackAnnounceRef = useRef(false);
     // Callback refs to avoid stale closures
     const getStreamRef = useRef(getStream);
     const onStreamReceivedRef = useRef(onStreamReceived);
@@ -206,6 +200,9 @@ export const useStream = ({
          */
     const notifyPausedPlayback = useCallback(() => {
         if (isSeekingRef.current || !isHost || !roomId) return;
+        // Drop any deferred "playing" announcement: pausing before the join lands means it is no
+        // longer true, and replaying it on join would report the room as playing while it is not.
+        pendingPlaybackAnnounceRef.current = false;
         socket?.emit(SocketEvent.STREAM_PAUSED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
     }, [isHost, roomId, socket]);
@@ -215,6 +212,19 @@ export const useStream = ({
      */
     const resumeProducers = useCallback(async () => {
         if (!isHost || !roomId) return;
+
+        // `enabled` is the room join having been acknowledged. The server resolves both events
+        // below through its in-memory room membership and silently drops anything from a socket
+        // it has not yet seen join, so emitting early is the same as not emitting at all.
+        //
+        // A screen share hits exactly that window: the player mounts and starts before the join
+        // ack lands (P2PStreamPlayer keeps a pending-initialization retry for the same reason),
+        // so the room never learned playback had started and the host's daily watch minutes
+        // never drained. Re-sharing later worked only because the join was long since done.
+        if (!enabled) {
+            pendingPlaybackAnnounceRef.current = true;
+            return;
+        }
 
         // If tracks are ended, replace them first
         if (areTracksEnded()) {
@@ -226,7 +236,15 @@ export const useStream = ({
         if (videoProducerRef.current?.paused) videoProducerRef.current.resume();
         socket?.emit(SocketEvent.STREAM_RESUMED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: true });
-    }, [isHost, roomId, socket, areTracksEnded, replaceEndedTracks]);
+    }, [isHost, roomId, socket, enabled, areTracksEnded, replaceEndedTracks]);
+
+    // Replay the announcement the moment the join lands. Also covers a reconnect: the rejoin
+    // rebuilds the room's membership, and the host's playback state has to be restated for it.
+    useEffect(() => {
+        if (!enabled || !pendingPlaybackAnnounceRef.current) return;
+        pendingPlaybackAnnounceRef.current = false;
+        void resumeProducers();
+    }, [enabled, resumeProducers]);
 
     
     /**
@@ -434,12 +452,27 @@ export const useStream = ({
                 consumersRef.current.push(consumer);
                 tracks.push(consumer.track);
             } catch (error) {
-                // console.error("[STREAM] Consume error:", error);
-                // showError("Stream connection failed", "Unable to receive video stream. Please try refreshing the page.");
+                // Logged, not surfaced: one producer failing to consume is recoverable — the
+                // remaining tracks still play, and INCOMING_PRODUCER retries the set — so a toast
+                // would cry wolf on a transient failure. Silence was worse though: a video
+                // producer that fails here leaves the consumer holding audio alone, which renders
+                // as a black screen with no error anywhere. That is indistinguishable, from the
+                // outside, from a stream that never arrived.
+                console.error(
+                    `[STREAM] Consumer: failed to consume ${info.kind} producer ${info.producerId}:`,
+                    error
+                );
             }
         }
 
         if (tracks.length) {
+            // Which kinds actually made it through. A set without a video track is the black
+            // screen, and this is the line that says so instead of leaving it to be guessed.
+            console.log(
+                `[STREAM] Consumer: consuming ${tracks.length}/${producerList.length} producer(s) —`,
+                tracks.map((track) => track.kind).join(", ") || "none"
+            );
+
             await socket.emitWithAck(SocketEvent.UNPAUSE_CONSUMERS, {
                 roomId: currentRoomId,
                 consumerIds: consumersRef.current.map(c => c.id),
@@ -567,21 +600,27 @@ export const useStream = ({
         }
     }, [socket, roomId, isHost, enabled, isInitialized, createConnectHandler, createProducers, consumeProducers]);
 
+    /**
+     * Rebuild this consumer's device and receive transport.
+     *
+     * Asks GET_TRANSPORT_INFO, not JOIN_ROOM. The join ack stopped carrying `rtpCapabilities`
+     * and `recvTransportOptions` when transport setup moved to its own event (see the server's
+     * join handler — it answers with room, users, chat and delivery mode only), so the old
+     * rejoin could never satisfy its own validation: it bailed on every single call. The caller
+     * reaches here only after `resetState` has already torn the consumer down, which turned
+     * this dead branch into a viewer whose stream never came back.
+     */
     const reinitializeConsumer = useCallback(async (roomId: string) => {
-        if (!socket) return;
+        if (!socket) return null;
 
         try {
-            const response = await socket.emitWithAck(SocketEvent.JOIN_ROOM, {
+            const { response, success } = await socket.emitWithAck(SocketEvent.GET_TRANSPORT_INFO, {
                 roomId,
                 host: false,
-                username,
-                email,
-                profile,
-                playlist: roomState.playlist,
             });
 
-            if (!response?.success || !response.rtpCapabilities || !response.recvTransportOptions) {
-                console.error("[useStream] Rejoin failed:", response);
+            if (!success || !response?.rtpCapabilities || !response?.recvTransportOptions) {
+                console.error("[useStream] Consumer reinit failed:", response);
                 return null;
             }
 
@@ -608,7 +647,10 @@ export const useStream = ({
             showError(tToast("streamReconnectionFailed"), tToast("unableToReconnect"));
             return null;
         }
-    }, [socket, username, email, profile, roomState, createConnectHandler]);
+        // Deliberately not depending on the room slice any more. It used to be read here for the
+        // rejoin payload, which made this callback — and therefore the INCOMING_PRODUCER listener
+        // that depends on it — churn on every playlist, playback and usage update.
+    }, [socket, createConnectHandler]);
 
     // ============================================================================
     // Event Handlers (useEffects)
@@ -721,6 +763,20 @@ export const useStream = ({
 
         const handleIncomingProducer = async (data: { roomId: string; producers: Record<string, any[]> }) => {
             if (data.roomId !== roomId) return;
+
+            // Setup may still be in flight. On a sync -> stream switch both sides build their
+            // mediasoup state from the same playlist broadcast, so the host's producers can be
+            // announced while this consumer is still waiting on GET_TRANSPORT_INFO. Reading the
+            // refs now would find no transport, and the branch below would answer that by
+            // resetting and rebuilding the very setup that is milliseconds from being ready.
+            // Wait for it instead.
+            if (initializingRef.current) {
+                console.log("[STREAM] Producers announced during setup - waiting for it to finish");
+                for (let attempt = 0; attempt < 50 && initializingRef.current; attempt++) {
+                    await new Promise(r => setTimeout(r, 100));
+                }
+            }
+
             const device = deviceRef.current;
             const transport = consumerTransportRef.current;
             const needsReinit = !device || !transport || transport.closed;

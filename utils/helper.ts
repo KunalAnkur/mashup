@@ -380,6 +380,20 @@ type GetInitialPlayerStateProps = {
 }
 // screenSharing: boolean = false, hostLeft: boolean = false, paused: boolean = false
 export function getInitialPlayerState({ url, roomType, host, focused, screenSharing = false, hostLeft = false, paused = false }: GetInitialPlayerStateProps) {
+    // A MediaStream is a live capture, whatever the room is currently typed as — decide on the
+    // source rather than on roomType, the same way getPlayerControlsConfig below already does.
+    //
+    // The two can disagree: a host who refreshes mid-screen-share loses the capture, and with an
+    // empty playlist the socket join re-files the room as "sync" (see the roomType fallback in
+    // communication/src/socket/index.ts). Re-sharing from inside that room then hands a
+    // MediaStream to a sync-typed room, and reading it as a URL threw "url.includes is not a
+    // function" — taking the whole player down instead of just mis-typing the room.
+    if (typeof MediaStream !== "undefined" && url instanceof MediaStream) {
+        return {
+            playing: host ? screenSharing : !paused,
+            muted: host ? screenSharing : true,
+        };
+    }
     if (roomType === "sync") {
         // if ((url as string).includes('twitch.tv')) {
         //     return {
@@ -387,7 +401,7 @@ export function getInitialPlayerState({ url, roomType, host, focused, screenShar
         //         muted: false,
         //     };
         // }
-        if ((url as string).includes('youtube.com')) {
+        if (typeof url === "string" && url.includes('youtube.com')) {
             if (!host) {
                 return {
                     playing: false,
