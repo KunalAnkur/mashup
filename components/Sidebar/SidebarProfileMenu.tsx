@@ -57,7 +57,14 @@ const SidebarProfileMenu = ({ onNavigate }: SidebarProfileMenuProps) => {
   const isPremiumUser = hasActivePaidSubscription(subscription);
   const tierDisplayName = getTierDisplayName(subscription?.tier);
   const displayName = user?.name || user?.username || "Guest";
-  const handle = user?.username ? `@${user.username}` : user?.email || "";
+  // Guests get an auto-generated username/no email — showing that verbatim reads exactly
+  // like a real account's handle. Show an explicit "Guest account" label instead so it's
+  // never mistaken for a logged-in user.
+  const handle = user?.isGuestUser
+    ? tCommon("guestAccount")
+    : user?.username
+      ? `@${user.username}`
+      : user?.email || "";
 
   const go = (path: string) => {
     onNavigate?.();
@@ -81,11 +88,11 @@ const SidebarProfileMenu = ({ onNavigate }: SidebarProfileMenuProps) => {
 
   return (
     <>
-      <button type="button" className={dashPopoverRowClass} onClick={() => go("/subscription")}>
+      <button type="button" className={dashPopoverRowClass} onClick={() => go("/profile")}>
         <SidebarAvatarChip name={displayName} photoUrl={user?.profile} />
-        <span className="flex min-w-0 flex-col items-start leading-tight">
-          <span className={dashProfileNameClass}>{displayName}</span>
-          <span className={dashProfileHandleClass}>{handle}</span>
+        <span className="flex min-w-0 flex-1 flex-col items-start leading-tight">
+          <span className={`w-full ${dashProfileNameClass}`}>{displayName}</span>
+          <span className={`w-full ${dashProfileHandleClass}`}>{handle}</span>
         </span>
         <LuChevronRight size={15} className="ml-auto shrink-0 text-dashTextMute" />
       </button>

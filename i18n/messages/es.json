@@ -49,6 +49,7 @@
     "upgrade": "Mejorar",
     "accountMenu": "Menú de cuenta",
     "notAuthenticated": "No autenticado",
+    "guestAccount": "Cuenta de invitado",
     "you": "Tú",
     "host": "Anfitrión",
     "loading": "Cargando...",
@@ -136,6 +137,9 @@
     "settings": {
       "title": "Configuración",
       "profileSettings": "Configuración de Perfil",
+      "language": "Idioma",
+      "profilePicture": "Foto de perfil",
+      "syncedFromGoogle": "Sincronizado desde tu cuenta de Google",
       "name": "Nombre",
       "username": "Nombre de Usuario",
       "emailAddress": "Correo",
@@ -227,7 +231,6 @@
   },
   "sync": {
     "title": "Ingresar URL de Origen",
-    "pasteUrls": "Pega tus URL",
     "enterUrl": "Pega la URL de tu video aquí",
     "addUrl": "Agregar URL",
     "addFiles": "Agregar Archivos",
@@ -269,7 +272,6 @@
     "starting": "Iniciando...",
     "clickToAddMoreFiles": "Haz clic para agregar más archivos",
     "back": "Atrás",
-    "useSync": "Usar Sincronización",
     "tip1": "Consejo 1",
     "tip2": "Consejo 2",
     "tip1MultipleFiles": "Puedes seleccionar múltiples archivos a la vez.",

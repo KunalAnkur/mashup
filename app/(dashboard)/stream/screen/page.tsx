@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Input } from "@/components/UI";
 import { FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
+import { LuMonitor, LuMousePointerClick, LuCheck, LuRadioTower } from "react-icons/lu";
 import { RootState } from "@/lib/store";
 import { setRefers, setScreenSharing, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
@@ -19,7 +20,6 @@ import {
   dashPageContentWrapClass,
   appStreamScreenAudioOnlyStateClass,
   appStreamScreenHeroSurfaceClass,
-  appStreamScreenInfoSurfaceClass,
   appStreamScreenIntroClusterClass,
   appStreamScreenIntroCopyClass,
   appStreamScreenIntroWidthClass,
@@ -28,7 +28,8 @@ import {
   appStreamScreenPreviewStatusClass,
   appStreamScreenPrimaryButtonClass,
   appStreamScreenSupportCopyClass,
-  appStreamScreenStepBadgeClass,
+  appStreamScreenStepVisualClass,
+  appStreamScreenStepNumberClass,
   appStreamScreenStepCardClass,
   appStreamScreenToggleSurfaceClass,
   appStreamScreenWarningSurfaceClass,
@@ -343,10 +344,13 @@ const ScreenSharePage = () => {
         ref={contentScrollRef}
         className={`${dashPageContentWrapClass} ${appScrollbarHideClass}`}
       >
-        <div className={dashPageTitleWrapClass}>
+        {/* Whole page centered as one column — owner asked for horizontal centering
+            instead of the flush-left start point used elsewhere in the dashboard. */}
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
+        <div className={`${dashPageTitleWrapClass} justify-center`}>
           <h1 className={appSectionTitleTextClass}>{tStream("screenSharePageTitle")}</h1>
         </div>
-        <div className="flex w-full flex-col gap-4 sm:gap-5 md:gap-6">
+        <div className="flex w-full flex-col items-center gap-4 text-center sm:gap-5 md:gap-6">
                 {!stream ? (
                   <>
                     {/* Initial State - Before Preview */}
@@ -374,19 +378,24 @@ const ScreenSharePage = () => {
                               : appStreamScreenPrimaryButtonClass
                           }`}
                         >
+                          {!stream && <LuMonitor className="text-base" />}
                           {stream ? tStream("screenSharingActive") : tStream("shareYourScreen")}
                         </button>
                       </div>
                     </div>
 
                     {/* Simple Steps Guide - Only show when no preview */}
-                    <div className="flex flex-col gap-4 sm:gap-5 md:gap-6">
+                    <div className="flex w-full flex-col items-center gap-4 text-center sm:gap-5 md:gap-6">
                       <h3 className="text-base font-semibold tracking-tight text-dashText sm:text-lg">{tStream("howItWorks")}</h3>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-6">
-                  {/* Step 1 */}
+                      <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-6">
+                  {/* Step 1 — mini preview of the actual Share button + a click cursor */}
                   <div className={`flex flex-row items-center gap-3 px-3 py-4 text-left sm:flex-col sm:items-center sm:gap-0 sm:px-4 sm:py-6 sm:text-center md:px-5 md:py-8 ${appStreamScreenStepCardClass}`}>
-                    <div className={appStreamScreenStepBadgeClass}>
-                      1
+                    <div className={appStreamScreenStepVisualClass}>
+                      <span className={appStreamScreenStepNumberClass}>1</span>
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 sm:h-9 sm:w-9">
+                        <LuMonitor className="text-sm text-white sm:text-base" />
+                      </span>
+                      <LuMousePointerClick className="absolute bottom-1 right-1 text-dashText/80 text-xs drop-shadow sm:bottom-1.5 sm:right-1.5 sm:text-sm" />
                     </div>
                     <div className="flex-1 sm:flex-none sm:text-center">
                       <h4 className="mb-1 text-[15px] font-semibold tracking-tight text-dashText sm:mb-2 sm:text-base">
@@ -398,10 +407,17 @@ const ScreenSharePage = () => {
                     </div>
                   </div>
 
-                  {/* Step 2 */}
+                  {/* Step 2 — mini tab picker with the middle tab selected */}
                   <div className={`flex flex-row items-center gap-3 px-3 py-4 text-left sm:flex-col sm:items-center sm:gap-0 sm:px-4 sm:py-6 sm:text-center md:px-5 md:py-8 ${appStreamScreenStepCardClass}`} style={{ animationDelay: '0.2s' }}>
-                    <div className={appStreamScreenStepBadgeClass}>
-                      2
+                    <div className={appStreamScreenStepVisualClass}>
+                      <span className={appStreamScreenStepNumberClass}>2</span>
+                      <div className="flex items-end gap-1">
+                        <div className="h-3 w-4 rounded-t-[3px] bg-white/10 sm:h-4 sm:w-5" />
+                        <div className="relative flex h-5 w-6 items-center justify-center rounded-t-[3px] bg-gradient-to-r from-rose-600 to-fuchsia-600 sm:h-8 sm:w-9">
+                          <LuCheck className="text-[10px] text-white sm:text-xs" />
+                        </div>
+                        <div className="h-3 w-4 rounded-t-[3px] bg-white/10 sm:h-4 sm:w-5" />
+                      </div>
                     </div>
                     <div className="flex-1 sm:flex-none sm:text-center">
                       <h4 className="mb-1 text-[15px] font-semibold tracking-tight text-dashText sm:mb-2 sm:text-base">
@@ -413,10 +429,16 @@ const ScreenSharePage = () => {
                     </div>
                   </div>
 
-                  {/* Step 3 */}
+                  {/* Step 3 — live indicator, same visual language as the in-room streaming badge */}
                   <div className={`flex flex-row items-center gap-3 px-3 py-4 text-left sm:flex-col sm:items-center sm:gap-0 sm:px-4 sm:py-6 sm:text-center md:px-5 md:py-8 ${appStreamScreenStepCardClass}`} style={{ animationDelay: '0.4s' }}>
-                    <div className={appStreamScreenStepBadgeClass}>
-                      3
+                    <div className={appStreamScreenStepVisualClass}>
+                      <span className={appStreamScreenStepNumberClass}>3</span>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-rose-600 to-fuchsia-600 sm:h-9 sm:w-9">
+                          <LuRadioTower className="text-xs text-white sm:text-sm" />
+                        </div>
+                        <div className="h-1 w-1 rounded-full bg-pink-500 animate-pulse" />
+                      </div>
                     </div>
                     <div className="flex-1 sm:flex-none sm:text-center">
                       <h4 className="mb-1 text-[15px] font-semibold tracking-tight text-dashText sm:mb-2 sm:text-base">
@@ -431,41 +453,22 @@ const ScreenSharePage = () => {
                     </div>
 
               {/* Quick Tips - Hidden on very small screens */}
-                    <div className={`hidden p-4 sm:block sm:p-5 md:p-6 ${appStreamScreenInfoSurfaceClass}`}>
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="shrink-0 mt-0.5 sm:mt-1">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-dashSm bg-secondary text-white sm:h-8 sm:w-8">
-                      <svg
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                    <div className="hidden w-full p-4 sm:block sm:p-5 md:p-6">
+                  <p className="mb-2 text-xs font-semibold tracking-tight text-dashText sm:mb-3 sm:text-sm">{tStream("quickTips")}</p>
+                  <div className="flex flex-col items-center gap-2 sm:gap-2.5">
+                    <div className="flex items-start gap-2 sm:gap-2.5">
+                      <div className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-rose-300 sm:h-1.5 sm:w-1.5"></div>
+                      <p className={appStreamScreenSupportCopyClass}>{tStream("tipSelectSpecificTab")}</p>
+                    </div>
+                    <div className="flex items-start gap-2 sm:gap-2.5">
+                      <div className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-pink-300 sm:h-1.5 sm:w-1.5"></div>
+                      <p className={appStreamScreenSupportCopyClass}>{tStream("tipKeepTabActive")}</p>
+                    </div>
+                    <div className="flex items-start gap-2 sm:gap-2.5">
+                      <div className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-fuchsia-300 sm:h-1.5 sm:w-1.5"></div>
+                      <p className={appStreamScreenSupportCopyClass}>{tStream("tipCheckPermission")}</p>
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="mb-2 text-xs font-semibold tracking-tight text-dashText sm:mb-3 sm:text-sm">{tStream("quickTips")}</p>
-                    <div className="space-y-2 sm:space-y-2.5">
-                      <div className="flex items-start gap-2 sm:gap-2.5">
-                        <div className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-rose-300 sm:h-1.5 sm:w-1.5"></div>
-                        <p className={appStreamScreenSupportCopyClass}>{tStream("tipSelectSpecificTab")}</p>
-                      </div>
-                      <div className="flex items-start gap-2 sm:gap-2.5">
-                        <div className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-pink-300 sm:h-1.5 sm:w-1.5"></div>
-                        <p className={appStreamScreenSupportCopyClass}>{tStream("tipKeepTabActive")}</p>
-                      </div>
-                      <div className="flex items-start gap-2 sm:gap-2.5">
-                        <div className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-fuchsia-300 sm:h-1.5 sm:w-1.5"></div>
-                        <p className={appStreamScreenSupportCopyClass}>{tStream("tipCheckPermission")}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
                     </div>
                   </>
                 ) : (
@@ -637,7 +640,11 @@ const ScreenSharePage = () => {
                           : appStreamScreenPrimaryButtonClass
                       }`}
                     >
-                      {isCreatingRoom && <ImSpinner2 className="animate-spin text-sm sm:text-base" />}
+                      {isCreatingRoom ? (
+                        <ImSpinner2 className="animate-spin text-base" />
+                      ) : (
+                        <LuMonitor className="text-base" />
+                      )}
                       {isCreatingRoom ? tStream("creatingRoom") : tStream("startSharing")}
                     </button>
                     <p className={`${appStreamScreenSupportCopyClass} mt-2 sm:mt-3`}>
@@ -648,6 +655,7 @@ const ScreenSharePage = () => {
               </div>
                   </>
                 )}
+        </div>
         </div>
       </div>
   );

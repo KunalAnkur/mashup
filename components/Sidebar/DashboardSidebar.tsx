@@ -266,13 +266,22 @@ const DashboardSidebar = () => {
 
 const SidebarProfileTriggerSummary = () => {
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const tCommon = useTranslations("common");
   const displayName = isAuthenticated ? user?.name || user?.username || "" : "";
-  const handle = isAuthenticated && user?.username ? `@${user.username}` : "";
+  // Same fix as SidebarProfileMenu/AvatarDropdown — a guest's auto-generated username reads
+  // exactly like a real account's handle, so label it explicitly instead.
+  const handle = !isAuthenticated
+    ? ""
+    : user?.isGuestUser
+      ? tCommon("guestAccount")
+      : user?.username
+        ? `@${user.username}`
+        : "";
   return (
-    <span className="flex min-w-0 flex-col items-start leading-tight">
-      <span className="truncate text-[13.5px] font-semibold text-dashText">{displayName}</span>
+    <span className="flex min-w-0 flex-1 flex-col items-start leading-tight">
+      <span className="w-full truncate text-[13.5px] font-semibold text-dashText">{displayName}</span>
       {handle ? (
-        <span className="truncate text-[11.5px] text-dashTextMute">{handle}</span>
+        <span className="w-full truncate text-[11.5px] text-dashTextMute">{handle}</span>
       ) : null}
     </span>
   );

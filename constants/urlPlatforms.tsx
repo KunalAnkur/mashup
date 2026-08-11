@@ -6,12 +6,11 @@ import {
   FaLink,
   FaVideo,
 } from "react-icons/fa";
-import { MdOndemandVideo } from "react-icons/md";
 export const platforms: Platform[] = [
   {
     id: "youtube",
     name: "YouTube",
-    icon: <FaYoutube className="text-3xl sm:text-4xl" />,
+    icon: <FaYoutube className="text-lg" />,
     smallIcon: <FaYoutube className="text-lg text-white" />,
     bgStyle: {
       background: "linear-gradient(135deg, #FF0000 0%, #CC0000 100%)",
@@ -22,7 +21,7 @@ export const platforms: Platform[] = [
   {
     id: "vimeo",
     name: "Vimeo",
-    icon: <FaVimeo className="text-3xl sm:text-4xl" />,
+    icon: <FaVimeo className="text-lg" />,
     smallIcon: <FaVimeo className="text-lg text-white" />,
     bgStyle: {
       background: "linear-gradient(135deg, #1AB7EA 0%, #0D95BF 100%)",
@@ -33,7 +32,7 @@ export const platforms: Platform[] = [
   {
     id: "twitch",
     name: "Twitch",
-    icon: <FaTwitch className="text-3xl sm:text-4xl" />,
+    icon: <FaTwitch className="text-lg" />,
     smallIcon: <FaTwitch className="text-lg text-white" />,
     bgStyle: {
       background: "linear-gradient(135deg, #9146FF 0%, #6441A5 100%)",
@@ -45,7 +44,7 @@ export const platforms: Platform[] = [
   {
     id: "wistia",
     name: "Wistia",
-    icon: <FaVideo className="text-3xl sm:text-4xl" />,
+    icon: <FaVideo className="text-lg" />,
     smallIcon: <FaVideo className="text-lg text-white" />,
     bgStyle: {
       background: "linear-gradient(135deg, #6366F1 0%, #EC4899 100%)",
@@ -56,7 +55,7 @@ export const platforms: Platform[] = [
   {
     id: "dailymotion",
     name: "Dailymotion",
-    icon: <FaVideo className="text-3xl sm:text-4xl" />,
+    icon: <FaVideo className="text-lg" />,
     smallIcon: <FaVideo className="text-lg text-white" />,
     bgStyle: {
       background: "linear-gradient(135deg, #3B82F6 0%, #1F2937 100%)",
@@ -67,7 +66,7 @@ export const platforms: Platform[] = [
   {
     id: "custom",
     name: "Random URL",
-    icon: <FaLink className="text-3xl sm:text-4xl" />,
+    icon: <FaLink className="text-lg" />,
     smallIcon: <FaVideo className="text-lg text-white" />,
     bgStyle: {
       background: "linear-gradient(135deg, #F472B6 0%, #EC4899 100%)",

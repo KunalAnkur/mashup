@@ -49,6 +49,7 @@
     "upgrade": "Yükselt",
     "accountMenu": "Hesap menüsü",
     "notAuthenticated": "Kimlik doğrulanmadı",
+    "guestAccount": "Misafir hesap",
     "you": "Sen",
     "host": "Ev Sahibi",
     "loading": "Yükleniyor...",
@@ -136,6 +137,9 @@
     "settings": {
       "title": "Ayarlar",
       "profileSettings": "Profil Ayarları",
+      "language": "Dil",
+      "profilePicture": "Profil fotoğrafı",
+      "syncedFromGoogle": "Google hesabınızdan senkronize edildi",
       "name": "Ad",
       "username": "Kullanıcı Adı",
       "emailAddress": "E-posta",
@@ -227,7 +231,6 @@
   },
   "sync": {
     "title": "Kaynak URL Girin",
-    "pasteUrls": "URL'lerinizi Yapıştırın",
     "enterUrl": "Video URL'nizi buraya yapıştırın",
     "addUrl": "URL Ekle",
     "addFiles": "Dosya Ekle",
@@ -269,7 +272,6 @@
     "starting": "Başlatılıyor...",
     "clickToAddMoreFiles": "Daha fazla dosya eklemek için tıklayın",
     "back": "Geri",
-    "useSync": "Sync Kullan",
     "tip1": "İpucu 1",
     "tip2": "İpucu 2",
     "tip1MultipleFiles": "Birden fazla dosyayı aynı anda seçebilirsiniz.",

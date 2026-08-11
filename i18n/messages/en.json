@@ -49,6 +49,7 @@
     "upgrade": "Upgrade",
     "accountMenu": "Account menu",
     "notAuthenticated": "Not authenticated",
+    "guestAccount": "Guest account",
     "you": "You",
     "host": "Host",
     "loading": "Loading...",
@@ -136,6 +137,9 @@
     "settings": {
       "title": "Settings",
       "profileSettings": "Profile Settings",
+      "language": "Language",
+      "profilePicture": "Profile picture",
+      "syncedFromGoogle": "Synced from your Google account",
       "name": "Name",
       "username": "Username",
       "emailAddress": "Email",
@@ -227,7 +231,6 @@
   },
   "sync": {
     "title": "Enter Source URL",
-    "pasteUrls": "Paste Your URLs",
     "enterUrl": "Paste your video URL here",
     "addUrl": "Add URL",
     "addFiles": "Add Files",
@@ -269,7 +272,6 @@
     "starting": "Starting...",
     "clickToAddMoreFiles": "Click to add more files",
     "back": "Back",
-    "useSync": "Use Sync",
     "tip1": "Tip 1",
     "tip2": "Tip 2",
     "tip1MultipleFiles": "You can select multiple files at once.",

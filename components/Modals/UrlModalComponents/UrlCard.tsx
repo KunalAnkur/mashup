@@ -6,7 +6,6 @@ import {
   appSyncCardClass,
   appSyncCardIndexClass,
   appSyncCardThumbnailClass,
-  zincGlassSoftInsetSurfaceClass,
 } from "@/components/UI/classTokens";
 
 interface UrlCardProps {
@@ -24,12 +23,10 @@ const UrlCardThumbnail: React.FC<{
   title?: string;
   platform: Platform | undefined;
 }> = ({ isLoading, thumbnail, title, platform }) => (
-  <div
-    className={`${appSyncCardThumbnailClass} ${zincGlassSoftInsetSurfaceClass}`}
-  >
+  <div className={appSyncCardThumbnailClass}>
     {isLoading ? (
-      <div className="absolute inset-0 flex items-center justify-center bg-zinc-700/20">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-500/35 border-t-fuchsia-400/70" />
+      <div className="absolute inset-0 flex items-center justify-center bg-dashSurfaceAlt">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/15 border-t-pink-500/80" />
       </div>
     ) : thumbnail ? (
       // eslint-disable-next-line @next/next/no-img-element
@@ -62,15 +59,15 @@ const UrlCardMetadata: React.FC<{
   <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 overflow-hidden">
     {isLoading ? (
       <div className="space-y-1.5">
-        <div className="h-3 rounded-full bg-zinc-700/25 animate-pulse" />
-        <div className="h-2.5 w-2/3 rounded-full bg-zinc-700/20 animate-pulse" />
+        <div className="h-2.5 rounded-full bg-white/[0.06] animate-pulse" />
+        <div className="h-2 w-2/3 rounded-full bg-white/[0.04] animate-pulse" />
       </div>
     ) : hasMetadata && metadata ? (
       <>
-        <p className="line-clamp-1 text-[13px] font-medium leading-tight text-white/88 sm:text-sm">
+        <p className="line-clamp-1 text-xs font-semibold tracking-tight leading-tight text-dashText sm:text-[13px]">
           {metadata.title || urlDisplayName}
         </p>
-        <div className="flex items-center gap-1.5 text-[11px] text-white/48">
+        <div className="flex items-center gap-1.5 text-[10px] text-dashTextMute sm:text-[11px]">
           {metadata.author ? (
             <span className="truncate max-w-[112px]">{metadata.author}</span>
           ) : null}
@@ -80,11 +77,11 @@ const UrlCardMetadata: React.FC<{
       </>
     ) : (
       <>
-        <p className="truncate text-[13px] font-medium text-white/86 sm:text-sm">
+        <p className="truncate text-xs font-semibold tracking-tight text-dashText sm:text-[13px]">
           {urlDisplayName}
         </p>
         {platform ? (
-          <p className="truncate text-[11px] text-white/46">{platform.name}</p>
+          <p className="truncate text-[10px] text-dashTextMute sm:text-[11px]">{platform.name}</p>
         ) : null}
       </>
     )}
@@ -127,10 +124,10 @@ export const UrlCard: React.FC<UrlCardProps> = ({
       <button
         type="button"
         onClick={() => onRemove(index)}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/38 transition-colors duration-200 hover:text-rose-300"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-dashTextMute transition-colors duration-200 hover:text-rose-400"
         aria-label="Remove URL"
       >
-        <FaTimes className="text-xs" />
+        <FaTimes className="text-[11px]" />
       </button>
     </div>
   );

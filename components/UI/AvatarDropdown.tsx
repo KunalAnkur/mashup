@@ -192,7 +192,13 @@ const AvatarDropdown = ({ size = 40, className = "" }: AvatarDropdownProps) => {
               ) : showEmailField && user?.email ? user.email : null
             }
             metaClassName={`${appDropdownMetaTextClass} mt-0.5 truncate`}
-            secondary={!isAuthenticated ? tCommon("notAuthenticated") : null}
+            secondary={
+              !isAuthenticated
+                ? tCommon("notAuthenticated")
+                : user?.isGuestUser
+                  ? tCommon("guestAccount")
+                  : null
+            }
             secondaryClassName={`${appDropdownMetaTextClass} mt-0.5`}
           />
 
