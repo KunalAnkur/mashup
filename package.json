@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@movmash/arcade-client": "^0.1.7",
     "@next/third-parties": "^16.0.8",
     "@react-oauth/google": "^0.12.2",
     "@reduxjs/toolkit": "^2.4.0",
@@ -36,8 +37,7 @@
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",
     "screenfull": "^6.0.2",
-    "socket.io-client": "^4.8.1",
-    "@movmash/arcade-client": "^0.1.0"
+    "socket.io-client": "^4.8.1"
   },
   "overrides": {
     "react": "$react",

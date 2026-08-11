@@ -71,6 +71,9 @@ export const useP2PStream = ({
     const localStreamRef = useRef<MediaStream | null>(null);
     const initializingRef = useRef(false);
     const isSeekingRef = useRef(false);
+    // Set when playback started before this socket was in the room, so the announcement can be
+    // replayed once it is. See resumeProducers.
+    const pendingPlaybackAnnounceRef = useRef(false);
     const iceServersRef = useRef<RTCIceServer[]>([
         { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" },
@@ -431,15 +434,40 @@ export const useP2PStream = ({
 
     const notifyPausedPlayback = useCallback(() => {
         if (isSeekingRef.current || !isHost || !roomId) return;
+        // Drop any deferred "playing" announcement: pausing before the join lands means it is no
+        // longer true, and replaying it on join would report the room as playing while it is not.
+        pendingPlaybackAnnounceRef.current = false;
         socket?.emit(SocketEvent.STREAM_PAUSED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: false });
     }, [isHost, roomId, socket]);
 
     const resumeProducers = useCallback(async () => {
         if (!isHost || !roomId) return;
+
+        // `enabled` is the room join having been acknowledged. The server resolves both events
+        // below through its in-memory room membership and silently drops anything from a socket
+        // it has not yet seen join, so emitting early is the same as not emitting at all.
+        //
+        // A screen share hits exactly that window: the player mounts and starts before the join
+        // ack lands (see the pending-initialization retry in P2PStreamPlayer), so the room never
+        // learned playback had started and the host's daily watch minutes never drained.
+        // Re-sharing later worked only because the join was long since done.
+        if (!enabled) {
+            pendingPlaybackAnnounceRef.current = true;
+            return;
+        }
+
         socket?.emit(SocketEvent.STREAM_RESUMED, { roomId });
         socket?.emit(SocketEvent.HOST_PLAYBACK_STATE, { roomId, playing: true });
-    }, [isHost, roomId, socket]);
+    }, [isHost, roomId, socket, enabled]);
+
+    // Replay the announcement the moment the join lands. Also covers a reconnect: the rejoin
+    // rebuilds the room's membership, and the host's playback state has to be restated for it.
+    useEffect(() => {
+        if (!enabled || !pendingPlaybackAnnounceRef.current) return;
+        pendingPlaybackAnnounceRef.current = false;
+        void resumeProducers();
+    }, [enabled, resumeProducers]);
 
     const stopHostStream = useCallback((reason: string = "manual") => {
         if (!isHost || !roomId) return;

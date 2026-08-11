@@ -22,7 +22,6 @@ type Props = {
 
 const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
-    const authState = useSelector((state: RootState) => state.auth);
     const playerRef = useRef<ReactPlayer>(null);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const [isPaused, setIsPaused] = useState(false);
@@ -132,9 +131,6 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
         getStream, // Source-agnostic! useStream doesn't care where this comes from
         isHost,
         enabled: isJoined,
-        username: authState.user?.username || authState.user?.name || "User",
-        email: authState.user?.email,
-        profile: authState.user?.profile,
         onStreamReceived: handleStreamReceived,
         onStreamPaused: handleStreamPaused,
         onStreamResumed: handleStreamResumed,

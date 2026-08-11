@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@movmash/arcade-client':
-        specifier: ^0.1.0
-        version: 0.1.0(react@19.1.0)
+        specifier: ^0.1.7
+        version: 0.1.7(react@19.1.0)
       '@next/third-parties':
         specifier: ^16.0.8
         version: 16.1.1(next@16.0.8(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
@@ -350,16 +350,22 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@movmash/activity-sdk@0.1.0':
-    resolution: {integrity: sha512-D8fUzFFzZF1ihYuAAISjjZ9pkLyB9zoWiiXX5kmQ7MajCIlfRACu0yj4MFEdWnTpf16dywFOulnsQVHG5yAqpQ==, tarball: https://npm.pkg.github.com/download/@movmash/activity-sdk/0.1.0/832ac8748c2d949b394658738fc2f7b429546b55}
+  '@movmash/activity-sdk@0.1.2':
+    resolution: {integrity: sha512-4h24r/cWX0/MpFXqO50kI5Ns2ciqV6engMSu1XEuo8R8ALVmaPbs7m50alUVWlt3HOCVL9H4Y6f5gRn4iK3wAw==, tarball: https://npm.pkg.github.com/download/@movmash/activity-sdk/0.1.2/ba1fb8700bd560cf41a8663a2c808dee260f980a}
 
-  '@movmash/arcade-client@0.1.0':
-    resolution: {integrity: sha512-VmvpGMJXVXM2mTnZBy/+bY4FrlSqjjNvpJMaXpfiLMU/40i9vPonVbfcM85siwCbunQberZC+Q/aU9fayj5r0g==, tarball: https://npm.pkg.github.com/download/@movmash/arcade-client/0.1.0/b92e0c722691249033b51844d49aa984d4f727d5}
+  '@movmash/arcade-client@0.1.7':
+    resolution: {integrity: sha512-cV9LZHjlfIDMjmIu/y7cPnPURGJ63BIM4H+tqN9XQBN+YTr2TyF9YbctZQz7GTRjqZLmfVu9S6slMcvyzsjATA==, tarball: https://npm.pkg.github.com/download/@movmash/arcade-client/0.1.7/c406e0c124b0228c0c7d65e2f34a583630cd5a54}
     peerDependencies:
       react: '>=18'
 
-  '@movmash/game-tictactoe@1.0.0':
-    resolution: {integrity: sha512-j7XE8FBA12tWcqXnGI0ar0troEDELK6EYq+SfYg+9NzYECEYPGsZCfRhwPsgvqvP+Au7KuUslV+yrmH+iOPynQ==, tarball: https://npm.pkg.github.com/download/@movmash/game-tictactoe/1.0.0/8ce50235f7ad3fd173a49e6696958195ee2d22dd}
+  '@movmash/game-connect4@1.0.0':
+    resolution: {integrity: sha512-hlABltrAc3dn96B1nw7AYRSTegjBv9LvJRbF1584PDfuwwfNrMKbuwaI8frzsL8LtS3igE5rM7Hre8M9qn4H8g==, tarball: https://npm.pkg.github.com/download/@movmash/game-connect4/1.0.0/aaeb143f62053121e9dfa0019172d37a68dee159}
+
+  '@movmash/game-jigsaw@1.0.0':
+    resolution: {integrity: sha512-02WbSXhWMs0rDtt/TScVoBbiE2as+4wEtNDOvDX7GvrXTZVVRgFsMxvRS2WxGaZnSF6Fq5qOtEwRlYkTtwcQeA==, tarball: https://npm.pkg.github.com/download/@movmash/game-jigsaw/1.0.0/740b458c4bdb5ea7d499cb9f79945a257036274c}
+
+  '@movmash/game-tictactoe@1.2.0':
+    resolution: {integrity: sha512-4MdgvcZFZ6H8yMtnrPTD40vKgNaHSEeyuIcg5WRBjxgJDgQ5swREHojn4rCPmQBRX7orUHyQJZ5+ZMw95DTT9Q==, tarball: https://npm.pkg.github.com/download/@movmash/game-tictactoe/1.2.0/41a75526c34eb5ecf25e64ef18f175c711777c40}
 
   '@napi-rs/wasm-runtime@0.2.10':
     resolution: {integrity: sha512-bCsCyeZEwVErsGmyPNSzwfwFn4OdxBj0mmv6hOFucB/k81Ojdu68RbZdxYsRQUPc9l6SU5F/cG+bXgWs3oUgsQ==}
@@ -2772,17 +2778,27 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@movmash/activity-sdk@0.1.0': {}
+  '@movmash/activity-sdk@0.1.2': {}
 
-  '@movmash/arcade-client@0.1.0(react@19.1.0)':
+  '@movmash/arcade-client@0.1.7(react@19.1.0)':
     dependencies:
-      '@movmash/activity-sdk': 0.1.0
-      '@movmash/game-tictactoe': 1.0.0
+      '@movmash/activity-sdk': 0.1.2
+      '@movmash/game-connect4': 1.0.0
+      '@movmash/game-jigsaw': 1.0.0
+      '@movmash/game-tictactoe': 1.2.0
       react: 19.1.0
 
-  '@movmash/game-tictactoe@1.0.0':
+  '@movmash/game-connect4@1.0.0':
     dependencies:
-      '@movmash/activity-sdk': 0.1.0
+      '@movmash/activity-sdk': 0.1.2
+
+  '@movmash/game-jigsaw@1.0.0':
+    dependencies:
+      '@movmash/activity-sdk': 0.1.2
+
+  '@movmash/game-tictactoe@1.2.0':
+    dependencies:
+      '@movmash/activity-sdk': 0.1.2
 
   '@napi-rs/wasm-runtime@0.2.10':
     dependencies:

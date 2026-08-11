@@ -6,6 +6,7 @@ import { RootState } from "@/lib/store";
 import { useUpdateRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useRoomContext } from "@/context/RoomContext";
+import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist } from "@/types/storeTypes";
 
 type ContentSource = "file" | "url" | "screen";
@@ -14,6 +15,7 @@ export const usePlaylistActions = () => {
   const dispatch = useDispatch();
   const roomState = useSelector((state: RootState) => state.room);
   const { broadcastPlaylist } = useRoomContext();
+  const { handleStopScreenSharing } = useMediaStreamContext();
   const [updateRoomByRoomId] = useUpdateRoomByRoomIdMutation();
 
   const isHost = roomState.host;
@@ -87,8 +89,15 @@ export const usePlaylistActions = () => {
 
       // * Apply the same payload locally and to guests to keep selection/index consistent.
       syncPlaylist(playlistWithoutScreen, playlistWithoutScreen);
+
+      // Hold the invariant "no screen items in the playlist means no live capture" here rather
+      // than trusting every caller to release it first — that assumption is exactly what leaked.
+      // Redundant for the two existing callers (the card's X releases it first, the browser's own
+      // Stop sharing has already ended the tracks) and harmless: stopping an ended track is a
+      // no-op, and stop() does not re-fire 'ended', so this cannot loop back through here.
+      handleStopScreenSharing();
     },
-    [isHost, roomId, playlist, syncPlaylist]
+    [isHost, roomId, playlist, syncPlaylist, handleStopScreenSharing]
   );
 
   return {

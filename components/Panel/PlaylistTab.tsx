@@ -8,6 +8,7 @@ import { LuLock } from "react-icons/lu";
 import { useUpdateRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useRoomContext } from "@/context/RoomContext";
+import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { usePlaylistActions } from "@/hooks/usePlaylistActions";
 import {
@@ -28,6 +29,7 @@ const PlaylistTab = () => {
     const [updateRoomByRoomId] = useUpdateRoomByRoomIdMutation();
     const { broadcastPlaylist } = useRoomContext();
     const { addPlaylistContent, handleScreenShareStopped: onScreenShareStoppedFromActions } = usePlaylistActions();
+    const { handleStopScreenSharing } = useMediaStreamContext();
     const isHost = roomState.host;
     const t = useTranslations("panel.playlist");
     useEffect(() => {
@@ -43,6 +45,17 @@ const PlaylistTab = () => {
         const basePlaylist = shouldRemoveScreenItems
             ? playlist.filter((item) => item.source !== "screen")
             : playlist;
+
+        // Dropping those entries ends the share as far as the room is concerned, but the
+        // getDisplayMedia capture behind them is owned by MediaStreamContext and outlives the
+        // playlist entirely — so without this the browser keeps its "Sharing this tab" bar up
+        // over a party that has already moved on to a local file.
+        //
+        // The X button on the screen card releases it before removing the item, and the browser's
+        // own Stop sharing ends the tracks itself, which is why only this route leaked.
+        if (shouldRemoveScreenItems && playlist.some((item) => item.source === "screen")) {
+            handleStopScreenSharing();
+        }
 
         // * Build the exact playlist shape that host store, DB and guests should all share.
         const newPlaylist = basePlaylist.map((item) => ({

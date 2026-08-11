@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import { useSocket } from "@/context/SocketContext";
+import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, store } from "@/lib/store";
@@ -150,6 +151,17 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     // Sticky across disconnects, unlike `isJoined`: it records that this user was in the room
     // before the drop, which is what distinguishes "reconnecting" from "not joined yet".
     const hasJoinedRef = useRef(false);
+
+    // The screen capture outlives this provider: it is acquired on /stream/screen before the room
+    // exists, and MediaStreamProvider sits above the router in ClientRoot so it survives the
+    // navigation into the room. Nothing was releasing it on the way out — leaving the room only
+    // tore down the socket and the peer connections — so the browser kept the "Sharing this tab"
+    // bar up and the capture running long after the party ended.
+    const { handleStopScreenSharing } = useMediaStreamContext();
+    const stopScreenShareRef = useRef(handleStopScreenSharing);
+    useEffect(() => {
+        stopScreenShareRef.current = handleStopScreenSharing;
+    }, [handleStopScreenSharing]);
 
     const joinRoom = useCallback(async () => {
         console.log("flow test - joinRoom called", { socket, roomId, username, playlist: roomState.playlist });
@@ -320,6 +332,7 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
         }
 
         socket.emit(SocketEvent.LEAVE_ROOM, { roomId, room: roomState });
+        stopScreenShareRef.current();
         setIsJoined(false);
         setRoomType(null);
         setStreamDeliveryMode(null);
@@ -575,6 +588,24 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
             }
         };
     }, [isJoined, socket, roomId, dispatch]);
+
+    // Release the screen capture on the way out of the room, for every exit that is not the Leave
+    // button — back navigation, a router push elsewhere, closing the party.
+    //
+    // Deliberately its own effect with empty deps rather than a line in the cleanup above: that
+    // one re-runs whenever `isJoined` changes, and `isJoined` drops to false on every socket
+    // disconnect. Hanging the teardown off it would kill a host's screen share during any blip,
+    // including the ~15s while communication redeploys — precisely when the session must survive.
+    //
+    // `hasJoinedRef` is what makes this safe to run on unmount: it is only set once a join has
+    // actually been acknowledged, so React's development double-mount (which unmounts immediately,
+    // before any join) passes through without touching the capture.
+    useEffect(() => {
+        return () => {
+            if (!hasJoinedRef.current) return;
+            stopScreenShareRef.current();
+        };
+    }, []);
 
     // Seconds watched in this session only. Deliberately a ref, not Redux: the player
     // reports progress once a second, and nothing renders this value — keeping it in the

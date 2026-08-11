@@ -4,7 +4,7 @@ import { appWhiteBorderClass } from "@/components/UI/classTokens";
 import { LuFolderPlus, LuLink2, LuScreenShare } from "react-icons/lu";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { validateUrl } from "@/components/Modals/UrlModalComponents";
 import { useFileContext } from "@/context/FileContext";
 import { ExtendedFile } from "@/utils/filePersistence";
@@ -157,40 +157,74 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
         }
     }
 
+    // Read through a ref so the listener registration below depends on the stream alone.
+    // `onScreenShareStopped` is rebuilt on every playlist change, and having it in the deps meant
+    // re-running the effect constantly — which, with no cleanup, is how the listeners piled up.
+    const onScreenShareStoppedRef = useRef(onScreenShareStopped);
+    useEffect(() => {
+        onScreenShareStoppedRef.current = onScreenShareStopped;
+    }, [onScreenShareStopped]);
+
+    /**
+     * Fold the browser ending the capture back into the playlist.
+     *
+     * Two things make one "Stop sharing" click look like several. The listeners used to
+     * accumulate across effect runs with nothing removing them, and the browser ends *every*
+     * track of the capture — video and tab audio — so even a single clean registration fires
+     * once per track. Each surviving call replayed the whole playlist rewrite: a room-update
+     * request and a broadcast to every guest.
+     *
+     * The cleanup fixes the pile-up; `notified` collapses the per-track burst into one.
+     */
     useEffect(() => {
         if (!stream) return;
-        const videoTracks = stream.getVideoTracks();
-        const audioTracks = stream.getAudioTracks();
-        const allTracks = [...videoTracks, ...audioTracks];
-        // setStream(null);
-        // setScreenType(null);
-        allTracks.forEach(track => {
-            track.addEventListener('ended', () => {
-                console.log("hey there track ended");
-                console.log("screen stream mediastream = [ContentSelection] track ended = ", stream);
-                onScreenShareStopped(stream.id);
-            });
-        });
-        console.log("stream", stream);
-    }, [onScreenShareStopped, stream]);
+
+        const tracks = [...stream.getVideoTracks(), ...stream.getAudioTracks()];
+        let notified = false;
+
+        const handleTrackEnded = () => {
+            if (notified) return;
+            notified = true;
+            console.log("screen stream mediastream = [ContentSelection] track ended = ", stream);
+            onScreenShareStoppedRef.current(stream.id);
+        };
+
+        tracks.forEach((track) => track.addEventListener("ended", handleTrackEnded));
+
+        return () => {
+            tracks.forEach((track) => track.removeEventListener("ended", handleTrackEnded));
+        };
+    }, [stream]);
 
     const handleShareScreen = async () => {
         console.log("handleShareScreen");
         if (!isHost || !roomState.roomId) return;
         setIsSharingScreen(true);
         try {
-            // * Commented the below code. since this code was responsible to interuppting the screen share streaming
-            // if (stream) {
-            //     console.log("screen stream mediastream = [ContentSelection] handle share screen = ", stream);
-            //     handleStopScreenSharing();
-            // }
+            // Held so the capture being replaced can be released below. Releasing it up here — as
+            // the previous version of this did — is what interrupted the live share: the old
+            // capture died the moment the picker opened, so dismissing the dialog left the host
+            // streaming nothing.
+            const supersededStream = stream;
+
             const { mediaStream, screenType } = await helper.captureTabStream({
                 audioOnly: false,
                 preferredDisplaySurface: "tab",
             });
+            // Bail before touching the context: a dismissed picker must leave the share that is
+            // already running exactly as it was. Writing the null through first would drop the
+            // only handle to those tracks while they stayed live.
+            if (!mediaStream) return;
+
             setStream(mediaStream);
             setScreenType(screenType);
-            if (!mediaStream) return;
+
+            // A replacement exists now, so the old one is safely disposable. Without this its
+            // tracks stay live with nothing referencing them — setStream has just overwritten the
+            // only handle — leaving a capture nothing can ever stop.
+            if (supersededStream && supersededStream !== mediaStream) {
+                supersededStream.getTracks().forEach((track) => track.stop());
+            }
             const screenItem: Playlist = {
                 id: mediaStream.id,
                 type: "stream",
