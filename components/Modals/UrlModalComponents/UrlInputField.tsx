@@ -6,6 +6,7 @@ import { Button, Input } from "../../UI";
 import { useTranslations } from "@/i18n/I18nProvider";
 import {
   appSyncFieldInputClass,
+  appSyncFieldWrapClass,
   appSyncPrimaryButtonClass,
   appSyncTooltipSurfaceClass,
 } from "@/components/UI/classTokens";
@@ -35,17 +36,19 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-3">
-      <Input
-        variant="raw"
-        type="text"
-        autoFocus={autoFocus}
-        placeholder={t("enterUrl")}
-        value={value}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        className={`${appSyncFieldInputClass} focus:outline-none`}
-        disabled={isAdding}
-      />
+      <div className={appSyncFieldWrapClass}>
+        <Input
+          variant="raw"
+          type="text"
+          autoFocus={autoFocus}
+          placeholder={t("enterUrl")}
+          value={value}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+          className={appSyncFieldInputClass}
+          disabled={isAdding}
+        />
+      </div>
 
       <div className="relative group shrink-0 sm:self-stretch">
         <Button
@@ -61,7 +64,7 @@ export const UrlInputField: React.FC<UrlInputFieldProps> = ({
             <div className={appSyncTooltipSurfaceClass}>
               {tooltipMessage}
             </div>
-            <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-[#18181f]" />
+            <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-[#100e13]" />
           </div>
         ) : null}
       </div>

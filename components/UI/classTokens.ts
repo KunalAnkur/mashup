@@ -7,7 +7,14 @@ export const movmashThemeGradientClass =
 export const movmashElevatedShadowClass =
   "shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40";
 
-export const movmashProminentCtaClass = `bg-gradient-to-r ${movmashGradientStopsClass} hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-rose-500/30`;
+// Flat primary action button — the dashboard-wide default for any "prominent CTA" outside
+// the Watch Together pages (which have their own scoped tokens). Deliberately no
+// hover:scale bounce and no heavy shadow-xl glow (that combo read as "too shiny/AI-vibe"
+// per owner feedback on both the Games "Start game" and Profile "Save changes" buttons) —
+// same flat rounded-dashSm + gradient-fill recipe as appSyncPrimaryButtonClass/
+// appStreamPrimaryButtonClass, just under a page-neutral name since this one isn't scoped
+// to a single page family.
+export const dashPrimaryButtonClass = `inline-flex h-10 items-center justify-center gap-2 rounded-dashSm bg-gradient-to-r ${movmashGradientStopsClass} px-5 text-sm font-semibold text-white transition-[filter,opacity] duration-200 disabled:cursor-not-allowed disabled:opacity-50`;
 
 export const zincGlassSurfaceClass =
   "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15";
@@ -38,8 +45,10 @@ export const zincGlassStrongBorderedSurfaceClass =
 export const zincGlassSoftInsetSurfaceClass =
   "bg-gradient-to-br from-zinc-800/15 to-zinc-700/15 backdrop-blur-sm border border-zinc-600/20";
 
+// bg-white/[0.08] (not bg-dashSurfaceAlt) — its only caller (EmptyUrlState's placeholder
+// rows) now sits on a bg-dashSurfaceAlt row, so a same-color chip would disappear into it.
 export const purpleAccentIconSurfaceClass =
-  "bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center";
+  "bg-white/[0.08] text-pink-500 flex items-center justify-center";
 
 export const purplePinkAccentIconSurfaceClass =
   "bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-fuchsia-500/20 backdrop-blur-sm border border-purple-500/30 flex items-center justify-center";
@@ -122,8 +131,6 @@ export const appDropdownLogoutIconChipClass =
 export const appDropdownDisabledRowClass =
   "disabled:cursor-not-allowed disabled:opacity-50";
 
-export const appHomeEntryCardSurfaceClass = `${zincGlassMutedBlurredSurfaceClass} hover:from-zinc-700/15 hover:via-zinc-600/15 hover:to-zinc-700/15`;
-
 export const appHomeInputSurfaceClass = `${zincGlassMutedBlurredSurfaceClass} transition-[background-color] duration-200 focus-within:from-zinc-700/15 focus-within:via-zinc-600/15 focus-within:to-zinc-700/15`;
 
 export const appLayoutContentLayerClass = "relative z-10 min-h-screen";
@@ -182,8 +189,10 @@ export const appPageHeaderBackIconClass = "block shrink-0 text-lg";
 export const appPageHeaderTitleClass =
   "truncate font-parkinsans text-sm font-semibold leading-none tracking-tight text-white/90 sm:text-base md:text-lg";
 
-export const appSectionTitleWrapClass =
-  "mb-3 flex items-center sm:mb-4 md:mb-5 lg:mb-6";
+// Confirmed via grep this token's only consumer is SectionTitle.tsx below, whose only 2
+// callers are UrlInputSection.tsx/SupportedPlatformsGrid.tsx — safe to shrink directly.
+// Matches dashPageTitleWrapClass's tighter scale used everywhere else in the redesign.
+export const appSectionTitleWrapClass = "mb-2 flex items-center sm:mb-2.5 md:mb-3";
 
 export const appSectionTitleTextClass =
   "font-parkinsans text-sm font-semibold leading-none tracking-tight text-white/88 sm:text-base md:text-lg";
@@ -215,26 +224,35 @@ export const appEntrySubtleSurfaceClass =
 export const appEntryInteractiveSurfaceClass =
   "rounded-2xl bg-white/[0.04] transition-colors duration-200 hover:bg-white/[0.06]";
 
+// Shrunk for the single-row-of-6 layout (was a 3x2 grid of much bigger tiles) — a fixed,
+// modest size instead of the old responsive escalation up to 140px, since this grid only
+// ever renders at lg+ anyway (its wrapper is `hidden lg:block`).
 export const appSyncPlatformCardClass =
-  "relative isolate aspect-square flex min-h-[70px] flex-col items-center justify-center overflow-hidden rounded-lg p-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_18px_38px_rgba(0,0,0,0.16)] transition-[filter,transform] duration-200 hover:brightness-105 md:min-h-[90px] md:rounded-xl md:p-3 lg:min-h-[110px] lg:rounded-2xl lg:p-4 xl:min-h-[130px] xl:p-5 2xl:min-h-[140px] 2xl:p-6";
+  "relative isolate aspect-square flex min-h-[52px] flex-col items-center justify-center overflow-hidden rounded-dashSm p-1.5 text-center transition-[filter] duration-200 hover:brightness-110";
 
+// Bottom scrim only (no glossy top highlight) so the white icon/label stay legible over
+// each platform's flat brand-color fill — same idea as the sidebar's dashCozyScrimClass.
 export const appSyncPlatformCardOverlayClass =
-  "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.15),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.08))]";
+  "pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/35 to-transparent";
 
-export const appSyncPlatformIconClass =
-  "text-white/95 leading-none [&>svg]:text-[26px] md:[&>svg]:text-[30px] lg:[&>svg]:text-[34px] xl:[&>svg]:text-[38px]";
+// Icon size now lives directly on each platform's own icon element (constants/urlPlatforms.tsx)
+// since it needs one fixed small size, not the old per-breakpoint scale.
+export const appSyncPlatformIconClass = "text-white/95 leading-none";
 
 export const appSyncPlatformLabelClass =
-  "mt-1 px-1 text-[10px] font-semibold leading-tight tracking-tight text-white/94 md:mt-2 md:text-xs lg:mt-2.5 lg:text-sm xl:text-[15px]";
+  "mt-1 px-0.5 text-[9px] font-semibold leading-tight tracking-tight text-white/94";
+
+// Background lives on this wrapper, not the <input> itself — Input's variant="raw" always
+// prepends its own bg-transparent, which would fight a bg-* class placed directly on the
+// input for the same CSS property with no reliable winner (see dashJoinTileInputWrapClass
+// for the same pattern/reasoning).
+export const appSyncFieldWrapClass =
+  "flex h-11 grow min-w-0 items-center rounded-dashSm bg-dashSurfaceAlt px-4 transition-colors duration-200 focus-within:outline focus-within:outline-2 focus-within:outline-pink-600/55";
 
 export const appSyncFieldInputClass =
-  "h-11 grow min-w-0 rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.10),transparent_46%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.10),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] px-4 text-sm font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl placeholder:text-white/36 transition-[filter,background] duration-200 focus:brightness-105";
+  "w-full min-w-0 bg-transparent text-sm font-medium text-dashText placeholder:text-dashTextMute";
 
-export const appSyncSecondaryButtonClass =
-  "h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.08),rgba(168,85,247,0.06),rgba(244,63,94,0.08))] px-3 text-sm font-medium text-white/88 transition-[filter,background] duration-200 hover:brightness-105 hover:text-white";
-
-export const appSyncPrimaryButtonClass =
-  "h-11 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.94),rgba(168,85,247,0.88),rgba(244,63,94,0.9))] px-5 text-sm font-semibold tracking-tight text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
+export const appSyncPrimaryButtonClass = `h-11 items-center justify-center gap-2 rounded-dashSm bg-gradient-to-r ${movmashGradientStopsClass} px-5 text-sm font-semibold tracking-tight text-white transition-[filter,opacity] duration-200 disabled:cursor-not-allowed disabled:opacity-50`;
 
 export const appEntryFieldShellClass =
   "flex min-h-12 items-center rounded-2xl bg-white/[0.045] px-4 transition-colors duration-200 focus-within:bg-white/[0.07]";
@@ -260,30 +278,41 @@ export const pricingPaidIconSurfaceClass =
 export const pricingPaidBadgeSurfaceClass = "bg-rose-500/12 text-rose-100";
 
 export const appSyncTooltipSurfaceClass =
-  "rounded-xl bg-[linear-gradient(180deg,rgba(22,22,30,0.98),rgba(14,14,20,0.98))] px-3 py-2 text-[11px] text-white/76 shadow-xl shadow-black/25 backdrop-blur-xl";
+  "rounded-dashSm border border-dashBorder bg-dashSurface px-3 py-2 text-[11px] text-dashTextDim shadow-xl shadow-black/25";
 
+// bg-dashSurfaceAlt (not bg-dashSurface) — the panel wrapping this is itself bg-dashSurface,
+// same fix as the File Share file cards (appStreamFileCardClass) for the identical problem.
 export const appSyncPlaceholderRowClass =
-  "flex items-center gap-3 rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.024))] px-3 py-3";
+  "flex items-center gap-3 rounded-dashSm bg-dashSurfaceAlt px-3 py-2.5";
 
-export const appSyncListShellClass =
-  "min-h-[220px] flex-1 overflow-hidden sm:min-h-[200px]";
+// Fixed height (not min/max) reserved for exactly 3 cards, same value on both the empty
+// and populated variants below — so the box never grows or shrinks as the 1st/2nd/3rd URL
+// gets added (only scrolls internally once a 4th arrives), matching how File Share's file
+// list (appStreamListViewportClass) reserves constant space regardless of file count.
+export const appSyncListShellClass = "h-[192px] overflow-hidden";
 
-export const appSyncListShellEmptyClass = "flex-1 overflow-hidden rounded-2xl";
+export const appSyncListShellEmptyClass = "h-[192px] overflow-hidden rounded-dashSm";
 
+// Sized to match File Share's file-card thumbnail exactly (appStreamFileThumbnailClass'
+// video-file sizing) — owner asked for the same scale across both lists.
 export const appSyncCardThumbnailClass =
-  "relative h-[44px] w-[78px] shrink-0 overflow-hidden rounded-xl bg-[linear-gradient(180deg,rgba(24,24,31,0.88),rgba(10,10,14,0.92))]";
+  "relative h-8 w-12 shrink-0 overflow-hidden rounded-dashSm bg-dashSurfaceAlt sm:h-[34px] sm:w-[60px]";
 
 export const appSyncCardIndexClass =
-  "shrink-0 text-[11px] font-medium leading-none tabular-nums text-white/38";
+  "shrink-0 text-[10px] font-medium leading-none tabular-nums text-dashTextMute";
 
+// bg-dashSurfaceAlt (not bg-dashSurface) for the same panel-contrast reason as the
+// placeholder row above; hover bumped one step further since the resting state now
+// occupies what hover used to be. min-h (not fixed h) now matches File Share's file-card
+// scale (appStreamFileCardClass's sm:min-h-[58px]) instead of a flat 64px.
 export const appSyncCardClass =
-  "relative flex h-[74px] items-center gap-2.5 rounded-2xl bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.06),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] py-3 pr-3 pl-2.5 transition-[filter,background] duration-200 hover:brightness-105";
+  "relative flex min-h-[52px] w-full items-center gap-2.5 rounded-dashSm bg-dashSurfaceAlt px-2.5 py-2 transition-colors duration-200 hover:bg-white/[0.06] sm:min-h-[58px] sm:px-3 sm:py-2.5";
 
 export const appStreamTopBarClass =
-  "mb-3 flex items-center justify-between gap-3 sm:mb-4";
+  "mb-2 flex items-center justify-between gap-3 sm:mb-2.5 md:mb-3";
 
 export const appStreamActionButtonClass =
-  "inline-flex h-10 items-center gap-2 rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.14),rgba(168,85,247,0.08),rgba(244,63,94,0.14))] px-3.5 text-sm font-medium text-white/86 transition-[filter,background] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex h-10 items-center gap-2 rounded-dashSm bg-dashSurfaceAlt px-3.5 text-sm font-medium text-dashText transition-colors duration-150 hover:bg-white/[0.075] disabled:cursor-not-allowed disabled:opacity-50";
 
 export const appStreamPanelClass = "flex w-full flex-col";
 
@@ -293,31 +322,35 @@ export const appStreamListClass =
 export const appStreamListViewportClass =
   "w-full min-h-[220px] sm:h-[208px] sm:min-h-[208px] sm:max-h-[208px] md:h-[214px] md:min-h-[214px] md:max-h-[214px]";
 
+// bg-dashSurfaceAlt (not bg-dashSurface) — the panel wrapping this list is itself
+// bg-dashSurface, so a same-color card was invisible against it. This is the one shade
+// lighter than the panel, giving each file its own visible box.
 export const appStreamFileCardClass =
-  "relative flex w-full max-w-full items-center justify-between overflow-hidden rounded-xl bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.032))] px-2.5 py-2 transition-[background,filter] duration-200 sm:min-h-[58px] sm:px-3 sm:py-2.5 md:min-h-[62px] md:px-3.5";
+  "relative flex w-full max-w-full items-center justify-between overflow-hidden rounded-dashMd bg-dashSurfaceAlt px-2.5 py-2 transition-colors duration-200 sm:min-h-[58px] sm:px-3 sm:py-2.5 md:min-h-[62px] md:px-3.5";
 
+// Reuses the same brand-gradient wash as the sidebar's active nav/submenu items
+// (dashNavItemActiveClass) so "selected" reads consistently across the dashboard.
 export const appStreamFileCardSelectedClass =
-  "bg-[radial-gradient(circle_at_left,rgba(56,189,248,0.16),transparent_42%),radial-gradient(circle_at_right,rgba(244,63,94,0.14),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.09),rgba(255,255,255,0.048))] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]";
+  "bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))]";
 
-export const appStreamFileCardIdleClass =
-  "hover:bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.08),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.038))] hover:brightness-105";
+// One more step lighter than the card's own bg-dashSurfaceAlt resting state.
+export const appStreamFileCardIdleClass = "hover:bg-white/[0.06]";
 
 export const appStreamFileThumbnailClass =
-  "flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[linear-gradient(180deg,rgba(24,24,31,0.88),rgba(10,10,14,0.92))]";
+  "flex shrink-0 items-center justify-center overflow-hidden rounded-dashSm bg-dashSurfaceAlt";
 
 export const appStreamUploadDropzoneClass =
-  "relative flex flex-col items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.13),transparent_46%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.13),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.028))] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-[filter,background] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:rounded-2xl";
+  "relative flex flex-col items-center justify-center overflow-hidden rounded-dashMd border border-dashed border-dashBorder bg-dashSurface transition-colors duration-200 hover:bg-dashSurfaceAlt disabled:cursor-not-allowed disabled:opacity-50";
 
+// Border added so this reads as its own clickable element against the panel's identical
+// bg-dashSurface background — previously flush/invisible, same fix as the file cards above,
+// borrowing the dropzone's own dashed-border treatment for a consistent "add" affordance.
 export const appStreamInlineAdderClass =
-  "relative flex flex-col items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.10),transparent_46%),linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.022))] transition-[filter,background] duration-200 hover:brightness-105";
+  "relative flex flex-col items-center justify-center overflow-hidden rounded-dashMd border border-dashed border-dashBorder bg-dashSurface transition-colors duration-200 hover:bg-dashSurfaceAlt";
 
 export const appStreamBottomActionRowClass = "flex gap-2";
 
-export const appStreamGhostButtonClass =
-  "h-11 w-full justify-center rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.08),rgba(168,85,247,0.06),rgba(244,63,94,0.08))] px-4 text-sm font-medium text-white/86 transition-[filter,background] duration-200 hover:brightness-105 hover:text-white";
-
-export const appStreamPrimaryButtonClass =
-  "h-11 w-full justify-center rounded-xl bg-[linear-gradient(135deg,rgba(56,189,248,0.94),rgba(168,85,247,0.88),rgba(244,63,94,0.9))] px-4 text-sm font-semibold text-white transition-[filter,opacity] duration-200 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50";
+export const appStreamPrimaryButtonClass = `h-11 w-full justify-center rounded-dashMd bg-gradient-to-r ${movmashGradientStopsClass} px-4 text-sm font-semibold text-white transition-[filter,opacity] duration-200 disabled:cursor-not-allowed disabled:opacity-50`;
 
 export const appStreamScreenShareButtonClass =
   "flex flex-1 cursor-pointer flex-col items-center justify-center rounded-2xl bg-[radial-gradient(circle_at_top,rgba(96,165,250,0.12),transparent_46%),radial-gradient(circle_at_bottom_left,rgba(168,85,247,0.10),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(244,63,94,0.10),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.036),rgba(255,255,255,0.026))] p-4 transition-[filter,background] duration-200 hover:brightness-105 sm:p-6";
@@ -327,29 +360,39 @@ export const appStreamScreenShareIconClass =
 
 export const appStreamScreenHeroSurfaceClass = "rounded-dashMd bg-dashSurface";
 
-// Left-aligned, matching the rest of the dashboard's top-left content start point —
-// this used to be mx-auto + items-center + text-center, which centered the whole
-// "before preview" block on the page while every other screen starts flush left.
+// Centered — owner explicitly reversed the earlier flush-left decision for this page
+// (a left-aligned narrow card on a wide viewport left a large empty void to its right,
+// reading as content "stuck"/bunched on the left rather than intentionally placed).
+// Boxed in the same bg-dashSurface card as every other section on this page (steps,
+// Quick Tips, and this block's own post-preview counterpart via appStreamScreenHeroSurfaceClass).
 export const appStreamScreenOpenSectionClass =
-  "flex w-full max-w-2xl flex-col items-start gap-4 text-left sm:gap-5 md:gap-6";
+  "flex w-full max-w-2xl flex-col items-center gap-4 rounded-dashMd bg-dashSurface p-4 text-center sm:gap-5 sm:p-5 md:gap-6 md:p-6";
 
 export const appStreamScreenIntroWidthClass = "w-full max-w-md";
 
-export const appStreamScreenIntroClusterClass = "flex w-full items-start text-left";
+export const appStreamScreenIntroClusterClass = "flex w-full items-center text-center";
 
 export const appStreamScreenIntroCopyClass =
-  "flex min-w-0 w-full flex-col items-start text-left";
+  "flex min-w-0 w-full flex-col items-center text-center";
 
 export const appStreamScreenStepCardClass =
   "rounded-dashMd bg-dashSurface transition-colors duration-200 hover:bg-dashSurfaceAlt";
 
-export const appStreamScreenStepBadgeClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-base font-semibold text-white sm:mb-4 sm:h-12 sm:w-12 sm:text-lg";
+// Mini illustration frame for each "How it works" step — a compact fixed-size square
+// (not a stretched full-width banner) so the small icon inside it doesn't drown in a
+// mostly-empty dark rectangle. Sits left of the text in the mobile row layout, centers
+// above the text once cards switch to a column at sm+. Replaces the old plain numbered
+// circle with a small visual that actually depicts the action (mini button+cursor / tab
+// picker / live indicator), per owner request for something more concrete than an
+// abstract "1/2/3".
+export const appStreamScreenStepVisualClass =
+  "relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-dashSm bg-dashSurfaceAlt sm:mb-3 sm:h-16 sm:w-16 md:h-[72px] md:w-[72px]";
+
+export const appStreamScreenStepNumberClass =
+  "absolute left-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[9px] font-bold text-white sm:h-5 sm:w-5 sm:text-[10px]";
 
 export const appStreamScreenSupportCopyClass =
   "text-xs leading-6 text-dashTextDim sm:text-[13px] md:text-sm";
-
-export const appStreamScreenInfoSurfaceClass = "rounded-dashMd bg-dashSurface";
 
 export const appStreamScreenPreviewStatusClass = "rounded-dashMd bg-dashSurface";
 
@@ -361,7 +404,13 @@ export const appStreamScreenToggleSurfaceClass = "rounded-dashSm bg-dashSurfaceA
 
 export const appStreamScreenWarningSurfaceClass = "rounded-dashSm bg-amber-500/10";
 
-export const appStreamScreenPrimaryButtonClass = `inline-flex w-full items-center justify-center gap-2 rounded-dashMd bg-gradient-to-r ${movmashGradientStopsClass} px-4 py-3.5 text-sm font-semibold text-white transition-[filter,opacity] duration-200 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6 sm:py-4 sm:text-base md:px-8 md:py-5 md:text-lg`;
+// Fixed, content-sized pill — deliberately does NOT scale padding/text up across
+// breakpoints like the old version did (px-4→8, py-3.5→5, text-sm→lg). That escalation
+// made this the one CTA in the whole app that ballooned into a huge landing-page-style
+// slab on desktop, out of scale with every other primary button (Games' Start,
+// dashUpgradeButtonClass, appStreamPrimaryButtonClass, appSyncPrimaryButtonClass — all a
+// fixed h-11/text-sm regardless of viewport).
+export const appStreamScreenPrimaryButtonClass = `inline-flex h-11 items-center justify-center gap-2 rounded-dashSm bg-gradient-to-r ${movmashGradientStopsClass} px-6 text-sm font-semibold text-white transition-[filter,opacity] duration-200 disabled:cursor-not-allowed disabled:opacity-50`;
 
 export const appTransactionRowClass =
   "flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] px-4 py-3 text-[13px] text-white/74";
@@ -785,3 +834,38 @@ export const dashProductPriceClass = "text-[11px] tabular-nums text-dashTextMute
 
 export const dashProductLinkClass =
   "ml-auto flex shrink-0 items-center gap-[3px] whitespace-nowrap text-[11px] font-semibold text-pink-600 transition-colors duration-150 hover:text-fuchsia-500";
+
+// ---------------------------------------------------------------------------
+// Profile Settings page (movmash_mockup_local.html #pageProfile) — 2-column
+// Profile / Language layout, restyled to the flat dash* system.
+// ---------------------------------------------------------------------------
+
+// Opt-in large variant for SidebarAvatarChip — the sidebar's own 34px/26px chips are too
+// small for a page-level "Profile picture" row. Sized one notch down from the mockup's
+// literal 56px per owner feedback ("bi tık küçült").
+export const dashAvatarChipLargeClass =
+  "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-base font-bold text-white";
+
+export const dashSettingsSectionLabelClass =
+  "text-[11.5px] font-bold uppercase tracking-[0.05em] text-dashTextMute";
+
+export const dashSettingsFieldLabelClass = "text-[12.5px] font-semibold text-dashTextDim";
+
+// Background lives on this wrapper, not the <input> itself — same reasoning as
+// dashJoinTileInputWrapClass/appSyncFieldWrapClass (Input's variant="raw" always adds its
+// own bg-transparent, which would fight a bg-* class on the input for the same property).
+export const dashSettingsFieldWrapClass =
+  "flex h-10 w-full items-center rounded-[9px] bg-dashSurfaceAlt px-3 focus-within:outline focus-within:outline-2 focus-within:outline-pink-600/55";
+
+export const dashSettingsFieldInputClass =
+  "w-full min-w-0 bg-transparent text-[13.5px] text-dashText placeholder:text-dashTextMute";
+
+export const dashSettingsFieldStaticClass =
+  "flex h-10 w-full items-center rounded-[9px] bg-dashSurfaceAlt px-3 text-[13.5px] text-dashTextMute";
+
+export const dashSettingsSaveButtonClass = dashPrimaryButtonClass;
+
+// Language row reuses the sidebar popover's own row shape for visual consistency; active
+// state reuses the same brand-gradient wash as active nav items (dashNavItemActiveClass).
+export const dashLanguageRowActiveClass =
+  "text-dashText bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))]";

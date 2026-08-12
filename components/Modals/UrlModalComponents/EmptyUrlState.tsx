@@ -8,24 +8,24 @@ import {
 } from "@/components/UI/classTokens";
 
 const emptyUrlPlaceholderRemoveIconWrapClass =
-  "flex h-7 w-7 items-center justify-center rounded-xl";
+  "flex h-6 w-6 items-center justify-center rounded-dashSm";
 
 export const EmptyUrlState: React.FC = () => {
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-2">
       {[1, 2, 3].map((i) => (
         <div key={i} className={appSyncPlaceholderRowClass}>
           <div
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${purpleAccentIconSurfaceClass}`}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-dashSm ${purpleAccentIconSurfaceClass}`}
           >
-            <FaVideo className="text-xs text-white/65" />
+            <FaVideo className="text-[11px]" />
           </div>
-          <div className="flex-1 space-y-2">
-            <div className="h-2.5 rounded-full bg-white/[0.055]" />
-            <div className="h-2 w-2/3 rounded-full bg-white/[0.035]" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-2.5 rounded-full bg-white/[0.06]" />
+            <div className="h-2 w-2/3 rounded-full bg-white/[0.04]" />
           </div>
           <div className={emptyUrlPlaceholderRemoveIconWrapClass}>
-            <FaTimes className="text-[11px] text-white/35" />
+            <FaTimes className="text-[10px] text-dashTextMute" />
           </div>
         </div>
       ))}
