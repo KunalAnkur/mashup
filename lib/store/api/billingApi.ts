@@ -8,12 +8,16 @@ export type PlanChangeDirection = "upgrade" | "downgrade";
 
 export interface PaymentTransactionSummary {
   id: string;
+  /** The gateway's reference — what the history is searchable by and what support quotes. */
+  transactionId: string;
   amount: number;
   currency: string;
   status: PaymentStatus;
   planSlug: string | null;
   planName: string | null;
   direction: PlanChangeDirection | null;
+  /** Hosted receipt. Null for a charge that never completed, and for older rows. */
+  invoiceUrl: string | null;
   createdAt: string;
 }
 

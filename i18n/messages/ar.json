@@ -507,6 +507,7 @@
     "renewsOn": "يتم التجديد تلقائيًا في {date}.",
     "renewsYearlyOn": "يتم التجديد تلقائيًا في {date} لمدة عام آخر.",
     "cancelAnytimeHint": "يمكنك الإلغاء في أي وقت قبل ذلك — يبقى وصولك حتى ذلك التاريخ.",
+    "freePlanHint": "أنت على الخطة المجانية. يمكنك الترقية في أي وقت.",
     "pendingChangeBanner": "سيتم الانتقال إلى {plan} في {date}",
     "undoPendingChange": "تراجع",
     "features": {
@@ -546,6 +547,29 @@
         "completed": "مكتمل",
         "failed": "فشل",
         "refunded": "تم الاسترداد"
+      },
+      "searchPlaceholder": "ابحث برقم المعاملة أو الخطة",
+      "filterStatus": "تصفية حسب الحالة",
+      "filterDate": "تصفية حسب التاريخ",
+      "allStatuses": "كل الحالات",
+      "noMatches": "لا توجد مدفوعات تطابق هذه التصفية.",
+      "viewInvoice": "عرض الفاتورة",
+      "noInvoice": "—",
+      "showing": "عرض {from}–{to} من {total}",
+      "previousPage": "الصفحة السابقة",
+      "nextPage": "الصفحة التالية",
+      "columns": {
+        "description": "الوصف",
+        "date": "التاريخ",
+        "status": "الحالة",
+        "total": "الإجمالي",
+        "actions": "إجراءات"
+      },
+      "dates": {
+        "all": "كل التواريخ",
+        "30d": "آخر 30 يومًا",
+        "90d": "آخر 90 يومًا",
+        "year": "هذا العام"
       }
     }
   },

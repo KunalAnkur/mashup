@@ -507,6 +507,7 @@
     "renewsOn": "{date} tarihinde otomatik olarak yenilenir.",
     "renewsYearlyOn": "{date} tarihinde bir yıl daha otomatik olarak yenilenir.",
     "cancelAnytimeHint": "O tarihe kadar istediğin zaman iptal edebilirsin — o güne kadar erişimin devam eder.",
+    "freePlanHint": "Ücretsiz plandasın. İstediğin zaman yükseltebilirsin.",
     "pendingChangeBanner": "{date} tarihinde {plan} planına geçilecek",
     "undoPendingChange": "Geri al",
     "features": {
@@ -546,6 +547,29 @@
         "completed": "Tamamlandı",
         "failed": "Başarısız",
         "refunded": "İade edildi"
+      },
+      "searchPlaceholder": "İşlem kimliği veya plana göre ara",
+      "filterStatus": "Duruma göre filtrele",
+      "filterDate": "Tarihe göre filtrele",
+      "allStatuses": "Tüm durumlar",
+      "noMatches": "Bu filtrelere uyan ödeme yok.",
+      "viewInvoice": "Faturayı gör",
+      "noInvoice": "—",
+      "showing": "{total} kayıttan {from}–{to} arası",
+      "previousPage": "Önceki sayfa",
+      "nextPage": "Sonraki sayfa",
+      "columns": {
+        "description": "Açıklama",
+        "date": "Tarih",
+        "status": "Durum",
+        "total": "Tutar",
+        "actions": "İşlemler"
+      },
+      "dates": {
+        "all": "Tüm tarihler",
+        "30d": "Son 30 gün",
+        "90d": "Son 90 gün",
+        "year": "Bu yıl"
       }
     }
   },

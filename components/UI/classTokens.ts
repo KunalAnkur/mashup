@@ -415,6 +415,115 @@ export const appStreamScreenPrimaryButtonClass = `inline-flex h-11 items-center 
 export const appTransactionRowClass =
   "flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] px-4 py-3 text-[13px] text-white/74";
 
+// ---------------------------------------------------------------------------
+// Subscription page — the current plan banner and the purchase history table.
+// A wide two-column banner rather than the tall narrow card it replaces: the plan and
+// what it costs belong side by side with what it gets you, and the page below is a
+// table that needs the full width anyway.
+// ---------------------------------------------------------------------------
+
+export const subPageWrapClass = "mx-auto w-full max-w-5xl space-y-6 pb-10 pt-5 md:pt-8";
+
+export const subPlanBannerClass =
+  "relative overflow-hidden rounded-[1.75rem] ring-1 ring-white/[0.06] shadow-[0_24px_80px_rgba(0,0,0,0.28)]";
+
+/**
+ * A soft bloom behind the tier mark. Without it a paid card is the same flat panel as
+ * everything else on the page, and the one thing this card should convey is that the
+ * account is on something.
+ */
+export const subPlanGlowClass =
+  "pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(225,29,72,0.16),transparent_68%)]";
+
+// Everything on one column-free stack. The two-column version left the right-hand
+// side almost empty above three short perks, and the full-height rule between them
+// drew a line down the middle of that emptiness.
+export const subPlanBodyClass = "p-6 sm:p-7";
+
+export const subPlanHeaderClass = "flex items-start justify-between gap-4";
+
+export const subPlanBadgeClass =
+  "inline-flex items-center rounded-full bg-white/[0.05] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/68";
+
+export const subPlanNameClass =
+  "mt-3.5 font-parkinsans text-[2rem] font-semibold leading-none tracking-[-0.05em] text-white md:text-[2.35rem]";
+
+export const subPlanPriceRowClass = "mt-3 flex items-end gap-2";
+
+export const subPlanPriceClass =
+  "font-parkinsans text-[1.9rem] font-semibold leading-none text-white/92 md:text-[2.1rem]";
+
+export const subPlanCadenceClass = "pb-0.5 text-[13px] lowercase text-white/42";
+
+export const subPlanIconClass =
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] bg-white/[0.05] text-white/90";
+
+// Perks read across rather than down: they are three or four words each, and a row of
+// them fills the width the price leaves empty instead of stacking into a second column.
+export const subPlanPerksRowClass = "mt-6 flex flex-wrap gap-x-7 gap-y-3";
+
+export const subPlanPerkClass = "flex items-center gap-2.5 text-[13px] leading-5 text-white/74";
+
+export const subPlanPerkIconClass =
+  "flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-white/70";
+
+// What happens next on the left, what you can do about it on the right — one baseline,
+// so the card ends on a line of intent rather than a stray banner.
+export const subPlanFooterClass =
+  "flex flex-col gap-3.5 border-t border-white/[0.045] bg-white/[0.012] px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7";
+
+export const subPlanFooterTextClass = "text-[13px] leading-relaxed text-white/56";
+
+export const subPlanFooterLinkClass =
+  "shrink-0 font-semibold text-rose-300 transition-colors duration-200 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-50";
+
+export const subPlanActionsClass = "flex shrink-0 flex-wrap items-center gap-2.5";
+
+// --- purchase history -------------------------------------------------------
+
+export const subHistoryCardClass =
+  "overflow-hidden rounded-[1.5rem] bg-white/[0.028] shadow-[0_18px_50px_rgba(0,0,0,0.22)]";
+
+export const subHistoryToolbarClass =
+  "flex flex-col gap-2.5 p-4 sm:flex-row sm:items-center";
+
+export const subHistorySearchWrapClass =
+  "flex h-10 flex-1 items-center gap-2 rounded-xl bg-white/[0.045] px-3.5 transition-colors duration-150 focus-within:bg-white/[0.07]";
+
+export const subHistorySearchInputClass =
+  "w-full bg-transparent text-[13px] text-white/88 placeholder:text-white/34 focus:outline-none";
+
+export const subHistorySelectClass =
+  "h-10 shrink-0 cursor-pointer rounded-xl bg-white/[0.045] px-3.5 text-[13px] text-white/72 transition-colors duration-150 hover:bg-white/[0.07] focus:bg-white/[0.07] focus:outline-none";
+
+export const subHistoryHeadRowClass = "bg-white/[0.022]";
+
+export const subHistoryHeadCellClass =
+  "px-4 py-2.5 text-left text-[10.5px] font-medium uppercase tracking-[0.11em] text-white/38";
+
+/** Header cells that sort. The arrow only appears on the column actually sorting. */
+export const subHistorySortButtonClass =
+  "inline-flex items-center gap-1 transition-colors duration-150 hover:text-white/70";
+
+export const subHistoryRowClass =
+  "border-t border-white/[0.035] text-[13px] text-white/74 transition-colors duration-150 hover:bg-white/[0.018]";
+
+export const subHistoryCellClass = "px-4 py-4 align-middle";
+
+export const subHistoryIconClass =
+  "flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.8rem] bg-rose-500/[0.11] text-rose-200/80";
+
+export const subHistoryInvoiceLinkClass =
+  "inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-rose-300 transition-colors duration-150 hover:text-rose-200";
+
+export const subHistoryPagerClass =
+  "flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.035] px-4 py-3.5 text-[12.5px] text-white/48";
+
+export const subHistoryPagerButtonClass =
+  "flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.05] text-white/78 transition-colors duration-150 hover:bg-white/[0.09] disabled:cursor-not-allowed disabled:opacity-35";
+
+export const subHistoryEmptyClass = "px-4 py-14 text-center text-[13px] text-white/42";
+
 export const appTransactionStatusBadgeClass =
   "inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]";
 

@@ -11,15 +11,28 @@ import {
   appEntryPageInsetClass,
   appEntrySecondaryButtonClass,
   appPulseSurfaceClass,
-  appTransactionRowClass,
-  appTransactionStatusBadgeClass,
-  appTransactionStatusCompletedClass,
-  appTransactionStatusFailedClass,
-  appTransactionStatusNeutralClass,
-  appTransactionStatusProcessingClass,
   appWhiteBorderClass,
   pricingPaidCardSurfaceClass,
+  subPageWrapClass,
+  subPlanActionsClass,
+  subPlanBadgeClass,
+  subPlanBannerClass,
+  subPlanBodyClass,
+  subPlanGlowClass,
+  subPlanCadenceClass,
+  subPlanIconClass,
+  subPlanNameClass,
+  subPlanFooterClass,
+  subPlanFooterLinkClass,
+  subPlanFooterTextClass,
+  subPlanHeaderClass,
+  subPlanPerkClass,
+  subPlanPerkIconClass,
+  subPlanPerksRowClass,
+  subPlanPriceClass,
+  subPlanPriceRowClass,
 } from "@/components/UI/classTokens";
+import { PurchaseHistory } from "@/components/Subscription/PurchaseHistory";
 import { RootState } from "@/lib/store";
 import {
   useCancelMySubscriptionMutation,
@@ -27,7 +40,6 @@ import {
   useReactivateMySubscriptionMutation,
 } from "@/lib/store/api/userApi";
 import {
-  PaymentTransactionSummary,
   useCancelChangePlanMutation,
   useGetMyTransactionsQuery,
 } from "@/lib/store/api/billingApi";
@@ -39,16 +51,8 @@ import {
   hasActivePaidSubscription,
 } from "@/utils/subscription";
 import { getApiErrorMessage } from "@/utils/apiError";
-import { PaymentStatus, SubscriptionStatus } from "@/types/subscriptionTypes";
+import { SubscriptionStatus } from "@/types/subscriptionTypes";
 import { showError, showSuccess } from "@/utils/toast";
-
-const transactionStatusClassMap: Record<PaymentStatus, string> = {
-  [PaymentStatus.PROCESSING]: appTransactionStatusProcessingClass,
-  [PaymentStatus.PENDING]: appTransactionStatusProcessingClass,
-  [PaymentStatus.COMPLETED]: appTransactionStatusCompletedClass,
-  [PaymentStatus.FAILED]: appTransactionStatusFailedClass,
-  [PaymentStatus.REFUNDED]: appTransactionStatusNeutralClass,
-};
 
 const formatDate = (value?: string | Date | null) => {
   if (!value) {
@@ -67,25 +71,7 @@ const formatDate = (value?: string | Date | null) => {
   }).format(date);
 };
 
-const planCardClassName =
-  "relative overflow-hidden rounded-[2rem] border border-white/10 px-5 py-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:px-6 sm:py-6";
-const planCardBadgeClassName =
-  "inline-flex items-center rounded-full bg-white/[0.05] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/68";
-const planCardNameClassName =
-  "mt-4 font-parkinsans text-[2rem] font-semibold leading-none tracking-[-0.05em] text-white md:text-[2.35rem]";
-const planCardIconClassName =
-  "flex h-10 w-10 items-center justify-center rounded-[1rem] bg-white/[0.05] text-white/90";
-const planCardPriceRowClassName = "mt-5 flex items-end gap-2";
-const planCardPriceClassName =
-  "font-parkinsans text-[2.35rem] font-semibold text-white md:text-[2.7rem]";
-const planCardCadenceClassName = "pb-1 text-[13px] capitalize text-white/42";
-const planCardPerksClassName = "mt-5 space-y-2.5";
-const planCardPerkItemClassName =
-  "flex items-center gap-3 text-[13px] leading-5 text-white/74 md:text-sm md:leading-6";
-const planCardPerkIconClassName =
-  "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/80";
-const planCardActionsClassName = "mt-6 space-y-2.5";
-const skeletonCardClassName = `${planCardClassName} ${appPulseSurfaceClass} h-[380px]`;
+const skeletonBannerClass = `${subPlanBannerClass} ${appPulseSurfaceClass} h-[300px]`;
 
 export default function SubscriptionPage() {
   const dispatch = useDispatch();
@@ -147,18 +133,6 @@ export default function SubscriptionPage() {
     return bullets;
   }, [plan, t]);
 
-  const getTransactionLabel = (transaction: PaymentTransactionSummary) => {
-    const plan = transaction.planName ?? transaction.planSlug;
-
-    if (transaction.direction === "upgrade") {
-      return plan ? t("transactions.upgradeTo", { plan }) : t("transactions.upgrade");
-    }
-    if (transaction.direction === "downgrade") {
-      return plan ? t("transactions.downgradeTo", { plan }) : t("transactions.downgrade");
-    }
-    return plan ? t("transactions.newSubscriptionTo", { plan }) : t("transactions.newSubscription");
-  };
-
   const handleCancelPendingChange = async () => {
     try {
       await cancelChangePlan().unwrap();
@@ -198,165 +172,134 @@ export default function SubscriptionPage() {
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className={appEntryPageInsetClass}>
             <div className={appEntryPageContentWrapClass}>
-              <section className="mx-auto max-w-xl space-y-5 pb-6 pt-5 md:space-y-6 md:pb-8 md:pt-8">
-                <section className="mx-auto max-w-xl text-center">
-                  <h1 className="font-parkinsans text-[2.5rem] font-semibold tracking-[-0.04em] text-white md:text-[2.85rem]">
+              <div className={subPageWrapClass}>
+                <header>
+                  <h1 className="font-parkinsans text-[2.2rem] font-semibold tracking-[-0.04em] text-white md:text-[2.6rem]">
                     {t("title")}
                   </h1>
-                </section>
+                </header>
 
                 {isLoading || !plan ? (
-                  <div className={skeletonCardClassName} />
+                  <div className={skeletonBannerClass} />
                 ) : (
                   <article
-                    className={`${planCardClassName} ${
-                      isPaid ? pricingPaidCardSurfaceClass : "bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))]"
+                    className={`${subPlanBannerClass} ${
+                      isPaid
+                        ? pricingPaidCardSurfaceClass
+                        : "bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))]"
                     }`}
                   >
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" />
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/[0.07]" />
+        <div className={subPlanGlowClass} />
+                    {isPaid ? <div className={subPlanGlowClass} /> : null}
 
-                    <span
-                      className={`${planCardIconClassName} absolute right-5 top-5 sm:right-6 sm:top-6`}
-                    >
-                      {isPaid ? (
-                        <LuCrown className="h-5 w-5" />
-                      ) : (
-                        <LuSparkles className="h-5 w-5" />
-                      )}
-                    </span>
-
-                    <span className={planCardBadgeClassName}>{t("currentPlanBadge")}</span>
-
-                    <h2 className={planCardNameClassName}>
-                      {isPaid ? tierDisplayName : plan.name}
-                    </h2>
-
-                    <div className={planCardPriceRowClassName}>
-                      <span className={planCardPriceClassName}>
-                        {formatPlanPrice(plan.price, plan.currency)}
-                      </span>
-                      <div className="flex flex-col gap-0.5 pb-1">
-                        <span className={planCardCadenceClassName}>
-                          /{plan.billing_cycle}
+                    <div className={subPlanBodyClass}>
+                      <div className={subPlanHeaderClass}>
+                        <span className={subPlanBadgeClass}>{t("currentPlanBadge")}</span>
+                        <span className={subPlanIconClass}>
+                          {isPaid ? <LuCrown className="h-5 w-5" /> : <LuSparkles className="h-5 w-5" />}
                         </span>
+                      </div>
+
+                      <h2 className={subPlanNameClass}>{isPaid ? tierDisplayName : plan.name}</h2>
+
+                      <div className={subPlanPriceRowClass}>
+                        <span className={subPlanPriceClass}>
+                          {formatPlanPrice(plan.price, plan.currency)}
+                        </span>
+                        <span className={subPlanCadenceClass}>/{plan.billing_cycle}</span>
+                      </div>
+
+                      <div className={subPlanPerksRowClass}>
+                        {perks.map((perk) => (
+                          <span key={perk} className={subPlanPerkClass}>
+                            <span className={subPlanPerkIconClass}>
+                              <LuCheck className="h-2.5 w-2.5" />
+                            </span>
+                            <span>{perk}</span>
+                          </span>
+                        ))}
                       </div>
                     </div>
 
-                    <ul className={planCardPerksClassName}>
-                      {perks.map((perk) => (
-                        <li key={perk} className={planCardPerkItemClassName}>
-                          <span className={planCardPerkIconClassName}>
-                            <LuCheck className="h-3 w-3" />
-                          </span>
-                          <span>{perk}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    {/* What happens next, and what you can do about it — one baseline.
+                        Exactly one of these states is live at a time: a scheduled plan
+                        change supersedes the renewal date, and a scheduled cancellation
+                        supersedes both. */}
+                    <div className={subPlanFooterClass}>
+                      <p className={subPlanFooterTextClass}>
+                        {pendingPlan && pendingChangeDate ? (
+                          <>
+                            {t("pendingChangeBanner", {
+                              plan: getTierDisplayName(pendingPlan.tier),
+                              date: pendingChangeDate,
+                            })}{" "}
+                            <button
+                              type="button"
+                              onClick={handleCancelPendingChange}
+                              disabled={isCancellingChange}
+                              className={subPlanFooterLinkClass}
+                            >
+                              {isCancellingChange ? t("cancelModal.cancelling") : t("undoPendingChange")}
+                            </button>
+                          </>
+                        ) : isCancellationScheduled && cancellationDate ? (
+                          <>
+                            {t("cancelsOn", { date: cancellationDate })}{" "}
+                            <button
+                              type="button"
+                              onClick={handleReactivateSubscription}
+                              disabled={isReactivating}
+                              className={subPlanFooterLinkClass}
+                            >
+                              {isReactivating ? t("cancelModal.cancelling") : t("reactivatePlan")}
+                            </button>
+                          </>
+                        ) : isPaid && renewalDate ? (
+                          <>
+                            {plan.billing_cycle === "yearly"
+                              ? t("renewsYearlyOn", { date: renewalDate })
+                              : t("renewsOn", { date: renewalDate })}{" "}
+                            <span className="text-white/38">{t("cancelAnytimeHint")}</span>
+                          </>
+                        ) : (
+                          t("freePlanHint")
+                        )}
+                      </p>
 
-                    {pendingPlan && pendingChangeDate ? (
-                      <div className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white/[0.04] px-4 py-3 text-[13px] text-white/68">
-                        <span>
-                          {t("pendingChangeBanner", {
-                            plan: getTierDisplayName(pendingPlan.tier),
-                            date: pendingChangeDate,
-                          })}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={handleCancelPendingChange}
-                          disabled={isCancellingChange}
-                          className="font-semibold text-rose-300 transition-colors duration-200 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-50"
+                      <div className={subPlanActionsClass}>
+                        <Link
+                          href="/pricing"
+                          className={`${appEntryActionButtonBaseClass} ${appEntrySecondaryButtonClass} h-10 rounded-[1.05rem] px-4 text-[13px]`}
                         >
-                          {isCancellingChange ? t("cancelModal.cancelling") : t("undoPendingChange")}
-                        </button>
+                          <span>{t("viewPlans")}</span>
+                          <LuArrowRight className="text-[15px]" />
+                        </Link>
+
+                        {canCancel ? (
+                          <button
+                            type="button"
+                            onClick={() => setShowCancelConfirm(true)}
+                            className={`${appEntryActionButtonBaseClass} h-10 rounded-[1.05rem] px-4 text-[13px] font-semibold text-white/58 transition-colors duration-200 hover:bg-red-500/10 hover:text-red-200`}
+                          >
+                            {t("cancelPlan")}
+                          </button>
+                        ) : null}
                       </div>
-                    ) : null}
-
-                    {/* An active subscriber otherwise has no idea when they will next be
-                        charged — which matters most on yearly, where the next charge is large
-                        and far away (MOVMASH.md D3). Hidden once a cancellation or plan change
-                        is scheduled, since those banners already state what happens next. */}
-                    {isPaid && !isCancellationScheduled && !pendingPlan && renewalDate ? (
-                      <div className="mt-5 rounded-2xl bg-white/[0.04] px-4 py-3 text-[13px] leading-relaxed text-white/68">
-                        <span>
-                          {plan.billing_cycle === "yearly"
-                            ? t("renewsYearlyOn", { date: renewalDate })
-                            : t("renewsOn", { date: renewalDate })}
-                        </span>{" "}
-                        <span className="text-white/48">{t("cancelAnytimeHint")}</span>
-                      </div>
-                    ) : null}
-
-                    {isCancellationScheduled && cancellationDate ? (
-                      <div className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white/[0.04] px-4 py-3 text-[13px] text-white/68">
-                        <span>{t("cancelsOn", { date: cancellationDate })}</span>
-                        <button
-                          type="button"
-                          onClick={handleReactivateSubscription}
-                          disabled={isReactivating}
-                          className="font-semibold text-rose-300 transition-colors duration-200 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {isReactivating ? t("cancelModal.cancelling") : t("reactivatePlan")}
-                        </button>
-                      </div>
-                    ) : null}
-
-                    <div className={planCardActionsClassName}>
-                      <Link
-                        href="/pricing"
-                        className={`${appEntryActionButtonBaseClass} ${appEntrySecondaryButtonClass} h-11 w-full rounded-[1.15rem] text-sm`}
-                      >
-                        <span>{t("viewPlans")}</span>
-                        <LuArrowRight className="text-base" />
-                      </Link>
-
-                      {canCancel ? (
-                        <button
-                          type="button"
-                          onClick={() => setShowCancelConfirm(true)}
-                          className={`${appEntryActionButtonBaseClass} h-11 w-full rounded-[1.15rem] bg-red-500/12 px-5 text-sm font-semibold text-red-200 transition-colors duration-200 hover:bg-red-500/18`}
-                        >
-                          {t("cancelPlan")}
-                        </button>
-                      ) : null}
                     </div>
                   </article>
                 )}
 
-                {isLoadingTransactions ? (
-                  <div className={`${skeletonCardClassName} h-[140px]`} />
-                ) : transactions.length > 0 ? (
-                  <div className="space-y-3">
-                    <h2 className="text-[13px] font-semibold uppercase tracking-[0.16em] text-white/48">
-                      {t("transactions.title")}
-                    </h2>
-                    <div className="space-y-2">
-                      {transactions.map((transaction) => (
-                        <div key={transaction.id} className={appTransactionRowClass}>
-                          <div className="flex flex-col gap-0.5">
-                            <span className="font-medium text-white/88">
-                              {getTransactionLabel(transaction)}
-                            </span>
-                            <span className="text-white/48">
-                              {formatDate(transaction.createdAt)}
-                            </span>
-                          </div>
-                          <div className="flex flex-col items-end gap-1.5">
-                            <span className="font-medium text-white/88">
-                              {formatPlanPrice(transaction.amount, transaction.currency)}
-                            </span>
-                            <span
-                              className={`${appTransactionStatusBadgeClass} ${transactionStatusClassMap[transaction.status]}`}
-                            >
-                              {t(`transactions.status.${transaction.status}`)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </section>
+                <section className="space-y-3">
+                  <h2 className="text-[13px] font-semibold uppercase tracking-[0.16em] text-white/48">
+                    {t("transactions.title")}
+                  </h2>
+                  <PurchaseHistory
+                    transactions={transactions}
+                    isLoading={isLoadingTransactions}
+                  />
+                </section>
+              </div>
             </div>
           </div>
         </div>

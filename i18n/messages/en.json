@@ -507,6 +507,7 @@
     "renewsOn": "Renews automatically on {date}.",
     "renewsYearlyOn": "Renews automatically on {date} for another year.",
     "cancelAnytimeHint": "Cancel any time before then — you keep access until that date.",
+    "freePlanHint": "You are on the free plan. Upgrade any time.",
     "pendingChangeBanner": "Moving to {plan} on {date}",
     "undoPendingChange": "Undo",
     "features": {
@@ -546,6 +547,29 @@
         "completed": "Completed",
         "failed": "Failed",
         "refunded": "Refunded"
+      },
+      "searchPlaceholder": "Search by transaction ID or plan",
+      "filterStatus": "Filter by status",
+      "filterDate": "Filter by date",
+      "allStatuses": "All statuses",
+      "noMatches": "No payments match those filters.",
+      "viewInvoice": "View invoice",
+      "noInvoice": "—",
+      "showing": "Showing {from}–{to} of {total}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "columns": {
+        "description": "Description",
+        "date": "Date",
+        "status": "Status",
+        "total": "Total",
+        "actions": "Actions"
+      },
+      "dates": {
+        "all": "All dates",
+        "30d": "Last 30 days",
+        "90d": "Last 90 days",
+        "year": "This year"
       }
     }
   },

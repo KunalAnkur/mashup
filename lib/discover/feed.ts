@@ -26,8 +26,29 @@ const API_VERSION = "2025-12-22";
 /** Long enough that traffic never reaches Sanity; short enough to publish and see it. */
 const REVALIDATE_SECONDS = 300;
 
-/** A hung CMS must not hold the home page open. Past this we serve the fallback. */
-const TIMEOUT_MS = 4000;
+/**
+ * A hung CMS must not hold the home page open. Past this we serve the fallback.
+ *
+ * Eight seconds against a CDN that answers in about 150ms looks absurdly generous, and
+ * it is — deliberately. The budget is wall-clock, not network time: the timer starts
+ * when the signal is created, so anything that blocks the event loop first (a dev
+ * rebuild, a cold container, a burst of traffic) spends the budget before the request
+ * is even on the wire. A tighter number does not fail faster on a broken CMS, it just
+ * fails spuriously on a busy one.
+ */
+const TIMEOUT_MS = 8000;
+
+/**
+ * How long to stop asking after a failure.
+ *
+ * Without this, every render during an outage pays the full timeout before falling back
+ * — so a CMS that is merely slow makes the home page slow for everybody, which is worse
+ * than the CMS being down. Module state, so it is per server instance and resets on
+ * deploy; that is the right scope for something this disposable.
+ */
+const COOLDOWN_MS = 30_000;
+
+let quietUntil = 0;
 
 /**
  * Sources map onto categories one for one today. They are separate names because the
@@ -79,6 +100,9 @@ const QUERY = `*[_type == "discoverSlide" && defined(source)]{
 }`;
 
 export async function fetchDiscoverFeed(): Promise<DiscoverSlide[]> {
+  // Still inside the cooldown from a recent failure — do not make everybody wait again.
+  if (Date.now() < quietUntil) return FALLBACK_SLIDES;
+
   const url =
     `https://${PROJECT_ID}.apicdn.sanity.io/v${API_VERSION}/data/query/${DATASET}` +
     `?query=${encodeURIComponent(QUERY)}`;
@@ -95,11 +119,19 @@ export async function fetchDiscoverFeed(): Promise<DiscoverSlide[]> {
     const mapped = (body.result ?? []).map(toSlide).filter(isSlide);
     const slides = await Promise.all(mapped.map(withVideoThumbnail));
 
+    quietUntil = 0;
+
     // An empty feed is not the same as a broken one, but it looks identical on the page
     // — and a home page with no carousel is worse than one showing the defaults.
     return slides.length > 0 ? slides : FALLBACK_SLIDES;
   } catch (error) {
-    console.error("Discover feed unavailable, serving the bundled slides:", error);
+    quietUntil = Date.now() + COOLDOWN_MS;
+
+    // The message only. A DOMException logged whole prints its entire table of legacy
+    // error-code constants, which buries the one line that says what happened.
+    const reason = error instanceof Error ? error.message : String(error);
+    console.error(`Discover feed unavailable (${reason}); serving the bundled slides.`);
+
     return FALLBACK_SLIDES;
   }
 }

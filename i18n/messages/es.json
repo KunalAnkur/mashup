@@ -507,6 +507,7 @@
     "renewsOn": "Se renueva automáticamente el {date}.",
     "renewsYearlyOn": "Se renueva automáticamente el {date} por un año más.",
     "cancelAnytimeHint": "Puedes cancelar en cualquier momento antes de esa fecha — mantienes el acceso hasta entonces.",
+    "freePlanHint": "Estás en el plan gratuito. Puedes mejorarlo cuando quieras.",
     "pendingChangeBanner": "Pasarás al plan {plan} el {date}",
     "undoPendingChange": "Deshacer",
     "features": {
@@ -546,6 +547,29 @@
         "completed": "Completado",
         "failed": "Fallido",
         "refunded": "Reembolsado"
+      },
+      "searchPlaceholder": "Buscar por ID de transacción o plan",
+      "filterStatus": "Filtrar por estado",
+      "filterDate": "Filtrar por fecha",
+      "allStatuses": "Todos los estados",
+      "noMatches": "Ningún pago coincide con esos filtros.",
+      "viewInvoice": "Ver factura",
+      "noInvoice": "—",
+      "showing": "Mostrando {from}–{to} de {total}",
+      "previousPage": "Página anterior",
+      "nextPage": "Página siguiente",
+      "columns": {
+        "description": "Descripción",
+        "date": "Fecha",
+        "status": "Estado",
+        "total": "Total",
+        "actions": "Acciones"
+      },
+      "dates": {
+        "all": "Todas las fechas",
+        "30d": "Últimos 30 días",
+        "90d": "Últimos 90 días",
+        "year": "Este año"
       }
     }
   },
