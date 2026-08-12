@@ -85,38 +85,40 @@ const SyncPage = () => {
     }
   };
 
-  const handleBack = () => {
-    router.push("/");
-  };
-
   return (
     <div className={dashPageContentWrapClass}>
-      <div className={dashPageTitleWrapClass}>
-        <h1 className={appSectionTitleTextClass}>{t("title")}</h1>
-      </div>
-      <div className="flex w-full flex-col items-stretch gap-3 sm:gap-4 md:gap-6 lg:flex-row lg:gap-8 xl:gap-12 2xl:gap-16">
-        <div className="hidden lg:block lg:w-1/2 lg:self-stretch">
-          <SupportedPlatformsGrid />
-        </div>
+      {/* Single boxed column, matching File Share's pattern — no more 2-way split. Boxed +
+          centered (both axes) scoped to this page only; dashPageContentWrapClass itself stays
+          untouched/top-aligned for the other sub-pages. */}
+      <div className="flex min-h-full w-full flex-col items-center justify-center">
+        <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 sm:gap-5 md:gap-6">
+          <div className={`${dashPageTitleWrapClass} justify-center`}>
+            <h1 className={appSectionTitleTextClass}>{t("title")}</h1>
+          </div>
 
-        <div className="flex w-full min-h-0 flex-col lg:w-1/2 lg:self-stretch">
-          <UrlInputSection
-            sourceUrlInput={sourceUrlInput}
-            onSourceUrlChange={handleOnSourceUrlChange}
-            onKeyDown={handleKeyDown}
-            onAddUrl={handleAddUrl}
-            isAddDisabled={isAddDisabled}
-            tooltipMessage={tooltipMessage}
-            addedUrls={addedUrls}
-            loadingMetadata={loadingMetadata}
-            onRemoveUrl={handleRemoveUrl}
-            onCancel={handleBack}
-            onEnterRoom={handleOnEnterRoom}
-            getPlatformById={getPlatformById}
-            getUrlDisplayName={getUrlDisplayName}
-            isAdding={isAdding}
-            isEntering={isEntering}
-          />
+          <div className="w-full rounded-dashMd bg-dashSurface p-4 text-left sm:p-5 md:p-6">
+            <UrlInputSection
+              sourceUrlInput={sourceUrlInput}
+              onSourceUrlChange={handleOnSourceUrlChange}
+              onKeyDown={handleKeyDown}
+              onAddUrl={handleAddUrl}
+              isAddDisabled={isAddDisabled}
+              tooltipMessage={tooltipMessage}
+              addedUrls={addedUrls}
+              loadingMetadata={loadingMetadata}
+              onRemoveUrl={handleRemoveUrl}
+              onEnterRoom={handleOnEnterRoom}
+              getPlatformById={getPlatformById}
+              getUrlDisplayName={getUrlDisplayName}
+              isAdding={isAdding}
+              isEntering={isEntering}
+            />
+          </div>
+
+          {/* No card background here on purpose — just the heading + tiles, per owner request */}
+          <div className="w-full text-left">
+            <SupportedPlatformsGrid />
+          </div>
         </div>
       </div>
     </div>

@@ -31,18 +31,18 @@ const PlatformCard: React.FC<PlatformCardProps> = ({ platform }) => (
 export const SupportedPlatformsGrid: React.FC = () => {
   const t = useTranslations("sync");
   return (
-    <div className="w-full flex flex-col h-full">
+    <div className="w-full flex flex-col">
       <SectionTitle
         gradientFrom="from-rose-500"
         gradientTo="to-pink-500"
         title={t("supportedPlatforms")}
       />
-      <div className="flex-1 min-h-0">
-        <div className="grid h-full grid-cols-3 gap-2 md:gap-3 lg:gap-4">
-          {platforms.map((platform) => (
-            <PlatformCard key={platform.id} platform={platform} />
-          ))}
-        </div>
+      {/* Single horizontal row of compact tiles instead of a 3x2 grid — now its own
+          standalone box below the URL panel, not a height-matched side column. */}
+      <div className="grid w-full grid-cols-6 gap-1.5 md:gap-2">
+        {platforms.map((platform) => (
+          <PlatformCard key={platform.id} platform={platform} />
+        ))}
       </div>
     </div>
   );

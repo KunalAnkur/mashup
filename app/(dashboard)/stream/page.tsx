@@ -63,11 +63,16 @@ const StreamFilesPage = () => {
         onChange={handleFileChange}
       />
 
-      <div className={dashPageTitleWrapClass}>
-        <h1 className={appSectionTitleTextClass}>{tHome("fileShare")}</h1>
-      </div>
-      <div className="mx-auto flex w-full max-w-2xl flex-col">
-        <FileSelection />
+      {/* Vertically centered — scoped to this page only, not the shared dashPageContentWrapClass
+          token (that stays top-aligned for /sync, /stream/screen, /games per the standing
+          top-left-start convention there). */}
+      <div className="flex min-h-full w-full flex-col items-center justify-center">
+        <div className="mx-auto flex w-full max-w-2xl flex-col items-center">
+          <div className={`${dashPageTitleWrapClass} justify-center`}>
+            <h1 className={appSectionTitleTextClass}>{tHome("fileShare")}</h1>
+          </div>
+          <FileSelection />
+        </div>
       </div>
     </div>
   );

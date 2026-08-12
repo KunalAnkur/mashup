@@ -49,6 +49,7 @@
     "upgrade": "ترقية",
     "accountMenu": "قائمة الحساب",
     "notAuthenticated": "غير مسجل الدخول",
+    "guestAccount": "حساب ضيف",
     "you": "أنت",
     "host": "المضيف",
     "loading": "جاري التحميل...",
@@ -136,6 +137,9 @@
     "settings": {
       "title": "الإعدادات",
       "profileSettings": "إعدادات الملف الشخصي",
+      "language": "اللغة",
+      "profilePicture": "الصورة الشخصية",
+      "syncedFromGoogle": "تمت المزامنة من حساب Google الخاص بك",
       "name": "الاسم",
       "username": "اسم المستخدم",
       "emailAddress": "البريد الإلكتروني",
@@ -227,7 +231,6 @@
   },
   "sync": {
     "title": "أدخل رابط المصدر",
-    "pasteUrls": "الصق روابطك",
     "enterUrl": "الصق رابط الفيديو هنا",
     "addUrl": "إضافة رابط",
     "addFiles": "إضافة ملفات",
@@ -269,7 +272,6 @@
     "starting": "جاري البدء...",
     "clickToAddMoreFiles": "انقر لإضافة المزيد من الملفات",
     "back": "رجوع",
-    "useSync": "استخدام المزامنة",
     "tip1": "نصيحة 1",
     "tip2": "نصيحة 2",
     "tip1MultipleFiles": "يمكنك اختيار عدة ملفات في وقت واحد.",

@@ -1,7 +1,6 @@
 "use client";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  FaLink,
   FaFileAlt,
   FaFileVideo,
   FaFileAudio,
@@ -32,7 +31,6 @@ import {
   appStreamFileCardIdleClass,
   appStreamFileCardSelectedClass,
   appStreamFileThumbnailClass,
-  appStreamGhostButtonClass,
   appStreamInlineAdderClass,
   appStreamListClass,
   appStreamListViewportClass,
@@ -40,6 +38,7 @@ import {
   appStreamPrimaryButtonClass,
   appStreamTopBarClass,
   appStreamUploadDropzoneClass,
+  appStreamScreenHeroSurfaceClass,
 } from "@/components/UI/classTokens";
 
 const FileSelection = () => {
@@ -85,8 +84,6 @@ const FileSelection = () => {
     }
   }, [thumbnails]);
 
-  const handleOnURLSelection = () => router.push("/sync");
-
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith("video/"))
       return <FaFileVideo className="text-pink-600 text-lg sm:text-xl" />;
@@ -94,7 +91,7 @@ const FileSelection = () => {
       return <FaFileAudio className="text-fuchsia-600 text-lg sm:text-xl" />;
     if (fileType.startsWith("image/"))
       return <FaFileImage className="text-green-500 text-lg sm:text-xl" />;
-    return <FaFileAlt className="text-gray-400 text-lg sm:text-xl" />;
+    return <FaFileAlt className="text-dashTextMute text-lg sm:text-xl" />;
   };
 
   // Helper to check if a file is a video (by MIME type or extension)
@@ -215,7 +212,9 @@ const FileSelection = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-transparent w-full max-w-full overflow-hidden">
+    <div className="flex w-full flex-col items-center gap-4 text-center sm:gap-5 md:gap-6">
+    <div className={`w-full p-4 text-left sm:p-5 md:p-6 ${appStreamScreenHeroSurfaceClass}`}>
+    <div className="flex h-full flex-col bg-transparent w-full max-w-full overflow-hidden">
       <div className={appStreamTopBarClass}>
         <h3 className={appSectionTitleTextClass}>{tStream("chooseFiles")}</h3>
         <button
@@ -290,8 +289,8 @@ const FileSelection = () => {
                           {isVideo ? (
                             thumbnail ? (
                               <>
-                                <div className="absolute inset-0 flex items-center justify-center bg-white/[0.04]">
-                                  <FaFileVideo className="text-zinc-300 text-xs sm:text-sm" />
+                                <div className="absolute inset-0 flex items-center justify-center bg-dashSurfaceAlt">
+                                  <FaFileVideo className="text-dashTextDim text-xs sm:text-sm" />
                                 </div>
                                 <img
                                   src={thumbnail}
@@ -303,8 +302,8 @@ const FileSelection = () => {
                                 />
                               </>
                             ) : (
-                              <div className="flex h-full w-full items-center justify-center bg-white/[0.04]">
-                                <FaFileVideo className="text-zinc-300 text-xs sm:text-sm" />
+                              <div className="flex h-full w-full items-center justify-center bg-dashSurfaceAlt">
+                                <FaFileVideo className="text-dashTextDim text-xs sm:text-sm" />
                               </div>
                             )
                           ) : (
@@ -314,10 +313,10 @@ const FileSelection = () => {
                       );
                     })()}
                     <div className="flex-1 min-w-0">
-                      <h4 className="truncate text-xs font-semibold tracking-tight text-white/92 sm:text-[13px]">
+                      <h4 className="truncate text-xs font-semibold tracking-tight text-dashText sm:text-[13px]">
                         {file.name}
                       </h4>
-                      <p className="mt-0.5 truncate text-[10px] text-white/56 sm:text-[11px]">
+                      <p className="mt-0.5 truncate text-[10px] text-dashTextMute sm:text-[11px]">
                         {(file.size / (1024 * 1024)).toFixed(2)} MB
                       </p>
                     </div>
@@ -325,10 +324,10 @@ const FileSelection = () => {
                   <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                     <div
                       className={`flex h-4 w-4 items-center justify-center rounded-full transition-all duration-200 sm:h-[18px] sm:w-[18px] ${
-                        isSelected ? "bg-white/[0.08] opacity-100" : "opacity-0"
+                        isSelected ? "bg-white/[0.12] opacity-100" : "opacity-0"
                       }`}
                     >
-                      <FaCheck className="text-[9px] text-white/80 sm:text-[10px]" />
+                      <FaCheck className="text-[9px] text-white sm:text-[10px]" />
                     </div>
                     <button
                       type="button"
@@ -336,7 +335,7 @@ const FileSelection = () => {
                         e.stopPropagation();
                         handleFileRemove(extFile.id);
                       }}
-                      className="p-1.5 text-gray-400 transition-colors duration-200 hover:text-red-400"
+                      className="p-1.5 text-dashTextMute transition-colors duration-200 hover:text-rose-400"
                     >
                       <FaTrash className="text-[11px] sm:text-xs" />
                     </button>
@@ -354,17 +353,17 @@ const FileSelection = () => {
                 className={`${appStreamUploadDropzoneClass} h-full w-full p-3 sm:p-6`}
               >
                 <div className="flex h-full w-full flex-col items-center justify-center">
-                  <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white/[0.05] p-3 text-white/78 sm:mb-3 sm:h-14 sm:w-14 sm:p-4 md:h-16 md:w-16">
+                  <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-dashSurfaceAlt p-3 text-dashTextDim sm:mb-3 sm:h-14 sm:w-14 sm:p-4 md:h-16 md:w-16">
                     {isLoading ? (
                       <ImSpinner2 className="animate-spin text-lg sm:text-xl md:text-2xl" />
                     ) : (
                       <FaUpload className="text-lg sm:text-xl md:text-2xl" />
                     )}
                   </div>
-                  <span className="mb-0.5 text-sm font-semibold text-white/90 sm:mb-1 sm:text-base">
+                  <span className="mb-0.5 text-sm font-semibold text-dashText sm:mb-1 sm:text-base">
                     {isLoading ? tCommon("loading") : tStream("clickToUploadFiles")}
                   </span>
-                  <span className="text-[10px] text-white/60 sm:text-xs">
+                  <span className="text-[10px] text-dashTextMute sm:text-xs">
                     {isLoading ? tStream("pleaseWait") : tStream("dragAndDropFiles")}
                   </span>
                 </div>
@@ -380,11 +379,11 @@ const FileSelection = () => {
               >
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   {isLoading ? (
-                    <ImSpinner2 className="animate-spin text-xs text-zinc-300 sm:text-sm" />
+                    <ImSpinner2 className="animate-spin text-xs text-dashTextDim sm:text-sm" />
                   ) : (
-                    <FaPlus className="text-xs text-zinc-300 sm:text-sm" />
+                    <FaPlus className="text-xs text-dashTextDim sm:text-sm" />
                   )}
-                  <span className="text-[10px] text-white/70 sm:text-xs">
+                  <span className="text-[10px] text-dashTextDim sm:text-xs">
                     {isLoading ? tCommon("loading") : tStream("clickToAddMoreFiles")}
                   </span>
                 </div>
@@ -393,12 +392,6 @@ const FileSelection = () => {
           </div>
 
           <div className={appStreamBottomActionRowClass}>
-            <Button
-              onClick={handleOnURLSelection}
-              icon={<FaLink className="text-[10px] sm:text-xs" />}
-              className={appStreamGhostButtonClass}
-              name={tStream("useSync")}
-            />
             <Button
               disabled={!selectedFile || isStarting}
               onClick={handleOnStartWatching}
@@ -409,6 +402,8 @@ const FileSelection = () => {
           </div>
         </div>
       </div>
+    </div>
+    </div>
     </div>
   );
 };
