@@ -2,6 +2,21 @@
   "home": {
     "brand": "Movmash",
     "actionsTitle": "İşlemler",
+    "discover": {
+      "new": "Yeni",
+      "newGame": "Yeni oyun",
+      "watch": "Birlikte izleyin",
+      "game": "Popüler oyun",
+      "read": "Buluşma fikirleri",
+      "gift": "Bir şey gönder",
+      "cta": {
+        "game": "Hemen oyna",
+        "watch": "Birlikte izle",
+        "link": "Aç"
+      },
+      "previous": "Önceki",
+      "next": "Sonraki"
+    },
     "screenShare": "Ekran Paylaşımı",
     "fileShare": "Dosya Paylaşımı",
     "addUrl": "URL Ekle",

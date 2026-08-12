@@ -2,6 +2,21 @@
   "home": {
     "brand": "Movmash",
     "actionsTitle": "Actions",
+    "discover": {
+      "new": "New",
+      "newGame": "New game",
+      "watch": "Watch together",
+      "game": "Popular game",
+      "read": "Date ideas",
+      "gift": "Send something",
+      "cta": {
+        "game": "Play now",
+        "watch": "Watch together",
+        "link": "Open"
+      },
+      "previous": "Previous slide",
+      "next": "Next slide"
+    },
     "screenShare": "Screen Share",
     "fileShare": "File Share",
     "addUrl": "Add URL",

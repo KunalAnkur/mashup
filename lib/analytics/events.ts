@@ -583,6 +583,58 @@ export const trackProductOpened = ({
   logEvent("product_opened", eventProps);
 };
 
+// ============ HOME DISCOVER CAROUSEL EVENTS ============
+
+/**
+ * The carousel mixes five kinds of content on purpose, and the only way to know whether
+ * that mix earns its place is to compare them like for like. Both events carry the same
+ * shape so `clicked / viewed` divides cleanly by category, by position, and by slide.
+ *
+ * `position` is where the slide actually landed after the sort, not the order it was
+ * authored in — the interesting question is what the top of the carousel is worth
+ * against the fourth slot, and that is what decides whether eight slides is too many.
+ */
+type DiscoverEventProps = {
+  slideId: string;
+  category: string;
+  /** 0-based, after ordering. */
+  position: number;
+  /** What pressing it does: game, watch, link. */
+  action: string;
+  /** True while the slide is inside its boost window. */
+  boosted?: boolean;
+};
+
+const discoverProps = ({ slideId, category, position, action, boosted }: DiscoverEventProps) => ({
+  page: "home",
+  surface: "discover_carousel",
+  slide_id: slideId,
+  slide_category: category,
+  slide_position: position,
+  slide_action: action,
+  boosted: boosted ?? false,
+});
+
+/**
+ * A slide reached the front of the carousel.
+ *
+ * Fired once per slide per page view. Autoplay would otherwise report a view every six
+ * seconds for as long as a tab is left open, which would bury the click-through rate
+ * under whoever walked away from their desk.
+ */
+export const trackDiscoverSlideViewed = (props: DiscoverEventProps) => {
+  const eventProps = discoverProps(props);
+  safeCapture("discover_slide_viewed", eventProps);
+  logEvent("discover_slide_viewed", eventProps);
+};
+
+/** Somebody pressed a slide's button. */
+export const trackDiscoverSlideClicked = (props: DiscoverEventProps) => {
+  const eventProps = discoverProps(props);
+  safeCapture("discover_slide_clicked", eventProps);
+  logEvent("discover_slide_clicked", eventProps);
+};
+
 // ============ WATCH LIMIT / UPGRADE FUNNEL EVENTS ============
 
 /** Track when a user's daily free watch-time limit actually stops playback */
@@ -809,7 +861,11 @@ export const analytics = {
 
   // Products
   trackProductOpened,
-  
+
+  // Home discover carousel
+  trackDiscoverSlideViewed,
+  trackDiscoverSlideClicked,
+
   // Error
   trackError,
   

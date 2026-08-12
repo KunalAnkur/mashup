@@ -444,14 +444,11 @@ export const dashJoinInputFieldClass =
 export const dashShellGridClass =
   "grid grid-cols-[clamp(226px,14vw,320px)_minmax(0,1fr)] gap-[clamp(24px,1.6vw,34px)] items-stretch p-4 max-[1080px]:grid-cols-[200px_minmax(0,1fr)] max-[760px]:grid-cols-1 max-[760px]:gap-5 max-[760px]:px-4 max-[760px]:pt-[72px] max-[760px]:pb-[78px]";
 
+// One plain hairline on the right edge. It replaces a pair of absolutely positioned
+// overlays — a fading gradient plus a glow — that had to be inset from the top and
+// bottom to hide their own ends, and so never reached the full height of the rail.
 export const dashRailLeftClass =
-  "relative flex flex-col overflow-hidden pt-2 pr-4 pl-1 max-[760px]:hidden";
-
-export const dashRailSepAClass =
-  "pointer-events-none absolute right-0 top-6 bottom-6 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent max-[760px]:hidden";
-
-export const dashRailSepBClass =
-  "pointer-events-none absolute right-0 top-12 bottom-12 w-px opacity-40 shadow-[0_0_14px_rgba(255,255,255,0.10)] bg-white/10 max-[760px]:hidden";
+  "relative flex flex-col overflow-hidden border-r border-dashBorder pt-2 pr-4 pl-1 max-[760px]:hidden";
 
 export const dashLogoRowClass = "flex items-center gap-2.5 px-1.5 pt-1 pb-4 shrink-0";
 
@@ -479,15 +476,28 @@ export const dashSubmenuItemDefaultClass = "text-dashTextMute";
 export const dashSubmenuItemActiveClass =
   "text-dashText bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))]";
 
-export const dashCozyCardClass = "mt-auto flex shrink-0 flex-col";
+export const dashCozyCardClass =
+  "mt-auto flex shrink-0 flex-col overflow-hidden rounded-2xl border border-dashBorder bg-dashSurface";
 
+// Art on top, copy underneath, rather than copy laid over the art: the title runs to
+// three lines in a narrow sidebar, and over an illustration with two faces in the
+// middle of it there is no scrim dark enough to make that both legible and not a mess.
+//
+// The gradient stays as the backdrop the illustration loads over — a 1.7MB PNG on the
+// far side of a CDN is not instant, and an empty box in the sidebar reads as broken.
 export const dashCozyArtClass =
-  "relative h-[210px] overflow-hidden rounded-2xl bg-[radial-gradient(160px_120px_at_80%_8%,rgba(192,38,211,0.5),transparent_70%),radial-gradient(190px_130px_at_10%_55%,rgba(225,29,72,0.4),transparent_70%),linear-gradient(135deg,#2a1229_0%,#1a0d1e_45%,#120a14_100%)]";
+  "relative h-[132px] overflow-hidden bg-[radial-gradient(160px_120px_at_80%_8%,rgba(192,38,211,0.5),transparent_70%),radial-gradient(190px_130px_at_10%_55%,rgba(225,29,72,0.4),transparent_70%),linear-gradient(135deg,#2a1229_0%,#1a0d1e_45%,#120a14_100%)]";
 
+// Anchored above centre. The artwork is portrait and its lower third is bare rooftop,
+// so centring this band would push the two figures half out of frame.
+export const dashCozyImgClass = "absolute inset-0 h-full w-full object-cover object-[center_38%]";
+
+// A short fade at the foot of the art so it settles into the copy below instead of
+// ending on a hard line.
 export const dashCozyScrimClass =
-  "pointer-events-none absolute inset-x-0 bottom-0 h-[72%] bg-gradient-to-b from-transparent to-[rgba(9,7,11,0.9)]";
+  "pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(to_bottom,transparent_0%,rgba(15,13,17,0.85)_100%)]";
 
-export const dashCozyCopyClass = "absolute inset-x-[14px] bottom-[14px]";
+export const dashCozyCopyClass = "px-3.5 pb-3.5 pt-3";
 
 export const dashCozyTitleClass = "m-0 text-[14px] font-bold leading-[1.35] text-white";
 
@@ -575,27 +585,68 @@ export const dashLoginPopoverOverrideClass =
 // treatment, not a stand-in for a video player.
 // ---------------------------------------------------------------------------
 
-export const dashHeroClass =
-  "relative flex-1 min-h-[260px] max-h-[640px] overflow-hidden rounded-dashLg bg-[radial-gradient(600px_260px_at_80%_0%,rgba(192,38,211,0.24),transparent_60%),radial-gradient(500px_260px_at_10%_100%,rgba(225,29,72,0.24),transparent_60%),linear-gradient(160deg,#1c1120_0%,#100b12_60%,var(--dash-surface)_100%)]";
 
-export const dashHeroPlayButtonClass =
-  "absolute left-1/2 top-1/2 flex h-[62px] w-[62px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 backdrop-blur-[4px]";
+// ---------------------------------------------------------------------------
+// Discover carousel — the home hero. The picture is the slide: art runs the full band
+// and the words sit on it, rather than beside it in a column that costs the art a
+// third of the space.
+// ---------------------------------------------------------------------------
 
-export const dashHeroCopyClass = "absolute bottom-5 left-[22px] max-w-[60%]";
+/** The literal colour behind the carousel. Gradient stops need a value, not a var. */
+export const dashSurfaceHex = "#100e13";
 
-export const dashHeroTitleClass =
-  "m-0 text-[clamp(24px,3vw,34px)] font-extrabold leading-[1.08] text-dashText";
+export const dashDiscoverFrameClass =
+  "group/hero relative overflow-hidden rounded-dashLg border border-dashBorder bg-dashSurface";
 
-export const dashHeroAccentClass =
-  "bg-secondary bg-clip-text text-transparent";
+export const dashDiscoverSlideClass =
+  "relative h-[clamp(340px,40vh,440px)] min-w-0 flex-[0_0_100%] overflow-hidden max-[760px]:h-[clamp(300px,72vw,380px)]";
 
-export const dashHeroDescriptionClass =
-  "mt-2 flex items-center gap-1.5 text-[13px] text-dashTextDim";
+/**
+ * The same image, blown up and blurred behind itself.
+ *
+ * It is what lets one treatment hold a night-time film still and a product shot on a
+ * white background: the band is always filled, always in the picture's own colours, and
+ * never ends on a hard pale edge. `overflow-hidden` on the slide is load-bearing — the
+ * scale spills past the frame otherwise, and the spill is outside every mask.
+ */
+export const dashDiscoverBackdropClass =
+  "absolute inset-0 h-full w-full scale-125 object-cover blur-2xl brightness-[0.32] saturate-[1.7]";
 
-// Mobile: hero shrinks to a fixed aspect band instead of flexing to fill space
-// (movmash_mockup_local.html's @media (max-width:760px) .hero rule).
-export const dashHeroMobileClass =
-  "max-[760px]:h-[46vw] max-[760px]:max-h-[240px] max-[760px]:min-h-0 max-[760px]:flex-none";
+/** Pulls each picture towards the room it hangs in, so none arrives lit differently. */
+export const dashDiscoverArtClass =
+  "absolute inset-0 h-full w-full brightness-[0.92] contrast-[1.06] transition-transform duration-[7000ms] ease-out";
+
+/** Framed art sits upper-right; centred, the title lands across the middle of it. */
+export const dashDiscoverArtFramedClass =
+  "object-contain object-[72%_34%] p-8 max-[760px]:object-[50%_26%] max-[760px]:p-6";
+
+export const dashDiscoverCopyClass =
+  "absolute inset-x-0 bottom-0 flex flex-col items-start gap-3 p-7 pb-8 max-[760px]:p-5 max-[760px]:pb-7 min-[761px]:max-w-[62%]";
+
+export const dashDiscoverEyebrowClass =
+  "flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-white/75 drop-shadow-[0_1px_10px_rgba(0,0,0,0.85)]";
+
+export const dashDiscoverTitleClass =
+  "m-0 text-[clamp(26px,3.4vw,42px)] font-extrabold leading-[1.06] tracking-tight text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]";
+
+// Clamped: a description that wraps to three lines starts competing with the picture
+// for the band, which is the thing this layout exists to stop.
+export const dashDiscoverDescClass =
+  "-mt-0.5 line-clamp-2 max-w-[44ch] text-[13px] leading-[1.5] text-white/70 drop-shadow-[0_1px_12px_rgba(0,0,0,0.8)]";
+
+export const dashDiscoverCtaClass =
+  "inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-[13.5px] font-bold text-white transition-[filter] duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70";
+
+export const dashDiscoverMetaClass = "text-[12px] font-medium text-white/55";
+
+export const dashDiscoverDotsClass =
+  "absolute bottom-8 right-7 flex items-center gap-1.5 max-[760px]:bottom-7 max-[760px]:right-5";
+
+export const dashDiscoverArrowsClass =
+  "absolute right-6 top-6 flex gap-2 opacity-0 transition-opacity duration-200 group-hover/hero:opacity-100 max-[760px]:hidden";
+
+export const dashDiscoverArrowClass =
+  "flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/70";
 
 // ---------------------------------------------------------------------------
 // Home dashboard layout — the two-column split (main content + right rail)
@@ -660,21 +711,57 @@ export const dashJoinTileInputClass =
 export const dashJoinTileSubmitClass =
   `flex w-full items-center justify-center ${dashJoinTileControlHeightClass} rounded-[9px] bg-secondary px-2.5 text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50`;
 
-// Popular Games preview grid (compact cards, distinct from the full /games catalog page).
+// Popular Games preview grid on the dashboard home — four across, two on a phone.
 export const dashGamesGridClass =
   "grid grid-cols-2 gap-3.5 min-[901px]:grid-cols-4";
 
-export const dashGameCardClass =
-  "overflow-hidden rounded-dashMd border border-dashBorder bg-dashSurface";
+// The /games catalogue grid. auto-fit with a capped track centres a single card and
+// grids a full catalogue evenly, without having to count items.
+export const dashGamesCatalogGridClass =
+  "grid justify-start gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(240px,320px))]";
 
-export const dashGameCardThumbClass =
-  "flex h-[clamp(92px,7vw,130px)] items-center justify-center text-white/90";
+export const dashGameCardClass =
+  "group overflow-hidden rounded-dashMd border border-dashBorder bg-dashSurface text-left transition-[opacity,border-color] duration-200 hover:border-white/15 disabled:cursor-not-allowed disabled:opacity-60";
+
+export const dashGameCardCoverClass =
+  "relative flex w-full items-center justify-center overflow-hidden bg-dashSurfaceAlt";
+
+// A ratio rather than a fixed height, so covers keep their shape as the grid tracks
+// resize. Rows still line up: every track in a row is the same width, so a shared
+// ratio makes every cover the same height too.
+export const dashGameCardCoverCompactClass = "aspect-[16/10]";
+
+// Taller on the catalogue page, where there is room for it — game art is usually
+// square or portrait, and a wide strip crops the middle out of it.
+export const dashGameCardCoverDetailedClass = "aspect-[4/3]";
+
+// Scaling on hover is the only motion here, and it is on the image rather than the
+// card so a grid of them never shifts its neighbours.
+export const dashGameCardCoverImgClass =
+  "h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]";
 
 export const dashGameCardMetaClass = "px-3 pb-3 pt-2.5";
 
 export const dashGameCardNameClass = "text-[13.5px] font-bold text-dashText";
 
 export const dashGameCardSubClass = "mt-0.5 text-[11.5px] text-dashTextMute";
+
+export const dashGameCardDescClass =
+  "mt-2 line-clamp-2 text-[12px] leading-5 text-dashTextMute";
+
+export const dashGameCardBadgeRowClass = "mt-2.5 flex flex-wrap items-center gap-1.5";
+
+export const dashGameCardBadgeClass =
+  "inline-flex items-center gap-1 rounded-full bg-white/[0.06] px-2 py-0.5 text-[11px] font-medium text-dashTextMute";
+
+// Sits over the cover, so it reads against artwork of any brightness.
+export const dashGameCardPremiumBadgeClass =
+  "absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-amber-200 backdrop-blur-sm";
+
+// A span, not a button: the whole card is the button, and nesting one inside another
+// is invalid HTML that browsers resolve by dropping the outer click target.
+export const dashGameCardCtaClass =
+  "mt-3 inline-flex items-center justify-center gap-1.5 rounded-full bg-secondary px-3.5 py-1.5 text-[12px] font-bold text-white";
 
 // Right rail panel (For You Two — the only rail panel; Virtual Gifts was removed, no
 // real feature backs it).

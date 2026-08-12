@@ -18,6 +18,7 @@ import {
 } from "react-icons/lu";
 import { LuSparkles } from "react-icons/lu";
 import { RootState } from "@/lib/store";
+import { sidebarIllustration } from "@/constants/assets";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackCTAClicked } from "@/lib/analytics";
 import Logo from "../UI/Logo";
@@ -42,6 +43,7 @@ import {
   dashSubmenuItemActiveClass,
   dashCozyCardClass,
   dashCozyArtClass,
+  dashCozyImgClass,
   dashCozyScrimClass,
   dashCozyCopyClass,
   dashCozyTitleClass,
@@ -53,18 +55,7 @@ import {
   dashPopoverPanelClass,
   dashPopoverBackdropClass,
   dashLoginPopoverOverrideClass,
-  dashRailSepAClass,
-  dashRailSepBClass,
 } from "../UI/classTokens";
-
-const cozyStars = [
-  { top: 14, left: 18 },
-  { top: 30, left: 60 },
-  { top: 10, left: 110 },
-  { top: 44, left: 150 },
-  { top: 20, left: 190 },
-  { top: 38, left: 40 },
-];
 
 const DashboardSidebar = () => {
   const pathname = usePathname();
@@ -108,8 +99,6 @@ const DashboardSidebar = () => {
 
   return (
     <aside className={dashRailLeftClass}>
-      <div className={dashRailSepAClass} />
-      <div className={dashRailSepBClass} />
       <Link href="/" className={dashLogoRowClass}>
         <Logo height={30} width={30} custom />
         <span className={dashLogoWordClass}>{tHome("brand")}</span>
@@ -194,18 +183,19 @@ const DashboardSidebar = () => {
 
       <div className={dashCozyCardClass}>
         <div className={dashCozyArtClass}>
-          {cozyStars.map((s, i) => (
-            <span
-              key={i}
-              className="absolute h-[2px] w-[2px] rounded-full bg-white/60"
-              style={{ top: s.top, left: s.left }}
-            />
-          ))}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={sidebarIllustration}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className={dashCozyImgClass}
+          />
           <div className={dashCozyScrimClass} />
-          <div className={dashCozyCopyClass}>
-            <h3 className={dashCozyTitleClass}>{t("cozyTitle")}</h3>
-            <p className={dashCozyDescriptionClass}>{t("cozyDescription")}</p>
-          </div>
+        </div>
+        <div className={dashCozyCopyClass}>
+          <h3 className={dashCozyTitleClass}>{t("cozyTitle")}</h3>
+          <p className={dashCozyDescriptionClass}>{t("cozyDescription")}</p>
         </div>
       </div>
 
