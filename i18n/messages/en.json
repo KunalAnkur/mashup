@@ -18,15 +18,10 @@
       "next": "Next slide"
     },
     "screenShare": "Screen Share",
-    "screenShareDesc": "Share what's on your screen",
     "fileShare": "File Share",
-    "fileShareDesc": "Play a video from your device",
     "addUrl": "Add URL",
-    "addUrlDesc": "Paste a link and watch it",
     "youtube": "YouTube",
-    "youtubeDesc": "Browse and queue up videos",
     "joinWithCode": "Join with a Code",
-    "joinWithCodeDesc": "Enter a room code",
     "roomIdPlaceholder": "Room ID",
     "join": "Join",
     "joining": "Joining...",
@@ -612,7 +607,6 @@
   },
   "games": {
     "title": "Games",
-    "subtitle": "Pick something to play together. A room opens with the game in front and chat beside it.",
     "players": "{min}–{max} players",
     "playersExact": "{min} players",
     "start": "Start game",

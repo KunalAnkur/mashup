@@ -18,15 +18,10 @@
       "next": "Siguiente"
     },
     "screenShare": "Compartir Pantalla",
-    "screenShareDesc": "Comparte tu pantalla",
     "fileShare": "Compartir Archivo",
-    "fileShareDesc": "Reproduce un vídeo de tu equipo",
     "addUrl": "Agregar URL",
-    "addUrlDesc": "Pega un enlace y véanlo",
     "youtube": "YouTube",
-    "youtubeDesc": "Explora y arma la cola",
     "joinWithCode": "Unirse con un Código",
-    "joinWithCodeDesc": "Introduce un código",
     "roomIdPlaceholder": "ID de Sala",
     "join": "Unirse",
     "joining": "Uniéndose...",
@@ -612,7 +607,6 @@
   },
   "games": {
     "title": "Juegos",
-    "subtitle": "Elige algo para jugar juntos. Se abre una sala con el juego al frente y el chat al lado.",
     "players": "{min}–{max} jugadores",
     "playersExact": "{min} jugadores",
     "start": "Empezar juego",

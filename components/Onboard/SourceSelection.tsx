@@ -16,9 +16,6 @@ import { trackCTAClicked } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { Input } from "../UI";
 import {
-  dashActionArrowClass,
-  dashActionCopyClass,
-  dashActionDescClass,
   dashActionIconClass,
   dashActionLabelClass,
   dashActionTileClass,
@@ -144,13 +141,9 @@ const SourceSelection = () => {
         {actions.map(({ key, Icon, onClick }) => (
           <button key={key} onClick={onClick} className={dashActionTileClass}>
             <span className={dashActionIconClass} style={{ background: ACTION_COLOURS[key] }}>
-              <Icon className="text-[20px]" />
+              <Icon className="text-[16px]" />
             </span>
-            <span className={dashActionCopyClass}>
-              <span className={`block ${dashActionLabelClass}`}>{t(key)}</span>
-              <span className={`block ${dashActionDescClass}`}>{t(`${key}Desc`)}</span>
-            </span>
-            <LuArrowRight className={dashActionArrowClass} />
+            <span className={dashActionLabelClass}>{t(key)}</span>
           </button>
         ))}
 
@@ -200,13 +193,9 @@ const SourceSelection = () => {
             className={dashJoinTileClass}
           >
             <span className={dashActionIconClass} style={{ background: ACTION_COLOURS.join }}>
-              <LuKeyRound className="text-[18px]" />
+              <LuKeyRound className="text-[15px]" />
             </span>
-            <span className={dashActionCopyClass}>
-              <span className={`block ${dashActionLabelClass}`}>{t("joinWithCode")}</span>
-              <span className={`block ${dashActionDescClass}`}>{t("joinWithCodeDesc")}</span>
-            </span>
-            <LuArrowRight className={dashActionArrowClass} />
+            <span className={dashActionLabelClass}>{t("joinWithCode")}</span>
           </button>
         )}
       </div>

@@ -16,10 +16,12 @@ export default function GamesPage() {
 
   return (
     <div className={dashPageContentWrapClass}>
-      <div className={dashPageTitleWrapClass}>
+      {/* Title centered like every other sidebar route, but the grid stays flush left:
+          a catalogue is a list that grows, and centering it would move the first card
+          sideways every time a game is added. */}
+      <div className={`${dashPageTitleWrapClass} justify-center`}>
         <h1 className={appSectionTitleTextClass}>{t("title")}</h1>
       </div>
-      <p className="mb-6 max-w-md text-sm leading-6 text-white/50">{t("subtitle")}</p>
 
       {games.length === 0 ? (
         <p className="py-16 text-center text-sm text-white/40">{t("empty")}</p>

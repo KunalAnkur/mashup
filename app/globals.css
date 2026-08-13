@@ -1,4 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Parkinsans:wght@300..800&display=swap");
+/* The Parkinsans webfont import used to sit here. It is gone on purpose: the type is now
+   the mockup's, and the mockup renders in the system rounded face precisely *because* it
+   never loads Parkinsans. Leaving the import in would keep Parkinsans winning the stack
+   below and the app would never look like the mockup. Restoring it is one line. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,7 +14,15 @@
   --primaryDark: #09090c;
   --secondaryDark: #272626;
   --hover: #474747;
-  --parkinsans: "Parkinsans", sans-serif;
+  /* movmash_mockup_local.html's :root stack, character for character.
+     It asks for "Parkinsans" first and never loads it — no @import, no @font-face, no
+     <link> anywhere in that file — so every entry after the first is what actually
+     draws, and on a Mac that is SF Pro Rounded. Keeping the dead first entry is what
+     makes this identical rather than merely similar: with no webfont behind it (see the
+     removed import above) it falls through exactly where the mockup falls through, on
+     every platform, including Windows landing on Segoe UI. */
+  --parkinsans: "Parkinsans", ui-rounded, "SF Pro Rounded", -apple-system, "Segoe UI",
+    sans-serif;
   --smoothWhite: #c5c5c5;
   --secondary: linear-gradient(
     to right,

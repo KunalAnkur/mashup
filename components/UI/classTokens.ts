@@ -614,8 +614,11 @@ export const dashLogoWordClass = "text-[17px] font-bold tracking-[-0.01em] text-
 
 export const dashNavClass = "flex flex-col gap-0.5 shrink-0";
 
+// py-2 rather than py-2.5: the active item is the only nav row that paints a background,
+// so its padding is what the eye reads as the row's height, and at 10px the highlight sat
+// noticeably taller than the label needed.
 export const dashNavItemBaseClass =
-  "flex w-full items-center gap-2.5 rounded-dashSm px-2.5 py-2.5 text-[13.5px] font-medium transition-colors duration-150";
+  "flex w-full items-center gap-2.5 rounded-dashSm px-2.5 py-2 text-[13.5px] font-medium transition-colors duration-150";
 
 export const dashNavItemBadgeClass =
   "ml-auto rounded-full bg-secondary px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white";
@@ -668,7 +671,7 @@ export const dashCozyDescriptionClass = "mt-1.5 text-[11.5px] leading-[1.5] text
 export const dashAccountZoneClass = "flex shrink-0 flex-col gap-2.5";
 
 export const dashUpgradeButtonClass =
-  "flex items-center justify-center gap-1.5 rounded-dashSm bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))] px-3 py-2.5 text-[12.5px] font-semibold text-white transition-colors duration-150 hover:bg-[linear-gradient(100deg,rgba(225,29,72,0.4),rgba(219,39,119,0.34),rgba(192,38,211,0.32))]";
+  "flex items-center justify-center gap-1.5 rounded-dashSm bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))] px-3 py-1.5 text-[12.5px] font-semibold text-white transition-colors duration-150 hover:bg-[linear-gradient(100deg,rgba(225,29,72,0.4),rgba(219,39,119,0.34),rgba(192,38,211,0.32))]";
 
 // py-1.5 (not the more common py-2) keeps this row's height close to
 // dashLoginTriggerClass's, so the account-zone slot doesn't visibly jump in height when
@@ -677,11 +680,12 @@ export const dashProfileTriggerClass =
   "flex w-full items-center gap-2 rounded-dashSm bg-white/[0.045] px-2 py-1.5 text-left transition-colors duration-150 hover:bg-white/[0.075]";
 
 // Guest login trigger — deliberately sized to match dashUpgradeButtonClass (same
-// px-3 py-2.5 / text-[12.5px] / gap-1.5 / justify-center) rather than reusing
+// px-3 py-1.5 / text-[12.5px] / gap-1.5 / justify-center) rather than reusing
 // dashProfileTriggerClass, which is sized for the logged-in row (avatar chip + name +
-// chevron) and looks oversized for a plain icon + "Login" label.
+// chevron) and looks oversized for a plain icon + "Login" label. The two sit stacked in
+// the account zone, so this padding has to move whenever the upgrade button's does.
 export const dashLoginTriggerClass =
-  "flex w-full items-center justify-center gap-1.5 rounded-dashSm bg-white/[0.045] px-3 py-2.5 text-[12.5px] font-semibold text-dashText transition-colors duration-150 hover:bg-white/[0.075]";
+  "flex w-full items-center justify-center gap-1.5 rounded-dashSm bg-white/[0.045] px-3 py-1.5 text-[12.5px] font-semibold text-dashText transition-colors duration-150 hover:bg-white/[0.075]";
 
 export const dashAvatarChipClass =
   "flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-secondary text-[12.5px] font-bold text-white";
@@ -853,29 +857,21 @@ export const dashSectionHeadTitleClass = "m-0 text-base font-bold text-dashText"
 export const dashSectionHeadLinkClass =
   "bg-secondary bg-clip-text text-[12.5px] font-semibold text-transparent transition-[filter] duration-150 hover:brightness-125";
 
-// Actions — a row of horizontal cards: coloured icon, then a title and a line of copy
-// saying what it is for, then an arrow.
+// Actions — a row of cards carrying a coloured icon and a title, nothing else.
 //
-// All four abreast once the viewport can carry it. Below that they fall to two and then
-// one rather than being squeezed — at four across in a narrow column the description
-// wraps to four lines and the row stops being a row.
+// They used to carry a line of description too, and everything awkward about this row
+// came from it: the tile had to stack the icon above the text in the middle of the width
+// range, the title had to truncate so the description kept its second line, and the
+// arrow had to hide below 1700px to buy the copy 22px. One line of content removes all
+// three rules — the tile is a single row at every width now.
 export const dashActionsGridClass =
   "grid grid-cols-1 gap-3 min-[560px]:grid-cols-2 min-[900px]:grid-cols-3 min-[1180px]:grid-cols-5";
 
-/**
- * Icon beside the text wherever the card is wide enough to hold both, stacked where it
- * is not — which is only the middle of the range.
- *
- *   below 1180   two or three across, so each card is roomy: side by side
- *   1180–1700    five across in a ~155px card, 80px of it text: stacked, or the titles
- *                truncate to "Scree…"
- *   above 1700   five across but the column is ~1180px, so a card is 220px: side by side
- *
- * The 1700 rule has to come after the 1180 one — Tailwind emits breakpoints in width
- * order, so the wider query is the one that wins where both match.
- */
+// px-3/gap-2 rather than px-3.5/gap-2.5: at five across the widest label ("Join with a
+// Code") was clearing its column by ~4px, which is inside the margin of error between
+// one rendering font and another — the tighter chrome buys it real headroom instead.
 export const dashActionTileClass =
-  "group flex items-center gap-2.5 rounded-dashMd bg-dashSurface p-3.5 text-left transition-colors duration-200 hover:bg-white/[0.05] min-[1180px]:flex-col min-[1180px]:items-start min-[1180px]:gap-2.5 min-[1180px]:p-4 min-[1700px]:flex-row min-[1700px]:items-center min-[1700px]:gap-3";
+  "flex items-center gap-2 rounded-dashMd bg-dashSurface px-3 py-3 text-left transition-colors duration-200 hover:bg-white/[0.05]";
 
 /**
  * A solid colour, not a tint.
@@ -884,34 +880,13 @@ export const dashActionTileClass =
  * read — which is the whole reason this shape beats four identical grey tiles.
  */
 export const dashActionIconClass =
-  "flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-white shadow-[0_6px_18px_rgba(0,0,0,0.35)]";
+  "flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] text-white shadow-[0_6px_18px_rgba(0,0,0,0.35)]";
 
-export const dashActionCopyClass =
-  "min-w-0 flex-1 min-[1180px]:w-full min-[1180px]:flex-none min-[1700px]:w-auto min-[1700px]:flex-1";
-
-// `truncate` rather than wrap: a title on two lines in a card this narrow costs the
-// description its second line and makes the row ragged.
+// `truncate` rather than wrap: five across in a ~155px card, a title on two lines makes
+// one tile taller than its neighbours and the row goes ragged.
 export const dashActionLabelClass =
-  "truncate text-[13px] font-bold leading-tight text-dashText min-[1180px]:text-[13.5px]";
+  "min-w-0 flex-1 truncate text-[12.5px] font-bold leading-tight text-dashText";
 
-// Clamped: a fourth line pushes one card taller than its neighbours and the row goes
-// ragged, which is the one thing a row of four must not do.
-export const dashActionDescClass =
-  "mt-0.5 line-clamp-2 text-[11px] leading-[1.35] text-dashTextMute min-[1180px]:text-[11.5px]";
-
-/** Slides on hover — the only motion, and it points where the card goes. */
-/**
- * Hidden until the row has the width for it.
- *
- * At four across in an 870px column each card is barely 200px, and an always-visible
- * arrow costs the copy the 22px that keeps "Screen Share" on one line. The card is the
- * click target either way — the arrow was only ever saying so.
- */
-export const dashActionArrowClass =
-  "hidden shrink-0 text-[15px] text-dashTextMute transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-dashText min-[1700px]:block";
-
-// Join by code sits under the grid rather than in it: it is a form, not a link, and a
-// cell with an input in it never matches the height of one with two lines of text.
 /**
  * Join-by-code as a fifth cell rather than a bar of its own.
  *
@@ -921,18 +896,20 @@ export const dashActionArrowClass =
  */
 export const dashJoinTileClass = `${dashActionTileClass} w-full`;
 
+// px-3 py-3 and an h-7 control inside, matching the tile's px-3 py-3 and h-7 icon —
+// the cell must not change height when it swaps from the idle button to this form.
 export const dashJoinOpenClass =
-  "flex w-full items-center gap-2 rounded-dashMd bg-dashSurface p-3.5 ring-1 ring-pink-600/40 min-[1180px]:p-4";
+  "flex w-full items-center gap-2 rounded-dashMd bg-dashSurface px-3 py-3 ring-1 ring-pink-600/40";
 
 
 export const dashJoinSubmitIconClass =
-  "flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-white transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-40";
+  "flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] bg-secondary text-white transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-40";
 
 // Fixed height shared by the input wrap and the submit button below, so the two are
 // guaranteed the same height regardless of each element's own line-height/font
 // (padding alone doesn't guarantee that — an <input>'s intrinsic line box and a
 // <button>'s text don't necessarily render the same height at equal padding).
-const dashJoinTileControlHeightClass = "h-9";
+const dashJoinTileControlHeightClass = "h-7";
 
 // The visible input surface: a wrapper div carries the background, because Input's
 // variant="raw" always adds its own bg-transparent — putting a background straight on
@@ -948,13 +925,25 @@ export const dashJoinTileInputClass =
 export const dashGamesGridClass =
   "grid grid-cols-2 gap-3.5 min-[901px]:grid-cols-4";
 
-// The /games catalogue grid. auto-fit with a capped track centres a single card and
-// grids a full catalogue evenly, without having to count items.
+/**
+ * The /games catalogue grid. auto-fit with a capped track grids a full catalogue evenly
+ * without having to count items, and `justify-start` keeps the first card on the same
+ * left edge every other dashboard route starts from.
+ *
+ * The cap is the size of the card itself. 320px (the original) made three games fill a
+ * laptop's whole content column; 200px was legible but read as a thumbnail strip. 260px
+ * on a laptop (13"–15", a ~1230px content column) fits four across at a size where the
+ * cover art and the badges over it are both properly readable, and the 1700px step lets
+ * a real desktop monitor take it to 300px.
+ */
 export const dashGamesCatalogGridClass =
-  "grid justify-start gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(240px,320px))]";
+  "grid justify-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(160px,1fr))] min-[560px]:[grid-template-columns:repeat(auto-fit,minmax(215px,260px))] min-[1700px]:[grid-template-columns:repeat(auto-fit,minmax(240px,300px))]";
 
+// A lighter hairline than the shared dashBorder (8%): these cards sit in an open grid
+// with nothing between them, so the outline is only there to close the shape — at 8% it
+// drew a box around every card and the page read as a table.
 export const dashGameCardClass =
-  "group overflow-hidden rounded-dashMd border border-dashBorder bg-dashSurface text-left transition-[opacity,border-color] duration-200 hover:border-white/15 disabled:cursor-not-allowed disabled:opacity-60";
+  "group overflow-hidden rounded-dashMd border border-white/[0.045] bg-dashSurface text-left transition-[opacity,border-color] duration-200 hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-60";
 
 export const dashGameCardCoverClass =
   "relative flex w-full items-center justify-center overflow-hidden bg-dashSurfaceAlt";
@@ -962,39 +951,62 @@ export const dashGameCardCoverClass =
 // A ratio rather than a fixed height, so covers keep their shape as the grid tracks
 // resize. Rows still line up: every track in a row is the same width, so a shared
 // ratio makes every cover the same height too.
-export const dashGameCardCoverCompactClass = "aspect-[16/10]";
-
-// Taller on the catalogue page, where there is room for it — game art is usually
-// square or portrait, and a wide strip crops the middle out of it.
-export const dashGameCardCoverDetailedClass = "aspect-[4/3]";
+//
+// One ratio for both surfaces on purpose: the catalogue used to run 4/3 because its
+// cards were much wider than the home strip's, and now that they are the same width a
+// second ratio would only make the same game look like two different objects.
+export const dashGameCardCoverRatioClass = "aspect-[16/10]";
 
 // Scaling on hover is the only motion here, and it is on the image rather than the
 // card so a grid of them never shifts its neighbours.
 export const dashGameCardCoverImgClass =
   "h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]";
 
-export const dashGameCardMetaClass = "px-3 pb-3 pt-2.5";
+export const dashGameCardMetaClass = "px-4 pb-4 pt-3.5";
 
-export const dashGameCardNameClass = "text-[13.5px] font-bold text-dashText";
+export const dashGameCardNameClass = "truncate text-[14px] font-bold text-dashText";
 
-export const dashGameCardSubClass = "mt-0.5 text-[11.5px] text-dashTextMute";
+export const dashGameCardSubClass = "mt-1 text-[11.5px] text-dashTextMute";
 
 export const dashGameCardDescClass =
-  "mt-2 line-clamp-2 text-[12px] leading-5 text-dashTextMute";
+  "mt-1.5 line-clamp-2 text-[12px] leading-[1.5] text-dashTextMute";
 
-export const dashGameCardBadgeRowClass = "mt-2.5 flex flex-wrap items-center gap-1.5";
+/**
+ * The card's facts, over the head of the cover rather than in a row under the copy.
+ *
+ * They were two full-width pills ("2 players", "Turn-based") stacked between the
+ * description and the CTA, which is most of a card's height spent on two words each. As
+ * an overlay they cost the card nothing, and the copy below is just title, line, button.
+ *
+ * One spanning row rather than a pill absolutely positioned in each corner: the info
+ * group and the premium pill share the top of the cover, and two independent absolutes
+ * would sit on top of each other on a card too narrow for the pair.
+ *
+ * inset-x-4 is the same 16px the meta block below uses, so the pills, the title and the
+ * description all hang off one left margin down the whole card.
+ */
+export const dashGameCardOverlayRowClass =
+  "absolute inset-x-4 top-3 flex items-start justify-between gap-2";
 
+export const dashGameCardOverlayBadgeGroupClass =
+  "flex min-w-0 flex-wrap items-center gap-1.5";
+
+// No outline, and a light wash rather than a dark scrim — the blur is what carries
+// legibility over bright artwork, so the tint itself can stay barely there.
 export const dashGameCardBadgeClass =
-  "inline-flex items-center gap-1 rounded-full bg-white/[0.06] px-2 py-0.5 text-[11px] font-medium text-dashTextMute";
+  "inline-flex items-center gap-1.5 rounded-full bg-white/[0.07] px-2.5 py-1.5 text-[10px] font-medium leading-none text-white backdrop-blur-md";
 
-// Sits over the cover, so it reads against artwork of any brightness.
+// Same pill, pushed to the far end of the row above by its justify-between.
 export const dashGameCardPremiumBadgeClass =
-  "absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-amber-200 backdrop-blur-sm";
+  "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/[0.07] px-2.5 py-1.5 text-[10px] font-medium leading-none text-amber-200 backdrop-blur-md";
 
 // A span, not a button: the whole card is the button, and nesting one inside another
 // is invalid HTML that browsers resolve by dropping the outer click target.
+//
+// dashSm (10px) rather than a pill: it sits inside a dashMd (14px) card, and a nested
+// corner has to be tighter than the one containing it or the two fight each other.
 export const dashGameCardCtaClass =
-  "mt-3 inline-flex items-center justify-center gap-1.5 rounded-full bg-secondary px-3.5 py-1.5 text-[12px] font-bold text-white";
+  "mt-3.5 inline-flex w-full items-center justify-center gap-1.5 rounded-dashSm bg-secondary px-3 py-2.5 text-[12px] font-bold text-white";
 
 // Right rail panel (For You Two — the only rail panel; Virtual Gifts was removed, no
 // real feature backs it).

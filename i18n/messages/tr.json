@@ -18,15 +18,10 @@
       "next": "Sonraki"
     },
     "screenShare": "Ekran Paylaşımı",
-    "screenShareDesc": "Ekranındakini paylaş",
     "fileShare": "Dosya Paylaşımı",
-    "fileShareDesc": "Cihazındaki videoyu oynat",
     "addUrl": "URL Ekle",
-    "addUrlDesc": "Bir bağlantı yapıştır",
     "youtube": "YouTube",
-    "youtubeDesc": "Videolara göz at, sıraya diz",
     "joinWithCode": "Kodla Katıl",
-    "joinWithCodeDesc": "Oda kodunu gir",
     "roomIdPlaceholder": "Oda ID",
     "join": "Katıl",
     "joining": "Katılınıyor...",
@@ -612,7 +607,6 @@
   },
   "games": {
     "title": "Oyunlar",
-    "subtitle": "Birlikte oynayacağınız bir şey seçin. Oyun önde, sohbet yanında bir oda açılır.",
     "players": "{min}–{max} oyuncu",
     "playersExact": "{min} oyuncu",
     "start": "Oyunu başlat",

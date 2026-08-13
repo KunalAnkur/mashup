@@ -8,16 +8,16 @@ import { ImSpinner2 } from "react-icons/im";
 import { useTranslations } from "@/i18n/I18nProvider";
 import {
   dashGameCardBadgeClass,
-  dashGameCardBadgeRowClass,
   dashGameCardClass,
   dashGameCardCoverClass,
-  dashGameCardCoverCompactClass,
-  dashGameCardCoverDetailedClass,
   dashGameCardCoverImgClass,
+  dashGameCardCoverRatioClass,
   dashGameCardCtaClass,
   dashGameCardDescClass,
   dashGameCardMetaClass,
   dashGameCardNameClass,
+  dashGameCardOverlayBadgeGroupClass,
+  dashGameCardOverlayRowClass,
   dashGameCardPremiumBadgeClass,
   dashGameCardSubClass,
 } from "@/components/UI/classTokens";
@@ -61,6 +61,15 @@ export const GameCard = ({
       ? t("playersExact", { min: entry.players.min })
       : t("players", { min: entry.players.min, max: entry.players.max });
 
+  // The overlay badge carries the count alone — two worded pills side by side over the
+  // art read as one crowded lump, and the icon beside the number already says what the
+  // number is. Built from the counts rather than a translation: a digit and an en dash
+  // say the same thing in every locale, and the full phrase stays on the title.
+  const playersShort =
+    entry.players.min === entry.players.max
+      ? `${entry.players.min}`
+      : `${entry.players.min}–${entry.players.max}`;
+
   return (
     <button
       type="button"
@@ -69,9 +78,7 @@ export const GameCard = ({
       className={dashGameCardClass}
     >
       <div
-        className={`${dashGameCardCoverClass} ${
-          detailed ? dashGameCardCoverDetailedClass : dashGameCardCoverCompactClass
-        }`}
+        className={`${dashGameCardCoverClass} ${dashGameCardCoverRatioClass}`}
         // Tint the box behind the art in the game's own colour, so a cover that is
         // still loading — or one that never arrives — is never a grey hole.
         style={accent ? { backgroundColor: `${accent}1f` } : undefined}
@@ -89,10 +96,10 @@ export const GameCard = ({
             // the 1200px file every time — on the dashboard strip that is 81kB where
             // 15kB is the right answer.
             //
-            // The catalogue's grid tracks are capped at 320px at every width, so one
+            // The catalogue's grid tracks are capped at 300px at the widest step, so one
             // number covers it. The strip is two-up below 901px and four-up above,
             // which is where its own breakpoint comes from — keep the two in step.
-            sizes={detailed ? "320px" : "(max-width: 900px) 50vw, 200px"}
+            sizes={detailed ? "300px" : "(max-width: 900px) 50vw, 200px"}
             alt=""
             width={cover.width}
             height={cover.height}
@@ -106,8 +113,8 @@ export const GameCard = ({
           // deliberately not an icon name — costume keeps no map of games to artwork.
           <svg
             viewBox="0 0 24 24"
-            width={detailed ? 40 : 30}
-            height={detailed ? 40 : 30}
+            width={32}
+            height={32}
             fill="none"
             stroke={accent}
             strokeWidth={1.6}
@@ -120,32 +127,54 @@ export const GameCard = ({
         ) : (
           // A game that declares no art at all. Render it plainly rather than inventing
           // a colour for it.
-          <LuGamepad2 size={detailed ? 40 : 30} className="text-dashTextMute" />
+          <LuGamepad2 size={32} className="text-dashTextMute" />
         )}
 
-        {entry.requiresUpgrade ? (
-          <span className={dashGameCardPremiumBadgeClass}>
-            <LuCrown className="text-[11px]" />
-            {t("premium")}
-          </span>
+        {detailed || entry.requiresUpgrade ? (
+          <div className={dashGameCardOverlayRowClass}>
+            {/* Catalogue only: the strip's cards already carry the player count as their
+                subtitle, and a second copy over 200px of art would just be clutter. The
+                group still renders empty on the strip so justify-between keeps the
+                premium pill at the far end. */}
+            <div className={dashGameCardOverlayBadgeGroupClass}>
+              {detailed ? (
+                <>
+                  <span className={dashGameCardBadgeClass} title={players}>
+                    <LuUsers className="text-[11px]" />
+                    {playersShort}
+                  </span>
+                  {/* Phone cards are half a desktop card's width, so the second pill
+                      wraps to its own line and the pair ends up covering a third of the
+                      art. The count is the fact that changes between games — the
+                      category can wait for a viewport with room for it beside it. */}
+                  <span className={`${dashGameCardBadgeClass} hidden min-[560px]:inline-flex`}>
+                    {t(`categories.${entry.category}`)}
+                  </span>
+                </>
+              ) : null}
+            </div>
+
+            {entry.requiresUpgrade ? (
+              <span className={dashGameCardPremiumBadgeClass}>
+                <LuCrown className="text-[9px]" />
+                {t("premium")}
+              </span>
+            ) : null}
+          </div>
         ) : null}
       </div>
 
       <div className={dashGameCardMetaClass}>
         <div className={dashGameCardNameClass}>{entry.title}</div>
-        <div className={dashGameCardSubClass}>{detailed ? entry.tagline : players}</div>
+
+        {/* The tagline used to sit here on the catalogue too, but it is the same two
+            facts the cover badges now carry ("Two players · Quick rounds") — so the
+            catalogue goes straight to the description that actually says something. */}
+        {detailed ? null : <div className={dashGameCardSubClass}>{players}</div>}
 
         {detailed ? (
           <>
             <p className={dashGameCardDescClass}>{entry.description}</p>
-
-            <div className={dashGameCardBadgeRowClass}>
-              <span className={dashGameCardBadgeClass}>
-                <LuUsers className="text-[11px]" />
-                {players}
-              </span>
-              <span className={dashGameCardBadgeClass}>{t(`categories.${entry.category}`)}</span>
-            </div>
 
             <span className={dashGameCardCtaClass}>
               {opening ? (

@@ -18,15 +18,10 @@
       "next": "التالي"
     },
     "screenShare": "مشاركة الشاشة",
-    "screenShareDesc": "شارك ما على شاشتك",
     "fileShare": "مشاركة الملف",
-    "fileShareDesc": "شغّل مقطعًا من جهازك",
     "addUrl": "إضافة رابط",
-    "addUrlDesc": "الصق رابطًا وشاهدوه",
     "youtube": "يوتيوب",
-    "youtubeDesc": "تصفّح وجهّز قائمة المشاهدة",
     "joinWithCode": "الانضمام برمز",
-    "joinWithCodeDesc": "أدخل رمز الغرفة",
     "roomIdPlaceholder": "معرف الغرفة",
     "join": "انضم",
     "joining": "جاري الانضمام...",
@@ -612,7 +607,6 @@
   },
   "games": {
     "title": "الألعاب",
-    "subtitle": "اختر شيئًا تلعبونه معًا. تُفتح غرفة واللعبة في المقدمة والدردشة بجانبها.",
     "players": "{min}–{max} لاعبين",
     "playersExact": "{min} لاعبين",
     "start": "ابدأ اللعبة",
