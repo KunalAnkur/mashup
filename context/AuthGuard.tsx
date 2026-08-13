@@ -218,18 +218,24 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         // Otherwise, stay on home page (source selection)
       }
 
-      // Handle /stream, /stream/files, /stream/[source], /sync and /games routes — create
-      // room if authenticated and has refer data. /games goes through the same path so an
-      // activity room is a normal room: same sign-in redirect, same guest-host prompt,
-      // same persistence.
+      // Every page that can hand off a playlist and expect a room back — create it here
+      // if authenticated and `refer` is set.
+      //
+      // This list is the contract, and forgetting to add to it is a silent failure: the
+      // page dispatches, nothing happens, and its button sits in a loading state forever
+      // with no error to show. If a new page dispatches `setRefers`, its route belongs
+      // here in the same commit.
       const isStreamRoute =
         pathname === "/stream" ||
         pathname === "/stream/files" ||
         (pathname?.startsWith("/stream/") && pathname !== "/stream/files");
-      if (
-        (isStreamRoute || pathname === "/sync" || pathname === "/games") &&
-        authState.isAuthenticated
-      ) {
+      const isRoomHandoffRoute =
+        isStreamRoute ||
+        pathname === "/sync" ||
+        pathname === "/games" ||
+        pathname === "/youtube";
+
+      if (isRoomHandoffRoute && authState.isAuthenticated) {
         if (roomState.refer && hasPlaylist) {
           const result = await createRoomWithRefer();
           if (result && result.data?.room_id) {

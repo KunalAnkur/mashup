@@ -11,6 +11,7 @@ import {
   LuMonitor,
   LuFileUp,
   LuLink2,
+  LuYoutube,
   LuGamepad2,
   LuInfo,
   LuChevronRight,
@@ -91,6 +92,7 @@ const DashboardSidebar = () => {
   const isScreenShare = pathname === "/stream/screen";
   const isFileShare = pathname === "/stream";
   const isAddUrl = pathname === "/sync";
+  const isYoutube = pathname === "/youtube";
 
   const go = (path: string, cta: Parameters<typeof trackCTAClicked>[0]) => {
     trackCTAClicked(cta);
@@ -155,6 +157,14 @@ const DashboardSidebar = () => {
               >
                 <LuLink2 size={15} />
                 {tHome("addUrl")}
+              </button>
+              <button
+                type="button"
+                onClick={() => go("/youtube", "sync")}
+                className={`${dashSubmenuItemClass} ${isYoutube ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
+              >
+                <LuYoutube size={15} />
+                {tHome("youtube")}
               </button>
             </div>
           </div>

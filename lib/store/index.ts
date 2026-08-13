@@ -22,6 +22,7 @@ import { userApi } from "./api/userApi";
 import { urlApi } from "./api/urlApi";
 import { feedbackApi } from "./api/feedbackApi";
 import { productApi } from "./api/productApi";
+import { youtubeApi } from "./api/youtubeApi";
 import { subscriptionPlanApi } from "./api/subscriptionPlanApi";
 import { billingApi } from "./api/billingApi";
 
@@ -38,6 +39,7 @@ const rootReducer = combineReducers({
   [urlApi.reducerPath]: urlApi.reducer,
   [feedbackApi.reducerPath]: feedbackApi.reducer,
   [productApi.reducerPath]: productApi.reducer,
+  [youtubeApi.reducerPath]: youtubeApi.reducer,
   [subscriptionPlanApi.reducerPath]: subscriptionPlanApi.reducer,
   [billingApi.reducerPath]: billingApi.reducer,
 });
@@ -67,6 +69,7 @@ export const store = configureStore({
       urlApi.middleware,
       feedbackApi.middleware,
       productApi.middleware,
+      youtubeApi.middleware,
       subscriptionPlanApi.middleware,
       billingApi.middleware
     ),

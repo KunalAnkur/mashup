@@ -576,19 +576,6 @@ export const dashNavItemActiveClass =
 
 export const dashNavItemHoverClass = "text-dashTextDim hover:bg-white/[0.045] hover:text-dashText";
 
-// Action tiles (home "Stream / Sync / Games" cards): flat surface, single pink icon
-// accent, one soft glow revealed on hover — replaces the old per-card glass/multi-color
-// gradient treatment.
-export const dashActionTileClass =
-  "bg-dashSurface hover:bg-[linear-gradient(135deg,rgba(219,39,119,0.07),rgba(192,38,211,0.05))] rounded-dashMd relative overflow-hidden transition-[background-image] duration-300";
-
-export const dashActionTileGlowClass =
-  "pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(219,39,119,0.22),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100";
-
-export const dashActionTileIconWrapClass = "flex items-center justify-center text-pink-600";
-
-export const dashActionTileLabelClass = "text-[13.5px] font-semibold tracking-tight text-dashText";
-
 export const dashJoinFieldWrapClass =
   "flex flex-1 items-center rounded-dashSm bg-dashSurfaceAlt transition-colors duration-200 focus-within:outline focus-within:outline-2 focus-within:outline-pink-600/55";
 
@@ -839,16 +826,80 @@ export const dashSectionHeadTitleClass = "m-0 text-base font-bold text-dashText"
 export const dashSectionHeadLinkClass =
   "bg-secondary bg-clip-text text-[12.5px] font-semibold text-transparent transition-[filter] duration-150 hover:brightness-125";
 
-// Actions grid — 3 icon tiles + 1 join-by-code tile, all 4 cells the same size.
-// (Games isn't a tile here — it already has its own preview section below.)
-export const dashActionsGridClass = "grid grid-cols-2 gap-3 min-[561px]:grid-cols-4";
+// Actions — a row of horizontal cards: coloured icon, then a title and a line of copy
+// saying what it is for, then an arrow.
+//
+// All four abreast once the viewport can carry it. Below that they fall to two and then
+// one rather than being squeezed — at four across in a narrow column the description
+// wraps to four lines and the row stops being a row.
+export const dashActionsGridClass =
+  "grid grid-cols-1 gap-3 min-[560px]:grid-cols-2 min-[900px]:grid-cols-3 min-[1180px]:grid-cols-5";
 
-export const dashActionTileSizeClass = "min-h-[clamp(150px,9vw,200px)]";
+/**
+ * Icon beside the text wherever the card is wide enough to hold both, stacked where it
+ * is not — which is only the middle of the range.
+ *
+ *   below 1180   two or three across, so each card is roomy: side by side
+ *   1180–1700    five across in a ~155px card, 80px of it text: stacked, or the titles
+ *                truncate to "Scree…"
+ *   above 1700   five across but the column is ~1180px, so a card is 220px: side by side
+ *
+ * The 1700 rule has to come after the 1180 one — Tailwind emits breakpoints in width
+ * order, so the wider query is the one that wins where both match.
+ */
+export const dashActionTileClass =
+  "group flex items-center gap-2.5 rounded-dashMd bg-dashSurface p-3.5 text-left transition-colors duration-200 hover:bg-white/[0.05] min-[1180px]:flex-col min-[1180px]:items-start min-[1180px]:gap-2.5 min-[1180px]:p-4 min-[1700px]:flex-row min-[1700px]:items-center min-[1700px]:gap-3";
 
-export const dashJoinTileClass =
-  "relative flex min-h-[clamp(150px,9vw,200px)] flex-col items-stretch justify-center gap-2.5 rounded-dashMd bg-dashSurface p-3.5";
+/**
+ * A solid colour, not a tint.
+ *
+ * Each action gets its own, so the row is scannable by colour before a word of it is
+ * read — which is the whole reason this shape beats four identical grey tiles.
+ */
+export const dashActionIconClass =
+  "flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-white shadow-[0_6px_18px_rgba(0,0,0,0.35)]";
 
-export const dashJoinTileHeaderClass = "text-center text-[11.5px] font-semibold leading-[1.3] text-dashText";
+export const dashActionCopyClass =
+  "min-w-0 flex-1 min-[1180px]:w-full min-[1180px]:flex-none min-[1700px]:w-auto min-[1700px]:flex-1";
+
+// `truncate` rather than wrap: a title on two lines in a card this narrow costs the
+// description its second line and makes the row ragged.
+export const dashActionLabelClass =
+  "truncate text-[13px] font-bold leading-tight text-dashText min-[1180px]:text-[13.5px]";
+
+// Clamped: a fourth line pushes one card taller than its neighbours and the row goes
+// ragged, which is the one thing a row of four must not do.
+export const dashActionDescClass =
+  "mt-0.5 line-clamp-2 text-[11px] leading-[1.35] text-dashTextMute min-[1180px]:text-[11.5px]";
+
+/** Slides on hover — the only motion, and it points where the card goes. */
+/**
+ * Hidden until the row has the width for it.
+ *
+ * At four across in an 870px column each card is barely 200px, and an always-visible
+ * arrow costs the copy the 22px that keeps "Screen Share" on one line. The card is the
+ * click target either way — the arrow was only ever saying so.
+ */
+export const dashActionArrowClass =
+  "hidden shrink-0 text-[15px] text-dashTextMute transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-dashText min-[1700px]:block";
+
+// Join by code sits under the grid rather than in it: it is a form, not a link, and a
+// cell with an input in it never matches the height of one with two lines of text.
+/**
+ * Join-by-code as a fifth cell rather than a bar of its own.
+ *
+ * It cannot hold a label, a field and a button side by side at a fifth of the row — so
+ * it does not try. It sits idle looking like its neighbours and swaps to the field when
+ * pressed, which is also the honest interaction: nobody types a room code by accident.
+ */
+export const dashJoinTileClass = `${dashActionTileClass} w-full`;
+
+export const dashJoinOpenClass =
+  "flex w-full items-center gap-2 rounded-dashMd bg-dashSurface p-3.5 ring-1 ring-pink-600/40 min-[1180px]:p-4";
+
+
+export const dashJoinSubmitIconClass =
+  "flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-white transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-40";
 
 // Fixed height shared by the input wrap and the submit button below, so the two are
 // guaranteed the same height regardless of each element's own line-height/font
@@ -861,13 +912,10 @@ const dashJoinTileControlHeightClass = "h-9";
 // the <input> would fight that class for the same CSS property with no reliable winner
 // (see feedback_portaled_modal_dismiss_bug for the same class of bug elsewhere).
 export const dashJoinTileInputWrapClass =
-  `flex w-full items-center ${dashJoinTileControlHeightClass} rounded-[9px] bg-dashSurfaceAlt px-2.5 focus-within:outline focus-within:outline-2 focus-within:outline-pink-600/55`;
+  `flex min-w-0 flex-1 items-center ${dashJoinTileControlHeightClass} rounded-[9px] bg-dashSurfaceAlt px-2.5`;
 
 export const dashJoinTileInputClass =
   "w-full text-[12px] tracking-[0.03em] text-dashText tabular-nums placeholder:text-dashTextMute placeholder:tracking-normal";
-
-export const dashJoinTileSubmitClass =
-  `flex w-full items-center justify-center ${dashJoinTileControlHeightClass} rounded-[9px] bg-secondary px-2.5 text-[12px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50`;
 
 // Popular Games preview grid on the dashboard home — four across, two on a phone.
 export const dashGamesGridClass =
@@ -978,3 +1026,115 @@ export const dashSettingsSaveButtonClass = dashPrimaryButtonClass;
 // state reuses the same brand-gradient wash as active nav items (dashNavItemActiveClass).
 export const dashLanguageRowActiveClass =
   "text-dashText bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))]";
+
+// ---------------------------------------------------------------------------
+// YouTube browse page. The card follows YouTube's own arrangement — 16:9 thumbnail,
+// duration in the corner, avatar beside a two-line title — because that is the layout
+// people read without being taught.
+// ---------------------------------------------------------------------------
+
+export const ytPageWrapClass = "flex h-full min-h-0 flex-col";
+
+/**
+ * The page ground, as a literal.
+ *
+ * The dashboard shell has no background token of its own — it sits on the app body — but
+ * a sticky toolbar and a ring offset both need an actual colour to sit on, or they show
+ * whatever scrolls underneath.
+ */
+export const ytGroundClass = "bg-[#0b0a0d]";
+
+// Sticky, because the search box and the category you are browsing are the two things
+// you reach for *after* scrolling, and a toolbar that scrolls away makes you scroll back.
+export const ytToolbarClass =
+  "sticky top-0 z-20 -mx-1 flex flex-col gap-3 bg-[rgba(11,10,13,0.94)] px-1 pb-4 pt-1 backdrop-blur-xl";
+
+export const ytSectionHeadClass =
+  "mb-4 text-[15px] font-semibold tracking-tight text-white/88";
+
+export const ytSearchWrapClass =
+  "flex h-11 w-full max-w-xl items-center gap-2.5 rounded-full bg-white/[0.045] px-4 transition-colors duration-150 focus-within:bg-white/[0.075]";
+
+export const ytSearchInputClass =
+  "w-full bg-transparent text-[14px] text-white/88 placeholder:text-white/34 focus:outline-none";
+
+// A single scrolling row, like YouTube's. Wrapping them would push the grid below the
+// fold on a laptop the moment a region has twenty categories.
+export const ytChipRowClass =
+  "flex gap-2 overflow-x-auto pb-1 scrollbar-hide [scrollbar-width:none]";
+
+export const ytChipClass =
+  "shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors duration-150";
+
+export const ytChipActiveClass = "bg-white text-black";
+
+export const ytChipIdleClass = "bg-white/[0.07] text-white/78 hover:bg-white/[0.12]";
+
+export const ytGridClass =
+  "grid gap-x-4 gap-y-7 [grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]";
+
+export const ytCardClass =
+  "group relative flex w-full flex-col text-left transition-opacity duration-150";
+
+export const ytCardThumbClass =
+  "relative aspect-video w-full overflow-hidden rounded-xl bg-white/[0.05]";
+
+export const ytCardThumbImgClass =
+  "h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]";
+
+export const ytCardDurationClass =
+  "absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[11.5px] font-medium tabular-nums text-white";
+
+export const ytCardLiveClass =
+  "absolute bottom-1.5 right-1.5 rounded bg-red-600 px-1.5 py-0.5 text-[10.5px] font-bold tracking-wide text-white";
+
+export const ytCardAvatarClass = "h-9 w-9 shrink-0 overflow-hidden rounded-full object-cover";
+
+// Two lines, then ellipsis — the same clamp YouTube uses, and the reason a grid of
+// cards keeps its rows aligned however long the titles are.
+export const ytCardTitleClass =
+  "line-clamp-2 text-[14px] font-semibold leading-[1.35] text-white/92";
+
+export const ytCardChannelClass = "mt-1 truncate text-[12.5px] text-white/48";
+
+export const ytCardMetaClass = "text-[12.5px] text-white/48";
+
+export const ytSkeletonThumbClass = "aspect-video w-full rounded-xl bg-white/[0.05]";
+
+export const ytEmptyClass = "py-20 text-center text-[13.5px] text-white/42";
+
+// --- selection ---------------------------------------------------------------
+
+/**
+ * A ring around the whole card rather than a tick in a corner. Picking videos is the
+ * point of this page, so what is in the queue has to be readable across a grid of
+ * twenty-four at a glance, not found by inspecting each one.
+ */
+export const ytCardSelectedClass = "ring-2 ring-pink-500 ring-offset-[3px] ring-offset-[#0b0a0d]";
+
+/** The queue position, not a tick — order is what a playlist is. */
+export const ytCardPositionClass =
+  "absolute left-2 top-2 flex h-7 min-w-7 items-center justify-center rounded-full bg-pink-600 px-2 text-[12.5px] font-bold tabular-nums text-white shadow-lg";
+
+export const ytCardAddClass =
+  "absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white opacity-0 backdrop-blur-sm transition-opacity duration-150 group-hover:opacity-100";
+
+/**
+ * The queue bar. Sticky to the foot of the scroll area rather than fixed to the window,
+ * so it sits inside the page's own column and never covers the sidebar.
+ */
+export const ytQueueBarClass =
+  "sticky bottom-0 z-30 -mx-1 mt-6 flex flex-wrap items-center gap-3 border-t border-white/[0.06] bg-[rgba(16,14,19,0.96)] px-4 py-3 backdrop-blur-xl";
+
+export const ytQueueStripClass = "flex flex-1 items-center gap-1.5 overflow-x-auto scrollbar-hide";
+
+export const ytQueueThumbClass =
+  "group/thumb relative h-9 w-16 shrink-0 overflow-hidden rounded-md bg-white/[0.06]";
+
+export const ytQueueThumbRemoveClass =
+  "absolute inset-0 flex items-center justify-center bg-black/65 text-white opacity-0 transition-opacity duration-150 group-hover/thumb:opacity-100";
+
+export const ytQueueCountClass = "shrink-0 text-[13px] font-medium text-white/70 tabular-nums";
+
+export const ytQueueClearClass =
+  "shrink-0 rounded-full px-3 py-2 text-[13px] font-medium text-white/55 transition-colors duration-150 hover:bg-white/[0.06] hover:text-white/85";
