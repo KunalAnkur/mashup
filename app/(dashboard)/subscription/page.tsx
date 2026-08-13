@@ -3,15 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
-import { LuArrowRight, LuCheck, LuCrown, LuSparkles } from "react-icons/lu";
+import { LuArrowRight, LuClock, LuCrown, LuMonitor, LuSparkles, LuUsers } from "react-icons/lu";
 import { Modal, ModalConfirmContent } from "@/components/UI";
 import {
-  appEntryActionButtonBaseClass,
-  appEntryPageContentWrapClass,
-  appEntryPageInsetClass,
-  appEntrySecondaryButtonClass,
   appPulseSurfaceClass,
+  appSectionTitleTextClass,
   appWhiteBorderClass,
+  dashPageContentWrapClass,
+  dashPageTitleWrapClass,
   pricingPaidCardSurfaceClass,
   subPageWrapClass,
   subPlanActionsClass,
@@ -20,6 +19,7 @@ import {
   subPlanBodyClass,
   subPlanGlowClass,
   subPlanCadenceClass,
+  subPlanGhostActionClass,
   subPlanIconClass,
   subPlanNameClass,
   subPlanFooterClass,
@@ -31,6 +31,7 @@ import {
   subPlanPerksRowClass,
   subPlanPriceClass,
   subPlanPriceRowClass,
+  subPlanPrimaryActionClass,
 } from "@/components/UI/classTokens";
 import { PurchaseHistory } from "@/components/Subscription/PurchaseHistory";
 import { RootState } from "@/lib/store";
@@ -71,7 +72,7 @@ const formatDate = (value?: string | Date | null) => {
   }).format(date);
 };
 
-const skeletonBannerClass = `${subPlanBannerClass} ${appPulseSurfaceClass} h-[300px]`;
+const skeletonBannerClass = `${subPlanBannerClass} ${appPulseSurfaceClass} h-[250px]`;
 
 export default function SubscriptionPage() {
   const dispatch = useDispatch();
@@ -118,19 +119,33 @@ export default function SubscriptionPage() {
     if (!plan?.features) return [];
 
     const features = plan.features;
-    const bullets = [
-      t("features.participants", { count: features.max_room_participants }),
-      features.max_watch_minutes_per_day === -1
-        ? t("features.watchUnlimited")
-        : t("features.watchLimitDaily", { minutes: features.max_watch_minutes_per_day }),
-      t("features.screenShare", { quality: features.screen_share_quality }),
+
+    // Each perk gets its own icon and tint (people/time/quality) instead of one flat
+    // checkmark repeated three times, so the row reads at a glance instead of as a list.
+    return [
+      {
+        label: t("features.participants", { count: features.max_room_participants }),
+        Icon: LuUsers,
+        iconClassName: "bg-sky-500/14 text-sky-300",
+      },
+      {
+        label:
+          features.max_watch_minutes_per_day === -1
+            ? t("features.watchUnlimited")
+            : t("features.watchLimitDaily", { minutes: features.max_watch_minutes_per_day }),
+        Icon: LuClock,
+        iconClassName: "bg-amber-500/14 text-amber-300",
+      },
+      {
+        label: t("features.screenShare", { quality: features.screen_share_quality }),
+        Icon: LuMonitor,
+        iconClassName: "bg-violet-500/14 text-violet-300",
+      },
     ];
 
     // No "ad-free" bullet: Movmash shows no ads on any plan, including Free, so listing it
     // as a paid perk implies Free is ad-supported. The ad_free_experience flag still exists
     // on plans in case that ever changes.
-
-    return bullets;
   }, [plan, t]);
 
   const handleCancelPendingChange = async () => {
@@ -169,15 +184,11 @@ export default function SubscriptionPage() {
 
   return (
     <>
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
-          <div className={appEntryPageInsetClass}>
-            <div className={appEntryPageContentWrapClass}>
-              <div className={subPageWrapClass}>
-                <header>
-                  <h1 className="font-parkinsans text-[2.2rem] font-semibold tracking-[-0.04em] text-white md:text-[2.6rem]">
-                    {t("title")}
-                  </h1>
-                </header>
+        <div className={dashPageContentWrapClass}>
+          <div className={subPageWrapClass}>
+            <div className={`${dashPageTitleWrapClass} justify-center`}>
+              <h1 className={appSectionTitleTextClass}>{t("title")}</h1>
+            </div>
 
                 {isLoading || !plan ? (
                   <div className={skeletonBannerClass} />
@@ -211,12 +222,12 @@ export default function SubscriptionPage() {
                       </div>
 
                       <div className={subPlanPerksRowClass}>
-                        {perks.map((perk) => (
-                          <span key={perk} className={subPlanPerkClass}>
-                            <span className={subPlanPerkIconClass}>
-                              <LuCheck className="h-2.5 w-2.5" />
+                        {perks.map(({ label, Icon, iconClassName }) => (
+                          <span key={label} className={subPlanPerkClass}>
+                            <span className={`${subPlanPerkIconClass} ${iconClassName}`}>
+                              <Icon className="h-[11px] w-[11px]" />
                             </span>
-                            <span>{perk}</span>
+                            <span>{label}</span>
                           </span>
                         ))}
                       </div>
@@ -268,19 +279,16 @@ export default function SubscriptionPage() {
                       </p>
 
                       <div className={subPlanActionsClass}>
-                        <Link
-                          href="/pricing"
-                          className={`${appEntryActionButtonBaseClass} ${appEntrySecondaryButtonClass} h-10 rounded-[1.05rem] px-4 text-[13px]`}
-                        >
+                        <Link href="/pricing" className={subPlanPrimaryActionClass}>
                           <span>{t("viewPlans")}</span>
-                          <LuArrowRight className="text-[15px]" />
+                          <LuArrowRight className="text-[13px]" />
                         </Link>
 
                         {canCancel ? (
                           <button
                             type="button"
                             onClick={() => setShowCancelConfirm(true)}
-                            className={`${appEntryActionButtonBaseClass} h-10 rounded-[1.05rem] px-4 text-[13px] font-semibold text-white/58 transition-colors duration-200 hover:bg-red-500/10 hover:text-red-200`}
+                            className={subPlanGhostActionClass}
                           >
                             {t("cancelPlan")}
                           </button>
@@ -299,8 +307,6 @@ export default function SubscriptionPage() {
                     isLoading={isLoadingTransactions}
                   />
                 </section>
-              </div>
-            </div>
           </div>
         </div>
 

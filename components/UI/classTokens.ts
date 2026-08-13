@@ -281,7 +281,7 @@ export const appSyncTooltipSurfaceClass =
   "rounded-dashSm border border-dashBorder bg-dashSurface px-3 py-2 text-[11px] text-dashTextDim shadow-xl shadow-black/25";
 
 // bg-dashSurfaceAlt (not bg-dashSurface) — the panel wrapping this is itself bg-dashSurface,
-// same fix as the File Share file cards (appStreamFileCardClass) for the identical problem.
+// same fix as the File Share file cards for the identical problem.
 export const appSyncPlaceholderRowClass =
   "flex items-center gap-3 rounded-dashSm bg-dashSurfaceAlt px-3 py-2.5";
 
@@ -293,8 +293,8 @@ export const appSyncListShellClass = "h-[192px] overflow-hidden";
 
 export const appSyncListShellEmptyClass = "h-[192px] overflow-hidden rounded-dashSm";
 
-// Sized to match File Share's file-card thumbnail exactly (appStreamFileThumbnailClass'
-// video-file sizing) — owner asked for the same scale across both lists.
+// Also used as-is for File Share's file-card thumbnail (FileSelection.tsx) — owner asked
+// for the exact same scale across both lists, so it's one shared token, not two matching ones.
 export const appSyncCardThumbnailClass =
   "relative h-8 w-12 shrink-0 overflow-hidden rounded-dashSm bg-dashSurfaceAlt sm:h-[34px] sm:w-[60px]";
 
@@ -303,8 +303,8 @@ export const appSyncCardIndexClass =
 
 // bg-dashSurfaceAlt (not bg-dashSurface) for the same panel-contrast reason as the
 // placeholder row above; hover bumped one step further since the resting state now
-// occupies what hover used to be. min-h (not fixed h) now matches File Share's file-card
-// scale (appStreamFileCardClass's sm:min-h-[58px]) instead of a flat 64px.
+// occupies what hover used to be. Also used as-is for File Share's file-card row
+// (FileSelection.tsx), for the same reason as appSyncCardThumbnailClass above.
 export const appSyncCardClass =
   "relative flex min-h-[52px] w-full items-center gap-2.5 rounded-dashSm bg-dashSurfaceAlt px-2.5 py-2 transition-colors duration-200 hover:bg-white/[0.06] sm:min-h-[58px] sm:px-3 sm:py-2.5";
 
@@ -322,22 +322,11 @@ export const appStreamListClass =
 export const appStreamListViewportClass =
   "w-full min-h-[220px] sm:h-[208px] sm:min-h-[208px] sm:max-h-[208px] md:h-[214px] md:min-h-[214px] md:max-h-[214px]";
 
-// bg-dashSurfaceAlt (not bg-dashSurface) — the panel wrapping this list is itself
-// bg-dashSurface, so a same-color card was invisible against it. This is the one shade
-// lighter than the panel, giving each file its own visible box.
-export const appStreamFileCardClass =
-  "relative flex w-full max-w-full items-center justify-between overflow-hidden rounded-dashMd bg-dashSurfaceAlt px-2.5 py-2 transition-colors duration-200 sm:min-h-[58px] sm:px-3 sm:py-2.5 md:min-h-[62px] md:px-3.5";
-
 // Reuses the same brand-gradient wash as the sidebar's active nav/submenu items
-// (dashNavItemActiveClass) so "selected" reads consistently across the dashboard.
+// (dashNavItemActiveClass) so "selected" reads consistently across the dashboard. Layered
+// on top of appSyncCardClass (the file row's own base class — same size as Add URL's rows).
 export const appStreamFileCardSelectedClass =
   "bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))]";
-
-// One more step lighter than the card's own bg-dashSurfaceAlt resting state.
-export const appStreamFileCardIdleClass = "hover:bg-white/[0.06]";
-
-export const appStreamFileThumbnailClass =
-  "flex shrink-0 items-center justify-center overflow-hidden rounded-dashSm bg-dashSurfaceAlt";
 
 export const appStreamUploadDropzoneClass =
   "relative flex flex-col items-center justify-center overflow-hidden rounded-dashMd border border-dashed border-dashBorder bg-dashSurface transition-colors duration-200 hover:bg-dashSurfaceAlt disabled:cursor-not-allowed disabled:opacity-50";
@@ -422,7 +411,11 @@ export const appTransactionRowClass =
 // table that needs the full width anyway.
 // ---------------------------------------------------------------------------
 
-export const subPageWrapClass = "mx-auto w-full max-w-5xl space-y-6 pb-10 pt-5 md:pt-8";
+// No top padding of its own — main's own min-[761px]:pt-3 (DashboardShell.tsx) already
+// lines every dashboard page's content up with the sidebar logo's top edge, same as
+// dashPageContentWrapClass on Screen Share/File Share/Add URL/Games. Adding padding here
+// on top of that pushed this page's title well below theirs.
+export const subPageWrapClass = "mx-auto w-full max-w-2xl space-y-6 pb-10";
 
 export const subPlanBannerClass =
   "relative overflow-hidden rounded-[1.75rem] ring-1 ring-white/[0.06] shadow-[0_24px_80px_rgba(0,0,0,0.28)]";
@@ -438,7 +431,7 @@ export const subPlanGlowClass =
 // Everything on one column-free stack. The two-column version left the right-hand
 // side almost empty above three short perks, and the full-height rule between them
 // drew a line down the middle of that emptiness.
-export const subPlanBodyClass = "p-6 sm:p-7";
+export const subPlanBodyClass = "p-5 sm:p-6";
 
 export const subPlanHeaderClass = "flex items-start justify-between gap-4";
 
@@ -446,31 +439,33 @@ export const subPlanBadgeClass =
   "inline-flex items-center rounded-full bg-white/[0.05] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/68";
 
 export const subPlanNameClass =
-  "mt-3.5 font-parkinsans text-[2rem] font-semibold leading-none tracking-[-0.05em] text-white md:text-[2.35rem]";
+  "mt-2.5 font-parkinsans text-[1.7rem] font-semibold leading-none tracking-[-0.05em] text-white md:text-[1.95rem]";
 
-export const subPlanPriceRowClass = "mt-3 flex items-end gap-2";
+export const subPlanPriceRowClass = "mt-2.5 flex items-end gap-2";
 
 export const subPlanPriceClass =
-  "font-parkinsans text-[1.9rem] font-semibold leading-none text-white/92 md:text-[2.1rem]";
+  "font-parkinsans text-[1.6rem] font-semibold leading-none text-white/92 md:text-[1.8rem]";
 
 export const subPlanCadenceClass = "pb-0.5 text-[13px] lowercase text-white/42";
 
 export const subPlanIconClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] bg-white/[0.05] text-white/90";
+  "flex h-9 w-9 shrink-0 items-center justify-center rounded-[1rem] bg-white/[0.05] text-white/90";
 
 // Perks read across rather than down: they are three or four words each, and a row of
 // them fills the width the price leaves empty instead of stacking into a second column.
-export const subPlanPerksRowClass = "mt-6 flex flex-wrap gap-x-7 gap-y-3";
+export const subPlanPerksRowClass = "mt-4 flex flex-wrap gap-x-7 gap-y-3";
 
 export const subPlanPerkClass = "flex items-center gap-2.5 text-[13px] leading-5 text-white/74";
 
+// Shape only — color comes per-feature from the caller, so each perk (people/time/quality)
+// can get its own tint instead of one flat neutral circle for all three.
 export const subPlanPerkIconClass =
-  "flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-white/70";
+  "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full";
 
 // What happens next on the left, what you can do about it on the right — one baseline,
 // so the card ends on a line of intent rather than a stray banner.
 export const subPlanFooterClass =
-  "flex flex-col gap-3.5 border-t border-white/[0.045] bg-white/[0.012] px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7";
+  "flex flex-col gap-3 border-t border-white/[0.045] bg-white/[0.012] px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-6";
 
 export const subPlanFooterTextClass = "text-[13px] leading-relaxed text-white/56";
 
@@ -479,50 +474,63 @@ export const subPlanFooterLinkClass =
 
 export const subPlanActionsClass = "flex shrink-0 flex-wrap items-center gap-2.5";
 
+export const subPlanPrimaryActionClass =
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 px-4 text-[12.5px] font-semibold text-white transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50";
+
+export const subPlanGhostActionClass =
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-white/10 px-4 text-[12.5px] font-semibold text-white/58 transition-colors duration-200 hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-50";
+
 // --- purchase history -------------------------------------------------------
 
-export const subHistoryCardClass =
-  "overflow-hidden rounded-[1.5rem] bg-white/[0.028] shadow-[0_18px_50px_rgba(0,0,0,0.22)]";
+export const subHistoryCardClass = "overflow-hidden rounded-dashMd bg-dashSurface";
 
 export const subHistoryToolbarClass =
-  "flex flex-col gap-2.5 p-4 sm:flex-row sm:items-center";
+  "flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:p-3.5";
 
 export const subHistorySearchWrapClass =
-  "flex h-10 flex-1 items-center gap-2 rounded-xl bg-white/[0.045] px-3.5 transition-colors duration-150 focus-within:bg-white/[0.07]";
+  "flex h-9 flex-1 items-center gap-2 rounded-dashSm bg-dashSurfaceAlt px-3 transition-colors duration-150 focus-within:bg-white/[0.07]";
 
 export const subHistorySearchInputClass =
-  "w-full bg-transparent text-[13px] text-white/88 placeholder:text-white/34 focus:outline-none";
+  "w-full bg-transparent text-[12.5px] text-white/88 placeholder:text-white/34 focus:outline-none";
 
+export const subHistorySelectWrapClass = "relative shrink-0";
+
+// appearance-none: the native dropdown arrow ignores padding-right and renders flush
+// against the box edge in every browser — replaced by subHistorySelectChevronClass, a
+// separately-positioned icon that can actually be given breathing room from the border.
 export const subHistorySelectClass =
-  "h-10 shrink-0 cursor-pointer rounded-xl bg-white/[0.045] px-3.5 text-[13px] text-white/72 transition-colors duration-150 hover:bg-white/[0.07] focus:bg-white/[0.07] focus:outline-none";
+  "h-9 w-full cursor-pointer appearance-none rounded-dashSm bg-dashSurfaceAlt py-0 pl-3 pr-7 text-[12.5px] text-white/72 transition-colors duration-150 hover:bg-white/[0.07] focus:bg-white/[0.07] focus:outline-none";
+
+export const subHistorySelectChevronClass =
+  "pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[12px] text-white/42";
 
 export const subHistoryHeadRowClass = "bg-white/[0.022]";
 
 export const subHistoryHeadCellClass =
-  "px-4 py-2.5 text-left text-[10.5px] font-medium uppercase tracking-[0.11em] text-white/38";
+  "px-3 py-2 text-left text-[10px] font-medium uppercase tracking-[0.11em] text-white/38";
 
 /** Header cells that sort. The arrow only appears on the column actually sorting. */
 export const subHistorySortButtonClass =
   "inline-flex items-center gap-1 transition-colors duration-150 hover:text-white/70";
 
 export const subHistoryRowClass =
-  "border-t border-white/[0.035] text-[13px] text-white/74 transition-colors duration-150 hover:bg-white/[0.018]";
+  "border-t border-white/[0.035] text-[12.5px] text-white/74 transition-colors duration-150 hover:bg-white/[0.018]";
 
-export const subHistoryCellClass = "px-4 py-4 align-middle";
+export const subHistoryCellClass = "px-3 py-2.5 align-middle";
 
 export const subHistoryIconClass =
-  "flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.8rem] bg-rose-500/[0.11] text-rose-200/80";
+  "flex h-7 w-7 shrink-0 items-center justify-center rounded-dashSm bg-rose-500/[0.11] text-rose-200/80";
 
 export const subHistoryInvoiceLinkClass =
-  "inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-rose-300 transition-colors duration-150 hover:text-rose-200";
+  "inline-flex items-center gap-1.5 text-[12px] font-semibold text-rose-300 transition-colors duration-150 hover:text-rose-200";
 
 export const subHistoryPagerClass =
-  "flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.035] px-4 py-3.5 text-[12.5px] text-white/48";
+  "flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.035] px-3 py-2.5 text-[12px] text-white/48";
 
 export const subHistoryPagerButtonClass =
-  "flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.05] text-white/78 transition-colors duration-150 hover:bg-white/[0.09] disabled:cursor-not-allowed disabled:opacity-35";
+  "flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.05] text-white/78 transition-colors duration-150 hover:bg-white/[0.09] disabled:cursor-not-allowed disabled:opacity-35";
 
-export const subHistoryEmptyClass = "px-4 py-14 text-center text-[13px] text-white/42";
+export const subHistoryEmptyClass = "px-4 py-10 text-center text-[12.5px] text-white/42";
 
 export const appTransactionStatusBadgeClass =
   "inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]";
@@ -586,8 +594,13 @@ export const dashJoinInputFieldClass =
 // Sidebar dashboard shell (movmash_mockup_local.html left rail + account zone).
 // ---------------------------------------------------------------------------
 
+// No right padding here — it lives on <main> itself (DashboardShell.tsx) instead, so a
+// scrolling page's scrollbar renders flush against the real window edge rather than
+// short of it by this gutter's width. Every other edge (top/bottom/left, and the sidebar's
+// own right edge) is unaffected; only the one edge that a scrollbar can actually sit on
+// moved from ancestor padding to the scrolling element's own box.
 export const dashShellGridClass =
-  "grid grid-cols-[clamp(226px,14vw,320px)_minmax(0,1fr)] gap-[clamp(24px,1.6vw,34px)] items-stretch p-4 max-[1080px]:grid-cols-[200px_minmax(0,1fr)] max-[760px]:grid-cols-1 max-[760px]:gap-5 max-[760px]:px-4 max-[760px]:pt-[72px] max-[760px]:pb-[78px]";
+  "grid grid-cols-[clamp(226px,14vw,320px)_minmax(0,1fr)] gap-[clamp(24px,1.6vw,34px)] items-stretch py-4 pl-4 max-[1080px]:grid-cols-[200px_minmax(0,1fr)] max-[760px]:grid-cols-1 max-[760px]:gap-5 max-[760px]:pl-4 max-[760px]:pt-[72px] max-[760px]:pb-[78px]";
 
 // One plain hairline on the right edge. It replaces a pair of absolutely positioned
 // overlays — a fading gradient plus a glow — that had to be inset from the top and
@@ -621,8 +634,8 @@ export const dashSubmenuItemDefaultClass = "text-dashTextMute";
 export const dashSubmenuItemActiveClass =
   "text-dashText bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))]";
 
-export const dashCozyCardClass =
-  "mt-auto flex shrink-0 flex-col overflow-hidden rounded-2xl border border-dashBorder bg-dashSurface";
+// No background/border at all — just the image and its caption, no card underneath them.
+export const dashCozyCardClass = "mt-auto flex shrink-0 flex-col overflow-hidden rounded-2xl";
 
 // Art on top, copy underneath, rather than copy laid over the art: the title runs to
 // three lines in a narrow sidebar, and over an illustration with two faces in the
@@ -637,12 +650,16 @@ export const dashCozyArtClass =
 // so centring this band would push the two figures half out of frame.
 export const dashCozyImgClass = "absolute inset-0 h-full w-full object-cover object-[center_38%]";
 
-// A short fade at the foot of the art so it settles into the copy below instead of
-// ending on a hard line.
+// A short fade at the foot of the art, tinted a touch rose rather than flat black/gray,
+// so it settles into the copy below instead of ending on a hard line.
 export const dashCozyScrimClass =
-  "pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(to_bottom,transparent_0%,rgba(15,13,17,0.85)_100%)]";
+  "pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(to_bottom,transparent_0%,rgba(35,12,22,0.92)_100%)]";
 
-export const dashCozyCopyClass = "px-3.5 pb-3.5 pt-3";
+// Picks up right where dashCozyScrimClass leaves off (same tone) and fades it out over
+// the copy block, so the caption reads as the image's own bottom edge continuing rather
+// than as a separate box sitting under it.
+export const dashCozyCopyClass =
+  "bg-[linear-gradient(180deg,rgba(35,12,22,0.55)_0%,transparent_65%)] px-3.5 pb-3.5 pt-3";
 
 export const dashCozyTitleClass = "m-0 text-[14px] font-bold leading-[1.35] text-white";
 
@@ -800,8 +817,12 @@ export const dashDiscoverArrowClass =
 // rail — every other dashboard route stays single-column.
 // ---------------------------------------------------------------------------
 
+// pr-4: restores the right-side inset that used to come from the grid ancestor's own
+// padding (see dashPageContentWrapClass) — home has no scrolling wrapper of its own, so
+// main is the element that actually scrolls here, and it now carries no padding of its
+// own so its scrollbar sits flush against the real window edge.
 export const dashHomeGridClass =
-  "grid flex-1 grid-cols-[minmax(0,1fr)_clamp(272px,16vw,380px)] items-stretch gap-[clamp(24px,1.6vw,34px)] max-[1080px]:grid-cols-1";
+  "grid flex-1 grid-cols-[minmax(0,1fr)_clamp(272px,16vw,380px)] items-stretch gap-[clamp(24px,1.6vw,34px)] pr-4 max-[1080px]:grid-cols-1";
 
 export const dashHomeMainColClass = "flex min-w-0 flex-col gap-[18px]";
 
@@ -811,7 +832,13 @@ export const dashHomeRailColClass = "flex flex-col gap-4";
 // /stream/screen, /games) — deliberately does NOT center content vertically/horizontally,
 // so every route reached from the sidebar starts at the same top-left position instead of
 // some being vertically centered and others not.
-export const dashPageContentWrapClass = "flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden";
+// pr-4: this is the element that actually scrolls (main's own height is fully consumed
+// by this flex-1 child, so main's overflow-y never triggers). main and its grid ancestor
+// carry no right padding of their own anymore, so this element's border reaches the real
+// window edge — its scrollbar renders flush there, with this padding restoring the same
+// visual content inset the old ancestor padding used to provide.
+export const dashPageContentWrapClass =
+  "flex-1 w-full min-h-0 overflow-y-auto overflow-x-hidden pr-4";
 
 // Tighter title-to-subtitle gap for the same 4 dashboard subpages — a scoped copy of
 // appSectionTitleWrapClass (not a shared-token edit) so the unrelated device-modal

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   LuArrowDown,
   LuArrowUp,
+  LuChevronDown,
   LuChevronLeft,
   LuChevronRight,
   LuCrown,
@@ -34,7 +35,9 @@ import {
   subHistoryRowClass,
   subHistorySearchInputClass,
   subHistorySearchWrapClass,
+  subHistorySelectChevronClass,
   subHistorySelectClass,
+  subHistorySelectWrapClass,
   subHistorySortButtonClass,
   subHistoryToolbarClass,
 } from "@/components/UI/classTokens";
@@ -207,39 +210,45 @@ export function PurchaseHistory({
           />
         </div>
 
-        <select
-          value={status}
-          onChange={(event) => {
-            setStatus(event.target.value as StatusFilter);
-            setPage(0);
-          }}
-          className={subHistorySelectClass}
-          aria-label={t("transactions.filterStatus")}
-        >
-          {STATUS_OPTIONS.map((option) => (
-            <option key={option} value={option} className="bg-[#15131a]">
-              {option === "all"
-                ? t("transactions.allStatuses")
-                : t(`transactions.status.${option}`)}
-            </option>
-          ))}
-        </select>
+        <div className={subHistorySelectWrapClass}>
+          <select
+            value={status}
+            onChange={(event) => {
+              setStatus(event.target.value as StatusFilter);
+              setPage(0);
+            }}
+            className={subHistorySelectClass}
+            aria-label={t("transactions.filterStatus")}
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <option key={option} value={option} className="bg-[#15131a]">
+                {option === "all"
+                  ? t("transactions.allStatuses")
+                  : t(`transactions.status.${option}`)}
+              </option>
+            ))}
+          </select>
+          <LuChevronDown className={subHistorySelectChevronClass} />
+        </div>
 
-        <select
-          value={range}
-          onChange={(event) => {
-            setRange(event.target.value as DateFilter);
-            setPage(0);
-          }}
-          className={subHistorySelectClass}
-          aria-label={t("transactions.filterDate")}
-        >
-          {DATE_OPTIONS.map((option) => (
-            <option key={option} value={option} className="bg-[#15131a]">
-              {t(`transactions.dates.${option}`)}
-            </option>
-          ))}
-        </select>
+        <div className={subHistorySelectWrapClass}>
+          <select
+            value={range}
+            onChange={(event) => {
+              setRange(event.target.value as DateFilter);
+              setPage(0);
+            }}
+            className={subHistorySelectClass}
+            aria-label={t("transactions.filterDate")}
+          >
+            {DATE_OPTIONS.map((option) => (
+              <option key={option} value={option} className="bg-[#15131a]">
+                {t(`transactions.dates.${option}`)}
+              </option>
+            ))}
+          </select>
+          <LuChevronDown className={subHistorySelectChevronClass} />
+        </div>
       </div>
 
       {rows.length === 0 ? (
@@ -285,10 +294,6 @@ export function PurchaseHistory({
                       <span className="flex min-w-0 flex-col">
                         <span className="truncate font-medium text-white/88">
                           {describe(tx)}
-                        </span>
-                        {/* The reference a receipt or a support email would quote. */}
-                        <span className="truncate text-[11.5px] text-white/38">
-                          {tx.transactionId}
                         </span>
                       </span>
                     </div>

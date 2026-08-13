@@ -5,7 +5,7 @@ import {
   FaFileVideo,
   FaFileAudio,
   FaFileImage,
-  FaTrash,
+  FaTimes,
   FaCheck,
   FaPlus,
   FaUpload,
@@ -27,10 +27,7 @@ import {
   appSectionTitleTextClass,
   appStreamActionButtonClass,
   appStreamBottomActionRowClass,
-  appStreamFileCardClass,
-  appStreamFileCardIdleClass,
   appStreamFileCardSelectedClass,
-  appStreamFileThumbnailClass,
   appStreamInlineAdderClass,
   appStreamListClass,
   appStreamListViewportClass,
@@ -39,6 +36,8 @@ import {
   appStreamTopBarClass,
   appStreamUploadDropzoneClass,
   appStreamScreenHeroSurfaceClass,
+  appSyncCardClass,
+  appSyncCardThumbnailClass,
 } from "@/components/UI/classTokens";
 
 const FileSelection = () => {
@@ -268,10 +267,8 @@ const FileSelection = () => {
                 <div
                   key={extFile.id}
                   onClick={() => handleFileSelect(extFile.id)}
-                  className={`${appStreamFileCardClass} cursor-pointer ${
-                    isSelected
-                      ? appStreamFileCardSelectedClass
-                      : appStreamFileCardIdleClass
+                  className={`${appSyncCardClass} cursor-pointer ${
+                    isSelected ? appStreamFileCardSelectedClass : ""
                   }`}
                 >
                   <div className="flex min-w-0 max-w-full flex-1 items-center gap-2 sm:gap-2.5">
@@ -280,12 +277,7 @@ const FileSelection = () => {
                       const isVideo = isVideoFile(file);
 
                       return (
-                        <div
-                          className={`
-                            ${appStreamFileThumbnailClass}
-                            ${isVideo ? "relative h-8 w-12 sm:h-[34px] sm:w-[60px] md:h-9 md:w-16" : "p-2 sm:p-2.5"}
-                          `}
-                        >
+                        <div className={appSyncCardThumbnailClass}>
                           {isVideo ? (
                             thumbnail ? (
                               <>
@@ -307,7 +299,9 @@ const FileSelection = () => {
                               </div>
                             )
                           ) : (
-                            getFileIcon(file.type)
+                            <div className="flex h-full w-full items-center justify-center">
+                              {getFileIcon(file.type)}
+                            </div>
                           )}
                         </div>
                       );
@@ -335,9 +329,10 @@ const FileSelection = () => {
                         e.stopPropagation();
                         handleFileRemove(extFile.id);
                       }}
-                      className="p-1.5 text-dashTextMute transition-colors duration-200 hover:text-rose-400"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-dashTextMute transition-colors duration-200 hover:text-rose-400"
+                      aria-label="Remove file"
                     >
-                      <FaTrash className="text-[11px] sm:text-xs" />
+                      <FaTimes className="text-[11px]" />
                     </button>
                   </div>
                 </div>
