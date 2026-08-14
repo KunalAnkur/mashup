@@ -20,7 +20,6 @@ import { QueueBar } from "@/components/YouTube/QueueBar";
 import {
   appSectionTitleTextClass,
   dashPageContentWrapClass,
-  dashPageTitleWrapClass,
   ytChipActiveClass,
   ytChipClass,
   ytChipIdleClass,
@@ -32,6 +31,8 @@ import {
   ytSectionHeadClass,
   ytSkeletonThumbClass,
   ytToolbarClass,
+  ytToolbarTitleWrapClass,
+  ytToolbarTopRowClass,
 } from "@/components/UI/classTokens";
 
 /**
@@ -163,30 +164,32 @@ export default function YouTubePage() {
 
   return (
     <div className={dashPageContentWrapClass}>
-      <div className={dashPageTitleWrapClass}>
-        <h1 className={appSectionTitleTextClass}>{t("title")}</h1>
-      </div>
-
       <div className={ytToolbarClass}>
-        <div className={ytSearchWrapClass}>
-          <LuSearch className="shrink-0 text-[16px] text-white/38" />
-          <input
-            type="search"
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className={ytSearchInputClass}
-          />
-          {draft ? (
-            <button
-              type="button"
-              onClick={() => setDraft("")}
-              aria-label={t("clearSearch")}
-              className="shrink-0 text-white/38 transition-colors hover:text-white/70"
-            >
-              <LuX className="text-[15px]" />
-            </button>
-          ) : null}
+        <div className={ytToolbarTopRowClass}>
+          <div className={ytToolbarTitleWrapClass}>
+            <h1 className={appSectionTitleTextClass}>{t("title")}</h1>
+          </div>
+
+          <div className={ytSearchWrapClass}>
+            <LuSearch className="shrink-0 text-[16px] text-white/38" />
+            <input
+              type="search"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className={ytSearchInputClass}
+            />
+            {draft ? (
+              <button
+                type="button"
+                onClick={() => setDraft("")}
+                aria-label={t("clearSearch")}
+                className="shrink-0 text-white/38 transition-colors hover:text-white/70"
+              >
+                <LuX className="text-[15px]" />
+              </button>
+            ) : null}
+          </div>
         </div>
 
         {/* Categories filter trending, not search — YouTube's own search has no category

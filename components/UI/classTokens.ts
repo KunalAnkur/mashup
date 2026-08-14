@@ -1103,11 +1103,16 @@ export const ytGroundClass = "bg-[#0b0a0d]";
 export const ytToolbarClass =
   "sticky top-0 z-20 -mx-1 flex flex-col gap-3 bg-[rgba(11,10,13,0.94)] px-1 pb-4 pt-1 backdrop-blur-xl";
 
+export const ytToolbarTopRowClass =
+  "flex flex-col gap-3 min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between";
+
+export const ytToolbarTitleWrapClass = "flex shrink-0 items-center";
+
 export const ytSectionHeadClass =
   "mb-4 text-[15px] font-semibold tracking-tight text-white/88";
 
 export const ytSearchWrapClass =
-  "flex h-11 w-full max-w-xl items-center gap-2.5 rounded-full bg-white/[0.045] px-4 transition-colors duration-150 focus-within:bg-white/[0.075]";
+  "flex h-11 w-full max-w-xl items-center gap-2.5 rounded-full bg-white/[0.045] px-4 transition-colors duration-150 focus-within:bg-white/[0.075] min-[900px]:max-w-[560px]";
 
 export const ytSearchInputClass =
   "w-full bg-transparent text-[14px] text-white/88 placeholder:text-white/34 focus:outline-none";
