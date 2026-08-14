@@ -942,8 +942,12 @@ export const dashGamesCatalogGridClass =
 // A lighter hairline than the shared dashBorder (8%): these cards sit in an open grid
 // with nothing between them, so the outline is only there to close the shape — at 8% it
 // drew a box around every card and the page read as a table.
+// flex h-full flex-col: the grid already stretches every card in a row to the tallest
+// one, but a plain block card spends that extra height as dead space under the button.
+// As a column the meta block can claim it instead, which is what puts every card's CTA
+// on one line regardless of how long its description runs.
 export const dashGameCardClass =
-  "group overflow-hidden rounded-dashMd border border-white/[0.045] bg-dashSurface text-left transition-[opacity,border-color] duration-200 hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-60";
+  "group flex h-full flex-col overflow-hidden rounded-dashMd border border-white/[0.045] bg-dashSurface text-left transition-[opacity,border-color] duration-200 hover:border-white/10 disabled:cursor-not-allowed disabled:opacity-60";
 
 export const dashGameCardCoverClass =
   "relative flex w-full items-center justify-center overflow-hidden bg-dashSurfaceAlt";
@@ -962,14 +966,25 @@ export const dashGameCardCoverRatioClass = "aspect-[16/10]";
 export const dashGameCardCoverImgClass =
   "h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]";
 
-export const dashGameCardMetaClass = "px-4 pb-4 pt-3.5";
+export const dashGameCardMetaClass = "flex flex-1 flex-col px-4 pb-4 pt-3.5";
 
 export const dashGameCardNameClass = "truncate text-[14px] font-bold text-dashText";
 
 export const dashGameCardSubClass = "mt-1 text-[11.5px] text-dashTextMute";
 
+/**
+ * Two lines, always — the block is the card's only variable-height part.
+ *
+ * min-h reserves the second line even for a one-line description, so a short game and a
+ * long one put their button at the same y. `leading-[1.5]` is a ratio, so 12px text is
+ * exactly 18px a line in any rendering font and 36px is exactly two of them.
+ *
+ * flex-1 on top of that: when a row's tallest card sets the height, this is the box that
+ * absorbs the surplus, keeping the button pinned to the bottom rather than floating with
+ * dead space beneath it.
+ */
 export const dashGameCardDescClass =
-  "mt-1.5 line-clamp-2 text-[12px] leading-[1.5] text-dashTextMute";
+  "mt-1.5 min-h-[36px] flex-1 line-clamp-2 text-[12px] leading-[1.5] text-dashTextMute";
 
 /**
  * The card's facts, over the head of the cover rather than in a row under the copy.
