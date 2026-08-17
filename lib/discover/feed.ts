@@ -249,7 +249,7 @@ function actionOf(raw: SanitySlide): DiscoverAction | null {
 }
 
 /** Where posts are published. The app is app.movmash.com; the blog is not. */
-const BLOG_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://movmash.com";
+export const BLOG_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://movmash.com";
 
 /**
  * Only what the author uploaded, plus the article image a `read` slide inherits from its

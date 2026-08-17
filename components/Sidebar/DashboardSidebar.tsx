@@ -21,6 +21,7 @@ import { LuSparkles } from "react-icons/lu";
 import { RootState } from "@/lib/store";
 import { sidebarIllustration } from "@/constants/assets";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { useScreenShareSupport } from "@/hooks";
 import { trackCTAClicked } from "@/lib/analytics";
 import Logo from "../UI/Logo";
 import LoginDropdown from "../Header/LoginDropdown";
@@ -87,6 +88,8 @@ const DashboardSidebar = () => {
     pointerEvent: "pointerdown",
   });
 
+  const canScreenShare = useScreenShareSupport();
+
   const isHome = pathname === "/";
   const isGames = pathname?.startsWith("/games");
   const isScreenShare = pathname === "/stream/screen";
@@ -134,14 +137,18 @@ const DashboardSidebar = () => {
         >
           <div className="overflow-hidden">
             <div className={dashSubmenuListClass}>
-              <button
-                type="button"
-                onClick={() => go("/stream/screen", "stream")}
-                className={`${dashSubmenuItemClass} ${isScreenShare ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
-              >
-                <LuMonitor size={15} />
-                {tHome("screenShare")}
-              </button>
+              {/* The rail is hidden under 760px, but a tablet can be wide enough to show it and
+                  still have no getDisplayMedia — so this follows the capability, not the width. */}
+              {canScreenShare && (
+                <button
+                  type="button"
+                  onClick={() => go("/stream/screen", "stream")}
+                  className={`${dashSubmenuItemClass} ${isScreenShare ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
+                >
+                  <LuMonitor size={15} />
+                  {tHome("screenShare")}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => go("/stream", "stream")}

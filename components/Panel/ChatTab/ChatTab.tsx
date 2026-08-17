@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { useSelector } from "react-redux";
 import { isMobile } from "react-device-detect";
@@ -82,6 +83,7 @@ const ChatTab = () => {
   const messageBubbleRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const chatRootRef = useRef<HTMLDivElement>(null);
 
   // Context and hooks
   const { socket } = useSocket();
@@ -153,6 +155,66 @@ const ChatTab = () => {
       setActiveReactionDetails(null);
     }
   };
+
+  /**
+   * The emoji picker is portalled to <body> (see the render below), so it needs real viewport
+   * coordinates: as wide as the chat column, sitting just above the input.
+   */
+  const [isMounted, setIsMounted] = useState(false);
+  const [emojiAnchor, setEmojiAnchor] = useState<{
+    left: number;
+    width: number;
+    bottom: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const updateEmojiAnchor = useCallback(() => {
+    const root = chatRootRef.current;
+    if (!root) return;
+
+    const rootRect = root.getBoundingClientRect();
+    const inputTop = inputRef.current?.getBoundingClientRect().top ?? rootRect.bottom;
+
+    const next = {
+      left: rootRect.left,
+      width: rootRect.width,
+      bottom: Math.max(12, window.innerHeight - inputTop + 8),
+    };
+
+    // Scroll fires far more often than the input actually moves — keep the same object when
+    // nothing changed so a scrolling chat doesn't re-render the picker.
+    setEmojiAnchor((prev) =>
+      prev &&
+      prev.left === next.left &&
+      prev.width === next.width &&
+      prev.bottom === next.bottom
+        ? prev
+        : next
+    );
+  }, []);
+
+  // Before paint, so it never lands at a stale position for a frame.
+  useLayoutEffect(() => {
+    if (!showEmojis) return;
+    updateEmojiAnchor();
+  }, [showEmojis, updateEmojiAnchor]);
+
+  // The input moves as the composer grows or the panel resizes; capture phase because the
+  // scrolling happens on the panel's inner containers rather than on window.
+  useEffect(() => {
+    if (!showEmojis) return;
+
+    window.addEventListener("resize", updateEmojiAnchor);
+    window.addEventListener("scroll", updateEmojiAnchor, true);
+
+    return () => {
+      window.removeEventListener("resize", updateEmojiAnchor);
+      window.removeEventListener("scroll", updateEmojiAnchor, true);
+    };
+  }, [showEmojis, updateEmojiAnchor]);
 
   // Handle click outside for emoji picker and reaction overlays
   useEffect(() => {
@@ -438,7 +500,7 @@ const ChatTab = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full gap-2 md:gap-3 overflow-visible">
+    <div ref={chatRootRef} className="flex flex-col h-full w-full gap-2 md:gap-3 overflow-visible">
       {!isConnected && <StatusBanner type="connecting" message={t("connectingToChat")} />}
       {isLoading && <StatusBanner type="loading" message={t("joiningChatRoom")} />}
       {pinnedMessage && (
@@ -549,11 +611,26 @@ const ChatTab = () => {
         onReactionsChange={handleReactionsChange}
       />
 
-      {showEmojis && (
+      {/*
+        Portalled to <body>, and positioned from the chat column's own rect.
+        In place it was absolutely positioned against the Embla tab track — a transformed
+        element, so it became the containing block — and the panel's `overflow-hidden` then
+        clipped it, which is how the picker ended up buried under the call tiles. z-[1200]
+        clears the panel and the floating call overlay while staying under Modal's 9999.
+      */}
+      {isMounted &&
+        showEmojis &&
+        emojiAnchor &&
+        createPortal(
         <div
           ref={emojiPickerRef}
-          className="absolute bottom-full left-0 right-0 mb-2 rounded-xl md:rounded-2xl animate-slide-up z-[100] overflow-hidden emoji-picker-container"
-          style={{ minWidth: "100%" }}
+          className="fixed rounded-xl md:rounded-2xl animate-slide-up z-[1200] overflow-hidden emoji-picker-container"
+          style={{
+            left: emojiAnchor.left,
+            width: emojiAnchor.width,
+            bottom: emojiAnchor.bottom,
+            maxWidth: "calc(100vw - 16px)",
+          }}
         >
           <EmojiPicker
             onEmojiClick={handleEmojiClick}
@@ -594,7 +671,8 @@ const ChatTab = () => {
               } as React.CSSProperties
             }
           />
-        </div>
+        </div>,
+        document.body
       )}
 
       <ChatInput

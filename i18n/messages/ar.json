@@ -25,6 +25,7 @@
     "roomIdPlaceholder": "معرف الغرفة",
     "join": "انضم",
     "joining": "جاري الانضمام...",
+    "starting": "جارٍ فتح الغرفة...",
     "login": "تسجيل الدخول",
     "errors": {
       "roomNotFound": "الغرفة غير موجودة. يرجى التحقق من معرف الغرفة.",
@@ -285,6 +286,9 @@
     "screenShare": "مشاركة الشاشة",
     "screenShareTitle": "شارك شاشتك:",
     "screenShareDescription": "تأكد من تفعيل الصوت أثناء المشاركة لتضمين الصوت",
+    "screenShareUnsupportedTitle": "مشاركة الشاشة غير متاحة على الهاتف",
+    "screenShareUnsupportedDescription": "لا تستطيع متصفحات الهاتف التقاط الشاشة. افتح Movmash على الكمبيوتر لمشاركة شاشتك، أو شاهدوا معًا من ملف أو رابط بدلًا من ذلك.",
+    "screenShareUnsupportedAction": "مشاركة ملف أو رابط",
     "screenSharePageTitle": "مشاركة الشاشة",
     "screenSharingActive": "✓ مشاركة الشاشة نشطة",
     "shareYourScreen": "شارك شاشتك",
@@ -614,6 +618,10 @@
     "premium": "بريميوم",
     "premiumHint": "قم بالترقية للعب هذه",
     "empty": "لا توجد ألعاب بعد. عد قريبًا.",
+    "reading": {
+      "title": "أدلة الألعاب",
+      "viewAll": "عرض الكل"
+    },
     "categories": {
       "turn-based": "بالأدوار",
       "real-time": "الوقت الفعلي",

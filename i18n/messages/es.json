@@ -25,6 +25,7 @@
     "roomIdPlaceholder": "ID de Sala",
     "join": "Unirse",
     "joining": "Uniéndose...",
+    "starting": "Abriendo sala...",
     "login": "Iniciar Sesión",
     "errors": {
       "roomNotFound": "Sala no encontrada. Por favor, verifica el ID de la sala.",
@@ -285,6 +286,9 @@
     "screenShare": "Compartir Pantalla",
     "screenShareTitle": "Comparte tu pantalla:",
     "screenShareDescription": "Asegúrate de habilitar el audio al compartir para incluir audio",
+    "screenShareUnsupportedTitle": "Compartir pantalla no está disponible en el móvil",
+    "screenShareUnsupportedDescription": "Los navegadores móviles no pueden capturar la pantalla. Abre Movmash en un ordenador para compartir la tuya, o ved algo juntos desde un archivo o un enlace.",
+    "screenShareUnsupportedAction": "Compartir archivo o enlace",
     "screenSharePageTitle": "Compartir Pantalla",
     "screenSharingActive": "✓ Compartir Pantalla Activo",
     "shareYourScreen": "Comparte Tu Pantalla",
@@ -614,6 +618,10 @@
     "premium": "Premium",
     "premiumHint": "Mejora tu plan para jugar a este",
     "empty": "Aún no hay juegos. Vuelve pronto.",
+    "reading": {
+      "title": "Guías de juego",
+      "viewAll": "Ver todo"
+    },
     "categories": {
       "turn-based": "Por turnos",
       "real-time": "En tiempo real",

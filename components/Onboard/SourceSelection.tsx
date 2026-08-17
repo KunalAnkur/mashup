@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useGetRoomByRoomIdMutation } from "@/lib/store/api/roomApi";
 import { trackCTAClicked } from "@/lib/analytics";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { useScreenShareSupport } from "@/hooks";
 import { Input } from "../UI";
 import {
   dashActionIconClass,
@@ -53,6 +54,7 @@ const SourceSelection = () => {
   const joinInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [getRoomByRoomId] = useGetRoomByRoomIdMutation();
+  const canScreenShare = useScreenShareSupport();
 
   const handleOnScreenShareSelection = useCallback(() => {
     trackCTAClicked("stream");
@@ -117,9 +119,16 @@ const SourceSelection = () => {
     }
   }, [roomId, isJoining, getRoomByRoomId, router, t]);
 
-  /** The three ways in, plus the browse page. Data, so the row is one loop. */
+  /**
+   * The three ways in, plus the browse page. Data, so the row is one loop.
+   *
+   * Screen share drops out on mobile — the capture API it leads to does not exist there,
+   * so the tile would only walk someone into a dead end.
+   */
   const actions = [
-    { key: "screenShare", Icon: LuMonitor, onClick: handleOnScreenShareSelection },
+    ...(canScreenShare
+      ? [{ key: "screenShare", Icon: LuMonitor, onClick: handleOnScreenShareSelection }]
+      : []),
     { key: "fileShare", Icon: LuFileUp, onClick: handleOnFileShareSelection },
     { key: "addUrl", Icon: LuLink2, onClick: handleOnURLSelection },
     { key: "youtube", Icon: LuYoutube, onClick: handleOnYouTubeSelection },

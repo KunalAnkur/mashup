@@ -25,6 +25,7 @@
     "roomIdPlaceholder": "Oda ID",
     "join": "Katıl",
     "joining": "Katılınıyor...",
+    "starting": "Oda açılıyor...",
     "login": "Giriş Yap",
     "errors": {
       "roomNotFound": "Oda bulunamadı. Lütfen Oda ID'sini kontrol edin.",
@@ -285,6 +286,9 @@
     "screenShare": "Ekran Paylaş",
     "screenShareTitle": "Ekranınızı paylaşın:",
     "screenShareDescription": "Ses dahil etmek için paylaşırken sesi etkinleştirdiğinizden emin olun",
+    "screenShareUnsupportedTitle": "Ekran paylaşımı mobilde kullanılamıyor",
+    "screenShareUnsupportedDescription": "Mobil tarayıcılar ekran görüntüsü yakalayamaz. Ekranını paylaşmak için Movmash'i bilgisayarda aç ya da bunun yerine bir dosya veya bağlantıyla birlikte izleyin.",
+    "screenShareUnsupportedAction": "Dosya veya bağlantı paylaş",
     "screenSharePageTitle": "Ekran Paylaşımı",
     "screenSharingActive": "✓ Ekran Paylaşımı Aktif",
     "shareYourScreen": "Ekranınızı Paylaşın",
@@ -614,6 +618,10 @@
     "premium": "Premium",
     "premiumHint": "Bunu oynamak için yükselt",
     "empty": "Henüz oyun yok. Yakında tekrar bakın.",
+    "reading": {
+      "title": "Oyun rehberleri",
+      "viewAll": "Tümünü gör"
+    },
     "categories": {
       "turn-based": "Sıra tabanlı",
       "real-time": "Gerçek zamanlı",

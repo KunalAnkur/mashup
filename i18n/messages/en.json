@@ -25,6 +25,7 @@
     "roomIdPlaceholder": "Room ID",
     "join": "Join",
     "joining": "Joining...",
+    "starting": "Opening room...",
     "login": "Login",
     "errors": {
       "roomNotFound": "Room not found. Please check the Room ID.",
@@ -285,6 +286,9 @@
     "screenShare": "Screen Share",
     "screenShareTitle": "Share your screen:",
     "screenShareDescription": "Be sure to enable audio while sharing to include audio",
+    "screenShareUnsupportedTitle": "Screen sharing isn't available on mobile",
+    "screenShareUnsupportedDescription": "Mobile browsers can't capture a screen. Open Movmash on a computer to share yours, or watch together from a file or a link instead.",
+    "screenShareUnsupportedAction": "Share a file or link",
     "screenSharePageTitle": "Screen Share",
     "screenSharingActive": "✓ Screen Sharing Active",
     "shareYourScreen": "Share Your Screen",
@@ -614,6 +618,10 @@
     "premium": "Premium",
     "premiumHint": "Upgrade to play this one",
     "empty": "No games available yet. Check back soon.",
+    "reading": {
+      "title": "Game guides",
+      "viewAll": "View all"
+    },
     "categories": {
       "turn-based": "Turn-based",
       "real-time": "Real-time",

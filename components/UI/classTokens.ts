@@ -1197,3 +1197,51 @@ export const ytQueueCountClass = "shrink-0 text-[13px] font-medium text-white/70
 
 export const ytQueueClearClass =
   "shrink-0 rounded-full px-3 py-2 text-[13px] font-medium text-white/55 transition-colors duration-150 hover:bg-white/[0.06] hover:text-white/85";
+
+// ---------------------------------------------------------------------------
+// Game guides — the reading strip under the catalogue on /games
+// ---------------------------------------------------------------------------
+
+// The guides reuse dashGamesCatalogGridClass rather than defining their own grid: a
+// wider grid was tried first and it left the two rows with different right edges, so a
+// guide no longer looked like it belonged to the game above it.
+
+// Mirrors dashGameCardClass so a guide and a game read as the same kind of object, minus
+// the disabled states — a link is never busy.
+export const dashGuideCardClass =
+  "group flex h-full flex-col overflow-hidden rounded-dashMd border border-white/[0.045] bg-dashSurface text-left transition-[border-color] duration-200 hover:border-white/10";
+
+export const dashGuideCardCoverClass =
+  "relative w-full overflow-hidden bg-dashSurfaceAlt aspect-[16/9]";
+
+// Same hover as the game covers: the image scales, the card does not, so a row of them
+// never shifts its neighbours.
+export const dashGuideCardCoverImgClass =
+  "h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]";
+
+export const dashGuideCardMetaClass = "flex flex-1 flex-col px-4 pb-4 pt-3.5";
+
+/**
+ * Two lines, then ellipsis. Titles here are real article headlines and run much longer
+ * than a game name, so truncating to one line lost the half of the title that said what
+ * the guide was about.
+ */
+export const dashGuideCardTitleClass =
+  "line-clamp-2 text-[14px] font-bold leading-[1.35] text-dashText";
+
+/**
+ * Reserves both lines even for a short excerpt, so a two-line card and a one-line card
+ * are the same height and the grid rows stay level. `leading-[1.5]` is a ratio, so
+ * 11.5px text is exactly two lines of it.
+ */
+export const dashGuideCardExcerptClass =
+  "mt-1.5 line-clamp-2 min-h-[2lh] text-[11.5px] leading-[1.5] text-dashTextMute";
+
+/**
+ * The /games page column: the catalogue, then the guides.
+ *
+ * A gap rather than a margin on the second block, per the layout rules — and wider than
+ * the home column's 18px because these are two different kinds of thing (press this to
+ * play vs. read this about playing), not two rows of the same list.
+ */
+export const dashGamesPageColClass = "flex flex-col gap-8";

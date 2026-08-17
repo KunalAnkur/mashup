@@ -1,6 +1,27 @@
 import { ControlComponents } from "@/components/VideoPlayer/Player";
 import { RoomType } from "@/context/RoomContext";
 import { SourceProps } from "react-player/base";
+import { isMobile } from "react-device-detect";
+
+/**
+ * Whether this device can screen share at all.
+ *
+ * No mobile browser implements getDisplayMedia — iOS Safari and Android Chrome both omit it —
+ * so every entry point that leads to a capture asks here first, rather than letting the call
+ * reject in the user's face after they've committed to the flow.
+ *
+ * Capability first, device second: a desktop browser without the API is equally unable to
+ * share, and the device check still catches a mobile browser that ships a stub which prompts
+ * and then fails. `isMobile` from react-device-detect covers tablets as well as phones.
+ *
+ * Returns false on the server, where neither check can run — read it through
+ * `useScreenShareSupport` when the answer drives markup, so hydration stays consistent.
+ */
+export function isScreenShareSupported(): boolean {
+    if (typeof navigator === "undefined") return false;
+    if (isMobile) return false;
+    return typeof navigator.mediaDevices?.getDisplayMedia === "function";
+}
 
 /**
  * Detects if URL is from a video platform (definitely has video)

@@ -9,11 +9,12 @@ import { validateUrl } from "@/components/Modals/UrlModalComponents";
 import { useFileContext } from "@/context/FileContext";
 import { ExtendedFile } from "@/utils/filePersistence";
 import { helper } from "@/utils";
+import { showError } from "@/utils/toast";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist, UrlMetadata } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { AddUrlModal } from "../AddUrlModal";
-import { isMobile } from "react-device-detect";
+import { useScreenShareSupport } from "@/hooks";
 
 type UrlMetadataResponseItem = {
     url: string;
@@ -48,6 +49,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
     const [urlError, setUrlError] = useState("");
     const authState = useSelector((state: RootState) => state.auth);
     const { stream, setStream, setScreenType } = useMediaStreamContext();
+    const canScreenShare = useScreenShareSupport();
     const t = useTranslations("sync");
     const tCommon = useTranslations("common");
     const tToast = useTranslations("toast");
@@ -199,6 +201,12 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
     const handleShareScreen = async () => {
         console.log("handleShareScreen");
         if (!isHost || !roomState.roomId) return;
+        // The button is already hidden where this is false; the guard covers the paths that
+        // don't go through it — a stale render, or a keyboard/programmatic trigger.
+        if (!canScreenShare) {
+            showError(tStream("screenShareUnsupportedTitle"), tStream("screenShareUnsupportedDescription"));
+            return;
+        }
         setIsSharingScreen(true);
         try {
             // Held so the capture being replaced can be released below. Releasing it up here — as
@@ -390,7 +398,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
             icon: <LuFolderPlus size={14} className="text-amber-300 md:w-4 md:h-4" />,
             spinnerClassName: "border-amber-200/30 border-t-amber-200",
         }],
-        ...(!isMobile ? [{
+        ...(canScreenShare ? [{
             key: "screen",
             label: t("shareScreen"),
             busyLabel: t("sharing"),

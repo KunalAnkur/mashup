@@ -5,11 +5,12 @@ import { useSelector, useDispatch } from "react-redux";
 import { Input } from "@/components/UI";
 import { FaExclamationTriangle, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
-import { LuMonitor, LuMousePointerClick, LuCheck, LuRadioTower } from "react-icons/lu";
+import { LuMonitor, LuMousePointerClick, LuCheck, LuRadioTower, LuFileUp } from "react-icons/lu";
 import { RootState } from "@/lib/store";
 import { setRefers, setScreenSharing, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { helper } from "@/utils";
+import { useScreenShareSupport } from "@/hooks";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import type { Playlist } from "@/types/storeTypes";
@@ -40,6 +41,7 @@ const ScreenSharePage = () => {
   const dispatch = useDispatch();
   const authState = useSelector((state: RootState) => state.auth);
   const { setStream: setMediaStream, setScreenType } = useMediaStreamContext();
+  const canScreenShare = useScreenShareSupport();
   const tToast = useTranslations("toast");
   const tStream = useTranslations("stream");
   const tCommon = useTranslations("common");
@@ -209,6 +211,12 @@ const ScreenSharePage = () => {
 
 
   const handleShareScreen = useCallback(async (overrideAudioOnly?: boolean) => {
+    // The page renders its unsupported state instead of this flow on mobile, so reaching here
+    // means the check changed under us (or the button was triggered some other way).
+    if (!canScreenShare) {
+      showError(tStream("screenShareUnsupportedTitle"), tStream("screenShareUnsupportedDescription"));
+      return;
+    }
     try {
       // Use overrideAudioOnly if provided, otherwise use current audioOnly state
       const currentAudioOnly = overrideAudioOnly !== undefined ? overrideAudioOnly : audioOnly;
@@ -267,7 +275,7 @@ const ScreenSharePage = () => {
         showError(tToast("screenSharingFailed"), tToast("checkPermissions"));
       }
     }
-  }, [audioOnly, setMediaStream, stream]);
+  }, [audioOnly, canScreenShare, setMediaStream, stream]);
 
   const handleStartStreaming = useCallback(async () => {
     if (!stream) return;
@@ -338,6 +346,49 @@ const ScreenSharePage = () => {
     };
   }, []);
 
+
+  /**
+   * Nothing on this page works without getDisplayMedia, and the links into it are already
+   * hidden where it is missing — but the URL is shareable, so the page still has to answer
+   * for itself rather than showing a share button that can only fail.
+   */
+  if (canScreenShare === null) {
+    return null;
+  }
+
+  if (!canScreenShare) {
+    return (
+      <div className={`${dashPageContentWrapClass} ${appScrollbarHideClass}`}>
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
+          <div className={`${dashPageTitleWrapClass} justify-center`}>
+            <h1 className={appSectionTitleTextClass}>{tStream("screenSharePageTitle")}</h1>
+          </div>
+          <div className={appStreamScreenOpenSectionClass}>
+            <div className={appStreamScreenIntroClusterClass}>
+              <div className={appStreamScreenIntroCopyClass}>
+                <h2 className="mb-1 text-base font-semibold tracking-tight text-dashText sm:text-lg">
+                  {tStream("screenShareUnsupportedTitle")}
+                </h2>
+                <p className={appStreamScreenSupportCopyClass}>
+                  {tStream("screenShareUnsupportedDescription")}
+                </p>
+              </div>
+            </div>
+
+            <div className={appStreamScreenIntroWidthClass}>
+              <button
+                onClick={() => router.push("/stream")}
+                className={appStreamScreenPrimaryButtonClass}
+              >
+                <LuFileUp className="text-base" />
+                {tStream("screenShareUnsupportedAction")}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
       <div

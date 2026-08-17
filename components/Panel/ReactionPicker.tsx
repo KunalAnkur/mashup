@@ -5,7 +5,9 @@ import {
   appMutedHoverSurfaceClass,
   appWhiteBorderClass,
 } from "@/components/UI/classTokens";
-import { useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useDropdownDismiss } from "@/components/UI/useDropdownDismiss";
 import { ReactionType } from "@/types/chatTypes";
 import { LuPin, LuPlus, LuX } from "react-icons/lu";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,8 +19,18 @@ interface ReactionPickerProps {
 
 const reactionPickerTriggerButtonClass =
   "relative flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200";
+/**
+ * Rendered through a portal to <body>, so `fixed` here really is viewport-fixed and the
+ * z-index competes at the top level. Left in the panel it did neither: the tab strip is an
+ * Embla carousel, whose transformed track becomes the containing block for anything fixed
+ * inside it, and the panel's own `overflow-hidden` then clipped the popover — which is why
+ * it disappeared behind the call tiles instead of covering them. Placement comes from the
+ * trigger's rect (see updateAnchor) rather than a hardcoded offset.
+ *
+ * z-[1200] sits above the panel and the floating call overlay, below Modal's 9999.
+ */
 const reactionPickerSurfaceClass =
-  `fixed bottom-[120px] right-6 z-[200] overflow-hidden rounded-2xl ${appWhiteBorderClass} bg-[#1f1f23] shadow-2xl reaction-picker-container`;
+  `fixed z-[1200] overflow-hidden rounded-2xl ${appWhiteBorderClass} bg-[#1f1f23] shadow-2xl reaction-picker-container`;
 const reactionPickerHeaderFooterClass =
   "border-white/10 bg-gradient-to-br from-[#1f1f23] to-[#27272a]";
 const reactionPickerCategoryButtonClass =
@@ -102,6 +114,61 @@ const ReactionPicker = ({
 }: ReactionPickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [isMounted, setIsMounted] = useState(false);
+  const [anchor, setAnchor] = useState<{ bottom: number; right: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  /** Sit the popover just above the trigger and aligned to its right edge, clamped to the viewport. */
+  const updateAnchor = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+
+    const rect = trigger.getBoundingClientRect();
+    const next = {
+      bottom: Math.max(12, window.innerHeight - rect.top + 10),
+      right: Math.max(12, window.innerWidth - rect.right - 4),
+    };
+
+    // Scroll fires far more often than the trigger actually moves — keep the same object when
+    // nothing changed so a scrolling chat doesn't re-render the whole grid.
+    setAnchor((prev) =>
+      prev && prev.bottom === next.bottom && prev.right === next.right ? prev : next
+    );
+  }, []);
+
+  // Before paint, so the popover never shows up at a stale position for a frame.
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    updateAnchor();
+  }, [isOpen, updateAnchor]);
+
+  // The trigger moves with the chat — a new message, the reaction bar collapsing, a rotation.
+  // Capture phase because the scroll happens on the panel's inner containers, not on window.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    window.addEventListener("resize", updateAnchor);
+    window.addEventListener("scroll", updateAnchor, true);
+
+    return () => {
+      window.removeEventListener("resize", updateAnchor);
+      window.removeEventListener("scroll", updateAnchor, true);
+    };
+  }, [isOpen, updateAnchor]);
+
+  const closePicker = useCallback(() => setIsOpen(false), []);
+
+  // Out of the panel's DOM subtree now, so a click anywhere else has to close it explicitly.
+  useDropdownDismiss({
+    isOpen,
+    onClose: closePicker,
+    refs: [triggerRef, panelRef],
+  });
 
   const categories = [
     "All",
@@ -131,6 +198,7 @@ const ReactionPicker = ({
     <>
       {/* Plus Button - Minimal Design */}
       <motion.button
+        ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
         className={`${reactionPickerTriggerButtonClass} ${
           isOpen
@@ -145,15 +213,23 @@ const ReactionPicker = ({
       </motion.button>
 
       {/* Picker Modal */}
-      <AnimatePresence>
-        {isOpen && (
+      {isMounted &&
+        createPortal(
+          <AnimatePresence>
+            {isOpen && anchor && (
           <motion.div
+            ref={panelRef}
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className={reactionPickerSurfaceClass}
-            style={{ minWidth: "280px" }}
+            style={{
+              minWidth: "280px",
+              maxWidth: "calc(100vw - 24px)",
+              bottom: anchor.bottom,
+              right: anchor.right,
+            }}
           >
             {/* Header */}
             <div className={`border-b px-3 py-2.5 ${reactionPickerHeaderFooterClass}`}>
@@ -233,8 +309,10 @@ const ReactionPicker = ({
               </p>
             </div>
           </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
 
       {/* Responsive Styles */}
       <style jsx global>{`
