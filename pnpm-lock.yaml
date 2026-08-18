@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@movmash/arcade-client':
-        specifier: ^0.1.8
-        version: 0.1.8(react@19.1.0)
+        specifier: ^0.1.9
+        version: 0.1.9(react@19.1.0)
       '@next/third-parties':
         specifier: ^16.0.8
         version: 16.1.1(next@16.0.8(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
@@ -353,8 +353,8 @@ packages:
   '@movmash/activity-sdk@0.1.2':
     resolution: {integrity: sha512-4h24r/cWX0/MpFXqO50kI5Ns2ciqV6engMSu1XEuo8R8ALVmaPbs7m50alUVWlt3HOCVL9H4Y6f5gRn4iK3wAw==, tarball: https://npm.pkg.github.com/download/@movmash/activity-sdk/0.1.2/ba1fb8700bd560cf41a8663a2c808dee260f980a}
 
-  '@movmash/arcade-client@0.1.8':
-    resolution: {integrity: sha512-4Kex6nr/UR2yJYC3fgbmjkdlP2RyCgsvW0dsOBD8XiE21cT3T7APUYx989QiysjpuLWF/V9zfxbu+3ZOy0GQYg==, tarball: https://npm.pkg.github.com/download/@movmash/arcade-client/0.1.8/bedb969b7638a4395e71542ca132a4035e0bf3f6}
+  '@movmash/arcade-client@0.1.9':
+    resolution: {integrity: sha512-y7qXjfBDrIuL0zMRlDoVfp7pmi6rJsa1SfC78Yd85GpgQsKl2tWHzy2xhfy6lwhlJLX+23PXZCgJ97aFrjNloA==, tarball: https://npm.pkg.github.com/download/@movmash/arcade-client/0.1.9/187605b2378c7f3c7c50c386ed8a125359c7ca24}
     peerDependencies:
       react: '>=18'
 
@@ -2780,7 +2780,7 @@ snapshots:
 
   '@movmash/activity-sdk@0.1.2': {}
 
-  '@movmash/arcade-client@0.1.8(react@19.1.0)':
+  '@movmash/arcade-client@0.1.9(react@19.1.0)':
     dependencies:
       '@movmash/activity-sdk': 0.1.2
       '@movmash/game-connect4': 1.0.0
