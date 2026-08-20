@@ -945,3 +945,29 @@ Use this file to record mistakes, root causes, and prevention steps.
   - When P2P and SFU hooks share a shape, diff their lifecycle effects before assuming parity — a missing effect in one is invisible until the matching tier is exercised.
   - Prefer driving stream setup from connection/room state rather than from DOM readiness events; DOM events do not re-fire on a reconnect.
 - Follow-up action: MediaSoup/WebRTC state is inherently process- and connection-local, so stream re-establishment can never be free. Keep the goal at "re-establishes automatically within seconds", not "survives".
+
+## 2026-08-20 (Screen Share Captured 480p While Plans Sold 720p/1080p)
+
+- Date: 2026-08-20
+- Context: Reviewing `/stream/screen` before adding a user-facing capture quality picker.
+- Error: `captureTabStream` in `utils/helper.ts` pinned every capture to `854x480@30`, so a Couple or Crowd host whose pricing card read "1080p screen sharing" was streaming 854x480. `screen_share_quality` existed on the plan (`720p` free, `1080p` paid, seeded by guardian's `scripts/seed-subscription-plans.ts`) but was only ever rendered as copy on `/pricing` and `/subscription` — nothing fed it into capture.
+- Root cause: The entitlement was modelled end to end for billing and display, and never connected to the one place that acts on it. A hardcoded constraint block is invisible to the pricing page, so the two could drift indefinitely without either side looking wrong on its own.
+- Prevention checklist:
+  - A plan feature that is rendered as a selling point needs a matching read at the point of enforcement; shipping only the display half is how a paid tier quietly delivers the free experience.
+  - Resolve entitlements in one shared place (`useScreenShareQuality` / `resolvePlanScreenShareQuality`) rather than letting each capture site decide what a missing subscription means.
+  - Fail closed to the most restrictive tier when the plan cannot be read, matching guardian's `DEFAULT_FEATURES`.
+  - Keep capture ceilings in `utils/screenShareQuality.ts`; do not reintroduce inline width/height literals at a call site.
+  - Raising resolution is not the same decision as raising frame rate — 30fps stays until the produce side has more than one encoding.
+- Follow-up action: `useStream` still produces a single encoding (`transport.produce({ track })` with no `encodings`), and `simulcastEncodings` in communication's `mediasoup-services/config.ts` is exported but imported nowhere, which also makes `setConsumerPreferredLayers` a no-op. Wire simulcast before offering anything above 1080p, and before a `source` option can be safe in SFU/Crowd rooms.
+
+## 2026-08-20 (Dead UI: Panel/SourceTab)
+
+- Date: 2026-08-20
+- Context: Removing the duplicated 480p capture constraint blocks.
+- Error: `components/Panel/SourceTab.tsx` is defined and exported but imported nowhere — the only remaining reference is a stale `[SourceTab]` string inside a `MediaStreamContext` log line. It held its own inline `getDisplayMedia` call, so it looked like a live third capture path.
+- Root cause: Left behind after the panel/playlist rework moved screen capture into `PlaylistTab/ContentSelection.tsx`.
+- Prevention checklist:
+  - The live capture paths are `/stream/screen` and `PlaylistTab/ContentSelection.tsx`; do not assume a `Panel/` component is on screen.
+  - A duplicated constraint block is a strong hint that one of the two paths is dead — check imports before treating them as siblings.
+  - It now routes through `helper.captureTabStream` like the live paths, so it cannot drift back to its own quality ceiling while it survives.
+- Follow-up action: Confirm it is genuinely unwanted, then delete it together with the stale `[SourceTab]` log text in `context/MediaStreamContext.tsx`.

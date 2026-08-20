@@ -14,7 +14,7 @@ import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist, UrlMetadata } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { AddUrlModal } from "../AddUrlModal";
-import { useScreenShareSupport } from "@/hooks";
+import { useScreenShareQuality, useScreenShareSupport } from "@/hooks";
 
 type UrlMetadataResponseItem = {
     url: string;
@@ -50,6 +50,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
     const authState = useSelector((state: RootState) => state.auth);
     const { stream, setStream, setScreenType } = useMediaStreamContext();
     const canScreenShare = useScreenShareSupport();
+    const screenShareQuality = useScreenShareQuality();
     const t = useTranslations("sync");
     const tCommon = useTranslations("common");
     const tToast = useTranslations("toast");
@@ -218,6 +219,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
             const { mediaStream, screenType } = await helper.captureTabStream({
                 audioOnly: false,
                 preferredDisplaySurface: "tab",
+                quality: screenShareQuality,
             });
             // Bail before touching the context: a dismissed picker must leave the share that is
             // already running exactly as it was. Writing the null through first would drop the

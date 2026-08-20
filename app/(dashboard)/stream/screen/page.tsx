@@ -10,7 +10,7 @@ import { RootState } from "@/lib/store";
 import { setRefers, setScreenSharing, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { helper } from "@/utils";
-import { useScreenShareSupport } from "@/hooks";
+import { useScreenShareQuality, useScreenShareSupport } from "@/hooks";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import type { Playlist } from "@/types/storeTypes";
@@ -42,6 +42,7 @@ const ScreenSharePage = () => {
   const authState = useSelector((state: RootState) => state.auth);
   const { setStream: setMediaStream, setScreenType } = useMediaStreamContext();
   const canScreenShare = useScreenShareSupport();
+  const screenShareQuality = useScreenShareQuality();
   const tToast = useTranslations("toast");
   const tStream = useTranslations("stream");
   const tCommon = useTranslations("common");
@@ -232,7 +233,8 @@ const ScreenSharePage = () => {
       // Use the cross-browser helper function to capture tab stream
       const { mediaStream, screenType } = await helper.captureTabStream({
         audioOnly: currentAudioOnly,
-        preferredDisplaySurface: 'tab'
+        preferredDisplaySurface: 'tab',
+        quality: screenShareQuality,
       });
 
       if (!mediaStream) {
@@ -275,7 +277,7 @@ const ScreenSharePage = () => {
         showError(tToast("screenSharingFailed"), tToast("checkPermissions"));
       }
     }
-  }, [audioOnly, canScreenShare, setMediaStream, stream]);
+  }, [audioOnly, canScreenShare, screenShareQuality, setMediaStream, stream]);
 
   const handleStartStreaming = useCallback(async () => {
     if (!stream) return;
@@ -609,7 +611,8 @@ const ScreenSharePage = () => {
                               try {
                                 const {mediaStream: newStream, screenType: newScreenType} = await helper.captureTabStream({
                                   audioOnly: false,
-                                  preferredDisplaySurface: 'tab'
+                                  preferredDisplaySurface: 'tab',
+                                  quality: screenShareQuality,
                                 });
                                 
                                 if (newStream) {

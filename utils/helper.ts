@@ -2,6 +2,11 @@ import { ControlComponents } from "@/components/VideoPlayer/Player";
 import { RoomType } from "@/context/RoomContext";
 import { SourceProps } from "react-player/base";
 import { isMobile } from "react-device-detect";
+import {
+    fallbackScreenShareQuality,
+    screenShareVideoConstraints,
+    type ScreenShareQuality,
+} from "./screenShareQuality";
 
 /**
  * Whether this device can screen share at all.
@@ -114,13 +119,21 @@ export function detectBrowser(): { name: string; version: number; isChrome: bool
  * @param options - Configuration options for tab capture
  * @param options.audioOnly - If true, only capture audio (video tracks will be removed)
  * @param options.preferredDisplaySurface - Preferred surface to capture ('tab', 'window', 'screen')
+ * @param options.quality - Capture ceiling. Callers should pass the sharing user's plan
+ *   entitlement (see `useScreenShareQuality`); the default only covers paths that have no
+ *   subscription in reach, and matches the most restrictive tier.
  * @returns Promise that resolves to MediaStream or null if capture fails
  */
 export async function captureTabStream(options: {
     audioOnly?: boolean;
     preferredDisplaySurface?: 'tab' | 'window' | 'screen';
+    quality?: ScreenShareQuality;
 } = {}): Promise<{ mediaStream: MediaStream | null, screenType: string | null }> {
-    const { audioOnly = false, preferredDisplaySurface = 'tab' } = options;
+    const {
+        audioOnly = false,
+        preferredDisplaySurface = 'tab',
+        quality = fallbackScreenShareQuality,
+    } = options;
     const browser = detectBrowser();
 
     try {
@@ -132,13 +145,7 @@ export async function captureTabStream(options: {
 
         // Build constraints based on browser capabilities
         const constraints: MediaStreamConstraints = {
-          video: audioOnly
-            ? false
-            : {
-                width: { ideal: 854, max: 854 },
-                height: { ideal: 480, max: 480 },
-                frameRate: { ideal: 30, max: 30 },
-              },
+          video: audioOnly ? false : screenShareVideoConstraints(quality),
           audio: {
             autoGainControl: false,
             channelCount: 2,
@@ -177,7 +184,7 @@ export async function captureTabStream(options: {
             (constraints.audio as any).googAudioMirroring = false;
         }
 
-        console.log(`captureTabStream: Requesting stream (browser: ${browser.name}, audioOnly: ${audioOnly})`);
+        console.log(`captureTabStream: Requesting stream (browser: ${browser.name}, audioOnly: ${audioOnly}, quality: ${quality})`);
         
         // Request the stream
         const mediaStream = await navigator.mediaDevices.getDisplayMedia(constraints);

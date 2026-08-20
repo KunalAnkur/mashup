@@ -1,6 +1,8 @@
 "use client"
 
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
+import { helper } from "@/utils";
+import { useScreenShareQuality } from "@/hooks";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import {
@@ -18,23 +20,22 @@ const sourceTabTitleClass = "mb-2 text-lg font-semibold text-white";
 const sourceTabDescriptionClass = "text-sm text-white/60";
 
 const SourceTab = () => {
-    const { setStream } = useMediaStreamContext();
+    const { setStream, setScreenType } = useMediaStreamContext();
+    const screenShareQuality = useScreenShareQuality();
     const tToast = useTranslations("toast");
     const tStream = useTranslations("stream");
     const handleShareScreen = async () => {
         try {
-            const mediaStream = await navigator.mediaDevices.getDisplayMedia({
-                video: {
-                    // width: { ideal: 640, max: 640 },
-                    // height: { ideal: 360, max: 360 },
-                    // frameRate: { ideal: 30, max: 30 }, // keep it smooth
-                    width: { ideal: 854, max: 854 }, // 480p width
-                    height: { ideal: 480, max: 480 },
-                    frameRate: { ideal: 30, max: 30 },
-              },
-                audio: true
+            // Shared with the other capture entry points so the quality ceiling is decided in
+            // one place; this used to carry its own inline 480p constraint block.
+            const { mediaStream, screenType } = await helper.captureTabStream({
+                preferredDisplaySurface: "tab",
+                quality: screenShareQuality,
             });
+            // A dismissed picker is not a failure and should not raise a toast.
+            if (!mediaStream) return;
             setStream(mediaStream);
+            setScreenType(screenType);
         } catch {
             showError(tToast("screenSharingFailed"), tToast("checkPermissions"));
         }
