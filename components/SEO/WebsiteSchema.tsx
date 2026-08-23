@@ -1,5 +1,13 @@
 const baseUrl = 'https://app.movmash.com';
 
+/**
+ * No potentialAction/SearchAction here on purpose.
+ *
+ * It used to declare a Sitelinks Searchbox with the template `?search={search_term_string}`.
+ * Google retired that feature in November 2024, so the markup bought nothing — and Googlebot
+ * crawled the literal placeholder URL, which Search Console then reported as "Duplicate
+ * without user-selected canonical". The app has no search page to point at either.
+ */
 export default function WebsiteSchema() {
   const schema = {
     "@context": "https://schema.org",
@@ -12,14 +20,6 @@ export default function WebsiteSchema() {
       "@type": "Organization",
       name: "Movmash",
       url: baseUrl,
-    },
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${baseUrl}/?search={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
     },
   };
 
