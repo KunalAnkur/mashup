@@ -6,6 +6,9 @@ import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { getUserMediaStream } from "@/utils/helper";
 import { usePeerMesh } from "@/hooks/usePeerMesh";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/lib/store";
+import { isInvisibleUsername } from "@/utils/invisible";
 import type { CallActions, CallParticipant } from "@/hooks/useAudioVideoCall";
 
 export interface UseP2PCallParams {
@@ -64,6 +67,17 @@ export function useP2PCall({
   const { participants } = useRoomContext();
   const tToast = useTranslations("toast");
 
+  /**
+   * Whether the server is hiding us from everyone else in this room.
+   *
+   * Read here for one reason only: an invisible participant is absent from every other
+   * client's roster, so no one will ever offer us a connection. Watching a call therefore
+   * requires us to always be the side that opens it.
+   */
+  const amInvisible = useSelector((state: RootState) =>
+    isInvisibleUsername(state.auth.user?.username)
+  );
+
   /** Socket ids of everyone currently publishing their own camera or mic. */
   const [publisherIds, setPublisherIds] = useState<string[]>([]);
   const [iceServers, setIceServers] = useState<RTCIceServer[]>(DEFAULT_ICE_SERVERS);
@@ -120,9 +134,15 @@ export function useP2PCall({
     // Both sides of a pair can offer, so exactly one must open the connection or they collide
     // on every join. Comparing ids is arbitrary but consistent, and both ends compute the same
     // answer from the same two values.
-    shouldInitiateTo: (peerId) => (socket?.id ?? "") < peerId,
+    //
+    // Invisible is the one case where that symmetry does not hold. The other end has no idea
+    // we are here — we are filtered out of the roster it builds its peer list from — so it
+    // will never take its turn, and half of all id comparisons would leave a spectator
+    // connected to nobody. We always open instead. There is no glare risk in doing so: the
+    // side that cannot see us has nothing to collide with.
+    shouldInitiateTo: (peerId) => amInvisible || (socket?.id ?? "") < peerId,
     // The complement, so the two ends never both yield or both dig in.
-    isPoliteWith: (peerId) => (socket?.id ?? "") > peerId,
+    isPoliteWith: (peerId) => !amInvisible && (socket?.id ?? "") > peerId,
     getLocalTracks: () => localStreamRef.current?.getTracks() ?? null,
     onRemoteStream: (peerId, stream) => {
       onParticipantUpdateRef.current(peerId, () => ({ stream }));
