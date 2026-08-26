@@ -25,7 +25,10 @@ type UpgradePromptContext =
   | "room_full"
   | "watch_time_session"
   | "calls"
-  | "watch_limit";
+  | "watch_limit"
+  // Locked resolution on the /stream/screen quality picker. Unlike the others this one has
+  // no modal in front of it, so only `upgrade_clicked` ever fires for it.
+  | "screen_share_quality";
 
 // In-app sources (where in the app they signed up)
 type InAppSource = "landing" | "home" | "room_join" | "stream" | "sync" | "direct" | "invite_link";

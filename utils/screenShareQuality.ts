@@ -85,6 +85,34 @@ export function clampScreenShareQuality(
 }
 
 /**
+ * Every quality the picker puts on screen, for every user — the ones above a viewer's plan
+ * included, shown locked rather than hidden. A ceiling nobody can see is a ceiling nobody
+ * knows they could raise.
+ *
+ * Stops at `1080p` because that is the highest any plan currently sells (guardian's
+ * `seed-subscription-plans.ts`: 720p free, 1080p on Couple and Crowd). `4k` and `source` are
+ * defined but deliberately absent — offering an upgrade that no amount of money unlocks is
+ * worse than not offering it, and `source` additionally waits on simulcast. Extend this list
+ * the day a plan grants them, not before.
+ */
+export const offeredScreenShareQualities: ScreenShareQuality[] = ["480p", "720p", "1080p"];
+
+/**
+ * Whether an entitlement reaches a given quality. Anything at or below the plan's ceiling is
+ * allowed — stepping down is never gated, since the host whose connection cannot carry the
+ * default needs the way down more than anyone needs the way up.
+ */
+export function isScreenShareQualityAllowed(
+    quality: ScreenShareQuality,
+    allowed: ScreenShareQuality
+): boolean {
+    const limit = screenShareQualityOrder.indexOf(allowed);
+    const wanted = screenShareQualityOrder.indexOf(quality);
+    if (limit < 0 || wanted < 0) return false;
+    return wanted <= limit;
+}
+
+/**
  * The `video` half of a `getDisplayMedia` request for a given quality.
  */
 export function screenShareVideoConstraints(quality: ScreenShareQuality): MediaTrackConstraints {

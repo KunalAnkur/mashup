@@ -393,6 +393,31 @@ export const appStreamScreenToggleSurfaceClass = "rounded-dashSm bg-dashSurfaceA
 
 export const appStreamScreenWarningSurfaceClass = "rounded-dashSm bg-amber-500/10";
 
+// Capture-quality picker, shared by /stream/screen and the in-room playlist panel. On the
+// former it takes appStreamScreenToggleSurfaceClass so it pairs with the audio-only control
+// above it; only the inner segmented control lives here, which is what lets one set of tokens
+// serve a full-width settings row and a 272px side panel.
+//
+// Segmented buttons rather than a select: there are two or three options, and the whole
+// point is that the way down is visible at a glance to a host whose stream is struggling.
+export const appScreenShareQualityRowClass =
+  "flex items-center gap-1 rounded-dashSm bg-black/20 p-1";
+
+export const appScreenShareQualityOptionClass =
+  "shrink-0 whitespace-nowrap rounded-dashSm px-2.5 py-1 text-[11px] font-medium tabular-nums transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:text-xs";
+
+export const appScreenShareQualityOptionActiveClass = "bg-white text-black";
+
+export const appScreenShareQualityOptionIdleClass =
+  "text-dashTextDim hover:bg-white/[0.08] hover:text-dashText";
+
+// Locked options stay clickable — the click is the upgrade path, not a dead end — so this
+// reads as "not yours yet" rather than "disabled": dimmed, but it still lights up on hover.
+// Amber matches dashGameCardPremiumBadgeClass, which is how a locked game already announces
+// itself; a second colour for the same idea would just be a second thing to learn.
+export const appScreenShareQualityOptionLockedClass =
+  "text-amber-200/60 hover:bg-amber-400/[0.10] hover:text-amber-200";
+
 // Fixed, content-sized pill — deliberately does NOT scale padding/text up across
 // breakpoints like the old version did (px-4→8, py-3.5→5, text-sm→lg). That escalation
 // made this the one CTA in the whole app that ballooned into a huge landing-page-style

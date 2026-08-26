@@ -14,7 +14,8 @@ import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist, UrlMetadata } from "@/types/storeTypes";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { AddUrlModal } from "../AddUrlModal";
-import { useScreenShareQuality, useScreenShareSupport } from "@/hooks";
+import { useScreenShareQualityControl, useScreenShareSupport } from "@/hooks";
+import { ScreenShareQualityPicker } from "@/components/UI/ScreenShareQualityPicker";
 
 type UrlMetadataResponseItem = {
     url: string;
@@ -33,6 +34,9 @@ const contentSelectionToolbarIconWrapClass =
     "flex h-5 w-5 items-center justify-center";
 const contentSelectionToolbarLabelClass =
     "line-clamp-2 text-[10px] font-medium leading-tight text-white/90 md:text-[11px]";
+// Sits under the toolbar grid, inset to match it. Local rather than a shared token: it is
+// only this panel's spacing around a control that carries its own styling.
+const contentSelectionQualityRowClass = "mt-2 justify-start";
 
 type ContentSelectionProps = {
     onAddContent: (content: Playlist[], source: "file" | "url" | "screen") => void;
@@ -50,7 +54,14 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
     const authState = useSelector((state: RootState) => state.auth);
     const { stream, setStream, setScreenType } = useMediaStreamContext();
     const canScreenShare = useScreenShareSupport();
-    const screenShareQuality = useScreenShareQuality();
+    const qualityControl = useScreenShareQualityControl(stream);
+    const screenShareQuality = qualityControl.quality;
+
+    // The picker earns its place in this panel only while something is actually being
+    // shared — that is when a host watches the room stutter and wants a way down. With no
+    // live video track it would be a third control in an already dense column, answering a
+    // question nobody has yet; /stream/screen is where quality gets chosen up front.
+    const hasLiveScreenVideo = !!stream?.getVideoTracks().some((t) => t.readyState === "live");
     const t = useTranslations("sync");
     const tCommon = useTranslations("common");
     const tToast = useTranslations("toast");
@@ -436,6 +447,13 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
                     </button>
                 ))}
             </div>
+        )}
+        {isHost && hasLiveScreenVideo && (
+            <ScreenShareQualityPicker
+                control={qualityControl}
+                compact
+                className={contentSelectionQualityRowClass}
+            />
         )}
             <AddUrlModal
                 isOpen={showAddUrlModal}

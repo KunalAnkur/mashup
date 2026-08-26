@@ -4,3 +4,4 @@ export { useSync } from "./useSync";
 export { useChat } from "./useChat";
 export { useScreenShareSupport } from "./useScreenShareSupport";
 export { useScreenShareQuality } from "./useScreenShareQuality";
+export { useScreenShareQualityControl } from "./useScreenShareQualityControl";

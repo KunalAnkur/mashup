@@ -31,9 +31,37 @@ type GoogleAuthUserInfo = {
   sub: string;
 };
 
+/**
+ * Whether this sign-in exists to get someone into somebody else's room.
+ *
+ * The redirect is the only signal available here, and it is enough: a room is the one
+ * destination reached by being invited to it. Everything else that sends a signed-out
+ * visitor to this page — `/stream/screen`, `/sync`, `/pricing`, `/subscription` — is
+ * something they are starting themselves.
+ *
+ * Anchored rather than a substring search, so a query string that merely mentions a room
+ * (`/pricing?from=/room/x`) is not mistaken for one.
+ */
+const isRoomInviteRedirect = (redirect: string | null | undefined): boolean =>
+  typeof redirect === "string" && redirect.startsWith("/room/");
+
 const LoginContainer = () => {
   const searchParams = useSearchParams();
   const redirectParam = searchParams?.get("redirect");
+
+  /**
+   * Guest accounts are for joining, never for hosting — guardian enforces exactly this with
+   * `requireFullAccount` on room creation (MOVMASH.md §4.3: the room's daily allowance is
+   * funded by its host, so a host who could be re-minted by clearing browser storage would
+   * make the limit meaningless).
+   *
+   * Offering the button on a create flow therefore sold a door that does not open: the guest
+   * account was created, the user was returned to `/stream/screen`, and the 403 arrived only
+   * once they had picked a tab and pressed Start Sharing. Guardian's own comment says "the
+   * client shows a sign-in prompt before reaching here" — this is that prompt, which until
+   * now did not exist.
+   */
+  const offerGuestAccount = isRoomInviteRedirect(redirectParam);
 
   const buildAuthRoute = (path: string) =>
     redirectParam ? `${path}?redirect=${encodeURIComponent(redirectParam)}` : path;
@@ -84,8 +112,8 @@ const LoginContainer = () => {
     try {
       const response = await continueAsGuest().unwrap();
       dispatch(setUser(response));
-      // Determine signup source: if redirectParam contains room, it's room_join
-      const signupSource = redirectParam?.includes("/room/") ? "room_join" : "direct";
+      // Same rule as the button's visibility, so the funnel cannot disagree with the UI.
+      const signupSource = isRoomInviteRedirect(redirectParam) ? "room_join" : "direct";
       trackSignup("guest", signupSource);
       showSuccess(tToast("welcomeGuest"));
     } catch (error) {
@@ -120,7 +148,7 @@ const LoginContainer = () => {
               {tAuth("welcomeBack")}
             </p>
             <p className="text-xs md:text-sm text-white/60 text-center max-w-xs mt-0.5">
-              {tAuth("chooseHowToContinue")}
+              {offerGuestAccount ? tAuth("chooseHowToContinue") : tAuth("signInToContinue")}
             </p>
           </div>
         </header>
@@ -149,25 +177,28 @@ const LoginContainer = () => {
             </span>
           </label>
 
-          {/* Separator */}
-          <div className="flex items-center gap-3 py-0.5">
-            <div className="flex-1 h-px bg-zinc-600/20"></div>
-            <span className="text-xs text-white/50 font-medium uppercase tracking-wider">{tCommon("or")}</span>
-            <div className="flex-1 h-px bg-zinc-600/20"></div>
-          </div>
+          {/* Guest sign-in, and the separator that introduces it, only for an invite. */}
+          {offerGuestAccount && (
+            <>
+              <div className="flex items-center gap-3 py-0.5">
+                <div className="flex-1 h-px bg-zinc-600/20"></div>
+                <span className="text-xs text-white/50 font-medium uppercase tracking-wider">{tCommon("or")}</span>
+                <div className="flex-1 h-px bg-zinc-600/20"></div>
+              </div>
 
-          {/* Continue as Guest Button */}
-          <Button
-            name={
-              isGuestProcessing || isGuestLoading
-                ? tCommon("creatingAccount")
-                : tCommon("continueAsGuest")
-            }
-            icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
-            className={guestContinueButtonClass}
-            onClick={handleContinueAsGuest}
-            disabled={isGuestProcessing || isGuestLoading}
-          />
+              <Button
+                name={
+                  isGuestProcessing || isGuestLoading
+                    ? tCommon("creatingAccount")
+                    : tCommon("continueAsGuest")
+                }
+                icon={isGuestProcessing || isGuestLoading ? <ImSpinner2 className="animate-spin" /> : undefined}
+                className={guestContinueButtonClass}
+                onClick={handleContinueAsGuest}
+                disabled={isGuestProcessing || isGuestLoading}
+              />
+            </>
+          )}
         </div>
 
         {/* Footer Note */}

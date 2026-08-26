@@ -10,7 +10,8 @@ import { RootState } from "@/lib/store";
 import { setRefers, setScreenSharing, updateRoomInfo } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { helper } from "@/utils";
-import { useScreenShareQuality, useScreenShareSupport } from "@/hooks";
+import { useScreenShareQualityControl, useScreenShareSupport } from "@/hooks";
+import { ScreenShareQualityPicker } from "@/components/UI/ScreenShareQualityPicker";
 import { showError } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import type { Playlist } from "@/types/storeTypes";
@@ -42,13 +43,14 @@ const ScreenSharePage = () => {
   const authState = useSelector((state: RootState) => state.auth);
   const { setStream: setMediaStream, setScreenType } = useMediaStreamContext();
   const canScreenShare = useScreenShareSupport();
-  const screenShareQuality = useScreenShareQuality();
   const tToast = useTranslations("toast");
   const tStream = useTranslations("stream");
   const tCommon = useTranslations("common");
 
   // State management
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const qualityControl = useScreenShareQualityControl(stream);
+  const screenShareQuality = qualityControl.quality;
   const [isStreamReady, setIsStreamReady] = useState(false);
   const [audioOnly, setAudioOnly] = useState(false);
   const [isTabSelected, setIsTabSelected] = useState(false);
@@ -666,6 +668,15 @@ const ScreenSharePage = () => {
                     </div>
                   </label>
                 </div>
+
+                {/* Capture quality — hidden in audio-only mode, where there is no video
+                    track to constrain. */}
+                {!audioOnly && (
+                  <ScreenShareQualityPicker
+                    control={qualityControl}
+                    className={`p-3 sm:p-4 ${appStreamScreenToggleSurfaceClass}`}
+                  />
+                )}
 
                 {/* Warning */}
                 {showWarning && (
