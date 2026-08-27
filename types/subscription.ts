@@ -4,7 +4,7 @@ export interface SubscriptionFeatures {
   max_concurrent_rooms: number;
   max_file_size_mb: number;
   max_watch_hours_per_month: number;
-  screen_share_quality: "720p" | "1080p" | "4k";
+  screen_share_quality: "480p" | "720p" | "1080p" | "4k";
   can_record_sessions: boolean;
   priority_support: boolean;
   custom_room_branding: boolean;

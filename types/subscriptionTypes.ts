@@ -41,7 +41,7 @@ export interface SubscriptionFeatures {
   max_file_size_mb: number;
   max_watch_hours_per_month: number; // -1 for unlimited
   max_watch_minutes_per_day: number; // -1 for unlimited
-  screen_share_quality: "720p" | "1080p" | "4k";
+  screen_share_quality: "480p" | "720p" | "1080p" | "4k";
   can_record_sessions: boolean;
   priority_support: boolean;
   custom_room_branding: boolean;

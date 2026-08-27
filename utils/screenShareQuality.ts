@@ -54,11 +54,15 @@ export const screenShareQualityOrder: ScreenShareQuality[] = [
  * plan row that predates the field. It mirrors guardian's `DEFAULT_FEATURES`, which fails
  * closed to the most restrictive tier for the same reason: handing a paid ceiling to
  * someone whose entitlement we could not read is the worse of the two mistakes.
+ *
+ * Tracks the free plan. When free moved to 480p this had to move with it, or "unreadable
+ * subscription" would quietly have been a better deal than "free" — and an unrecognised
+ * value takes this path, so the guard above and this constant have to agree on the floor.
  */
-export const fallbackScreenShareQuality: PlanScreenShareQuality = "720p";
+export const fallbackScreenShareQuality: PlanScreenShareQuality = "480p";
 
 const isPlanScreenShareQuality = (value: unknown): value is PlanScreenShareQuality =>
-    value === "720p" || value === "1080p" || value === "4k";
+    value === "480p" || value === "720p" || value === "1080p" || value === "4k";
 
 /**
  * The ceiling a plan grants. Takes the raw features object because it is fed straight from

@@ -2,6 +2,7 @@ import { ControlComponents } from "@/components/VideoPlayer/Player";
 import { RoomType } from "@/context/RoomContext";
 import { SourceProps } from "react-player/base";
 import { isMobile } from "react-device-detect";
+import { videoCallVideoConstraints } from "./videoCallQuality";
 import {
     fallbackScreenShareQuality,
     screenShareVideoConstraints,
@@ -675,12 +676,39 @@ export async function getUserMediaStream(opts: {
   video?: boolean;
   audio?: boolean;
 } = { video: true, audio: true }): Promise<MediaStream | null> {
+  const wantVideo = opts.video !== false;
+  const wantAudio = opts.audio !== false;
+
   try {
     return await navigator.mediaDevices.getUserMedia({
-      video: opts.video !== false,
-      audio: opts.audio !== false,
+      // Capped rather than `true`. See `videoCallVideoConstraints` for the numbers and why
+      // they are flat across plans. Applied here so all three acquisition points — starting a
+      // call, and turning the camera on later in either the P2P or SFU hook — get the same
+      // ceiling without each having to remember to ask for it.
+      video: wantVideo ? videoCallVideoConstraints : false,
+      audio: wantAudio,
     });
   } catch (e: any) {
+    // A camera that cannot satisfy the cap must not cost the user their call. Retry once,
+    // unconstrained: a call at whatever the device offers beats no call at all.
+    if (e.name === "OverconstrainedError" && wantVideo) {
+      console.warn(
+        `[getUserMediaStream] Camera rejected the call constraints (${e.constraint ?? "unknown"}); retrying unconstrained`
+      );
+      try {
+        return await navigator.mediaDevices.getUserMedia({ video: true, audio: wantAudio });
+      } catch (retryError: any) {
+        if (
+          retryError.name !== "NotAllowedError" &&
+          retryError.name !== "AbortError" &&
+          retryError.name !== "NotFoundError"
+        ) {
+          console.error("[getUserMediaStream] Unexpected error on retry:", retryError);
+        }
+        return null;
+      }
+    }
+
     if (e.name !== "NotAllowedError" && e.name !== "AbortError" && e.name !== "NotFoundError") {
       console.error("[getUserMediaStream] Unexpected error:", e);
     }
