@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { ControlComponents } from "@/components/VideoPlayer/Player";
+import PlaybackBlockedOverlay from "./PlaybackBlockedOverlay";
 import { RootState, store } from "@/lib/store";
 import { Player } from "@/components/VideoPlayer";
 import PlayerOverlay from "@/components/Container/PlayerOverlay";
@@ -21,6 +23,11 @@ type Props = {
 
 const P2PStreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
     const roomState = useSelector((state: RootState) => state.room);
+    // Parity with StreamPlayer and SyncPlayer, which have always honoured this. Free rooms are
+    // the only ones with a daily limit and the only ones that render here, so the one player
+    // that ignored it was the one that mattered. Belt and braces behind the blackout: this
+    // freezes the picture, the blackout removes what is behind it.
+    const isPlaybackBlocked = roomState.settings.isPlaybackBlocked;
     const authState = useSelector((state: RootState) => state.auth);
     const playerRef = useRef<ReactPlayer>(null);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -340,7 +347,7 @@ const P2PStreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
                     focused: roomState.focused,
                     screenSharing: isScreenSharing,
                     hostLeft: hostLeft,
-                    paused: isPaused
+                    paused: isPaused || isPlaybackBlocked
                 }).playing}
                 onReady={handleVideoReady}
                 onEnded={handleVideoEnded}
@@ -383,7 +390,7 @@ const P2PStreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
                     focused: roomState.focused,
                     screenSharing: isScreenSharing,
                     hostLeft: hostLeft,
-                    paused: isPaused
+                    paused: isPaused || isPlaybackBlocked
                 }).muted}
                 hasUserInteracted={roomState.focused}
                 onPlay={onPlay}
@@ -391,12 +398,24 @@ const P2PStreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
                 hasVideoTrack={!activeItem?.onlyAudio}
                 onMute={setFocus}
                 onOpenStore={() => dispatch(toggleBottomSheet())}
-                disableControls={helper.getPlayerControlsConfig(source, isHost).disableControls}
-                hideControls={helper.getPlayerControlsConfig(source, isHost).hideControls}
+                disableControls={
+                    isPlaybackBlocked
+                        ? [...helper.getPlayerControlsConfig(source, isHost).disableControls, ControlComponents.PLAY]
+                        : helper.getPlayerControlsConfig(source, isHost).disableControls
+                }
+                hideControls={
+                    isPlaybackBlocked
+                        ? [...helper.getPlayerControlsConfig(source, isHost).hideControls, ControlComponents.PLAY]
+                        : helper.getPlayerControlsConfig(source, isHost).hideControls
+                }
                 autoResumeOnFullscreenExit={!isHost}
             >
                 <PlayerOverlay />
             </Player>
+
+            {/* Sibling of <Player>, not a child: Player only renders its children while the
+                native controls are hidden, and this has to hold whatever the controls do. */}
+            {isPlaybackBlocked && <PlaybackBlockedOverlay />}
         </div>
     );
 };

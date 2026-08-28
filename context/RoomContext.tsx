@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import { useSocket } from "@/context/SocketContext";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
+import { useScreenShareBlackout } from "@/hooks/useScreenShareBlackout";
 import { SocketEvent } from "@/types/socketEvents";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, store } from "@/lib/store";
@@ -157,6 +158,13 @@ export const RoomProvider = ({ children }: { children: ReactNode }) => {
     // navigation into the room. Nothing was releasing it on the way out — leaving the room only
     // tore down the socket and the peer connections — so the browser kept the "Sharing this tab"
     // bar up and the capture running long after the party ended.
+    // The daily limit stops the *sharing*, not a video element — see the hook for why a paused
+    // player is not enough once the source is a live capture.
+    useScreenShareBlackout({
+        isHost,
+        blocked: roomState.settings.isPlaybackBlocked,
+    });
+
     const { handleStopScreenSharing } = useMediaStreamContext();
     const stopScreenShareRef = useRef(handleStopScreenSharing);
     useEffect(() => {

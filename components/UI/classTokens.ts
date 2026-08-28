@@ -393,6 +393,24 @@ export const appStreamScreenToggleSurfaceClass = "rounded-dashSm bg-dashSurfaceA
 
 export const appStreamScreenWarningSurfaceClass = "rounded-dashSm bg-amber-500/10";
 
+// Sits over the player while the room's daily watch limit is in force. Opaque rather than a
+// translucent scrim: what it covers is a screen share whose tracks have just gone to black
+// frames, and a scrim over black reads as a rendering fault. This has to look deliberate.
+//
+// z-40 matches the player's own unmute overlay and stays well under the blocked modal
+// (z-[99999]), so the two stack in the order they are meant to.
+export const playbackBlockedOverlayClass =
+  "absolute inset-0 z-40 flex flex-col items-center justify-center gap-2 bg-black/85 px-6 text-center backdrop-blur-sm";
+
+export const playbackBlockedOverlayIconClass =
+  "mb-1 flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.07] text-white/70";
+
+export const playbackBlockedOverlayTitleClass =
+  "text-sm font-semibold tracking-tight text-white sm:text-base";
+
+export const playbackBlockedOverlayBodyClass =
+  "max-w-sm text-xs leading-relaxed text-white/65 sm:text-[13px]";
+
 // Capture-quality picker, shared by /stream/screen and the in-room playlist panel. On the
 // former it takes appStreamScreenToggleSurfaceClass so it pairs with the audio-only control
 // above it; only the inner segmented control lives here, which is what lets one set of tokens
