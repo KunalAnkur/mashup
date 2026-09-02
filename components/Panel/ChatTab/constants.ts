@@ -15,66 +15,83 @@ export const MESSAGE_REACTION_DETAILS_VIEWPORT_PADDING = 12;
 export const DEFAULT_REACTIONS = ["😍", "😡", "😭", "😂", "🤯", "🔥"] as const;
 
 // User color palette
+// `text` is the resting username color (minimal, solid — no gradient clip text).
+// `bg` fills the avatar chip. `gradient` is kept for reference / future tinted accents.
 export const USER_COLOR_PALETTE = [
   {
     gradient: "from-rose-400 via-pink-400 to-fuchsia-400",
     bg: "from-rose-500 via-pink-500 to-fuchsia-500",
+    text: "text-rose-300/90",
   },
   {
     gradient: "from-blue-400 via-cyan-400 to-teal-400",
     bg: "from-blue-500 via-cyan-500 to-teal-500",
+    text: "text-cyan-300/90",
   },
   {
     gradient: "from-purple-400 via-indigo-400 to-blue-400",
     bg: "from-purple-500 via-indigo-500 to-blue-500",
+    text: "text-indigo-300/90",
   },
   {
     gradient: "from-emerald-400 via-green-400 to-teal-400",
     bg: "from-emerald-500 via-green-500 to-teal-500",
+    text: "text-emerald-300/90",
   },
   {
     gradient: "from-orange-400 via-amber-400 to-yellow-400",
     bg: "from-orange-500 via-amber-500 to-yellow-500",
+    text: "text-amber-300/90",
   },
   {
     gradient: "from-violet-400 via-purple-400 to-fuchsia-400",
     bg: "from-violet-500 via-purple-500 to-fuchsia-500",
+    text: "text-violet-300/90",
   },
   {
     gradient: "from-cyan-400 via-blue-400 to-indigo-400",
     bg: "from-cyan-500 via-blue-500 to-indigo-500",
+    text: "text-sky-300/90",
   },
   {
     gradient: "from-pink-400 via-rose-400 to-red-400",
     bg: "from-pink-500 via-rose-500 to-red-500",
+    text: "text-pink-300/90",
   },
   {
     gradient: "from-lime-400 via-green-400 to-emerald-400",
     bg: "from-lime-500 via-green-500 to-emerald-500",
+    text: "text-lime-300/90",
   },
   {
     gradient: "from-amber-400 via-orange-400 to-red-400",
     bg: "from-amber-500 via-orange-500 to-red-500",
+    text: "text-orange-300/90",
   },
   {
     gradient: "from-indigo-400 via-purple-400 to-pink-400",
     bg: "from-indigo-500 via-purple-500 to-pink-500",
+    text: "text-purple-300/90",
   },
   {
     gradient: "from-teal-400 via-cyan-400 to-blue-400",
     bg: "from-teal-500 via-cyan-500 to-blue-500",
+    text: "text-teal-300/90",
   },
   {
     gradient: "from-yellow-400 via-amber-400 to-orange-400",
     bg: "from-yellow-500 via-amber-500 to-orange-500",
+    text: "text-yellow-300/90",
   },
   {
     gradient: "from-red-400 via-pink-400 to-rose-400",
     bg: "from-red-500 via-pink-500 to-rose-500",
+    text: "text-red-300/90",
   },
   {
     gradient: "from-green-400 via-emerald-400 to-teal-400",
     bg: "from-green-500 via-emerald-500 to-teal-500",
+    text: "text-green-300/90",
   },
 ] as const;
 

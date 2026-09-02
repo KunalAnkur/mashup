@@ -1,3 +1,4 @@
+import { isMobile } from "react-device-detect";
 import { ChatMessage, ReactionType } from "@/types/chatTypes";
 import { formatChatTime } from "@/utils/timeFormatter";
 import MessageReactionPicker from "../MessageReactionPicker";
@@ -5,7 +6,13 @@ import { UserAvatar } from "./UserAvatar";
 import { MessageBubbleActions } from "./MessageBubbleActions";
 import { MessageReactionChips } from "./MessageReactionChips";
 import { UserColor, MessageActionPlacement, MessageReactionPlacement, ActiveReactionDetails } from "./types";
-import { chatMessageUserNameClass, chatMessageBubbleBaseClass, chatMessageTextClass, chatMessageTimestampClass } from "./styles";
+import {
+  chatMessageUserNameClass,
+  chatMessageBubbleBaseClass,
+  chatMessageTextClass,
+  chatMessageHeaderTimestampClass,
+  chatMessageGutterTimestampClass,
+} from "./styles";
 import { isOnlyEmojis, getMessageReactionGroups } from "./utils";
 
 interface UserMessageProps {
@@ -27,6 +34,8 @@ interface UserMessageProps {
   isJoined: boolean;
   pinActionLoadingId: string | null;
   currentReactionOwnerKey: string;
+  actionsRevealed: boolean;
+  onToggleActions: (messageId: string) => void;
   onReactionPickerToggle: (messageId: string) => void;
   onPinMessage: (message: ChatMessage) => void;
   onMessageReactionSelect: (messageId: string, emoji: ReactionType) => void;
@@ -60,6 +69,8 @@ export const UserMessage = ({
   isJoined,
   pinActionLoadingId,
   currentReactionOwnerKey,
+  actionsRevealed,
+  onToggleActions,
   onReactionPickerToggle,
   onPinMessage,
   onMessageReactionSelect,
@@ -73,31 +84,47 @@ export const UserMessage = ({
   const reactionGroups = getMessageReactionGroups(message, currentReactionOwnerKey);
   const actionPlacement = messageActionPlacements[message.id] || "side";
 
+  // Touch devices have no hover, so the react/pin bar is revealed by tapping the message.
+  const showActions = actionsRevealed || hasActiveReactionPicker;
+  const handleBubbleTap = isMobile
+    ? (event: React.MouseEvent<HTMLDivElement>) => {
+        if ((event.target as HTMLElement).closest("button, a")) return;
+        onToggleActions(message.id);
+      }
+    : undefined;
+
   return (
     <div
       className={`relative flex items-start gap-2 md:gap-3 group ${
         hasActiveReactionPicker || hasActiveReactionDetails ? "z-30" : "z-0"
-      } ${isGroupedMessage ? "mt-0" : "mt-1"}`}
+      } ${isGroupedMessage ? "mt-0.5" : "mt-2"}`}
     >
       <div className={`relative flex-shrink-0 ${isGroupedMessage ? "w-8 md:w-10" : ""}`}>
-        {!isGroupedMessage && (
+        {!isGroupedMessage ? (
           <UserAvatar
             displayUserName={displayUserName}
             userProfile={message.userProfile}
             userColor={userColor}
             isCurrentUser={isCurrentUser}
           />
+        ) : (
+          <span className={chatMessageGutterTimestampClass}>
+            {formatChatTime(message.timestamp)}
+          </span>
         )}
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col gap-1 md:gap-1.5 items-start">
         {!isGroupedMessage && (
-          <div className="flex items-baseline gap-1.5 md:gap-2 min-w-0 w-full">
+          <div className="flex items-baseline gap-2 min-w-0 w-full">
             <span
-              className={`${chatMessageUserNameClass} ${userColor.gradient}`}
+              className={`${chatMessageUserNameClass} ${userColor.text}`}
               title={displayUserName}
             >
               {displayUserName}
+            </span>
+            <span className={chatMessageHeaderTimestampClass}>
+              {formatChatTime(message.timestamp)}
             </span>
           </div>
         )}
@@ -105,6 +132,7 @@ export const UserMessage = ({
         {onlyEmojis ? (
           <div
             ref={messageBubbleRef}
+            onClick={handleBubbleTap}
             className={`relative isolate group/message inline-flex max-w-full flex-col ${
               isGroupedMessage ? "p-0.5 mt-0" : "p-0.5"
             }`}
@@ -118,6 +146,7 @@ export const UserMessage = ({
               pinButtonTitle={pinButtonTitle}
               isJoined={isJoined}
               pinActionLoadingId={pinActionLoadingId}
+              revealed={showActions}
               onReactionPickerToggle={onReactionPickerToggle}
               onPinMessage={onPinMessage}
               t={t}
@@ -131,8 +160,7 @@ export const UserMessage = ({
             )}
 
             <div className="relative z-0 inline-block">
-              <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${userColor.bg} rounded-lg blur-xl opacity-20`}></div>
-              <p className={`relative text-3xl md:text-4xl leading-tight filter`}>
+              <p className="relative text-3xl md:text-4xl leading-tight">
                 {message.message}
               </p>
             </div>
@@ -146,13 +174,11 @@ export const UserMessage = ({
               t={t}
               tCommon={tCommon}
             />
-            <span className="pointer-events-none absolute -bottom-4 right-0 text-gray-500/60 text-[9px] md:text-[10px] font-medium opacity-60 group-hover/message:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-              {formatChatTime(message.timestamp)}
-            </span>
           </div>
         ) : (
           <div
             ref={messageBubbleRef}
+            onClick={handleBubbleTap}
             className="relative isolate group/message inline-flex max-w-full flex-col"
           >
             <MessageBubbleActions
@@ -164,6 +190,7 @@ export const UserMessage = ({
               pinButtonTitle={pinButtonTitle}
               isJoined={isJoined}
               pinActionLoadingId={pinActionLoadingId}
+              revealed={showActions}
               onReactionPickerToggle={onReactionPickerToggle}
               onPinMessage={onPinMessage}
               t={t}
@@ -176,23 +203,18 @@ export const UserMessage = ({
               />
             )}
 
-            <div className={`pointer-events-none absolute -inset-0.5 bg-gradient-to-br ${userColor.bg} rounded-xl md:rounded-2xl blur opacity-0 group-hover/message:opacity-20 transition-opacity duration-300`}></div>
-
             <div
               className={`${chatMessageBubbleBaseClass} ${isGroupedMessage
                   ? "rounded-lg md:rounded-xl mt-0"
                   : "rounded-xl md:rounded-2xl rounded-tl-sm"
                 } ${isCurrentUser
-                  ? `bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-fuchsia-600/10 `
-                  : "bg-gradient-to-br from-zinc-800/15 via-zinc-700/15 to-zinc-800/15 "
+                  ? "bg-white/[0.08]"
+                  : "bg-white/[0.04]"
                 }`}
             >
               <p className={chatMessageTextClass}>
                 {message.message}
               </p>
-              <div className={chatMessageTimestampClass}>
-                {formatChatTime(message.timestamp)}
-              </div>
             </div>
             <MessageReactionChips
               message={message}

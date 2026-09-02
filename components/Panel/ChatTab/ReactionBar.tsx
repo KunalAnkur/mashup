@@ -32,7 +32,7 @@ export const ReactionBar = ({
           />
         ))}
 
-        <div className="w-px h-6 md:h-8 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+        <div className="w-px h-5 md:h-6 bg-white/10" />
 
         <div className="relative">
           <ReactionPicker

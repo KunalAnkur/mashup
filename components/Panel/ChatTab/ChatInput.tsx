@@ -2,8 +2,7 @@ import { LuArrowUp, LuSmile } from "react-icons/lu";
 import { MdCelebration, MdOutlineCelebration } from "react-icons/md";
 import { isMobile } from "react-device-detect";
 import { Input } from "@/components/UI";
-import { zincGlassBorderedSurfaceClass } from "@/components/UI/classTokens";
-import { chatComposerIconButtonClass, chatComposerAccentOverlayClass, chatInputFieldBaseClass } from "./styles";
+import { chatComposerIconButtonClass, chatInputFieldBaseClass } from "./styles";
 
 interface ChatInputProps {
   messageInput: string;
@@ -37,7 +36,7 @@ export const ChatInput = ({
   t,
 }: ChatInputProps) => {
   return (
-    <div className={`relative flex items-center gap-1 overflow-visible rounded-xl px-2.5 py-1 md:rounded-2xl md:px-3 md:py-1.5 ${zincGlassBorderedSurfaceClass}`}>
+    <div className="relative flex items-center gap-1 overflow-visible rounded-xl px-2.5 py-1 md:rounded-2xl md:px-3 md:py-1.5 bg-white/[0.05] border border-white/[0.07] transition-colors duration-200 focus-within:border-white/15 focus-within:bg-white/[0.07]">
       {isMobile ? (
         <Input
           variant="raw"
@@ -74,8 +73,8 @@ export const ChatInput = ({
         <button
           onClick={onToggleReactions}
           className={`${chatComposerIconButtonClass} ${showReactions
-            ? "text-rose-400"
-            : "text-white/50 hover:text-rose-400"
+            ? "text-rose-300/90 hover:text-rose-300"
+            : "text-white/40 hover:text-white/70"
             }`}
           title={showReactions ? t("hideReactions") : t("showReactions")}
         >
@@ -97,14 +96,10 @@ export const ChatInput = ({
         data-emoji-button
         onClick={onToggleEmojis}
         className={`${chatComposerIconButtonClass} ${showEmojis
-          ? "text-pink-400"
-          : "text-white/70 hover:text-pink-400"
+          ? "text-white/90"
+          : "text-white/45 hover:text-white/75"
           }`}
       >
-        <div className={`${chatComposerAccentOverlayClass} ${showEmojis
-          ? "bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20"
-          : "bg-gradient-to-br from-zinc-800/10 via-zinc-700/10 to-zinc-800/10 opacity-0 group-hover:opacity-100"
-          }`}></div>
         <LuSmile size={18} className="relative md:w-5 md:h-5" />
       </button>
 
@@ -113,9 +108,8 @@ export const ChatInput = ({
         <button
           onClick={onSendMessage}
           disabled={!isJoined || isLoading}
-          className={`${chatComposerIconButtonClass} text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed`}
+          className={`${chatComposerIconButtonClass} bg-white/10 text-white hover:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          <div className={`${chatComposerAccentOverlayClass} bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-fuchsia-600/20 opacity-0 group-hover:opacity-100`}></div>
           <LuArrowUp size={18} className="relative md:w-5 md:h-5" />
         </button>
       )}

@@ -60,7 +60,9 @@ export default function WatchLimitIndicator() {
 
   return (
     <>
-      <section className="shrink-0 px-2 pb-3">
+      {/* On mobile this is folded into PanelMobilePlanBar to save panel height; the nudge
+          toast + zero-minutes modal above still fire on every breakpoint. */}
+      <section className="hidden shrink-0 px-2 pb-3 md:block">
         <div className={isUrgent ? appWatchLimitCardUrgentClass : appWatchLimitCardClass}>
           <div className="flex items-center gap-2.5">
             <div

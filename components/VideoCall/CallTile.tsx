@@ -16,6 +16,8 @@ interface CallTileProps {
   size?: "sm" | "md";
   avatarUrl?: string;
   fill?: boolean;
+  /** Fill the parent's height on mobile, revert to a 16:9 box at md+. */
+  responsiveFill?: boolean;
 }
 
 export default function CallTile({
@@ -25,6 +27,7 @@ export default function CallTile({
   size = "md",
   avatarUrl,
   fill = false,
+  responsiveFill = false,
 }: CallTileProps) {
   const initials = username
     .split(" ")
@@ -68,7 +71,13 @@ export default function CallTile({
 
   return (
     <div className={`
-      relative flex ${fill ? "h-full min-h-[72px]" : "aspect-video"} w-full items-center justify-center overflow-hidden rounded-lg
+      relative flex ${
+        fill
+          ? "h-full min-h-[72px]"
+          : responsiveFill
+            ? "h-full min-h-[72px] md:aspect-video md:h-auto md:min-h-0"
+            : "aspect-video"
+      } w-full items-center justify-center overflow-hidden rounded-lg
       transition-all duration-300
       ${isInCall ? "bg-zinc-950/75" : "bg-zinc-900/30"}
     `}>

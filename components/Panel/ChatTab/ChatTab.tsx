@@ -48,7 +48,7 @@ const EmojiPicker = dynamic(() => import("emoji-picker-react"), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center p-4">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/30"></div>
     </div>
   ),
 });
@@ -67,6 +67,8 @@ const ChatTab = () => {
   >({});
   const [messageInput, setMessageInput] = useState("");
   const [pinActionLoadingId, setPinActionLoadingId] = useState<string | null>(null);
+  // Touch-only: which message currently has its react/pin bar revealed (tap to toggle).
+  const [revealedActionsMessageId, setRevealedActionsMessageId] = useState<string | null>(null);
   const [pinnedReactions, setPinnedReactions] = useState<ReactionType[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("pinnedReactions");
@@ -153,6 +155,10 @@ const ChatTab = () => {
 
     if (activeReactionDetails) {
       setActiveReactionDetails(null);
+    }
+
+    if (revealedActionsMessageId) {
+      setRevealedActionsMessageId(null);
     }
   };
 
@@ -244,16 +250,28 @@ const ChatTab = () => {
           setActiveReactionDetails(null);
         }
       }
+
+      if (revealedActionsMessageId) {
+        const activeBubble = messageBubbleRefs.current[revealedActionsMessageId];
+        if (activeBubble && !activeBubble.contains(target)) {
+          setRevealedActionsMessageId(null);
+        }
+      }
     };
 
-    if (showEmojis || activeReactionMessageId || activeReactionDetails) {
+    if (
+      showEmojis ||
+      activeReactionMessageId ||
+      activeReactionDetails ||
+      revealedActionsMessageId
+    ) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showEmojis, activeReactionMessageId, activeReactionDetails]);
+  }, [showEmojis, activeReactionMessageId, activeReactionDetails, revealedActionsMessageId]);
 
   // Handle viewport changes for reaction picker
   useEffect(() => {
@@ -419,6 +437,14 @@ const ChatTab = () => {
     toggleMessageReaction(messageId, emoji);
     setActiveReactionMessageId(null);
     setActiveReactionDetails(null);
+    setRevealedActionsMessageId(null);
+  };
+
+  const handleToggleMessageActions = (messageId: string) => {
+    setActiveReactionDetails(null);
+    setRevealedActionsMessageId((current) =>
+      current === messageId ? null : messageId
+    );
   };
 
   const handleReactionPickerToggle = (messageId: string) => {
@@ -585,6 +611,8 @@ const ChatTab = () => {
               isJoined={isJoined}
               pinActionLoadingId={pinActionLoadingId}
               currentReactionOwnerKey={currentReactionOwnerKey}
+              actionsRevealed={revealedActionsMessageId === msg.id}
+              onToggleActions={handleToggleMessageActions}
               onReactionPickerToggle={handleReactionPickerToggle}
               onPinMessage={handlePinFromMessage}
               onMessageReactionSelect={handleMessageReactionSelect}

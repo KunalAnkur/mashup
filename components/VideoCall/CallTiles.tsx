@@ -11,7 +11,12 @@ import { LuMic, LuMicOff, LuVideo, LuVideoOff } from "react-icons/lu";
 interface CallTilesProps {
   compact?: boolean;
   showControls?: boolean;
-  layout?: "column" | "row";
+  /**
+   * "responsive" = a short side-by-side strip on mobile (so the chat keeps the panel
+   * height) that becomes a normal vertical stack at md+. "row"/"column" are fixed and
+   * driven by the floating overlay's own toggle.
+   */
+  layout?: "column" | "row" | "responsive";
   fillContainer?: boolean;
 }
 
@@ -107,15 +112,24 @@ export default function CallTiles({
   };
 
   const isRowLayout = layout === "row";
+  const isResponsive = layout === "responsive";
+  const soloTile = allTiles.length <= 1;
+
   const rootClass = fillContainer ? "flex h-full min-h-0 flex-col gap-1" : "space-y-2";
   const listClass = isRowLayout
     ? "flex min-h-0 flex-1 flex-row gap-1 overflow-x-auto overflow-y-hidden"
-    : fillContainer
-      ? "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-0.5"
-      : "flex flex-col gap-1.5";
+    : isResponsive
+      ? "flex gap-1 overflow-x-auto md:flex-col md:gap-1.5 md:overflow-visible"
+      : fillContainer
+        ? "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-0.5"
+        : "flex flex-col gap-1.5";
   const tileShellClass = isRowLayout
     ? "h-full min-w-[112px] flex-[1_0_132px]"
-    : "w-full";
+    : isResponsive
+      ? soloTile
+        ? "h-[116px] w-full shrink-0 md:h-auto"
+        : "h-[100px] w-[136px] shrink-0 md:h-auto md:w-full"
+      : "w-full";
 
   return (
     <div className={rootClass}>
@@ -132,6 +146,7 @@ export default function CallTiles({
               avatarUrl={tile.avatarUrl}
               size={compact ? "sm" : "md"}
               fill={isRowLayout}
+              responsiveFill={isResponsive}
             />
           </div>
         ))}

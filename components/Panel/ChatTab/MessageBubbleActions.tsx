@@ -12,6 +12,8 @@ interface MessageBubbleActionsProps {
   pinButtonTitle: string;
   isJoined: boolean;
   pinActionLoadingId: string | null;
+  /** Mobile: the bar is hidden until the message is tapped. Desktop still uses hover. */
+  revealed: boolean;
   onReactionPickerToggle: (messageId: string) => void;
   onPinMessage: (message: ChatMessage) => void;
   t: (key: string) => string;
@@ -26,10 +28,15 @@ export const MessageBubbleActions = ({
   pinButtonTitle,
   isJoined,
   pinActionLoadingId,
+  revealed,
   onReactionPickerToggle,
   onPinMessage,
   t,
 }: MessageBubbleActionsProps) => {
+  const visibilityClass = revealed
+    ? "opacity-100 pointer-events-auto"
+    : "opacity-0 pointer-events-none md:group-hover/message:opacity-100 md:group-hover/message:pointer-events-auto md:group-focus-within/message:opacity-100 md:group-focus-within/message:pointer-events-auto";
+
   return (
     <div
       className={`pointer-events-none absolute z-20 flex items-center gap-0.5 ${
@@ -38,7 +45,7 @@ export const MessageBubbleActions = ({
           : "left-full top-1/2 ml-1 -translate-y-1/2"
       }`}
     >
-      <div className={chatMessageActionsBubbleClass}>
+      <div className={`${chatMessageActionsBubbleClass} ${visibilityClass}`}>
         <button
           type="button"
           onClick={() => onReactionPickerToggle(message.id)}

@@ -121,6 +121,31 @@ export const isJoinLeaveMessage = (message: ChatMessage): boolean => {
   return message.message.includes("joined") || message.message.includes("left");
 };
 
+export type SystemMessageKind =
+  | "join"
+  | "leave"
+  | "play"
+  | "pause"
+  | "resume"
+  | "seek"
+  | "generic";
+
+/**
+ * Classify a system message so the UI can pick a matching icon / emphasis.
+ * Keyed off the raw English message text, same as isHostControlMessage /
+ * translateSystemMessage — the server always sends English keywords regardless of locale.
+ */
+export const getSystemMessageKind = (message: ChatMessage): SystemMessageKind => {
+  const text = message.message;
+  if (text.includes("joined")) return "join";
+  if (text.includes("left")) return "leave";
+  if (text.includes("started")) return "play";
+  if (text.includes("paused")) return "pause";
+  if (text.includes("resumed")) return "resume";
+  if (text.includes("seeked")) return "seek";
+  return "generic";
+};
+
 export const isHostControlMessage = (message: ChatMessage): boolean => {
   return (
     message.message.includes("started") ||

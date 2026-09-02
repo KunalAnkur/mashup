@@ -12,6 +12,7 @@ export type ActiveReactionDetails = {
 export type UserColor = {
   gradient: string;
   bg: string;
+  text: string;
 };
 
 // Made with Bob
