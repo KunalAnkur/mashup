@@ -115,6 +115,12 @@ const Page = () => {
       ? "h-[75vh]"
       : "h-[60vh]";
 
+  // While real video is playing, size the mobile player box to the video's 16:9 shape
+  // instead of a fixed 40vh — that fixed box letterboxed the picture with black bars above
+  // and below. The freed height goes to the panel below it. Not for games (they fill their
+  // own surface) or the empty state (it needs the taller box for its content + shelf).
+  const mobilePlayerFitsVideo = roomState.settings.playerActive && !isActivityRoom;
+
   const handleCloseUpgradeModal = () => {
     dispatch(setUpgradeSubscriptionModal({ open: false }));
   };
@@ -138,10 +144,12 @@ const Page = () => {
       <div ref={containerRef} className={`${appFixedViewportPageClass} h-[100dvh] overflow-hidden flex flex-col md:flex-row`}>
         <div
           className={`
-            relative z-10 bg-transparent transition-all duration-300
+            relative z-10 w-full bg-transparent transition-all duration-300
             ${roomState.settings.panelCollapsed
-              ? "flex-1 h-full w-full"
-              : "flex-1 h-[40vh] md:h-full w-full"
+              ? "flex-1 h-full"
+              : mobilePlayerFitsVideo
+                ? "max-md:aspect-video max-md:shrink-0 md:h-full md:flex-1"
+                : "flex-1 h-[40vh] md:h-full"
             }
           `}
         >
@@ -162,7 +170,7 @@ const Page = () => {
             z-10 overflow-hidden bg-transparent transition-all duration-300 ease-in-out
             ${roomState.settings.panelCollapsed
               ? "hidden"
-              : `flex flex-col ${mobilePanelHeightClass} md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative`
+              : `flex flex-col ${mobilePlayerFitsVideo ? "max-md:min-h-0 max-md:flex-1" : mobilePanelHeightClass} md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative`
             }
           `}
         >
