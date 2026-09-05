@@ -5,6 +5,7 @@ import { RootState } from "@/lib/store";
 import { useCallStream } from "@/context/CallStreamContext";
 import { useRoomContext } from "@/context/RoomContext";
 import { useSocket } from "@/context/SocketContext";
+import { useTranslations } from "@/i18n/I18nProvider";
 import CallTile from "./CallTile";
 import { LuMic, LuMicOff, LuVideo, LuVideoOff } from "react-icons/lu";
 
@@ -40,19 +41,17 @@ export default function CallTiles({
   const { participants } = useRoomContext();
   const { socket } = useSocket();
   const auth = useSelector((state: RootState) => state.auth);
+  const t = useTranslations("room.call");
 
   const mySocketId = socket?.id;
-  const localUsername = auth.user?.username ?? auth.user?.name ?? "You";
+  const localUsername = auth.user?.username ?? auth.user?.name ?? t("you");
   const participantBySocketId = new Map(
     participants.map((participant) => [participant.socketId, participant])
   );
 
-  const getAvatarUrl = (username: string, profile?: string) => {
-    if (profile) return profile;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      username
-    )}&background=random&color=fff&size=200`;
-  };
+  // Only a real photo. Without one, CallTile draws its own initials avatar with a stable
+  // per-name colour — cleaner and more consistent than ui-avatars' random fills.
+  const getAvatarUrl = (_username: string, profile?: string) => profile || undefined;
 
   const localTile = isInCall || localStream ? {
     key: "local",
@@ -114,6 +113,10 @@ export default function CallTiles({
   const isRowLayout = layout === "row";
   const isResponsive = layout === "responsive";
   const soloTile = allTiles.length <= 1;
+  // The common case: just the two of you. Split the row evenly and fill it — no fixed-width
+  // tiles leaving dead space on the right, no scrolling for a count that always fits. Three or
+  // more still get the fixed-width scrolling strip, since an even split stops being readable.
+  const duoTiles = allTiles.length === 2;
 
   const rootClass = fillContainer ? "flex h-full min-h-0 flex-col gap-1" : "space-y-2";
   const listClass = isRowLayout
@@ -128,7 +131,9 @@ export default function CallTiles({
     : isResponsive
       ? soloTile
         ? "h-[116px] w-full shrink-0 md:h-auto"
-        : "h-[100px] w-[136px] shrink-0 md:h-auto md:w-full"
+        : duoTiles
+          ? "h-[108px] min-w-0 flex-1 md:h-auto md:w-full md:flex-none"
+          : "h-[100px] w-[136px] shrink-0 md:h-auto md:w-full"
       : "w-full";
 
   return (
@@ -159,8 +164,8 @@ export default function CallTiles({
             onClick={handleToggleMic}
             disabled={isJoining}
             className={`${btnBase} ${isMicOn ? activeBtn : offBtn}`}
-            aria-label={isMicOn ? "Mute microphone" : "Unmute microphone"}
-            title={isMicOn ? "Mute microphone" : "Unmute microphone"}
+            aria-label={t(isMicOn ? "muteMic" : "unmuteMic")}
+            title={t(isMicOn ? "muteMic" : "unmuteMic")}
           >
             {isMicOn ? <LuMic size={14} /> : <LuMicOff size={14} />}
           </button>
@@ -169,8 +174,8 @@ export default function CallTiles({
             onClick={handleToggleCamera}
             disabled={isJoining}
             className={`${btnBase} ${isCameraOn ? activeBtn : offBtn}`}
-            aria-label={isCameraOn ? "Turn camera off" : "Turn camera on"}
-            title={isCameraOn ? "Turn camera off" : "Turn camera on"}
+            aria-label={t(isCameraOn ? "turnCameraOff" : "turnCameraOn")}
+            title={t(isCameraOn ? "turnCameraOff" : "turnCameraOn")}
           >
             {isCameraOn ? <LuVideo size={14} /> : <LuVideoOff size={14} />}
           </button>

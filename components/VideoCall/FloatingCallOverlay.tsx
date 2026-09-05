@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useCallStream } from "@/context/CallStreamContext";
+import { useTranslations } from "@/i18n/I18nProvider";
 import CallTiles from "./CallTiles";
 import { zincGlassBlurredSurfaceClass } from "@/components/UI/classTokens";
 import { LuColumns3, LuGripVertical, LuMaximize2, LuMinimize2, LuRows3 } from "react-icons/lu";
@@ -28,6 +29,7 @@ type ResizeDir =
  */
 export default function FloatingCallOverlay() {
   const { isInCall, remoteParticipants } = useCallStream();
+  const t = useTranslations("room.call");
   const panelCollapsed = useSelector(
     (state: RootState) => state.room.settings.panelCollapsed
   );
@@ -203,8 +205,8 @@ export default function FloatingCallOverlay() {
             }`}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => setLayout("row")}
-            aria-label="Horizontal video layout"
-            title="Horizontal video layout"
+            aria-label={t("layoutHorizontal")}
+            title={t("layoutHorizontal")}
           >
             <LuRows3 size={11} />
           </button>
@@ -216,8 +218,8 @@ export default function FloatingCallOverlay() {
             }`}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => setLayout("column")}
-            aria-label="Vertical video layout"
-            title="Vertical video layout"
+            aria-label={t("layoutVertical")}
+            title={t("layoutVertical")}
           >
             <LuColumns3 size={11} />
           </button>
@@ -228,7 +230,7 @@ export default function FloatingCallOverlay() {
           className="flex h-5 w-5 items-center justify-center rounded-full text-white/40 transition-colors hover:text-white/80"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={() => setMinimised((v) => !v)}
-          aria-label={minimised ? "Expand" : "Minimise"}
+          aria-label={t(minimised ? "expand" : "minimise")}
         >
           {minimised
             ? <LuMaximize2 size={11} />

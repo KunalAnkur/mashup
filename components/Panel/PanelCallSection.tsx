@@ -19,6 +19,7 @@ export default function PanelCallSection() {
   } = useCallStream();
   const { participants } = useRoomContext();
   const t = useTranslations("room.callUpsell");
+  const tCall = useTranslations("room.call");
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   // Non-premium rooms still show the real call control — pressing a button opens the
@@ -44,8 +45,8 @@ export default function PanelCallSection() {
           type="button"
           onClick={startAudio}
           className={`inline-flex ${sizeClass} items-center justify-center rounded-full bg-white/[0.08] text-white/78 ring-1 ring-white/10 transition-colors hover:bg-white/[0.14] hover:text-white`}
-          aria-label={locked ? "Upgrade to enable audio calls" : "Start audio call"}
-          title={locked ? t("hostHint") : "Start audio call"}
+          aria-label={locked ? t("hostHint") : tCall("startAudioCall")}
+          title={locked ? t("hostHint") : tCall("startAudioCall")}
         >
           <LuPhone size={iconSize} />
         </button>
@@ -55,8 +56,8 @@ export default function PanelCallSection() {
           className={`inline-flex ${sizeClass} items-center justify-center rounded-full bg-emerald-500 text-white transition-colors hover:bg-emerald-400 ${
             compact ? "" : "shadow-lg shadow-emerald-950/30"
           }`}
-          aria-label={locked ? "Upgrade to enable video calls" : "Start video call"}
-          title={locked ? t("hostHint") : "Start video call"}
+          aria-label={locked ? t("hostHint") : tCall("startVideoCall")}
+          title={locked ? t("hostHint") : tCall("startVideoCall")}
         >
           <LuVideo size={iconSize} />
         </button>
@@ -64,12 +65,12 @@ export default function PanelCallSection() {
     );
   };
 
-  const restingTitle = locked ? t("title") : "Start a call";
+  const restingTitle = locked ? t("title") : tCall("startCall");
   const restingHint = locked
     ? isHost
       ? t("hostHint")
       : t("guestHint")
-    : `${participants.length} people in this room`;
+    : tCall("peopleInRoom", { count: participants.length });
 
   const restingCard = (
     <>
@@ -120,10 +121,10 @@ export default function PanelCallSection() {
             <div className="flex items-center justify-between gap-2 px-1">
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold leading-tight text-white/85">
-                  Live now
+                  {tCall("liveNow")}
                 </p>
                 <p className="mt-0.5 truncate text-[10px] leading-tight text-white/45">
-                  {remoteParticipants.size} sharing in this room
+                  {tCall("sharingInRoom", { count: remoteParticipants.size })}
                 </p>
               </div>
               {renderStartButtons()}
@@ -144,10 +145,10 @@ export default function PanelCallSection() {
             </div>
             <div className="min-w-0">
               <p className="text-[11px] font-semibold leading-tight text-white/85">
-                Starting your feed
+                {tCall("startingFeed")}
               </p>
               <p className="mt-0.5 truncate text-[10px] leading-tight text-white/45">
-                Others will see you once your camera and mic are ready
+                {tCall("startingFeedHint")}
               </p>
             </div>
           </div>

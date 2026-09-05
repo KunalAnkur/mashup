@@ -242,6 +242,27 @@
       "guestHint": "The host needs a paid plan to enable calls",
       "upgrade": "Upgrade"
     },
+    "call": {
+      "startCall": "Start a call",
+      "startAudioCall": "Start audio call",
+      "startVideoCall": "Start video call",
+      "liveNow": "Live now",
+      "peopleInRoom": "{count} people in this room",
+      "sharingInRoom": "{count} sharing in this room",
+      "startingFeed": "Starting your feed",
+      "startingFeedHint": "Others will see you once your camera and mic are ready",
+      "you": "You",
+      "selfLabel": "{name} (you)",
+      "muteMic": "Mute microphone",
+      "unmuteMic": "Unmute microphone",
+      "turnCameraOff": "Turn camera off",
+      "turnCameraOn": "Turn camera on",
+      "tapToEnableAudio": "Tap to enable audio",
+      "layoutHorizontal": "Horizontal video layout",
+      "layoutVertical": "Vertical video layout",
+      "expand": "Expand",
+      "minimise": "Minimize"
+    },
     "upgrade": {
       "callsTitle": "Add video calls",
       "callsMessage": "Video and voice calls come with the Couple and Crowd plans. Upgrade to turn them on for this room.",
