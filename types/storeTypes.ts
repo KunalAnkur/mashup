@@ -105,7 +105,7 @@ export type Playlist = {
 export type RoomSetting = {
   upgradeSubscriptionModal: boolean;
   upgradeSubscriptionMessage?: string;
-  upgradeSubscriptionContext?: "room_full" | "watch_time_session";
+  upgradeSubscriptionContext?: "room_full" | "watch_time_session" | "games";
   panelCollapsed: boolean;
   bottomSheet: boolean;
   playerActive: boolean;

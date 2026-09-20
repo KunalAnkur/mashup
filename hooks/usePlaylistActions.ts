@@ -9,7 +9,7 @@ import { useRoomContext } from "@/context/RoomContext";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { Playlist } from "@/types/storeTypes";
 
-type ContentSource = "file" | "url" | "screen";
+type ContentSource = "file" | "url" | "screen" | "game";
 
 export const usePlaylistActions = () => {
   const dispatch = useDispatch();
@@ -51,6 +51,24 @@ export const usePlaylistActions = () => {
         return;
       }
 
+      if (source === "game") {
+        // One activity at a time, and it is always the selected one: the room decides it
+        // is an activity room from the mere presence of an entry of this type, and
+        // ActivityRoomSurface reads the game id off the selected one. Two would make
+        // which game you get depend on array order.
+        //
+        // Everything queued is kept, just deselected. A game is a detour, not a reset —
+        // removeActivity below puts the room back exactly where it was.
+        const playlistWithActivity = [
+          ...content,
+          ...playlist
+            .filter((item) => item.type !== "activity")
+            .map((item) => ({ ...item, selected: false })),
+        ];
+        syncPlaylist(playlistWithActivity);
+        return;
+      }
+
       const playlistItems = playlist.length
         ? [...playlist, ...content]
         : [...playlist, ...content].map((item, index) => ({
@@ -62,6 +80,25 @@ export const usePlaylistActions = () => {
     },
     [isHost, roomId, playlist, syncPlaylist]
   );
+
+  /**
+   * Leaves the game and gives the room back to whatever was queued.
+   *
+   * Dropping the activity entries is the whole mechanism — isActivityRoom is derived from
+   * their presence, so removing them is what returns the video surface. The first
+   * remaining item is re-selected because deselecting them all is how they got here, and
+   * a playlist with nothing selected shows the empty state instead of the queue.
+   */
+  const removeActivity = useCallback(() => {
+    if (!isHost || !roomId) return;
+
+    const remaining = playlist.filter((item) => item.type !== "activity");
+    const restored = remaining.some((item) => item.selected)
+      ? remaining
+      : remaining.map((item, index) => ({ ...item, selected: index === 0 }));
+
+    syncPlaylist(restored);
+  }, [isHost, roomId, playlist, syncPlaylist]);
 
   const handleScreenShareStopped = useCallback(
     (streamId: string) => {
@@ -103,5 +140,6 @@ export const usePlaylistActions = () => {
   return {
     addPlaylistContent,
     handleScreenShareStopped,
+    removeActivity,
   };
 };

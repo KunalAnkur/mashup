@@ -16,7 +16,16 @@ import { useFileContext } from "@/context/FileContext";
 // import ProductBottomSheet from "@/components/Product/ProductBottomSheet";
 import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionModal";
 import PlaybackBlockedModal from "@/components/Modals/PlaybackBlockedModal";
-import { appFixedViewportPageClass } from "@/components/UI/classTokens";
+import { isMobile } from "react-device-detect";
+import { LuChevronDown } from "react-icons/lu";
+import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
+import { useTranslations } from "@/i18n/I18nProvider";
+import {
+  appFixedViewportPageClass,
+  roomPanelSheetClass,
+  roomPanelSheetGripClass,
+  roomPanelSheetHandleClass,
+} from "@/components/UI/classTokens";
 import FloatingCallOverlay from "@/components/VideoCall/FloatingCallOverlay";
 import ActivityRoomSurface from "@/components/Activity/ActivityRoomSurface";
 import ReconnectingBanner from "@/components/Party/ReconnectingBanner";
@@ -112,6 +121,49 @@ const Page = () => {
   // behind. A game always fills its surface, so treat it as active.
   const surfaceIsActive = isActivityRoom || roomState.settings.playerActive;
 
+  const tRoom = useTranslations("room");
+  const panelCollapsed = roomState.settings.panelCollapsed;
+
+  /**
+   * A game room on a phone starts with the panel down, and leaving puts it back.
+   *
+   * Sharing the column, the board got roughly a quarter of the screen — the panel is a
+   * chat log and takes what it is given. Collapsing on arrival hands the game the whole
+   * viewport, and the bar under the board brings the panel back over it.
+   *
+   * The collapse is borrowed, not imposed: whatever the panel was before the game is
+   * remembered and restored on the way out. Without that, exiting dropped you into a
+   * video room with no panel and no obvious way back to it — the control that restores it
+   * elsewhere lives in the player's overlay, which the empty state does not mount.
+   *
+   * Runs once per entry rather than on every render of one, so reopening the panel mid-game
+   * and then rotating the phone does not shut it again. `isMobile` is a device check, which
+   * is what this wants: the sheet only exists below md.
+   */
+  const panelBeforeGameRef = useRef<boolean | null>(null);
+  // Read through a ref so capturing the pre-game value does not make this effect depend on
+  // it — depending on it would re-run the effect the moment it collapses the panel.
+  const panelCollapsedRef = useRef(panelCollapsed);
+  panelCollapsedRef.current = panelCollapsed;
+
+  useEffect(() => {
+    if (isActivityRoom) {
+      if (!isMobile || panelBeforeGameRef.current !== null) return;
+
+      panelBeforeGameRef.current = panelCollapsedRef.current;
+      dispatch(setPanelCollapsed({ panelCollapsed: true }));
+      return;
+    }
+
+    // Out of the game — only our own collapse is undone. A null ref means we never
+    // touched it (desktop, or the room was never a game), so nothing is restored.
+    const before = panelBeforeGameRef.current;
+    if (before === null) return;
+
+    panelBeforeGameRef.current = null;
+    dispatch(setPanelCollapsed({ panelCollapsed: before }));
+  }, [isActivityRoom, dispatch]);
+
   const mobilePanelHeightClass = roomState.settings.bottomSheet
     ? "h-[40vh]"
     : surfaceIsActive
@@ -135,6 +187,12 @@ const Page = () => {
         isOpen={roomState.settings.upgradeSubscriptionModal}
         onClose={handleCloseUpgradeModal}
         message={roomState.settings.upgradeSubscriptionMessage}
+        // Only "games" is forwarded. The store also records "watch_time_session", which
+        // the modal has no copy for — it keeps falling back to the room_full wording it
+        // has always shown for that case, and still reports its own value to analytics.
+        context={
+          roomState.settings.upgradeSubscriptionContext === "games" ? "games" : "room_full"
+        }
       />
 
       {/* Daily watch-limit block — non-dismissable, unlike the modal above */}
@@ -144,19 +202,27 @@ const Page = () => {
         planName={roomState.settings.playbackBlockedInfo?.planName ?? "Free"}
       />
 
-      <div ref={containerRef} className={`${appFixedViewportPageClass} h-[100dvh] overflow-hidden flex flex-col md:flex-row`}>
+      <div ref={containerRef} className={`${appFixedViewportPageClass} relative h-[100dvh] overflow-hidden flex flex-col md:flex-row`}>
         <div
           className={`
             relative z-10 w-full bg-transparent transition-all duration-300
-            ${roomState.settings.panelCollapsed
+            ${panelCollapsed
               ? "flex-1 h-full"
-              : mobilePlayerFitsVideo
-                ? "max-md:aspect-video max-md:shrink-0 md:h-full md:flex-1"
-                : "flex-1 h-[40vh] md:h-full"
+              : isActivityRoom
+                // The panel is a sheet over this on a phone, so the game keeps the whole
+                // viewport whether it is up or down. Above md it is a side column and the
+                // surface shares the row as usual.
+                ? "flex-1 h-full md:h-full"
+                : mobilePlayerFitsVideo
+                  ? "max-md:aspect-video max-md:shrink-0 md:h-full md:flex-1"
+                  : "flex-1 h-[40vh] md:h-full"
             }
           `}
         >
           {isActivityRoom ? (
+            // The exit control lives inside the surface, not here: leaving has to tell
+            // the activity runtime as well as rewrite the playlist, and the session it
+            // has to speak to only exists in there.
             <ActivityRoomSurface />
           ) : (
             <PlayerWrapper fullscreenTargetRef={containerRef} />
@@ -172,12 +238,29 @@ const Page = () => {
         <div
           className={`
             z-10 overflow-hidden bg-transparent transition-all duration-300 ease-in-out
-            ${roomState.settings.panelCollapsed
+            ${panelCollapsed
               ? "hidden"
-              : `flex flex-col ${mobilePlayerFitsVideo ? "max-md:min-h-0 max-md:flex-1" : mobilePanelHeightClass} md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative`
+              : `flex flex-col ${
+                  isActivityRoom
+                    ? roomPanelSheetClass
+                    : mobilePlayerFitsVideo
+                      ? "max-md:min-h-0 max-md:flex-1"
+                      : mobilePanelHeightClass
+                } md:h-full md:w-[25%] md:min-w-[320px] md:max-w-[420px] w-full z-40 md:z-auto shadow-2xl md:shadow-none md:relative`
             }
           `}
         >
+          {isActivityRoom ? (
+            <button
+              type="button"
+              onClick={() => dispatch(setPanelCollapsed({ panelCollapsed: true }))}
+              className={roomPanelSheetHandleClass}
+              aria-label={tRoom("closePanel")}
+            >
+              <span className={roomPanelSheetGripClass} />
+              <LuChevronDown className="text-[14px]" />
+            </button>
+          ) : null}
           <Panel />
         </div>
       </div>

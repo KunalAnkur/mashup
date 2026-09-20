@@ -26,6 +26,8 @@ type UpgradePromptContext =
   | "watch_time_session"
   | "calls"
   | "watch_limit"
+  // A locked game picked from inside a room, via the in-room game picker.
+  | "games"
   // Locked resolution on the /stream/screen quality picker. Unlike the others this one has
   // no modal in front of it, so only `upgrade_clicked` ever fires for it.
   | "screen_share_quality";

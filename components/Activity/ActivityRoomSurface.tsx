@@ -1,14 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ActivitySurface, useActivitySession } from "@movmash/arcade-client";
 import { ImSpinner2 } from "react-icons/im";
+import { LuArrowLeft, LuMessageCircle } from "react-icons/lu";
 
 import { RootState } from "@/lib/store";
 import { useSocket } from "@/context/SocketContext";
 import { useRoomContext } from "@/context/RoomContext";
 import { useI18n, useTranslations } from "@/i18n/I18nProvider";
+import { usePlaylistActions } from "@/hooks/usePlaylistActions";
+import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
+import {
+  roomActivityBarButtonClass,
+  roomActivityBarClass,
+  roomExitActivityClass,
+} from "@/components/UI/classTokens";
 import { useActivityTransport } from "./useActivityTransport";
 import { activityDesignTokens } from "./activityTokens";
 
@@ -35,6 +43,10 @@ export function ActivityRoomSurface() {
 
   const transport = useActivityTransport(socket);
   const session = useActivitySession({ transport });
+  const { removeActivity } = usePlaylistActions();
+  const dispatch = useDispatch();
+  const isHost = roomState.host;
+  const panelCollapsed = roomState.settings.panelCollapsed;
 
   const me = useMemo(
     () => ({
@@ -173,17 +185,95 @@ export function ActivityRoomSurface() {
     void session.join(offered.sessionId, { gameId: offered.gameId });
   }, [session]);
 
+  /**
+   * Leaving the game for good.
+   *
+   * Both halves are required and they are not interchangeable. `session.leave()` tells
+   * the runtime this player is gone — it evicts the participant, and closes the session
+   * once the last one goes (session-manager.ts: everyone.length === 0 -> finish). Only
+   * then is the room free to open a different game, because `start` on a room that is
+   * already playing is turned into a join of what is already running. `removeActivity()`
+   * drops the playlist entry, which is what returns the video surface here and for
+   * every guest.
+   *
+   * Doing only the second — which is what this did at first — leaves the session alive
+   * on the server with nobody watching it. The next game picked in this room then
+   * resumes that one instead, so choosing a different game reopened the old one.
+   */
+  const handleExitGame = useCallback(() => {
+    session.leave();
+    removeActivity();
+  }, [session, removeActivity]);
+
+  /**
+   * Release the seat when this surface goes away for any other reason — most
+   * importantly on a guest's screen, where the host removing the activity entry
+   * unmounts this without anyone pressing anything. Without it the guest stays a
+   * participant of a session nobody can see, which keeps it open and makes the host's
+   * next pick resume the old game.
+   *
+   * Unmount only, and only while a session is actually held. A dropped socket does not
+   * unmount this component (it flips `isJoined`), which is why this cannot fire on the
+   * reconnect path the effect above is careful about.
+   */
+  const leaveOnUnmountRef = useRef<() => void>(() => {});
+  leaveOnUnmountRef.current = () => {
+    if (session.sessionId) session.leave();
+  };
+  useEffect(() => () => leaveOnUnmountRef.current(), []);
+
+  /**
+   * The room's own controls, under the board rather than over it.
+   *
+   * Chat is mobile-only: above md the panel is a column beside the game and is always
+   * there, so a button to summon it would do nothing. Exit is host-only — the playlist is
+   * shared state, so returning the surface is not a guest's call.
+   *
+   * Rendered even when the board is not up yet (choosing a game, waiting on a session), or
+   * a host who opened the wrong game would have no way out of it.
+   */
+  const activityBar = (
+    <div className={roomActivityBarClass}>
+      {isHost ? (
+        <button type="button" onClick={handleExitGame} className={roomExitActivityClass}>
+          <LuArrowLeft className="text-[13px]" />
+          {t("room.exitGame")}
+        </button>
+      ) : (
+        <span />
+      )}
+
+      {panelCollapsed ? (
+        <button
+          type="button"
+          onClick={() => dispatch(setPanelCollapsed({ panelCollapsed: false }))}
+          className={`${roomActivityBarButtonClass} md:hidden`}
+        >
+          <LuMessageCircle className="text-[14px]" />
+          {t("room.openPanel")}
+        </button>
+      ) : null}
+    </div>
+  );
+
   if (!gameId) {
     return (
-      <Centered>
-        <p className="text-sm text-white/50">{t("room.chooseGame")}</p>
-      </Centered>
+      <div className="flex h-full w-full flex-col">
+        <div className="relative min-h-0 flex-1">
+          <Centered>
+            <p className="text-sm text-white/50">{t("room.chooseGame")}</p>
+          </Centered>
+        </div>
+        {activityBar}
+      </div>
     );
   }
 
   if (!session.sessionId) {
     return (
-      <Centered>
+      <div className="flex h-full w-full flex-col">
+        <div className="relative min-h-0 flex-1">
+        <Centered>
         {session.error ? (
           <p className="max-w-xs text-center text-sm text-rose-300">
             {session.error.message || t("room.unavailable")}
@@ -194,12 +284,18 @@ export function ActivityRoomSurface() {
             {t("room.waiting")}
           </p>
         )}
-      </Centered>
+        </Centered>
+        </div>
+        {activityBar}
+      </div>
     );
   }
 
   return (
-    <div className="relative h-full w-full">
+    <div className="flex h-full w-full flex-col">
+      {/* min-h-0 so the board is bounded by what is left after the bar, rather than
+          overflowing it — a flex child defaults to its content's height. */}
+      <div className="relative min-h-0 flex-1">
       {/*
         The session is over — a forfeit, or whatever else the game calls terminal.
         The final board stays on screen underneath, because the result is the point;
@@ -241,6 +337,8 @@ export function ActivityRoomSurface() {
           </Centered>
         )}
       />
+      </div>
+      {activityBar}
     </div>
   );
 }

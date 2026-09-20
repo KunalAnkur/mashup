@@ -169,7 +169,7 @@ const HostEmptyPlaylistScreen = ({
     // AFFILIATE GIFT (disabled): bottom={<ProductCarousel placement="host-empty" />}
     <ScreenShell>
         <GlobalStyles />
-        <FadeInContent visible={contentVisible}>
+        <FadeInContent visible={contentVisible} wide>
             <BrandMark variant="idle" />
 
             <h2 className="sp-heading">
@@ -177,11 +177,14 @@ const HostEmptyPlaylistScreen = ({
             </h2>
 
             <p className="sp-body">
-                Add a URL, file, or screen share to start streaming.
+                Add a URL, file, or screen share — or start a game together.
             </p>
 
             <div className="sp-content-sel">
+                {/* hero: the panel's dense 10px toolbar is built for a 272px column and
+                    reads as an afterthought out here. Same buttons, same handlers. */}
                 <ContentSelection
+                    variant="hero"
                     onAddContent={onAddContent}
                     onScreenShareStopped={onScreenShareStopped}
                 />
@@ -291,12 +294,15 @@ const BrandMark = ({ variant }: { variant: "idle" | "active" | "ended" }) => (
 
 const FadeInContent = ({
     visible,
+    wide = false,
     children,
 }: {
     visible: boolean;
+    /** Widens the column for a screen whose content is a grid, not a paragraph. */
+    wide?: boolean;
     children: React.ReactNode;
 }) => (
-    <div className="sp-content" data-visible={visible}>
+    <div className={`sp-content${wide ? " sp-content--wide" : ""}`} data-visible={visible}>
         {children}
     </div>
 );
@@ -473,6 +479,18 @@ const GlobalStyles = () => (
         transform: translateY(16px);
         transition: opacity .55s cubic-bezier(.22,1,.36,1), transform .55s cubic-bezier(.22,1,.36,1);
     }
+    /*
+     * The empty state is the one screen here that holds a grid rather than a paragraph.
+     * 360px is the right measure for the copy and far too narrow for four tiles — it left
+     * each one 67px wide, which is where the clipped "hare Scree" came from.
+     *
+     * The heading and body keep the original width inside it, so widening the column does
+     * not stretch a sentence across the surface.
+     */
+    .sp-content--wide { max-width: 680px; }
+    .sp-content--wide .sp-heading,
+    .sp-content--wide .sp-body { max-width: 360px; }
+
     .sp-content[data-visible="true"] {
         opacity: 1; transform: translateY(0);
     }
@@ -683,7 +701,11 @@ const GlobalStyles = () => (
     .sp-pill--green  .sp-pill-dot { background: #34d399; animation: dotPulse 1.6s ease-in-out infinite; }
 
     /* ── Content selection wrapper ──────────────────────────────── */
-    .sp-content-sel { width: 100%; margin-top: 6px; }
+    /* Wider than the copy above it: four choices need the room, and the column this sits
+       in is capped for readable paragraphs, not for a grid. */
+    /* No cap of its own any more: the column it sits in (.sp-content--wide) sets the
+       width, so the grid simply fills it. */
+    .sp-content-sel { width: 100%; margin: 14px auto 0; }
     @media (max-width: 768px) {
         .sp-chip {
             margin-bottom: 10px;

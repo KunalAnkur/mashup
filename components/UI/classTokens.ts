@@ -1184,6 +1184,139 @@ export const dashJoinCardDescriptionClass = "mt-1.5 text-[11.5px] leading-[1.5] 
 // slot, where the sidebar's version of this card has its Upgrade button.
 export const dashJoinCardFormClass = "mt-3 flex items-center gap-2";
 
+/**
+ * The same content choices as the side panel's toolbar, sized for the room's empty state.
+ *
+ * The panel's toolbar is built for a 272px column — 10px labels, 14px icons — and dropped
+ * into the middle of an empty player it reads as four afterthoughts in a large dark space.
+ * These are the same buttons and the same handlers, given the room the surface has.
+ *
+ * Deliberately the home Actions row's language (dashActionTileClass): a coloured chip, a
+ * bold label, a hairline border that warms on hover. Someone who just came from the
+ * dashboard is choosing between the same four things, and they should look the same.
+ */
+/**
+ * How many columns a grid of content choices uses, from how many choices there are.
+ *
+ * Driven by the count rather than the viewport alone, because the count is not constant:
+ * Screen Share drops out on mobile (the capture API does not exist there), so the same
+ * grid holds four on a desktop and three on a phone. Any fixed number leaves an orphan on
+ * one of them — three in a two-column grid is 2+1, four in a three-column grid is 3+1.
+ *
+ * Three or fewer go on one row. Four go 2x2 rather than 4x1: at phone width four columns
+ * gives each tile about 80px, which is narrower than the labels.
+ *
+ * The class strings are written out in full because Tailwind reads them from this source —
+ * a built-up `grid-cols-${n}` would never be generated.
+ */
+export function choiceGridColumnsClass(count: number): string {
+  if (count <= 1) return "grid-cols-1";
+  if (count === 2) return "grid-cols-2";
+  if (count === 3) return "grid-cols-3";
+  return "grid-cols-2";
+}
+
+/**
+ * The same grid once there is width for one row, whatever the count. Used by the player's
+ * empty state, which has a whole surface; the side panel is narrow at every viewport and
+ * stays on the count-driven layout above.
+ *
+ * 1280px, not the md breakpoint this started on, because the viewport is a poor proxy for
+ * the space this grid actually gets: the player surface is the viewport minus the sidebar
+ * minus the side panel. On a 1024px laptop with the panel open that leaves about 450px,
+ * where four columns is 90px a tile — narrower than the labels. At 1280 the same
+ * subtraction leaves roughly 710px, which is comfortable.
+ */
+export function choiceGridWideColumnsClass(count: number): string {
+  if (count <= 1) return "min-[1280px]:grid-cols-1";
+  if (count === 2) return "min-[1280px]:grid-cols-2";
+  if (count === 3) return "min-[1280px]:grid-cols-3";
+  return "min-[1280px]:grid-cols-4";
+}
+
+// Column count comes from choiceGridColumnsClass / choiceGridWideColumnsClass — see above.
+export const roomEmptyChoiceGridClass = "grid w-full gap-2.5 sm:gap-3";
+
+
+export const roomEmptyChoiceClass =
+  "group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-dashMd border border-white/[0.06] bg-white/[0.02] px-2 py-4 text-center " +
+  "transition-[transform,border-color,background-color] duration-200 " +
+  "hover:-translate-y-px hover:border-white/15 hover:bg-white/[0.05] " +
+  "active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50";
+
+export const roomEmptyChoiceIconClass =
+  "flex h-10 w-10 items-center justify-center rounded-[12px] bg-white/[0.05] transition-colors duration-200 group-hover:bg-white/[0.08]";
+
+// Deliberately NOT whitespace-nowrap. The labels were breaking in two because the grid
+// was trapped in a 360px column (see .sp-content--wide), and nowrap turned that wrap into
+// a clip — "hare Scree" — which is worse. With the column fixed there is room for one
+// line at every real width; if some future layout is tighter than that, a second line is
+// a better failure than losing the text.
+export const roomEmptyChoiceLabelClass =
+  "text-[12.5px] font-bold leading-tight text-white/90";
+
+/**
+ * The strip of room controls under a game.
+ *
+ * Exit and Chat used to float over the surface — one pinned top-left, one bottom-centre —
+ * and every game has its own chrome in both of those places: a jigsaw puts its picture
+ * picker up top and its status bar along the bottom, so the two sets collided. A game owns
+ * its surface; the room's controls belong outside it.
+ *
+ * In the layout rather than over it, so the board is sized to the space that is actually
+ * left rather than having a corner of it covered.
+ */
+export const roomActivityBarClass =
+  "flex shrink-0 items-center justify-between gap-2 border-t border-white/[0.07] bg-[rgba(12,10,14,0.92)] px-3 py-2.5 backdrop-blur-md";
+
+export const roomActivityBarButtonClass =
+  "inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[12.5px] font-semibold text-white/80 transition-colors duration-150 hover:bg-white/[0.08] hover:text-white";
+
+/**
+ * The room panel as a bottom sheet over a game, on phones.
+ *
+ * A game fills its surface and is square-ish; the panel below it is a chat log that wants
+ * height. Sharing one column gave the board about a quarter of the screen and made every
+ * game unplayable on a phone. So on mobile, in an activity room, the panel stops being a
+ * row of the layout and becomes a sheet: the game keeps the whole viewport, and the panel
+ * slides up over it when asked and back down when not.
+ *
+ * Only below md. On a desktop the panel is a side column beside the game and none of this
+ * applies — hence every class here being max-md:.
+ */
+export const roomPanelSheetClass =
+  "max-md:absolute max-md:inset-x-0 max-md:bottom-0 max-md:z-50 max-md:h-[72vh] " +
+  "max-md:rounded-t-2xl max-md:border-t max-md:border-white/10 " +
+  "max-md:bg-[rgba(12,10,14,0.97)] max-md:backdrop-blur-xl max-md:shadow-[0_-18px_40px_rgba(0,0,0,0.5)]";
+
+// The grab bar at the top of the sheet. A visible affordance rather than a bare edge,
+// because the sheet covers the board and needs an obvious way back to it.
+export const roomPanelSheetHandleClass =
+  "flex w-full shrink-0 items-center justify-center gap-2 py-2.5 text-[12px] font-semibold text-white/55 transition-colors duration-150 hover:text-white/85 md:hidden";
+
+export const roomPanelSheetGripClass = "h-1 w-9 rounded-full bg-white/20";
+
+// Leaves the game. Lives in roomActivityBarClass now rather than floating over the board —
+// see the note there about colliding with the games' own chrome.
+export const roomExitActivityClass = roomActivityBarButtonClass;
+
+// ---------------------------------------------------------------------------
+// In-room game picker — the catalogue in a modal, for starting a game without
+// leaving the room.
+// ---------------------------------------------------------------------------
+
+// Wider than the confirm-style modals: this holds real cards with cover art, and the
+// grid below needs at least two columns to read as a catalogue rather than a list.
+export const gamePickerPanelClass =
+  "max-w-2xl overflow-hidden rounded-dashLg border border-white/[0.07] bg-dashSurface";
+
+// The list scrolls, the header does not — a host part-way down the catalogue should not
+// have to scroll back up to close it.
+export const gamePickerScrollClass =
+  "max-h-[min(58vh,420px)] overflow-y-auto px-4 pb-4 pt-1";
+
+export const gamePickerGridClass = "grid grid-cols-2 gap-3 sm:grid-cols-3";
+
 export const dashPanelClass = "rounded-dashLg bg-dashSurface p-3.5";
 
 export const dashProductRowClass = "flex items-center gap-2.5 px-0.5 py-2";

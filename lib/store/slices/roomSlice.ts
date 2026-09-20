@@ -133,7 +133,7 @@ const roomSlice = createSlice({
     },
     setUpgradeSubscriptionModal: (
       state,
-      action: PayloadAction<{ open: boolean; message?: string; context?: "room_full" | "watch_time_session" }>,
+      action: PayloadAction<{ open: boolean; message?: string; context?: "room_full" | "watch_time_session" | "games" }>,
     ) => {
       state.settings.upgradeSubscriptionModal = action.payload.open;
       if (action.payload.message) {
