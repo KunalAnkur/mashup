@@ -10,7 +10,10 @@ import { useDispatch } from "react-redux";
 import { updateRoomInfo, setUpgradeSubscriptionModal } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { useFileContext } from "@/context/FileContext";
-import ProductBottomSheet from "@/components/Product/ProductBottomSheet";
+// AFFILIATE GIFT (disabled) — the product sheet. Its only opener was the "see more"
+// toggle inside ProductCarousel (the empty-state shelf), so with that gone nothing can
+// set room.settings.bottomSheet and this could never be shown.
+// import ProductBottomSheet from "@/components/Product/ProductBottomSheet";
 import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionModal";
 import PlaybackBlockedModal from "@/components/Modals/PlaybackBlockedModal";
 import { appFixedViewportPageClass } from "@/components/UI/classTokens";
@@ -162,7 +165,8 @@ const Page = () => {
           <ReconnectingBanner />
           {/* Flying Emoji Animations - Inside fullscreen container to work in fullscreen mode */}
           <ReactionsContainer />
-          <ProductBottomSheet />
+          {/* AFFILIATE GIFT (disabled) */}
+          {/* <ProductBottomSheet /> */}
           <FloatingCallOverlay />
         </div>
         <div

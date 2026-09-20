@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import { getCatalog } from "@movmash/arcade-client";
 
 import { useI18n } from "@/i18n/I18nProvider";
-import { useGetProductsQuery } from "@/lib/store/api/productApi";
+// AFFILIATE GIFT (disabled)
+// import { useGetProductsQuery } from "@/lib/store/api/productApi";
 import { coverOf } from "@/components/Games/cover";
 import type { DiscoverSlide } from "@/lib/discover";
 
@@ -21,7 +22,8 @@ import type { DiscoverSlide } from "@/lib/discover";
  */
 export function useResolvedSlides(slides: DiscoverSlide[]): DiscoverSlide[] {
   const { locale } = useI18n();
-  const { data: products } = useGetProductsQuery();
+  // AFFILIATE GIFT (disabled)
+  // const { data: products } = useGetProductsQuery();
 
   return useMemo(() => {
     const catalog = getCatalog({ locale, includeLocked: true });
@@ -50,34 +52,36 @@ export function useResolvedSlides(slides: DiscoverSlide[]): DiscoverSlide[] {
           };
         }
 
-        // The feed cannot resolve a product — the list lives here — so it parks the id
-        // in the href and this swaps in the real one.
-        const productId = productIdOf(slide);
-        if (productId) {
-          const product = products?.find((item) => item.id === productId);
-          if (!product) return null;
-
-          return {
-            ...slide,
-            title: hasText(slide.title) ? slide.title : { en: product.name },
-            meta: slide.meta ?? { en: product.price },
-            action: { kind: "link", href: product.href, external: true },
-            media: { ...slide.media, src: slide.media.src ?? product.images[0] },
-          };
-        }
+        // AFFILIATE GIFT (disabled) — the feed could not resolve a product (the list lives
+        // here), so it parked the id in the href as `#product:<id>` and this swapped in the
+        // real one. The feed no longer emits those slides at all, so nothing reaches this.
+        // const productId = productIdOf(slide);
+        // if (productId) {
+        //   const product = products?.find((item) => item.id === productId);
+        //   if (!product) return null;
+        //
+        //   return {
+        //     ...slide,
+        //     title: hasText(slide.title) ? slide.title : { en: product.name },
+        //     meta: slide.meta ?? { en: product.price },
+        //     action: { kind: "link", href: product.href, external: true },
+        //     media: { ...slide.media, src: slide.media.src ?? product.images[0] },
+        //   };
+        // }
 
         return slide;
       })
       .filter((slide): slide is DiscoverSlide => slide !== null);
-  }, [slides, locale, products]);
+  }, [slides, locale]);
 }
 
-const PRODUCT_HREF = /^#product:(.+)$/;
-
-function productIdOf(slide: DiscoverSlide): string | null {
-  if (slide.action.kind !== "link") return null;
-  return PRODUCT_HREF.exec(slide.action.href)?.[1] ?? null;
-}
+// AFFILIATE GIFT (disabled)
+// const PRODUCT_HREF = /^#product:(.+)$/;
+//
+// function productIdOf(slide: DiscoverSlide): string | null {
+//   if (slide.action.kind !== "link") return null;
+//   return PRODUCT_HREF.exec(slide.action.href)?.[1] ?? null;
+// }
 
 const hasText = (value: DiscoverSlide["title"]) =>
   Object.values(value).some((text) => text?.trim());

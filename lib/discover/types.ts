@@ -13,7 +13,10 @@
  *
  * These match the `SOURCES` table in `spotlight/src/sanity/schemaTypes/discoverSlideType.ts`.
  */
-export type DiscoverCategory = "newGame" | "watch" | "game" | "read" | "gift";
+// AFFILIATE GIFT (disabled) — "gift" removed from the union. Restoring it means putting
+// back the CATEGORY_TIER entry and the fitOf branch below, the feed's source mapping and
+// action case, and the product branch in components/Discover/useResolvedSlides.ts.
+export type DiscoverCategory = "newGame" | "watch" | "game" | "read"; // | "gift";
 
 /** Lower sorts first. A gap of 10 leaves room to slot a category in without a rewrite. */
 export const CATEGORY_TIER: Record<DiscoverCategory, number> = {
@@ -21,7 +24,8 @@ export const CATEGORY_TIER: Record<DiscoverCategory, number> = {
   watch: 20,
   game: 30,
   read: 40,
-  gift: 50,
+  // AFFILIATE GIFT (disabled)
+  // gift: 50,
 };
 
 /**
@@ -120,5 +124,8 @@ export interface DiscoverSlide {
  * category and the author overrides it on the slide.
  */
 export function fitOf(slide: DiscoverSlide): "cover" | "contain" {
-  return slide.media.fit ?? (slide.category === "gift" ? "contain" : "cover");
+  // AFFILIATE GIFT (disabled) — "contain" existed for product photos, the only category
+  // that framed its art instead of filling the band.
+  // return slide.media.fit ?? (slide.category === "gift" ? "contain" : "cover");
+  return slide.media.fit ?? "cover";
 }

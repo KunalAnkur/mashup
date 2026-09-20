@@ -21,7 +21,8 @@
     "fileShare": "Compartir Archivo",
     "addUrl": "Agregar URL",
     "youtube": "YouTube",
-    "joinWithCode": "Unirse con un Código",
+    "joinCardTitle": "Unirse a una sala",
+    "joinCardHint": "¿Tienes un código de tu persona? Escríbelo aquí.",
     "roomIdPlaceholder": "ID de Sala",
     "join": "Unirse",
     "joining": "Uniéndose...",
@@ -264,7 +265,7 @@
       "minimise": "Minimizar"
     },
     "upgrade": {
-      "callsTitle":"Añade videollamadas",
+      "callsTitle": "Añade videollamadas",
       "callsMessage": "Las llamadas de video y voz vienen con los planes Couple y Crowd. Mejora tu plan para activarlas en esta sala.",
       "watchLimitTitle": "Más tiempo de visualización",
       "watchLimitMessage": "Esta sala usa el límite diario de visualización del anfitrión. Couple y Crowd lo eliminan, así puedes terminar lo que empezaste.",

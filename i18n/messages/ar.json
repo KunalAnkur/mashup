@@ -21,7 +21,8 @@
     "fileShare": "مشاركة الملف",
     "addUrl": "إضافة رابط",
     "youtube": "يوتيوب",
-    "joinWithCode": "الانضمام برمز",
+    "joinCardTitle": "انضم إلى غرفة",
+    "joinCardHint": "هل لديك رمز من شريكك؟ اكتبه هنا.",
     "roomIdPlaceholder": "معرف الغرفة",
     "join": "انضم",
     "joining": "جاري الانضمام...",
@@ -264,7 +265,7 @@
       "minimise": "تصغير"
     },
     "upgrade": {
-      "callsTitle":"أضف مكالمات الفيديو",
+      "callsTitle": "أضف مكالمات الفيديو",
       "callsMessage": "مكالمات الفيديو والصوت متوفرة مع خطتَي Couple وCrowd. قم بالترقية لتفعيلها في هذه الغرفة.",
       "watchLimitTitle": "مزيد من وقت المشاهدة",
       "watchLimitMessage": "تعتمد هذه الغرفة على حد المشاهدة اليومي للمضيف. تزيل خطتا Couple وCrowd هذا الحد، حتى تتمكن من إكمال ما بدأته.",

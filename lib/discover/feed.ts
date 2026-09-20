@@ -60,7 +60,9 @@ const CATEGORY_BY_SOURCE: Record<string, DiscoverCategory> = {
   watch: "watch",
   game: "game",
   read: "read",
-  gift: "gift",
+  // AFFILIATE GIFT (disabled) — a "gift" slide published in Sanity now maps to no
+  // category, so toActionKind below returns null and the slide is dropped from the feed.
+  // gift: "gift",
 };
 
 interface SanitySlide {
@@ -239,10 +241,11 @@ function actionOf(raw: SanitySlide): DiscoverAction | null {
       return raw.post?.slug
         ? { kind: "link", href: `${BLOG_ORIGIN}/blog/${raw.post.slug}`, external: true }
         : null;
-    case "gift":
-      // The product page itself is resolved in the browser, where the product list
-      // already lives — the slide only needs to name which one.
-      return raw.productId ? { kind: "link", href: `#product:${raw.productId}` } : null;
+    // AFFILIATE GIFT (disabled)
+    // case "gift":
+    //   // The product page itself is resolved in the browser, where the product list
+    //   // already lives — the slide only needs to name which one.
+    //   return raw.productId ? { kind: "link", href: `#product:${raw.productId}` } : null;
     default:
       return null;
   }

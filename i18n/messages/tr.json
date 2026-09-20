@@ -21,7 +21,8 @@
     "fileShare": "Dosya Paylaşımı",
     "addUrl": "URL Ekle",
     "youtube": "YouTube",
-    "joinWithCode": "Kodla Katıl",
+    "joinCardTitle": "Odaya katıl",
+    "joinCardHint": "Sevdiğinden bir kod mu geldi? Buraya yaz.",
     "roomIdPlaceholder": "Oda ID",
     "join": "Katıl",
     "joining": "Katılınıyor...",
@@ -264,7 +265,7 @@
       "minimise": "Küçült"
     },
     "upgrade": {
-      "callsTitle":"Görüntülü arama ekle",
+      "callsTitle": "Görüntülü arama ekle",
       "callsMessage": "Görüntülü ve sesli aramalar Couple ve Crowd planlarıyla gelir. Bu odada açmak için yükselt.",
       "watchLimitTitle": "Daha fazla izleme süresi",
       "watchLimitMessage": "Bu oda, oda sahibinin günlük izleme sınırına bağlıdır. Couple ve Crowd bu sınırı kaldırır, böylece başladığın şeyi bitirebilirsin.",

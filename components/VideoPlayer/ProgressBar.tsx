@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { isMobile } from "react-device-detect";
 import { formatVideoTime } from "@/utils/timeFormatter";
 import { CgArrowsExpandLeft, CgCompressLeft } from "react-icons/cg";
-import { FaStore } from "react-icons/fa";
+// AFFILIATE GIFT (disabled)
+// import { FaStore } from "react-icons/fa";
 import { MdPlayDisabled } from "react-icons/md";
 interface ProgressBarProps {
     progress: number;
@@ -34,13 +35,16 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     duration,
     showTime = false,
     showFullscreen = false,
-    showStore = false,
+    // AFFILIATE GIFT (disabled) — unused while the store button is commented out. The prop
+    // stays on ProgressBarProps so ControlBar can keep passing it.
+    // showStore = false,
     showHidingControlsBtn = true,
     showProgressBar = true,
     fullscreen = false,
     onFullscreenToggle,
     onUserActivity,
-    onOpenStore,
+    // AFFILIATE GIFT (disabled)
+    // onOpenStore,
     onHiddingFullControls
 }) => {
     const progressBarRef = useRef<HTMLDivElement | null>(null);
@@ -177,9 +181,10 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                         <div className="rounded-xl bg-black/30 px-2 h-[28px] flex items-center text-[12px] font-medium text-white/90 backdrop-blur-sm">
                         <span className="tabular-nums text-white/70">Live</span>
                     </div>}
-                    {showStore && <button onClick={() => onOpenStore?.()} className="z-50 cursor-pointer flex gap-2 items-center absolute left-1/2 -translate-x-1/2  rounded-full bg-black/30 p-2 text-[12px] font-medium text-white/90 backdrop-blur-sm">
+                    {/* AFFILIATE GIFT (disabled) — the store button that opened ProductBottomSheet. */}
+                    {/* {showStore && <button onClick={() => onOpenStore?.()} className="z-50 cursor-pointer flex gap-2 items-center absolute left-1/2 -translate-x-1/2  rounded-full bg-black/30 p-2 text-[12px] font-medium text-white/90 backdrop-blur-sm">
                         <FaStore />
-                    </button>}
+                    </button>} */}
                     <div className="flex gap-2 items-center">
                         {showHidingControlsBtn && isMobile && <button
                         type="button"

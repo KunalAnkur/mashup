@@ -8,7 +8,8 @@ import getPlayerMessage from "@/utils/playerState";
 import { Playlist } from "@/types/storeTypes";
 import { ContentSelection } from "@/components/Panel/PlaylistTab/ContentSelection";
 import { usePlaylistActions } from "@/hooks/usePlaylistActions";
-import ProductCarousel from "@/components/Product/ProductCarousel";
+// AFFILIATE GIFT (disabled) — the product shelf under each empty-state screen.
+// import ProductCarousel from "@/components/Product/ProductCarousel";
 import * as constants from "@/constants";
 const logo = constants.assets.logo192;
 import { useDispatch } from "react-redux";
@@ -127,7 +128,8 @@ const HostLeftScreen = ({
     message: string;
     contentVisible: boolean;
 }) => (
-    <ScreenShell bottom={<ProductCarousel placement="host-left" />}>
+    // AFFILIATE GIFT (disabled): bottom={<ProductCarousel placement="host-left" />}
+    <ScreenShell>
         <GlobalStyles />
         <FadeInContent visible={contentVisible}>
             {/* Logo mark with a subtle "ended" indicator */}
@@ -164,7 +166,8 @@ const HostEmptyPlaylistScreen = ({
     onAddContent: ReturnType<typeof usePlaylistActions>["addPlaylistContent"];
     onScreenShareStopped: ReturnType<typeof usePlaylistActions>["handleScreenShareStopped"];
 }) => (
-    <ScreenShell bottom={<ProductCarousel placement="host-empty" />}>
+    // AFFILIATE GIFT (disabled): bottom={<ProductCarousel placement="host-empty" />}
+    <ScreenShell>
         <GlobalStyles />
         <FadeInContent visible={contentVisible}>
             <BrandMark variant="idle" />
@@ -217,7 +220,8 @@ const ViewerWaitingScreen = ({
     contentVisible: boolean;
     isInitialized: boolean;
 }) => (
-    <ScreenShell bottom={<ProductCarousel placement="viewer-waiting" />}>
+    // AFFILIATE GIFT (disabled): bottom={<ProductCarousel placement="viewer-waiting" />}
+    <ScreenShell>
         <GlobalStyles />
         <FadeInContent visible={contentVisible}>
             <BrandMark variant={isInitialized ? "active" : "idle"} />

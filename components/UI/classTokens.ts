@@ -391,6 +391,35 @@ export const appStreamScreenAudioOnlyStateClass = "bg-dashSurface";
 
 export const appStreamScreenToggleSurfaceClass = "rounded-dashSm bg-dashSurfaceAlt";
 
+/**
+ * The screen-share action bar — the same idea as the YouTube queue bar (ytQueueBarClass):
+ * sticky to the foot of the page's own scroll area, never fixed to the window, so it sits
+ * inside this column and never covers the sidebar.
+ *
+ * It exists because the video preview is tall. Everything you do after picking a tab —
+ * the audio toggle, the capture quality, and the button that actually starts the share —
+ * used to sit in a panel below that preview, which on a laptop is below the fold. The
+ * page looked like it ended at a picture of your own screen, with no way to continue.
+ */
+export const appStreamScreenActionBarClass =
+  "sticky bottom-0 z-30 mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-3 rounded-t-dashMd border-t border-white/[0.06] bg-[rgba(16,14,19,0.96)] px-4 py-3 backdrop-blur-xl sm:justify-between sm:px-5";
+
+// The controls cluster and the commit button, so the two wrap as units rather than the
+// quality pills breaking away from their icon on a narrow window.
+export const appStreamScreenActionBarControlsClass =
+  "flex min-w-0 flex-wrap items-center justify-center gap-x-4 gap-y-2";
+
+// The audio-only switch, stripped of the bordered panel it had in the old stacked layout —
+// in a bar the surface would be a box inside a box.
+export const appStreamScreenAudioToggleClass =
+  "group flex shrink-0 cursor-pointer items-center gap-2";
+
+export const appStreamScreenAudioToggleTrackClass =
+  "relative h-6 w-11 rounded-full transition-all duration-300 ease-in-out";
+
+export const appStreamScreenAudioToggleKnobClass =
+  "absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-transform duration-300 ease-in-out";
+
 export const appStreamScreenWarningSurfaceClass = "rounded-dashSm bg-amber-500/10";
 
 // Sits over the player while the room's daily watch limit is in force. Opaque rather than a
@@ -873,7 +902,11 @@ export const dashHomeGridClass =
 
 export const dashHomeMainColClass = "flex min-w-0 flex-col gap-[18px]";
 
-export const dashHomeRailColClass = "flex flex-col gap-4";
+// Hidden below 1080px rather than stacked. Its only occupant is JoinRoomCard, and at that
+// width joining moves into the Actions row as a tile (dashJoinTileClass) — stacking the
+// column as well would show the same thing twice. The 1080px boundary is shared with
+// dashJoinMobileCellClass, which hides the tile on the other side of it.
+export const dashHomeRailColClass = "flex flex-col gap-4 max-[1080px]:hidden";
 
 // Shared top-left-aligned content wrapper for dashboard subpages (/sync, /stream,
 // /stream/screen, /games) — deliberately does NOT center content vertically/horizontally,
@@ -908,41 +941,88 @@ export const dashSectionHeadLinkClass =
 // arrow had to hide below 1700px to buy the copy 22px. One line of content removes all
 // three rules — the tile is a single row at every width now.
 export const dashActionsGridClass =
-  "grid grid-cols-1 gap-3 min-[560px]:grid-cols-2 min-[900px]:grid-cols-3 min-[1180px]:grid-cols-5";
+  "grid grid-cols-1 gap-3 min-[560px]:grid-cols-2 min-[900px]:grid-cols-3 min-[1180px]:grid-cols-4";
 
-// px-3/gap-2 rather than px-3.5/gap-2.5: at five across the widest label ("Join with a
-// Code") was clearing its column by ~4px, which is inside the margin of error between
-// one rendering font and another — the tighter chrome buys it real headroom instead.
+/**
+ * Each tile carries its action's colour in a `--tile-rgb` custom property, set inline from
+ * ACTION_THEMES in SourceSelection. That is what lets one shared class string tint a
+ * border, a glow, an icon shadow and an arrow per action without four hardcoded variants
+ * of every rule.
+ *
+ * Roomier than it was (px-3.5/gap-2.5, was px-3/gap-2): the tight chrome existed to buy
+ * headroom for "Join with a Code" at five across, and that tile has since moved to the
+ * home rail. Four across, there is width to spare.
+ *
+ * At rest the tiles stay quiet — a hairline border and the flat surface, so the coloured
+ * icons still do the scanning work. The colour only arrives on hover, on the one tile
+ * being considered, rather than four tinted slabs competing at once.
+ */
 export const dashActionTileClass =
-  "flex items-center gap-2 rounded-dashMd bg-dashSurface px-3 py-3 text-left transition-colors duration-200 hover:bg-white/[0.05]";
+  "group relative isolate flex items-center gap-2.5 overflow-hidden rounded-dashMd border border-white/[0.055] bg-dashSurface px-3.5 py-3 text-left " +
+  "transition-[transform,border-color,box-shadow,background-color] duration-200 " +
+  "hover:-translate-y-px hover:border-[rgb(var(--tile-rgb)/0.42)] hover:bg-white/[0.035] " +
+  "hover:shadow-[0_10px_26px_-10px_rgb(var(--tile-rgb)/0.5)] " +
+  "active:translate-y-0 active:duration-75";
+
+// The wash behind the icon, in the action's hue. Sized and placed to bloom out of the icon
+// rather than to light the whole tile, which at this size reads as a colour fill and
+// fights the label for contrast.
+export const dashActionTileGlowClass =
+  "pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300 " +
+  "bg-[radial-gradient(130px_64px_at_14%_50%,rgb(var(--tile-rgb)/0.20),transparent_72%)] " +
+  "group-hover:opacity-100";
 
 /**
  * A solid colour, not a tint.
  *
  * Each action gets its own, so the row is scannable by colour before a word of it is
  * read — which is the whole reason this shape beats four identical grey tiles.
+ *
+ * The drop shadow is the icon's own colour rather than black, so the chip reads as lit
+ * instead of cut out, and it deepens on hover along with everything else.
  */
 export const dashActionIconClass =
-  "flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] text-white shadow-[0_6px_18px_rgba(0,0,0,0.35)]";
+  "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] text-white " +
+  "shadow-[0_4px_14px_-2px_rgb(var(--tile-rgb)/0.55)] transition-shadow duration-200 " +
+  "group-hover:shadow-[0_6px_18px_-2px_rgb(var(--tile-rgb)/0.75)]";
 
-// `truncate` rather than wrap: five across in a ~155px card, a title on two lines makes
-// one tile taller than its neighbours and the row goes ragged.
+// `truncate` rather than wrap: in a narrow card a title on two lines makes one tile taller
+// than its neighbours and the row goes ragged.
 export const dashActionLabelClass =
-  "min-w-0 flex-1 truncate text-[12.5px] font-bold leading-tight text-dashText";
+  "relative z-10 min-w-0 flex-1 truncate text-[12.5px] font-bold leading-tight text-dashText";
+
+// Fills the space to the right of the label — which four across is considerable — and says
+// the tile goes somewhere, which all four of them do. Dim and still at rest so the row is
+// not four arrows demanding attention; it colours and steps outward on hover.
+export const dashActionArrowClass =
+  "relative z-10 shrink-0 text-[14px] text-white/20 " +
+  "transition-[color,transform] duration-200 " +
+  "group-hover:translate-x-px group-hover:-translate-y-px group-hover:text-[rgb(var(--tile-rgb))]";
 
 /**
- * Join-by-code as a fifth cell rather than a bar of its own.
+ * Join-by-code as a cell in the Actions row rather than a bar of its own.
  *
- * It cannot hold a label, a field and a button side by side at a fifth of the row — so
- * it does not try. It sits idle looking like its neighbours and swaps to the field when
- * pressed, which is also the honest interaction: nobody types a room code by accident.
+ * This is the narrow-screen shape. Above 1080px the home rail has room for the illustrated
+ * JoinRoomCard, with its field always open; below that there is no rail, and a card with
+ * artwork would be a banner sitting in the middle of a list of one-tap shortcuts. So the
+ * tile comes back: idle it looks exactly like its neighbours, and it swaps to the field
+ * when pressed — which is also the honest interaction, since nobody types a room code by
+ * accident.
+ *
+ * Borrows dashActionTileClass wholesale so the two can never drift apart visually. That
+ * brings the --tile-rgb hover treatment with it; SourceSelection sets the property on this
+ * tile too, in the same green the icon uses.
  */
 export const dashJoinTileClass = `${dashActionTileClass} w-full`;
 
-// px-3 py-3 and an h-7 control inside, matching the tile's px-3 py-3 and h-7 icon —
-// the cell must not change height when it swaps from the idle button to this form.
+// Matches the tile's px-3.5 py-3 and the h-8 icon inside it, so the cell does not change
+// height when it swaps from the idle button to this form.
 export const dashJoinOpenClass =
-  "flex w-full items-center gap-2 rounded-dashMd bg-dashSurface px-3 py-3 ring-1 ring-pink-600/40";
+  "flex w-full items-center gap-2 rounded-dashMd border border-pink-600/40 bg-dashSurface px-3.5 py-3";
+
+// The join cell only exists while there is no rail to hold JoinRoomCard. Same 1080px
+// boundary as dashHomeGridClass — above it the card is the one and only join surface.
+export const dashJoinMobileCellClass = "min-[1081px]:hidden";
 
 
 export const dashJoinSubmitIconClass =
@@ -1068,6 +1148,42 @@ export const dashGameCardCtaClass =
 
 // Right rail panel (For You Two — the only rail panel; Virtual Gifts was removed, no
 // real feature backs it).
+// Home rail's join-by-code card, built like the sidebar's cozy card (dashCozyCardClass
+// above): art bleeding to the card's edges, copy underneath it rather than over it, and no
+// panel background — the artwork IS the surface. Its own tokens rather than reuse, because
+// the two differ in the ways that matter: this art is landscape and fully in frame, the
+// tint below follows its indigo/violet rather than the sidebar's rose, and this card ends
+// in a form row instead of a caption.
+export const dashJoinCardClass = "flex shrink-0 flex-col overflow-hidden rounded-2xl";
+
+// aspect-[3/2] matches the source file exactly, so the whole illustration is shown and
+// object-cover never actually crops — the couple and the code board stay centred at every
+// rail width. The gradient is what the art loads over: the file sits behind a CDN, and an
+// empty box at the top of the rail reads as broken.
+export const dashJoinCardArtClass =
+  "relative aspect-[3/2] overflow-hidden bg-[radial-gradient(170px_120px_at_50%_20%,rgba(139,92,246,0.45),transparent_70%),radial-gradient(190px_130px_at_15%_70%,rgba(219,39,119,0.3),transparent_70%),linear-gradient(135deg,#221443_0%,#180e2b_45%,#110a1c_100%)]";
+
+export const dashJoinCardImgClass = "absolute inset-0 h-full w-full object-cover";
+
+// Same trick as dashCozyScrimClass, tuned to this art's indigo instead of the sidebar's
+// rose: a short fade at the foot of the picture so it settles into the copy rather than
+// ending on a hard line.
+export const dashJoinCardScrimClass =
+  "pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-[linear-gradient(to_bottom,transparent_0%,rgba(18,11,32,0.92)_100%)]";
+
+// Picks up the scrim's tone and fades it out over the copy, so the block below reads as
+// the image's own bottom edge continuing instead of a separate box under it.
+export const dashJoinCardCopyClass =
+  "bg-[linear-gradient(180deg,rgba(18,11,32,0.55)_0%,transparent_65%)] px-3.5 pb-3.5 pt-3";
+
+export const dashJoinCardTitleClass = "m-0 text-[14px] font-bold leading-[1.35] text-white";
+
+export const dashJoinCardDescriptionClass = "mt-1.5 text-[11.5px] leading-[1.5] text-white/70";
+
+// The field and its submit button, sharing one row the full width of the card — the CTA
+// slot, where the sidebar's version of this card has its Upgrade button.
+export const dashJoinCardFormClass = "mt-3 flex items-center gap-2";
+
 export const dashPanelClass = "rounded-dashLg bg-dashSurface p-3.5";
 
 export const dashProductRowClass = "flex items-center gap-2.5 px-0.5 py-2";

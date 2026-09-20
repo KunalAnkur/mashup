@@ -9,4 +9,15 @@ const defaultAvatar =
 // swapped without a deploy — the same reason arcade keeps its game covers there.
 const sidebarIllustration = "https://asset.movmash.com/platform/img/sidebar_illus.png";
 
-export { logo, logo192, defaultAvatar, visualizerLogo, sidebarIllustration };
+// Art at the top of the home rail's join-by-code card. On the CDN for the same reason as
+// the sidebar illustration above — swapping the picture should not need a deploy.
+const joinRoomIllustration = "https://asset.movmash.com/platform/img/join_room_card.webp";
+
+export {
+  logo,
+  logo192,
+  defaultAvatar,
+  visualizerLogo,
+  sidebarIllustration,
+  joinRoomIllustration,
+};

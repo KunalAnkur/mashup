@@ -21,10 +21,14 @@ import {
   dashPageTitleWrapClass,
   dashPageContentWrapClass,
   appStreamScreenAudioOnlyStateClass,
-  appStreamScreenHeroSurfaceClass,
   appStreamScreenIntroClusterClass,
   appStreamScreenIntroCopyClass,
   appStreamScreenIntroWidthClass,
+  appStreamScreenActionBarClass,
+  appStreamScreenActionBarControlsClass,
+  appStreamScreenAudioToggleClass,
+  appStreamScreenAudioToggleKnobClass,
+  appStreamScreenAudioToggleTrackClass,
   appStreamScreenOpenSectionClass,
   appStreamScreenPreviewFrameClass,
   appStreamScreenPreviewStatusClass,
@@ -33,7 +37,6 @@ import {
   appStreamScreenStepVisualClass,
   appStreamScreenStepNumberClass,
   appStreamScreenStepCardClass,
-  appStreamScreenToggleSurfaceClass,
   appStreamScreenWarningSurfaceClass,
 } from "@/components/UI/classTokens";
 
@@ -280,6 +283,88 @@ const ScreenSharePage = () => {
       }
     }
   }, [audioOnly, canScreenShare, screenShareQuality, setMediaStream, stream]);
+
+  /**
+   * Flipping audio-only is not a state change — it is a re-capture.
+   *
+   * Turning it ON can drop the video track from the stream we already have. Turning it
+   * OFF cannot: a stream captured without video cannot grow one, so the browser has to be
+   * asked again, and the old stream is kept alive until the new one is actually in hand.
+   * Cancelling that second prompt leaves everything exactly as it was.
+   *
+   * Lifted out of the JSX when the controls moved into the action bar — sixty lines of
+   * capture logic inline in an onChange made the bar's markup unreadable.
+   */
+  const handleAudioOnlyToggle = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAudioOnly = e.target.checked;
+    
+    if (stream) {
+      if (newAudioOnly) {
+        // Enable audio-only: remove video tracks
+        setAudioOnly(true);
+        const videoTracks = stream.getVideoTracks();
+        const audioTracks = stream.getAudioTracks();
+        if (videoTracks.length > 0) {
+          const audioOnlyStream = new MediaStream(audioTracks);
+          videoTracks.forEach(track => {
+            track.stop();
+            stream.removeTrack(track);
+          });
+          setStream(audioOnlyStream);
+          setMediaStream(audioOnlyStream);
+        } else {
+          setMediaStream(stream);
+        }
+      } else {
+        // Disable audio-only: need to re-capture with video
+        // Keep the current stream active while re-capturing
+        try {
+          const {mediaStream: newStream, screenType: newScreenType} = await helper.captureTabStream({
+            audioOnly: false,
+            preferredDisplaySurface: 'tab',
+            quality: screenShareQuality,
+          });
+          
+          if (newStream) {
+            // Successfully captured new stream with video
+            // Stop old stream tracks
+            const oldStream = stream;
+            oldStream.getTracks().forEach(track => track.stop());
+            
+            // Set new stream
+            setStream(newStream);
+            setMediaStream(newStream);
+            setScreenType(newScreenType);
+            setAudioOnly(false);
+            // State will be validated by useEffect
+          } else {
+            // User cancelled - keep current stream and audio-only mode
+            console.log("Re-capture cancelled, keeping audio-only mode");
+            // audioOnly state stays true, stream stays active
+          }
+        } catch (error: unknown) {
+          const errorName = error instanceof Error ? error.name : undefined;
+          console.error("Error re-capturing stream with video:", error);
+          // If re-capture fails, keep current stream active
+          // Don't stop the stream or change state
+          if (errorName === 'NotAllowedError' || errorName === 'AbortError') {
+            // User cancelled or permission denied - silently keep current state
+            console.log("Re-capture cancelled or denied, keeping audio-only mode");
+          } else {
+            // Other errors - show message but keep stream active
+            showError(tToast("failedToReenableVideo"), tToast("audioOnlyActive"));
+          }
+          // Keep audioOnly as true, stream stays active
+        }
+      }
+    } else {
+      // No stream yet, just update state
+      setAudioOnly(newAudioOnly);
+    }
+    },
+    [stream, screenShareQuality, setMediaStream]
+  );
 
   const handleStartStreaming = useCallback(async () => {
     if (!stream) return;
@@ -567,157 +652,84 @@ const ScreenSharePage = () => {
                 </div>
               </div>
 
-              {/* Post-Preview Action Section - Below Video */}
-              <div className={`flex flex-col gap-4 p-4 sm:gap-5 sm:p-5 md:gap-6 md:p-6 ${appStreamScreenHeroSurfaceClass}`}>
-                {/* Audio-only toggle */}
-                <div className={`flex items-center justify-center p-3 sm:p-4 ${appStreamScreenToggleSurfaceClass}`}>
-                  <label className="flex items-center gap-3 sm:gap-4 cursor-pointer group">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Warning stays in the flow above the bar: it is a paragraph, not a
+                  control, and it only appears when something needs explaining. */}
+              {showWarning && (
+                <div className={`mt-4 flex w-full items-start gap-2 p-3 text-left sm:gap-3 sm:p-4 ${appStreamScreenWarningSurfaceClass}`}>
+                  <FaExclamationTriangle className="mt-0.5 flex-shrink-0 text-sm text-yellow-400 sm:text-base" />
+                  <div className="flex-1">
+                    <p className="mb-0.5 text-xs font-medium text-yellow-300 sm:mb-1 sm:text-sm">{tStream("tabSelectionRequired")}</p>
+                    <p className="text-[10px] leading-relaxed text-yellow-200/80 sm:text-xs">
+                      {!isTabSelected
+                        ? tStream("selectSpecificTabForAudio")
+                        : tStream("selectTabForBestAudio")}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Everything you do next, pinned to the foot of the scroll area — see
+                  appStreamScreenActionBarClass for why. */}
+              {stream && (
+                <div className={appStreamScreenActionBarClass}>
+                  <div className={appStreamScreenActionBarControlsClass}>
+                    <label className={appStreamScreenAudioToggleClass}>
                       {audioOnly ? (
-                        <FaVolumeMute className="text-base sm:text-lg text-fuchsia-400 transition-colors" />
+                        <FaVolumeMute className="text-base text-fuchsia-400 transition-colors" />
                       ) : (
-                        <FaVolumeUp className="text-base sm:text-lg text-pink-400 transition-colors" />
+                        <FaVolumeUp className="text-base text-pink-400 transition-colors" />
                       )}
-                      <span className="text-xs sm:text-sm font-medium text-dashText">
+                      <span className="text-xs font-medium text-dashText sm:text-sm">
                         {audioOnly ? tStream("audioOnly") : tStream("videoPlusAudio")}
                       </span>
-                    </div>
-                    <div className="relative">
                       <Input
                         variant="raw"
                         type="checkbox"
                         checked={audioOnly}
-                        onChange={async (e) => {
-                          const newAudioOnly = e.target.checked;
-                          
-                          if (stream) {
-                            if (newAudioOnly) {
-                              // Enable audio-only: remove video tracks
-                              setAudioOnly(true);
-                              const videoTracks = stream.getVideoTracks();
-                              const audioTracks = stream.getAudioTracks();
-                              if (videoTracks.length > 0) {
-                                const audioOnlyStream = new MediaStream(audioTracks);
-                                videoTracks.forEach(track => {
-                                  track.stop();
-                                  stream.removeTrack(track);
-                                });
-                                setStream(audioOnlyStream);
-                                setMediaStream(audioOnlyStream);
-                              } else {
-                                setMediaStream(stream);
-                              }
-                            } else {
-                              // Disable audio-only: need to re-capture with video
-                              // Keep the current stream active while re-capturing
-                              try {
-                                const {mediaStream: newStream, screenType: newScreenType} = await helper.captureTabStream({
-                                  audioOnly: false,
-                                  preferredDisplaySurface: 'tab',
-                                  quality: screenShareQuality,
-                                });
-                                
-                                if (newStream) {
-                                  // Successfully captured new stream with video
-                                  // Stop old stream tracks
-                                  const oldStream = stream;
-                                  oldStream.getTracks().forEach(track => track.stop());
-                                  
-                                  // Set new stream
-                                  setStream(newStream);
-                                  setMediaStream(newStream);
-                                  setScreenType(newScreenType);
-                                  setAudioOnly(false);
-                                  // State will be validated by useEffect
-                                } else {
-                                  // User cancelled - keep current stream and audio-only mode
-                                  console.log("Re-capture cancelled, keeping audio-only mode");
-                                  // audioOnly state stays true, stream stays active
-                                }
-                              } catch (error: unknown) {
-                                const errorName = error instanceof Error ? error.name : undefined;
-                                console.error("Error re-capturing stream with video:", error);
-                                // If re-capture fails, keep current stream active
-                                // Don't stop the stream or change state
-                                if (errorName === 'NotAllowedError' || errorName === 'AbortError') {
-                                  // User cancelled or permission denied - silently keep current state
-                                  console.log("Re-capture cancelled or denied, keeping audio-only mode");
-                                } else {
-                                  // Other errors - show message but keep stream active
-                                  showError(tToast("failedToReenableVideo"), tToast("audioOnlyActive"));
-                                }
-                                // Keep audioOnly as true, stream stays active
-                              }
-                            }
-                          } else {
-                            // No stream yet, just update state
-                            setAudioOnly(newAudioOnly);
-                          }
-                        }}
+                        onChange={handleAudioOnlyToggle}
                         className="sr-only"
                       />
-                      <div className={`relative w-11 h-6 sm:w-14 sm:h-7 rounded-full transition-all duration-300 ease-in-out ${
-                        audioOnly 
-                          ? 'bg-gradient-to-r from-fuchsia-600 to-pink-600' 
-                          : 'bg-gradient-to-r from-rose-600 to-pink-600'
-                      }`}>
-                        <div className={`absolute top-0.5 sm:top-1 left-0.5 sm:left-1 w-5 h-5 bg-white rounded-full shadow-lg transform transition-transform duration-300 ease-in-out ${
-                          audioOnly ? 'translate-x-5 sm:translate-x-7' : 'translate-x-0'
-                        }`}></div>
+                      <div
+                        className={`${appStreamScreenAudioToggleTrackClass} ${
+                          audioOnly
+                            ? "bg-gradient-to-r from-fuchsia-600 to-pink-600"
+                            : "bg-gradient-to-r from-rose-600 to-pink-600"
+                        }`}
+                      >
+                        <div
+                          className={`${appStreamScreenAudioToggleKnobClass} ${
+                            audioOnly ? "translate-x-5" : "translate-x-0"
+                          }`}
+                        />
                       </div>
-                    </div>
-                  </label>
+                    </label>
+
+                    {/* Hidden in audio-only mode, where there is no video track to
+                        constrain. compact drops the written label: the bar is a row of
+                        controls, and the monitor icon already says which one this is. */}
+                    {!audioOnly && (
+                      <ScreenShareQualityPicker control={qualityControl} compact />
+                    )}
+                  </div>
+
+                  <button
+                    onClick={handleStartStreaming}
+                    disabled={isCreatingRoom}
+                    className={`${
+                      isCreatingRoom
+                        ? "inline-flex h-11 shrink-0 cursor-not-allowed items-center justify-center gap-2 rounded-dashSm bg-zinc-700/50 px-6 text-sm font-semibold text-white opacity-50"
+                        : `${appStreamScreenPrimaryButtonClass} shrink-0`
+                    }`}
+                  >
+                    {isCreatingRoom ? (
+                      <ImSpinner2 className="animate-spin text-base" />
+                    ) : (
+                      <LuMonitor className="text-base" />
+                    )}
+                    {isCreatingRoom ? tStream("creatingRoom") : tStream("startSharing")}
+                  </button>
                 </div>
-
-                {/* Capture quality — hidden in audio-only mode, where there is no video
-                    track to constrain. */}
-                {!audioOnly && (
-                  <ScreenShareQualityPicker
-                    control={qualityControl}
-                    className={`p-3 sm:p-4 ${appStreamScreenToggleSurfaceClass}`}
-                  />
-                )}
-
-                {/* Warning */}
-                {showWarning && (
-                  <div className={`flex items-start gap-2 p-3 sm:gap-3 sm:p-4 ${appStreamScreenWarningSurfaceClass}`}>
-                    <FaExclamationTriangle className="text-yellow-400 flex-shrink-0 mt-0.5 text-sm sm:text-base" />
-                    <div className="flex-1">
-                      <p className="text-yellow-300 font-medium text-xs sm:text-sm mb-0.5 sm:mb-1">{tStream("tabSelectionRequired")}</p>
-                      <p className="text-yellow-200/80 text-[10px] sm:text-xs leading-relaxed">
-                        {!isTabSelected
-                          ? tStream("selectSpecificTabForAudio")
-                          : tStream("selectTabForBestAudio")}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Start Sharing Button - Always show when stream exists */}
-                {stream && (
-                  <div className="text-center">
-                    <button
-                      onClick={handleStartStreaming}
-                      disabled={isCreatingRoom}
-                      className={`${
-                        isCreatingRoom
-                          ? "bg-zinc-700/50 cursor-not-allowed opacity-50"
-                          : appStreamScreenPrimaryButtonClass
-                      }`}
-                    >
-                      {isCreatingRoom ? (
-                        <ImSpinner2 className="animate-spin text-base" />
-                      ) : (
-                        <LuMonitor className="text-base" />
-                      )}
-                      {isCreatingRoom ? tStream("creatingRoom") : tStream("startSharing")}
-                    </button>
-                    <p className={`${appStreamScreenSupportCopyClass} mt-2 sm:mt-3`}>
-                      {tStream("roomWillBeCreated")}
-                    </p>
-                  </div>
-                )}
-              </div>
+              )}
                   </>
                 )}
         </div>

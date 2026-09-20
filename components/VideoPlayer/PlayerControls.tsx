@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { isMobile } from "react-device-detect";
 import { ControlComponents } from "./Player";
-import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp, FaExpandAlt, FaCompressAlt, FaStore } from "react-icons/fa"
+// AFFILIATE GIFT (disabled) — FaStore was only used by the commented-out store button.
+import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp, FaExpandAlt, FaCompressAlt } from "react-icons/fa"
 import { MdPlayDisabled } from "react-icons/md";
 
 interface PlayerControlsProps {
@@ -54,7 +55,9 @@ const PlayerControls = ({
     progress,
     duration,
     fullscreen,
-    showStore = true,
+    // AFFILIATE GIFT (disabled) — unused while the store button is commented out. The prop
+    // stays on PlayerControlsProps so ControlBar can keep passing it.
+    // showStore = true,
     onPlayPause,
     onMuteToggle,
     onVolumeChange,
@@ -63,7 +66,8 @@ const PlayerControls = ({
     hideControls,
     onHiddingFullControls,
     showHidingControlsBtn = true,
-    onOpenStore
+    // AFFILIATE GIFT (disabled)
+    // onOpenStore
 }: PlayerControlsProps) => {
     const currentTime = formatTime((progress / 100) * duration || 0);
     const totalTime = formatTime(duration || 0);
@@ -92,9 +96,12 @@ const PlayerControls = ({
                     </div>
                 )}
             </div>
-            {!isMobile && showStore && <button onClick={() => onOpenStore?.()} className="z-50 cursor-pointer gap-2  absolute left-1/2 -translate-x-1/2 rounded-2xl bg-black/30 h-[40px] w-[40px] flex justify-center items-center font-medium text-white/90 backdrop-blur-md shadow-[0_8px_22px_rgba(0,0,0,0.25)]">
+            {/* AFFILIATE GIFT (disabled) — the store button that opened ProductBottomSheet.
+                The showStore prop and ControlComponents.STORE are left wired up so this is a
+                one-line restore. */}
+            {/* {!isMobile && showStore && <button onClick={() => onOpenStore?.()} className="z-50 cursor-pointer gap-2  absolute left-1/2 -translate-x-1/2 rounded-2xl bg-black/30 h-[40px] w-[40px] flex justify-center items-center font-medium text-white/90 backdrop-blur-md shadow-[0_8px_22px_rgba(0,0,0,0.25)]">
                 <FaStore />
-            </button>}
+            </button>} */}
             {hasRightPill && (
                 <div className="flex items-center gap-2 rounded-2xl bg-black/30 px-2 py-1 backdrop-blur-lg shadow-[0_8px_22px_rgba(0,0,0,0.35)]">
                     {showVolume && (
