@@ -47,6 +47,9 @@ type VideoPlayerProps = {
     onEnded?: () => void;
     onProgress?: () => void;
     onOpenStore?: () => void;
+    /** The in-room content picker — see PlayerControls. */
+    showChangeContent?: boolean;
+    onChangeContent?: () => void;
     syncWithHost?: () => void;
     playerRef?: React.RefObject<ReactPlayer | null>;
     controls?: boolean;
@@ -83,6 +86,8 @@ const VideoPlayer = ({
     onFullscreenChange,
     onProgress,
     onOpenStore,
+    showChangeContent,
+    onChangeContent,
     syncWithHost,
     controls = true,
     loop = false,
@@ -736,6 +741,8 @@ const VideoPlayer = ({
                         onPlayPause={togglePlay}
                         onMuteToggle={toggleMute}
                         onOpenStore={onOpenStore}
+                        showChangeContent={showChangeContent}
+                        onChangeContent={onChangeContent}
                         onVolumeChange={handleVolumeChange}
                         onFullscreenToggle={toggleFullscreen}
                         formatTime={formatVideoTime}

@@ -286,7 +286,14 @@
     },
     "reconnectingBanner": "Yeniden bağlanılıyor...",
     "connectionLostReload": "Yeniden bağlanılamadı. Lütfen sayfayı yenileyin.",
-    "closePanel": "Sohbeti gizle"
+    "closePanel": "Sohbeti gizle",
+    "addContent": "Değiştir",
+    "addContentLabel": "İçeriği değiştir",
+    "contentModalTitle": "Oynatılanı değiştir",
+    "contentModalSubtitle": "Oynatılanı durdurmadan yeni bir şey sıraya al.",
+    "contentModalOwn": "Kendi içeriğin",
+    "contentModalAddToPlaylist": "Listeye ekle",
+    "contentModalNoScreenShare": "Ekran paylaşımı bu cihazda kullanılamıyor."
   },
   "sync": {
     "title": "Kaynak URL Girin",

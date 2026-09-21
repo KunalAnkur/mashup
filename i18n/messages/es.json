@@ -286,7 +286,14 @@
     },
     "reconnectingBanner": "Reconectando...",
     "connectionLostReload": "No se pudo reconectar. Actualiza la página.",
-    "closePanel": "Ocultar chat"
+    "closePanel": "Ocultar chat",
+    "addContent": "Cambiar",
+    "addContentLabel": "Cambiar contenido",
+    "contentModalTitle": "Cambia lo que se reproduce",
+    "contentModalSubtitle": "Pon algo nuevo en cola sin detener lo que se reproduce.",
+    "contentModalOwn": "Lo tuyo",
+    "contentModalAddToPlaylist": "Añadir a la lista",
+    "contentModalNoScreenShare": "Compartir pantalla no está disponible en este dispositivo."
   },
   "sync": {
     "title": "Ingresar URL de Origen",

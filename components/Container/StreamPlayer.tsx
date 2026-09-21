@@ -13,7 +13,7 @@ import { useStreamSource } from "@/hooks/useStreamSource";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
 import { trackVideoStarted, trackSyncStarted } from "@/lib/analytics";
-import { toggleBottomSheet } from "@/lib/store/slices/roomSlice";
+import { toggleBottomSheet, setContentModal } from "@/lib/store/slices/roomSlice";
 
 type Props = {
     fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -457,6 +457,8 @@ const StreamPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
                 hasVideoTrack={!activeItem?.onlyAudio}
                 onMute={setFocus}
                 onOpenStore={() => dispatch(toggleBottomSheet())}
+                showChangeContent={roomState.host}
+                onChangeContent={() => dispatch(setContentModal({ open: true }))}
                 disableControls={isPlaybackBlocked ? [...controlsConfig.disableControls, ControlComponents.PLAY] : controlsConfig.disableControls}
                 hideControls={isPlaybackBlocked ? [...controlsConfig.hideControls, ControlComponents.PLAY] : controlsConfig.hideControls}
                 autoResumeOnFullscreenExit={!isHost}

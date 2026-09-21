@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { isMobile } from "react-device-detect";
 import { formatVideoTime } from "@/utils/timeFormatter";
 import { CgArrowsExpandLeft, CgCompressLeft } from "react-icons/cg";
+import { LuLayoutGrid } from "react-icons/lu";
 // AFFILIATE GIFT (disabled)
 // import { FaStore } from "react-icons/fa";
 import { MdPlayDisabled } from "react-icons/md";
@@ -14,6 +15,9 @@ interface ProgressBarProps {
     handleSeekEnd: (seekTime?: number, seekPercent?: number) => void;
     duration: number;
     showStore: boolean;
+    /** See PlayerControls — the in-room content picker, as a player control. */
+    showChangeContent?: boolean;
+    onChangeContent?: () => void;
     showTime?: boolean;
     showHidingControlsBtn?: boolean;
     showFullscreen?: boolean;
@@ -38,6 +42,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     // AFFILIATE GIFT (disabled) — unused while the store button is commented out. The prop
     // stays on ProgressBarProps so ControlBar can keep passing it.
     // showStore = false,
+    showChangeContent = false,
+    onChangeContent,
     showHidingControlsBtn = true,
     showProgressBar = true,
     fullscreen = false,
@@ -186,6 +192,17 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                         <FaStore />
                     </button>} */}
                     <div className="flex gap-2 items-center">
+                        {showChangeContent && onChangeContent && (
+                            <button
+                                type="button"
+                                onClick={onChangeContent}
+                                title="Change content"
+                                aria-label="Change content"
+                                className="flex h-7 w-7 items-center justify-center rounded-full bg-black/30 text-white/90 backdrop-blur-sm transition-transform active:scale-95"
+                            >
+                                <LuLayoutGrid size={13} />
+                            </button>
+                        )}
                         {showHidingControlsBtn && isMobile && <button
                         type="button"
                         onClick={onHiddingFullControls}

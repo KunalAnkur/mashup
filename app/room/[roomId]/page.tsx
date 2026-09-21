@@ -7,7 +7,7 @@ import { Panel } from "@/components/Panel";
 import ReactionsContainer from "@/components/Panel/ReactionsContainer";
 import { useRoomContext } from "@/context/RoomContext";
 import { useDispatch } from "react-redux";
-import { updateRoomInfo, setUpgradeSubscriptionModal } from "@/lib/store/slices/roomSlice";
+import { updateRoomInfo, setUpgradeSubscriptionModal, setContentModal } from "@/lib/store/slices/roomSlice";
 import { useMediaStreamContext } from "@/context/MediaStreamContext";
 import { useFileContext } from "@/context/FileContext";
 // AFFILIATE GIFT (disabled) — the product sheet. Its only opener was the "see more"
@@ -18,6 +18,8 @@ import UpgradeSubscriptionModal from "@/components/Modals/UpgradeSubscriptionMod
 import PlaybackBlockedModal from "@/components/Modals/PlaybackBlockedModal";
 import { isMobile } from "react-device-detect";
 import { LuChevronDown } from "react-icons/lu";
+import { RoomContentModal } from "@/components/Room/RoomContentModal";
+import { usePlaylistActions } from "@/hooks/usePlaylistActions";
 import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
 import { useTranslations } from "@/i18n/I18nProvider";
 import {
@@ -123,6 +125,8 @@ const Page = () => {
 
   const tRoom = useTranslations("room");
   const panelCollapsed = roomState.settings.panelCollapsed;
+  const { addPlaylistContent, handleScreenShareStopped } = usePlaylistActions();
+  const contentModalOpen = roomState.settings.contentModal;
 
   /**
    * A game room on a phone starts with the panel down, and leaving puts it back.
@@ -200,6 +204,13 @@ const Page = () => {
         isOpen={roomState.settings.isPlaybackBlocked}
         limit={roomState.settings.playbackBlockedInfo?.limit ?? 0}
         planName={roomState.settings.playbackBlockedInfo?.planName ?? "Free"}
+      />
+
+      <RoomContentModal
+        open={contentModalOpen}
+        onClose={() => dispatch(setContentModal({ open: false }))}
+        onAddContent={addPlaylistContent}
+        onScreenShareStopped={handleScreenShareStopped}
       />
 
       <div ref={containerRef} className={`${appFixedViewportPageClass} relative h-[100dvh] overflow-hidden flex flex-col md:flex-row`}>

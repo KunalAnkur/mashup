@@ -107,6 +107,12 @@ export type RoomSetting = {
   upgradeSubscriptionMessage?: string;
   upgradeSubscriptionContext?: "room_full" | "watch_time_session" | "games";
   panelCollapsed: boolean;
+  /**
+   * The in-room content picker. In the store rather than in a component because two
+   * places open it — the button over the player and the one in the panel's room-actions
+   * card — and the modal itself is mounted once, by the room page.
+   */
+  contentModal: boolean;
   bottomSheet: boolean;
   playerActive: boolean;
   isPlaybackBlocked: boolean;

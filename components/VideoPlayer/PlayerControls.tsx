@@ -3,6 +3,7 @@ import { isMobile } from "react-device-detect";
 import { ControlComponents } from "./Player";
 // AFFILIATE GIFT (disabled) — FaStore was only used by the commented-out store button.
 import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp, FaExpandAlt, FaCompressAlt } from "react-icons/fa"
+import { LuLayoutGrid } from "react-icons/lu"
 import { MdPlayDisabled } from "react-icons/md";
 
 interface PlayerControlsProps {
@@ -13,6 +14,13 @@ interface PlayerControlsProps {
     duration: number;
     fullscreen: boolean;
     showStore: boolean;
+    /**
+     * The in-room content picker, as a player control rather than something floating over
+     * the video. Optional and off unless a caller passes both, so every existing mount of
+     * this player is unchanged.
+     */
+    showChangeContent?: boolean;
+    onChangeContent?: () => void;
     onPlayPause: () => void;
     onMuteToggle: () => void;
     onVolumeChange: (volume: number) => void;
@@ -66,6 +74,8 @@ const PlayerControls = ({
     hideControls,
     onHiddingFullControls,
     showHidingControlsBtn = true,
+    showChangeContent = false,
+    onChangeContent,
     // AFFILIATE GIFT (disabled)
     // onOpenStore
 }: PlayerControlsProps) => {
@@ -76,7 +86,10 @@ const PlayerControls = ({
     const showDuration = !isMobile && !hideControls.includes(ControlComponents.DURATION);
     const showVolume = !isMobile && !hideControls.includes(ControlComponents.VOLUME);
     const showFullscreen = !isMobile && !hideControls.includes(ControlComponents.FULLSCREEN);
-    const hasRightPill = showVolume || showFullscreen;
+    // Included so the pill still appears for a player that has nothing else in it —
+    // an audio-only or chromeless mount would otherwise drop this control silently.
+    const canChangeContent = showChangeContent && !!onChangeContent;
+    const hasRightPill = showVolume || showFullscreen || canChangeContent;
     return (
         <div className=" flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
@@ -139,6 +152,12 @@ const PlayerControls = ({
                     {showHidingControlsBtn && <CtrlBtn onClick={() => onHiddingFullControls?.()} title={"Hide controls"}>
                         <MdPlayDisabled size={24} />
                     </CtrlBtn>}
+
+                    {canChangeContent && (
+                        <CtrlBtn onClick={() => onChangeContent?.()} title="Change content">
+                            <LuLayoutGrid size={17} />
+                        </CtrlBtn>
+                    )}
 
                     {showFullscreen && (
                         <CtrlBtn onClick={onFullscreenToggle} title={fullscreen ? "Exit fullscreen" : "Fullscreen"}>

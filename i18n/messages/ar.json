@@ -286,7 +286,14 @@
     },
     "reconnectingBanner": "جارٍ إعادة الاتصال...",
     "connectionLostReload": "تعذّرت إعادة الاتصال. يرجى تحديث الصفحة.",
-    "closePanel": "إخفاء الدردشة"
+    "closePanel": "إخفاء الدردشة",
+    "addContent": "تغيير",
+    "addContentLabel": "تغيير المحتوى",
+    "contentModalTitle": "غيّر ما يُعرض",
+    "contentModalSubtitle": "أضف شيئًا جديدًا إلى القائمة دون إيقاف ما يُعرض.",
+    "contentModalOwn": "المحتوى الخاص بك",
+    "contentModalAddToPlaylist": "أضف إلى القائمة",
+    "contentModalNoScreenShare": "مشاركة الشاشة غير متاحة على هذا الجهاز."
   },
   "sync": {
     "title": "أدخل رابط المصدر",

@@ -36,12 +36,21 @@ export function QueueBar({
   onClear,
   onCreate,
   creating,
+  confirmLabel,
+  busyLabel,
 }: {
   queue: YouTubeVideoCard[];
   onRemove: (videoId: string) => void;
   onClear: () => void;
   onCreate: () => void;
   creating: boolean;
+  /**
+   * What the button says. Defaults to the create-a-room wording /youtube has always
+   * used; the in-room picker overrides it, because there the queue joins a playlist
+   * rather than opening anything.
+   */
+  confirmLabel?: string;
+  busyLabel?: string;
 }) {
   const t = useTranslations("youtube");
 
@@ -94,7 +103,7 @@ export function QueueBar({
         ) : (
           <LuArrowRight className="text-[15px]" />
         )}
-        {creating ? t("creatingRoom") : t("createRoom")}
+        {creating ? (busyLabel ?? t("creatingRoom")) : (confirmLabel ?? t("createRoom"))}
       </button>
     </div>
   );

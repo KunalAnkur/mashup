@@ -286,7 +286,14 @@
     },
     "reconnectingBanner": "Reconnecting...",
     "connectionLostReload": "Couldn't reconnect. Please refresh the page.",
-    "closePanel": "Hide chat"
+    "closePanel": "Hide chat",
+    "addContent": "Change",
+    "addContentLabel": "Change content",
+    "contentModalTitle": "Change what's playing",
+    "contentModalSubtitle": "Queue something new without stopping what is playing.",
+    "contentModalOwn": "Your own",
+    "contentModalAddToPlaylist": "Add to playlist",
+    "contentModalNoScreenShare": "Screen sharing is not available on this device."
   },
   "sync": {
     "title": "Enter Source URL",

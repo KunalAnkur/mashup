@@ -1255,6 +1255,97 @@ export const roomEmptyChoiceIconClass =
 export const roomEmptyChoiceLabelClass =
   "text-[12.5px] font-bold leading-tight text-white/90";
 
+// ---------------------------------------------------------------------------
+// In-room content picker — everything the room can play, in one modal, reachable
+// without leaving what is already playing.
+// ---------------------------------------------------------------------------
+
+/**
+ * Tall and wide, and a flex column rather than a block: the YouTube tab inside it has a
+ * scrolling grid with a pinned queue bar, which needs a bounded height to scroll within.
+ *
+ * On a phone it is effectively full-screen. A picker that must show a search box, a grid
+ * of results and a queue has no useful small form, and half-height would mean scrolling a
+ * grid inside a sheet inside a page.
+ */
+export const roomContentModalPanelClass =
+  "flex h-[88vh] max-h-[880px] w-full max-w-3xl flex-col overflow-hidden rounded-dashLg border border-white/[0.07] bg-dashSurface max-md:h-[92vh] max-md:max-w-none";
+
+export const roomContentTabRowClass =
+  "flex shrink-0 items-center gap-1 overflow-x-auto border-b border-white/[0.06] px-3 py-2 scrollbar-hide";
+
+export const roomContentTabClass =
+  "shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition-colors duration-150";
+
+export const roomContentTabActiveClass = "bg-white/[0.10] text-white";
+
+export const roomContentTabIdleClass = "text-white/50 hover:bg-white/[0.05] hover:text-white/80";
+
+// Each tab's own body. min-h-0 so a scrolling child is bounded by the panel rather than
+// growing it — without it the YouTube grid pushes the queue bar off the bottom.
+export const roomContentTabBodyClass = "flex min-h-0 flex-1 flex-col";
+
+export const roomContentPadBodyClass = "min-h-0 flex-1 overflow-y-auto px-4 py-4";
+
+// ---------------------------------------------------------------------------
+// Panel room-actions card — what you can do in this room, above the chat.
+// ---------------------------------------------------------------------------
+
+/**
+ * One card holding the two things a room can do that are not chatting: change what is
+ * playing, and start a call.
+ *
+ * One row, not two. Stacked with a rule between them they cost the panel a third of its
+ * height before a single message — and the panel is mostly chat. Change takes the width
+ * that is left and the call buttons keep their own size, so the row compresses by
+ * shortening the button rather than wrapping.
+ *
+ * The call's title and hint are dropped for a host, who has the Change button in their
+ * place and does not need two phone icons explained. A guest has no Change button, so the
+ * copy stays for them and the row reads as it always did.
+ */
+export const panelRoomActionsCardClass =
+  "rounded-2xl bg-white/[0.035] p-2 ring-1 ring-white/[0.08]";
+
+export const panelRoomActionsRowClass = "flex items-center gap-2";
+
+/**
+ * The same surface as the audio-call button sitting next to it — `bg-white/[0.08]` over a
+ * `ring-1 ring-white/10` — so the row reads as one family of controls instead of three
+ * unrelated things that happen to be adjacent.
+ *
+ * That leaves exactly one accent in the row: the green video button. Which is the point.
+ * A brand gradient here fought that green for attention, and a rose-tinted tile just moved
+ * the fight somewhere quieter; matching the neutral surface ends it, and the only colour
+ * left is on the icon.
+ */
+export const panelRoomActionsAddClass =
+  "group flex min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-white/[0.08] ring-1 ring-white/10 " +
+  "px-3 py-2.5 text-[12.5px] font-bold text-white/85 " +
+  "transition-colors duration-200 hover:bg-white/[0.14] hover:text-white";
+
+// The one bit of colour it keeps, and the same trick every tile below uses: the meaning
+// lives in the icon, not in the fill.
+export const panelRoomActionsAddIconClass =
+  "shrink-0 text-rose-300 transition-colors duration-200 group-hover:text-rose-200";
+
+// Only shown when the calls feature is locked — the one case where the row cannot explain
+// itself, because the buttons open an upsell rather than a call.
+export const panelRoomActionsLockedHintClass =
+  "mt-1.5 flex items-center gap-1 px-0.5 text-[10px] leading-tight text-white/45";
+
+/**
+ * The mobile version: one row, no card, no divider. The panel is the whole screen on a
+ * phone and every pixel it spends on chrome comes out of the chat, so Change shrinks to a
+ * labelled pill beside the call buttons instead of leading its own block.
+ */
+export const panelRoomActionsMobileRowClass =
+  "flex items-center gap-1.5 rounded-full bg-white/[0.04] px-1.5 py-1 ring-1 ring-white/[0.06] md:hidden";
+
+export const panelRoomActionsMobileAddClass =
+  "group inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full bg-white/[0.08] ring-1 ring-white/10 " +
+  "px-2.5 py-1.5 text-[11px] font-bold text-white/85 transition-colors duration-200 hover:bg-white/[0.14] hover:text-white";
+
 /**
  * The strip of room controls under a game.
  *

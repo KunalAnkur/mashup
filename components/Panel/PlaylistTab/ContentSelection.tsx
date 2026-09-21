@@ -62,8 +62,19 @@ type ContentSelectionProps = {
      * see roomEmptyChoiceClass.
      */
     variant?: "panel" | "hero";
+    /**
+     * Drops the "Play a game" tile. For the in-room content modal, which gives games a
+     * tab of their own — the tile there would be a second door to the same place, and it
+     * opens a modal on top of a modal to get through it.
+     */
+    showGameOption?: boolean;
 }
-const ContentSelection = ({ onAddContent, onScreenShareStopped, variant = "panel" }: ContentSelectionProps) => {
+const ContentSelection = ({
+    onAddContent,
+    onScreenShareStopped,
+    variant = "panel",
+    showGameOption = true,
+}: ContentSelectionProps) => {
     const dispatch = useDispatch();
     const roomState = useSelector((state: RootState) => state.room);
     const isHost = roomState.host;
@@ -85,6 +96,12 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped, variant = "panel
     // live video track it would be a third control in an already dense column, answering a
     // question nobody has yet; /stream/screen is where quality gets chosen up front.
     const hasLiveScreenVideo = !!stream?.getVideoTracks().some((t) => t.readyState === "live");
+
+    // "The selected source is a screen share" — the playlist's own answer, not the media
+    // stream's. A host can have a capture running while the room is watching something
+    // else entirely, and a quality control for a share nobody is looking at is noise.
+    const selectedIsScreenShare =
+        roomState.playlist.find((item) => item.selected)?.source === "screen";
     const t = useTranslations("sync");
     const tCommon = useTranslations("common");
     const tToast = useTranslations("toast");
@@ -492,7 +509,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped, variant = "panel
             heroIcon: <LuScreenShare size={19} className="text-cyan-300" />,
             spinnerClassName: "border-cyan-200/30 border-t-cyan-200",
         }]: []),
-        {
+        ...(showGameOption ? [{
             key: "game",
             label: tGames("roomPickerAction"),
             busyLabel: tGames("starting"),
@@ -502,12 +519,18 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped, variant = "panel
             icon: <LuGamepad2 size={14} className="text-emerald-300 md:w-4 md:h-4" />,
             heroIcon: <LuGamepad2 size={19} className="text-emerald-300" />,
             spinnerClassName: "border-emerald-200/30 border-t-emerald-200",
-        },
+        }] : []),
     ];
 
     return (
         <>
-        {isHost && (
+        {/* The panel's own copy of these four is commented out, not deleted: the same
+            component still draws them in the player's empty state and in the "Your own"
+            tab of the Change-content modal, which is where adding things lives now. A
+            second set in the panel was the same four buttons a scroll apart.
+
+            To bring them back in the panel, drop `isHero &&` from the line below. */}
+        {isHero && isHost && (
             <div
                 className={
                     isHero
@@ -536,7 +559,10 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped, variant = "panel
                 ))}
             </div>
         )}
-        {isHost && hasLiveScreenVideo && (
+        {/* Stays in the panel after the tiles above went: while a screen share is what the
+            room is on, this is the one control worth having a tap away — it is what a host
+            reaches for when they watch the room stutter. */}
+        {isHost && hasLiveScreenVideo && selectedIsScreenShare && (
             <ScreenShareQualityPicker
                 control={qualityControl}
                 compact
