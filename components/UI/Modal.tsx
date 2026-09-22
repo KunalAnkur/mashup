@@ -174,11 +174,11 @@ const ModalHeader = ({
       {icon ? <div className="shrink-0">{icon}</div> : null}
       <div className="min-w-0">
         <div className={[modalHeaderTitleClass, titleClassName].filter(Boolean).join(" ")}>{title}</div>
-        {subtitle ? (
+        {/* {subtitle ? (
           <div className={[modalHeaderSubtitleClass, subtitleClassName].filter(Boolean).join(" ")}>
             {subtitle}
           </div>
-        ) : null}
+        ) : null} */}
       </div>
     </div>
     {onClose ? (

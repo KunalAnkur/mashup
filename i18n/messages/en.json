@@ -269,6 +269,8 @@
       "callsMessage": "Video and voice calls come with the Couple and Crowd plans. Upgrade to turn them on for this room.",
       "watchLimitTitle": "More watch time",
       "watchLimitMessage": "This room runs on the host's daily watch limit. Couple and Crowd remove it, so you can finish what you started.",
+      "gameTitle": "Unlock this game",
+      "gameMessage": "This game comes with the Couple and Crowd plans. Upgrade to play it in this room.",
       "roomFullTitle": "Upgrade your plan",
       "roomFullMessage": "Your room is at its participant limit. A bigger plan lets you host watch parties with more people.",
       "guestRoomFullTitle": "Room is full",
@@ -283,7 +285,15 @@
       }
     },
     "reconnectingBanner": "Reconnecting...",
-    "connectionLostReload": "Couldn't reconnect. Please refresh the page."
+    "connectionLostReload": "Couldn't reconnect. Please refresh the page.",
+    "closePanel": "Hide chat",
+    "addContent": "Change",
+    "addContentLabel": "Change content",
+    "contentModalTitle": "Change what's playing",
+    "contentModalSubtitle": "Queue something new without stopping what is playing.",
+    "contentModalOwn": "Your own",
+    "contentModalAddToPlaylist": "Add to playlist",
+    "contentModalNoScreenShare": "Screen sharing is not available on this device."
   },
   "sync": {
     "title": "Enter Source URL",
@@ -662,7 +672,12 @@
       "join": "Join",
       "unavailable": "Games are unavailable right now. Try again in a moment.",
       "loadingBoard": "Loading the board...",
-      "playAgain": "Play again"
-    }
+      "playAgain": "Play again",
+      "exitGame": "Exit game",
+      "openPanel": "Chat"
+    },
+    "roomPickerTitle": "Choose a game",
+    "roomPickerSubtitle": "Everyone in the room plays together. Your playlist is kept.",
+    "roomPickerAction": "Play a game"
   }
 }

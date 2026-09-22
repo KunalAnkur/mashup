@@ -24,6 +24,9 @@ interface ControlBarProps {
   hideControls: ControlComponents[];
   onUserActivity?: () => void;
   onOpenStore?: () => void;
+  /** The in-room content picker — see PlayerControls. */
+  showChangeContent?: boolean;
+  onChangeContent?: () => void;
 }
 
 export const ControlBar = ({
@@ -32,7 +35,8 @@ export const ControlBar = ({
   onSeekTo, onSeekStart, onSeekEnd, onPlayPause,
   onMuteToggle, onVolumeChange, onFullscreenToggle,
   formatTime, hideControls = [], onUserActivity,
-  onOpenStore, onHidingFullControls
+  onOpenStore, onHidingFullControls,
+  showChangeContent, onChangeContent,
 }: ControlBarProps) => {
   const controlsVisibility = showControls
     ? "translate-y-0 opacity-100"
@@ -61,6 +65,8 @@ export const ControlBar = ({
           onFullscreenToggle={onFullscreenToggle}
           onUserActivity={onUserActivity}
           onOpenStore={onOpenStore}
+          showChangeContent={showChangeContent}
+          onChangeContent={onChangeContent}
           showHidingControlsBtn={!hideControls.includes(ControlComponents.HIDE_CONTROLS)}
         />
 
@@ -77,6 +83,8 @@ export const ControlBar = ({
         onFullscreenToggle={onFullscreenToggle}
         onOpenStore={onOpenStore}
         showStore={!hideControls.includes(ControlComponents.STORE)}
+        showChangeContent={showChangeContent}
+        onChangeContent={onChangeContent}
         formatTime={formatTime}
         hideControls={hideControls}
         showHidingControlsBtn={!hideControls.includes(ControlComponents.HIDE_CONTROLS)}

@@ -1,8 +1,8 @@
 "use client";
 
 import { appWhiteBorderClass } from "@/components/UI/classTokens";
-import { LuFolderPlus, LuLink2, LuScreenShare } from "react-icons/lu";
-import { useSelector } from "react-redux";
+import { LuFolderPlus, LuGamepad2, LuLink2, LuScreenShare } from "react-icons/lu";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import { useEffect, useRef, useState } from "react";
 import { validateUrl } from "@/components/Modals/UrlModalComponents";
@@ -16,6 +16,18 @@ import { useTranslations } from "@/i18n/I18nProvider";
 import { AddUrlModal } from "../AddUrlModal";
 import { useScreenShareQualityControl, useScreenShareSupport } from "@/hooks";
 import { ScreenShareQualityPicker } from "@/components/UI/ScreenShareQualityPicker";
+import { useGameGallery } from "@/components/Games/useGameGallery";
+import { GamePickerModal } from "@/components/Modals/GamePickerModal";
+import { setUpgradeSubscriptionModal } from "@/lib/store/slices/roomSlice";
+import type { CatalogEntry } from "@movmash/arcade-client";
+import {
+    choiceGridColumnsClass,
+    choiceGridWideColumnsClass,
+    roomEmptyChoiceClass,
+    roomEmptyChoiceGridClass,
+    roomEmptyChoiceIconClass,
+    roomEmptyChoiceLabelClass,
+} from "@/components/UI/classTokens";
 
 type UrlMetadataResponseItem = {
     url: string;
@@ -27,7 +39,10 @@ type UrlMetadataResponseItem = {
     link?: string;
 };
 
-const contentSelectionToolbarGridClass = "grid grid-cols-2 gap-2 sm:grid-cols-3";
+// Column count is decided from the number of buttons — see choiceGridColumnsClass. The
+// panel is narrow at every viewport, so it never gets the one-row treatment the empty
+// state does.
+const contentSelectionToolbarGridClass = "grid gap-2";
 const contentSelectionToolbarButtonClass =
     `flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl ${appWhiteBorderClass} px-2 py-2 text-center transition-all duration-200 hover:border-white/20 hover:bg-white/[0.03] disabled:cursor-not-allowed disabled:opacity-50`;
 const contentSelectionToolbarIconWrapClass =
@@ -39,12 +54,31 @@ const contentSelectionToolbarLabelClass =
 const contentSelectionQualityRowClass = "mt-2 justify-start";
 
 type ContentSelectionProps = {
-    onAddContent: (content: Playlist[], source: "file" | "url" | "screen") => void;
+    onAddContent: (content: Playlist[], source: "file" | "url" | "screen" | "game") => void;
     onScreenShareStopped: (streamId: string) => void;
+    /**
+     * "panel" is the dense toolbar in the 272px side column. "hero" is the same choices
+     * laid out for the player's empty state, which has a whole surface to work with —
+     * see roomEmptyChoiceClass.
+     */
+    variant?: "panel" | "hero";
+    /**
+     * Drops the "Play a game" tile. For the in-room content modal, which gives games a
+     * tab of their own — the tile there would be a second door to the same place, and it
+     * opens a modal on top of a modal to get through it.
+     */
+    showGameOption?: boolean;
 }
-const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelectionProps) => {
+const ContentSelection = ({
+    onAddContent,
+    onScreenShareStopped,
+    variant = "panel",
+    showGameOption = true,
+}: ContentSelectionProps) => {
+    const dispatch = useDispatch();
     const roomState = useSelector((state: RootState) => state.room);
     const isHost = roomState.host;
+    const [showGamePicker, setShowGamePicker] = useState(false);
     const [isSharingScreen, setIsSharingScreen] = useState(false);
     const [isAddingFiles, setIsAddingFiles] = useState(false);
     const [isAddingUrls, setIsAddingUrls] = useState(false);
@@ -62,10 +96,17 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
     // live video track it would be a third control in an already dense column, answering a
     // question nobody has yet; /stream/screen is where quality gets chosen up front.
     const hasLiveScreenVideo = !!stream?.getVideoTracks().some((t) => t.readyState === "live");
+
+    // "The selected source is a screen share" — the playlist's own answer, not the media
+    // stream's. A host can have a capture running while the room is watching something
+    // else entirely, and a quality control for a share nobody is looking at is noise.
+    const selectedIsScreenShare =
+        roomState.playlist.find((item) => item.selected)?.source === "screen";
     const t = useTranslations("sync");
     const tCommon = useTranslations("common");
     const tToast = useTranslations("toast");
     const tStream = useTranslations("stream");
+    const tGames = useTranslations("games");
 
     const handleOpenAddUrlModal = () => {
         if (!isHost || !roomState.roomId) return;
@@ -390,6 +431,50 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
         }
     }
 
+    // The same catalogue the /games page and the home strip use. Only `games` is taken:
+    // the hook's `play` opens a NEW room, which is the opposite of what is wanted here,
+    // and its `opening` flag is set by that same call — so it would never move for us.
+    const { games } = useGameGallery();
+    const [startingGame, setStartingGame] = useState<string | null>(null);
+
+    /**
+     * Starting a game in the room that already exists.
+     *
+     * A game is a playlist entry like any other — type "activity", with the game id in
+     * `link` — so this goes through the same onAddContent path as a URL or a file, and
+     * reaches guests by the same broadcast. The room switches surface on its own: it
+     * decides it is an activity room from the presence of that entry.
+     */
+    const handlePickGame = (entry: CatalogEntry) => {
+        if (!isHost || !roomState.roomId) return;
+
+        if (entry.requiresUpgrade) {
+            // The room's own modal, not /pricing: the host is mid-session with guests in
+            // here, and navigating away to a pricing page abandons them.
+            setShowGamePicker(false);
+            dispatch(setUpgradeSubscriptionModal({ open: true, context: "games" }));
+            return;
+        }
+
+        setStartingGame(entry.gameId);
+
+        const gameItem: Playlist = {
+            id: crypto.randomUUID(),
+            type: "activity",
+            source: "game",
+            link: entry.gameId,
+            selected: true,
+            onlyAudio: false,
+            metadata: { title: entry.title },
+        };
+
+        onAddContent([gameItem], "game");
+        setShowGamePicker(false);
+        setStartingGame(null);
+    };
+
+    const isHero = variant === "hero";
+
     const toolbarButtons = [
         ...[{
             key: "url",
@@ -399,6 +484,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
             busy: isAddingUrls,
             onClick: handleOpenAddUrlModal,
             icon: <LuLink2 size={14} className="text-pink-400 md:w-4 md:h-4" />,
+            heroIcon: <LuLink2 size={19} className="text-pink-400" />,
             spinnerClassName: "border-pink-300/30 border-t-pink-300",
         },
         {
@@ -409,6 +495,7 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
             busy: isAddingFiles,
             onClick: handleAddFiles,
             icon: <LuFolderPlus size={14} className="text-amber-300 md:w-4 md:h-4" />,
+            heroIcon: <LuFolderPlus size={19} className="text-amber-300" />,
             spinnerClassName: "border-amber-200/30 border-t-amber-200",
         }],
         ...(canScreenShare ? [{
@@ -419,42 +506,77 @@ const ContentSelection = ({ onAddContent, onScreenShareStopped }: ContentSelecti
             busy: isSharingScreen,
             onClick: handleShareScreen,
             icon: <LuScreenShare size={14} className="text-cyan-300 md:w-4 md:h-4" />,
+            heroIcon: <LuScreenShare size={19} className="text-cyan-300" />,
             spinnerClassName: "border-cyan-200/30 border-t-cyan-200",
         }]: []),
+        ...(showGameOption ? [{
+            key: "game",
+            label: tGames("roomPickerAction"),
+            busyLabel: tGames("starting"),
+            disabled: startingGame !== null,
+            busy: startingGame !== null,
+            onClick: () => setShowGamePicker(true),
+            icon: <LuGamepad2 size={14} className="text-emerald-300 md:w-4 md:h-4" />,
+            heroIcon: <LuGamepad2 size={19} className="text-emerald-300" />,
+            spinnerClassName: "border-emerald-200/30 border-t-emerald-200",
+        }] : []),
     ];
 
     return (
         <>
-        {isHost && (
-            <div className={contentSelectionToolbarGridClass}>
+        {/* The panel's own copy of these four is commented out, not deleted: the same
+            component still draws them in the player's empty state and in the "Your own"
+            tab of the Change-content modal, which is where adding things lives now. A
+            second set in the panel was the same four buttons a scroll apart.
+
+            To bring them back in the panel, drop `isHero &&` from the line below. */}
+        {isHero && isHost && (
+            <div
+                className={
+                    isHero
+                        ? `${roomEmptyChoiceGridClass} ${choiceGridColumnsClass(toolbarButtons.length)} ${choiceGridWideColumnsClass(toolbarButtons.length)}`
+                        : `${contentSelectionToolbarGridClass} ${choiceGridColumnsClass(toolbarButtons.length)}`
+                }
+            >
                 {toolbarButtons.map((button) => (
                     <button
                         key={button.key}
                         onClick={button.onClick}
                         disabled={button.disabled}
-                        className={contentSelectionToolbarButtonClass}
+                        className={isHero ? roomEmptyChoiceClass : contentSelectionToolbarButtonClass}
                     >
-                        <span className={contentSelectionToolbarIconWrapClass}>
+                        <span className={isHero ? roomEmptyChoiceIconClass : contentSelectionToolbarIconWrapClass}>
                             {button.busy ? (
-                                <span className={`h-3.5 w-3.5 rounded-full border-2 animate-spin ${button.spinnerClassName}`} />
+                                <span className={`${isHero ? "h-5 w-5" : "h-3.5 w-3.5"} rounded-full border-2 animate-spin ${button.spinnerClassName}`} />
                             ) : (
-                                button.icon
+                                isHero ? button.heroIcon : button.icon
                             )}
                         </span>
-                        <span className={contentSelectionToolbarLabelClass}>
+                        <span className={isHero ? roomEmptyChoiceLabelClass : contentSelectionToolbarLabelClass}>
                             {button.busy ? button.busyLabel : button.label}
                         </span>
                     </button>
                 ))}
             </div>
         )}
-        {isHost && hasLiveScreenVideo && (
+        {/* Stays in the panel after the tiles above went: while a screen share is what the
+            room is on, this is the one control worth having a tap away — it is what a host
+            reaches for when they watch the room stutter. */}
+        {isHost && hasLiveScreenVideo && selectedIsScreenShare && (
             <ScreenShareQualityPicker
                 control={qualityControl}
                 compact
                 className={contentSelectionQualityRowClass}
             />
         )}
+            <GamePickerModal
+                open={showGamePicker}
+                onClose={() => setShowGamePicker(false)}
+                games={games}
+                opening={startingGame}
+                onPick={handlePickGame}
+            />
+
             <AddUrlModal
                 isOpen={showAddUrlModal}
                 urlInput={urlInput}

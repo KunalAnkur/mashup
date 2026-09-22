@@ -75,7 +75,7 @@ const PlaylistTab = () => {
         broadcastPlaylist(newPlaylist);
     }
 
-    const handleAddPlaylistContent = (content: Playlist[], source: "file" | "url" | "screen") => {
+    const handleAddPlaylistContent = (content: Playlist[], source: "file" | "url" | "screen" | "game") => {
         console.log("handleAddPlaylistContent", content);
         addPlaylistContent(content, source);
     }

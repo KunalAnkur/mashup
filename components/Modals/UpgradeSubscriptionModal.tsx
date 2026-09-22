@@ -24,7 +24,7 @@ interface UpgradeSubscriptionModalProps {
   isHost?: boolean;
   /** What the user was trying to do. Drives the copy — asking about calls should not be
    *  told the room is full, which is what happened when every caller shared one message. */
-  context?: "room_full" | "calls" | "watch_limit";
+  context?: "room_full" | "calls" | "watch_limit" | "games";
 }
 
 const UpgradeSubscriptionModal = ({
@@ -46,6 +46,8 @@ const UpgradeSubscriptionModal = ({
   const copy = {
     calls: { title: t("callsTitle"), message: t("callsMessage") },
     watch_limit: { title: t("watchLimitTitle"), message: t("watchLimitMessage") },
+    // No guest variant: only the host can start a game, so only they reach this.
+    games: { title: t("gameTitle"), message: t("gameMessage") },
     room_full: {
       title: isHost ? t("roomFullTitle") : t("guestRoomFullTitle"),
       message: isHost ? t("roomFullMessage") : t("guestRoomFullMessage"),

@@ -269,6 +269,8 @@
       "callsMessage": "مكالمات الفيديو والصوت متوفرة مع خطتَي Couple وCrowd. قم بالترقية لتفعيلها في هذه الغرفة.",
       "watchLimitTitle": "مزيد من وقت المشاهدة",
       "watchLimitMessage": "تعتمد هذه الغرفة على حد المشاهدة اليومي للمضيف. تزيل خطتا Couple وCrowd هذا الحد، حتى تتمكن من إكمال ما بدأته.",
+      "gameTitle": "افتح هذه اللعبة",
+      "gameMessage": "تأتي هذه اللعبة مع خطتَي Couple وCrowd. قم بالترقية للعب بها في هذه الغرفة.",
       "roomFullTitle": "قم بترقية خطتك",
       "roomFullMessage": "وصلت غرفتك إلى حد المشاركين. تتيح لك خطة أكبر استضافة حفلات مشاهدة مع عدد أكبر من الأشخاص.",
       "guestRoomFullTitle": "الغرفة ممتلئة",
@@ -283,7 +285,15 @@
       }
     },
     "reconnectingBanner": "جارٍ إعادة الاتصال...",
-    "connectionLostReload": "تعذّرت إعادة الاتصال. يرجى تحديث الصفحة."
+    "connectionLostReload": "تعذّرت إعادة الاتصال. يرجى تحديث الصفحة.",
+    "closePanel": "إخفاء الدردشة",
+    "addContent": "تغيير",
+    "addContentLabel": "تغيير المحتوى",
+    "contentModalTitle": "غيّر ما يُعرض",
+    "contentModalSubtitle": "أضف شيئًا جديدًا إلى القائمة دون إيقاف ما يُعرض.",
+    "contentModalOwn": "المحتوى الخاص بك",
+    "contentModalAddToPlaylist": "أضف إلى القائمة",
+    "contentModalNoScreenShare": "مشاركة الشاشة غير متاحة على هذا الجهاز."
   },
   "sync": {
     "title": "أدخل رابط المصدر",
@@ -662,7 +672,12 @@
       "join": "انضم",
       "unavailable": "الألعاب غير متاحة الآن. حاول بعد قليل.",
       "loadingBoard": "جارٍ تحميل اللوحة...",
-      "playAgain": "العب مرة أخرى"
-    }
+      "playAgain": "العب مرة أخرى",
+      "exitGame": "الخروج من اللعبة",
+      "openPanel": "الدردشة"
+    },
+    "roomPickerTitle": "اختر لعبة",
+    "roomPickerSubtitle": "يلعب الجميع في الغرفة معًا. تبقى قائمة التشغيل كما هي.",
+    "roomPickerAction": "العب لعبة"
   }
 }

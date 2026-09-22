@@ -11,6 +11,7 @@ const initialState: RoomState = {
   settings: {
     upgradeSubscriptionModal: false,
     panelCollapsed: false,
+    contentModal: false,
     bottomSheet: false,
     /** 
      * *this playeractive represent whether the playerwrapper component is mounted or not.
@@ -102,6 +103,9 @@ const roomSlice = createSlice({
       );
       // state.selectedIndex = state.playlist.findIndex((item) => item.selected) || 0;
     },
+    setContentModal: (state, action: PayloadAction<{ open: boolean }>) => {
+      state.settings.contentModal = action.payload.open;
+    },
     setPanelCollapsed: (state, action: PayloadAction<Partial<RoomSetting>>) => {
       state.settings = {
         ...state.settings,
@@ -133,7 +137,7 @@ const roomSlice = createSlice({
     },
     setUpgradeSubscriptionModal: (
       state,
-      action: PayloadAction<{ open: boolean; message?: string; context?: "room_full" | "watch_time_session" }>,
+      action: PayloadAction<{ open: boolean; message?: string; context?: "room_full" | "watch_time_session" | "games" }>,
     ) => {
       state.settings.upgradeSubscriptionModal = action.payload.open;
       if (action.payload.message) {
@@ -175,6 +179,7 @@ export const {
   exitRoom,
   setLoading,
   setPanelCollapsed,
+  setContentModal,
   setBottomSheet,
   toggleBottomSheet,
   setPlayerActive,

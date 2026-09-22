@@ -269,6 +269,8 @@
       "callsMessage": "Görüntülü ve sesli aramalar Couple ve Crowd planlarıyla gelir. Bu odada açmak için yükselt.",
       "watchLimitTitle": "Daha fazla izleme süresi",
       "watchLimitMessage": "Bu oda, oda sahibinin günlük izleme sınırına bağlıdır. Couple ve Crowd bu sınırı kaldırır, böylece başladığın şeyi bitirebilirsin.",
+      "gameTitle": "Bu oyunun kilidini aç",
+      "gameMessage": "Bu oyun Couple ve Crowd planlarıyla birlikte gelir. Bu odada oynamak için planını yükselt.",
       "roomFullTitle": "Planını yükselt",
       "roomFullMessage": "Odan katılımcı sınırına ulaştı. Daha büyük bir plan ile daha fazla kişiyle izleme partisi düzenleyebilirsin.",
       "guestRoomFullTitle": "Oda dolu",
@@ -283,7 +285,15 @@
       }
     },
     "reconnectingBanner": "Yeniden bağlanılıyor...",
-    "connectionLostReload": "Yeniden bağlanılamadı. Lütfen sayfayı yenileyin."
+    "connectionLostReload": "Yeniden bağlanılamadı. Lütfen sayfayı yenileyin.",
+    "closePanel": "Sohbeti gizle",
+    "addContent": "Değiştir",
+    "addContentLabel": "İçeriği değiştir",
+    "contentModalTitle": "Oynatılanı değiştir",
+    "contentModalSubtitle": "Oynatılanı durdurmadan yeni bir şey sıraya al.",
+    "contentModalOwn": "Kendi içeriğin",
+    "contentModalAddToPlaylist": "Listeye ekle",
+    "contentModalNoScreenShare": "Ekran paylaşımı bu cihazda kullanılamıyor."
   },
   "sync": {
     "title": "Kaynak URL Girin",
@@ -662,7 +672,12 @@
       "join": "Katıl",
       "unavailable": "Oyunlar şu anda kullanılamıyor. Birazdan tekrar deneyin.",
       "loadingBoard": "Tahta yükleniyor...",
-      "playAgain": "Tekrar oyna"
-    }
+      "playAgain": "Tekrar oyna",
+      "exitGame": "Oyundan çık",
+      "openPanel": "Sohbet"
+    },
+    "roomPickerTitle": "Bir oyun seç",
+    "roomPickerSubtitle": "Odadaki herkes birlikte oynar. Oynatma listen korunur.",
+    "roomPickerAction": "Oyun oyna"
   }
 }

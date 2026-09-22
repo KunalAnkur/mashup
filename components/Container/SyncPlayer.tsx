@@ -11,7 +11,7 @@ import { useSync } from "@/hooks";
 import { useRoomContext } from "@/context/RoomContext";
 import { helper } from "@/utils";
 import type { Playlist } from "@/types/storeTypes";
-import { toggleBottomSheet } from "@/lib/store/slices/roomSlice";
+import { toggleBottomSheet, setContentModal } from "@/lib/store/slices/roomSlice";
 
 type Props = {
   fullscreenTargetRef?: React.RefObject<HTMLDivElement>;
@@ -135,6 +135,8 @@ const SyncPlayer = ({ fullscreenTargetRef, setFocus }: Props) => {
       disableControls={isPlaybackBlocked ? [...controlsConfig.disableControls, ControlComponents.PLAY] : controlsConfig.disableControls}
       hideControls={isPlaybackBlocked ? [...controlsConfig.hideControls, ControlComponents.PLAY] : controlsConfig.hideControls}
       onOpenStore={() =>  dispatch(toggleBottomSheet())}
+      showChangeContent={roomState.host}
+      onChangeContent={() => dispatch(setContentModal({ open: true }))}
       disableSeekPauseResume={helper.shouldDisableSeekPauseResume(videoUrl)}
       autoResumeOnFullscreenExit={!isHost}
       syncWithHost={syncWithHost}
