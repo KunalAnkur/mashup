@@ -293,7 +293,13 @@
     "contentModalSubtitle": "Oynatılanı durdurmadan yeni bir şey sıraya al.",
     "contentModalOwn": "Kendi içeriğin",
     "contentModalAddToPlaylist": "Listeye ekle",
-    "contentModalNoScreenShare": "Ekran paylaşımı bu cihazda kullanılamıyor."
+    "contentModalNoScreenShare": "Ekran paylaşımı bu cihazda kullanılamıyor.",
+    "playLimit": {
+      "title": "Günlük sınıra ulaşıldı",
+      "message": "Bugünkü {limit} ücretsiz dakikanı kullandın. Sınırsız oyun için {planName} planına geç.",
+      "viewerTitle": "Oyun duraklatıldı",
+      "viewerMessage": "Oda sahibi bugünkü {limit} ücretsiz dakikasını kullandı. Yarın ya da onlar yükseltir yükseltmez yeniden oynayabilirsin."
+    }
   },
   "sync": {
     "title": "Kaynak URL Girin",

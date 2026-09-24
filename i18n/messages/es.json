@@ -293,7 +293,13 @@
     "contentModalSubtitle": "Pon algo nuevo en cola sin detener lo que se reproduce.",
     "contentModalOwn": "Lo tuyo",
     "contentModalAddToPlaylist": "Añadir a la lista",
-    "contentModalNoScreenShare": "Compartir pantalla no está disponible en este dispositivo."
+    "contentModalNoScreenShare": "Compartir pantalla no está disponible en este dispositivo.",
+    "playLimit": {
+      "title": "Límite diario alcanzado",
+      "message": "Has usado tus {limit} minutos gratis de hoy. Mejora a {planName} para jugar sin límite.",
+      "viewerTitle": "Partida en pausa",
+      "viewerMessage": "El anfitrión ha usado sus {limit} minutos gratis de hoy. Podréis jugar mañana, o en cuanto mejore su plan."
+    }
   },
   "sync": {
     "title": "Ingresar URL de Origen",

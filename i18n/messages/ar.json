@@ -293,7 +293,13 @@
     "contentModalSubtitle": "أضف شيئًا جديدًا إلى القائمة دون إيقاف ما يُعرض.",
     "contentModalOwn": "المحتوى الخاص بك",
     "contentModalAddToPlaylist": "أضف إلى القائمة",
-    "contentModalNoScreenShare": "مشاركة الشاشة غير متاحة على هذا الجهاز."
+    "contentModalNoScreenShare": "مشاركة الشاشة غير متاحة على هذا الجهاز.",
+    "playLimit": {
+      "title": "تم بلوغ الحد اليومي",
+      "message": "لقد استخدمت دقائقك المجانية اليوم ({limit} دقيقة). قم بالترقية إلى {planName} للعب بلا حدود.",
+      "viewerTitle": "اللعبة متوقفة مؤقتًا",
+      "viewerMessage": "استخدم المضيف دقائقه المجانية اليوم ({limit} دقيقة). يمكنكما اللعب غدًا، أو فور ترقيته للخطة."
+    }
   },
   "sync": {
     "title": "أدخل رابط المصدر",

@@ -18,6 +18,9 @@ import {
   roomExitActivityClass,
 } from "@/components/UI/classTokens";
 import { useActivityTransport } from "./useActivityTransport";
+import { useActivityMedia } from "./useActivityMedia";
+import { useActivityPreferences } from "./useActivityPreferences";
+import PlaybackBlockedOverlay from "@/components/Container/PlaybackBlockedOverlay";
 import { activityDesignTokens } from "./activityTokens";
 
 /**
@@ -46,6 +49,7 @@ export function ActivityRoomSurface() {
   const { removeActivity } = usePlaylistActions();
   const dispatch = useDispatch();
   const isHost = roomState.host;
+  const isPlaybackBlocked = roomState.settings.isPlaybackBlocked;
   const panelCollapsed = roomState.settings.panelCollapsed;
 
   const me = useMemo(
@@ -67,6 +71,19 @@ export function ActivityRoomSurface() {
       roomState.playlist.find((item) => item.type === "activity");
     return entry?.link ?? null;
   }, [roomState.playlist]);
+
+  /**
+   * Null for every game that did not ask for it, which is all of them but one. Built
+   * from the manifest rather than from a list here, so a second game needing media is
+   * a manifest change and nothing else.
+   */
+  const media = useActivityMedia(gameId, me.userId);
+
+  /**
+   * Settings that follow this player between machines. No capability gates it — a row
+   * per game costs nothing and has no plan implications — so every game gets one.
+   */
+  const preferences = useActivityPreferences(gameId);
 
   // Two latches, both guarding against the same hazard: `session` is a new object on
   // every state change, so any effect depending on it re-runs while a request is still
@@ -306,6 +323,16 @@ export function ActivityRoomSurface() {
         different thing — same session, running score — and games that offer one keep
         it, because a rematch never ends the session.
       */}
+      {/*
+        The host's daily allowance is spent.
+        Rendered here as well as in the video player because a game room has no video
+        player — the same room-wide `FORCE_PAUSE_PLAYBACK` sets the flag either way,
+        and without this the game simply stops with nothing on screen to explain it.
+        The meter only ran because the manifest asked for `meter-time`, so a room
+        playing tic-tac-toe never reaches this.
+      */}
+      {isPlaybackBlocked ? <PlaybackBlockedOverlay variant="play" /> : null}
+
       {session.phase === "ended" ? (
         <div className="absolute inset-x-0 bottom-0 z-10 flex justify-center pb-5">
           <button
@@ -320,6 +347,8 @@ export function ActivityRoomSurface() {
 
       <ActivitySurface
         session={session}
+        media={media ?? undefined}
+        preferences={preferences}
         me={me}
         tokens={activityDesignTokens}
         locale={locale}
