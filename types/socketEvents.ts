@@ -72,6 +72,11 @@ export enum SocketEvent {
   P2P_ICE_CANDIDATE = "p2pIceCandidate",
   P2P_PEER_JOINED = "p2pPeerJoined",
   P2P_PEER_LEFT = "p2pPeerLeft",
+  // "I am here" / "and this is who". The server relays these without interpreting the
+  // `purpose` they carry, which is what lets streaming and a game's media link share
+  // the same path between the same two people.
+  P2P_ANNOUNCE = "p2pAnnounce",
+  P2P_PEER_ANNOUNCED = "p2pPeerAnnounced",
   P2P_STREAM_STARTED = "p2pStreamStarted",
   P2P_ROOM_CLOSED = "p2pRoomClosed",
 

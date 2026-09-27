@@ -293,7 +293,13 @@
     "contentModalSubtitle": "Oynatılanı durdurmadan yeni bir şey sıraya al.",
     "contentModalOwn": "Kendi içeriğin",
     "contentModalAddToPlaylist": "Listeye ekle",
-    "contentModalNoScreenShare": "Ekran paylaşımı bu cihazda kullanılamıyor."
+    "contentModalNoScreenShare": "Ekran paylaşımı bu cihazda kullanılamıyor.",
+    "playLimit": {
+      "title": "Günlük sınıra ulaşıldı",
+      "message": "Bugünkü {limit} ücretsiz dakikanı kullandın. Sınırsız oyun için {planName} planına geç.",
+      "viewerTitle": "Oyun duraklatıldı",
+      "viewerMessage": "Oda sahibi bugünkü {limit} ücretsiz dakikasını kullandı. Yarın ya da onlar yükseltir yükseltmez yeniden oynayabilirsin."
+    }
   },
   "sync": {
     "title": "Kaynak URL Girin",
@@ -679,5 +685,21 @@
     "roomPickerTitle": "Bir oyun seç",
     "roomPickerSubtitle": "Odadaki herkes birlikte oynar. Oynatma listen korunur.",
     "roomPickerAction": "Oyun oyna"
+  },
+  "nesSetup": {
+    "title": "Birlikte NES oyna",
+    "subtitle": "Bilgisayarından bir kartuş ekle, odayı çalışır halde açalım. Arkadaşının tek ihtiyacı bağlantı.",
+    "dropHeading": "Bir kartuş bırak",
+    "dropHint": ".nes ya da içinde .nes olan bir .zip",
+    "ready": "Oynamaya hazır · {size}",
+    "readyArchive": "Sıkıştırılmış · {size} · biz açarız",
+    "remove": "Bu kartuşu kaldır",
+    "start": "Oynamaya başla",
+    "starting": "Odan açılıyor…",
+    "couldNotStart": "Odayı açamadık. Bağlantını kontrol edip tekrar dene.",
+    "notACartridge": "Bu bir NES kartuşuna benzemiyor. .nes dosyası olmalı.",
+    "unsupportedArchive": ".zip arşivlerini açabiliriz ama bu türü açamayız. Arşivi çıkar ve .nes dosyasını ekle.",
+    "tooBig": "Bu dosya bir NES kartuşu olamayacak kadar büyük.",
+    "privacy": "Kartuş bilgisayarında kalır. Hiçbir zaman yüklenmez — arkadaşın dosyayı değil, görüntüyü görür."
   }
 }

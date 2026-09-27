@@ -19,6 +19,25 @@ interface UseP2PStreamParams {
     profile?: string;
 }
 
+/**
+ * The `purpose` a viewer's readiness announcement carries.
+ *
+ * These relays are shared and the server never interprets `purpose` — it copies it
+ * across and the clients demultiplex. Streaming's own offers/answers/candidates carry
+ * none (they are the original path), so this tag is only ever on the one message type
+ * added here: "I am a viewer, I am listening, offer me the stream."
+ */
+const STREAM_VIEWER = "stream-viewer";
+
+/**
+ * How long after offering to a viewer we ignore a second request to.
+ *
+ * Long enough to swallow the cluster of signals that legitimately arrive together when
+ * somebody's player mounts, short enough that a viewer whose connection genuinely
+ * failed can ask again and be heard.
+ */
+const REOFFER_COOLDOWN_MS = 3_000;
+
 interface PeerConnection {
     peerId: string;
     connection: RTCPeerConnection;
@@ -52,6 +71,12 @@ export const useP2PStream = ({
     const { socket } = useSocket();
     const { joinResponse, participants } = useRoomContext();
     const tToast = useTranslations("toast");
+
+    /** When we last offered to each viewer. See `REOFFER_COOLDOWN_MS`. */
+    const lastOfferAtRef = useRef<Map<string, number>>(new Map());
+
+    /** The offer we are currently waiting on, per viewer. See `createAndSendOffer`. */
+    const negotiationRef = useRef<Map<string, string>>(new Map());
 
     // State
     const [isInitialized, setIsInitialized] = useState(false);
@@ -239,13 +264,30 @@ export const useP2PStream = ({
             console.log(`[P2P] Creating offer for ${peerId}`);
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
-            
+
+            /*
+             * Every offer is stamped, so its answer can be recognised.
+             *
+             * Each `RTCPeerConnection` allocates RTP header extension ids of its own
+             * choosing. Applying an answer built against a *different* connection asks
+             * the browser to reassign an id that is already live on that m-line, and it
+             * refuses outright: "RTP extension ID reassignment not supported (collision
+             * on active MID 0)". Worse, the connection is unusable afterwards, so the
+             * next `createOffer` fails with the same message and nothing recovers.
+             *
+             * Matching on the signalling state alone is not enough — a fresh connection
+             * mid-offer is in exactly the state a stale answer is accepted in.
+             */
+            const nonce = crypto.randomUUID();
+            negotiationRef.current.set(peerId, nonce);
+
             if (socket && roomId) {
                 console.log(`[P2P] Sending offer to ${peerId}`);
                 socket.emit(SocketEvent.P2P_OFFER, {
                     roomId,
                     targetPeerId: peerId,
                     offer: pc.localDescription?.toJSON(),
+                    nonce,
                 });
             }
         } catch (error) {
@@ -285,17 +327,28 @@ export const useP2PStream = ({
      */
     const handleOffer = useCallback(async (
         fromPeerId: string,
-        offer: RTCSessionDescriptionInit
+        offer: RTCSessionDescriptionInit,
+        nonce?: string,
     ) => {
         try {
             console.log(`[P2P] Received offer from ${fromPeerId}`);
             
-            let peerConn = peerConnectionsRef.current.get(fromPeerId);
-            if (!peerConn) {
-                const pc = createPeerConnection(fromPeerId);
-                peerConn = { peerId: fromPeerId, connection: pc, pendingCandidates: [] };
-                peerConnectionsRef.current.set(fromPeerId, peerConn);
-            }
+            /*
+             * Always a fresh connection, never the one already filed under this peer.
+             *
+             * Every offer the host sends is for a connection it has just built — both
+             * of its offer paths call `closeExistingPeer` and then `createPeerConnection`
+             * before offering, so there is no such thing as a renegotiation offer here.
+             * Reusing our side therefore means applying a brand-new session to a
+             * connection negotiated for a previous one: the ICE credentials and the DTLS
+             * fingerprint both belong to a peer that no longer exists, so it stays in
+             * `connecting` and delivers nothing. It does not throw, which is why it
+             * looked like the stream simply never arrived.
+             */
+            closeExistingPeer(fromPeerId);
+            const pc0 = createPeerConnection(fromPeerId);
+            const peerConn: PeerConnection = { peerId: fromPeerId, connection: pc0, pendingCandidates: [] };
+            peerConnectionsRef.current.set(fromPeerId, peerConn);
 
             const pc = peerConn.connection;
             await pc.setRemoteDescription(new RTCSessionDescription(offer));
@@ -313,24 +366,58 @@ export const useP2PStream = ({
                     roomId,
                     targetPeerId: fromPeerId,
                     answer: pc.localDescription?.toJSON(),
+                    // Straight back, untouched: it identifies their offer, not ours.
+                    nonce,
                 });
             }
         } catch (error) {
             console.error(`[P2P] Error handling offer from ${fromPeerId}:`, error);
         }
-    }, [socket, roomId, createPeerConnection, flushPendingCandidates]);
+    }, [socket, roomId, createPeerConnection, flushPendingCandidates, closeExistingPeer]);
 
     /**
      * Handles incoming answer from a peer
      */
     const handleAnswer = useCallback(async (
         fromPeerId: string,
-        answer: RTCSessionDescriptionInit
+        answer: RTCSessionDescriptionInit,
+        nonce?: string,
     ) => {
         try {
             console.log(`[P2P] Received answer from ${fromPeerId}`);
             const peerConn = peerConnectionsRef.current.get(fromPeerId);
             if (peerConn) {
+                /*
+                 * Only when we are still waiting for one.
+                 *
+                 * A stale answer is normal here, not a fault. The host rebuilds a peer
+                 * connection and re-offers whenever a viewer says it is ready, and a
+                 * viewer can legitimately say so more than once — on mount and again
+                 * when the host announces it has started sharing. Two offers in flight
+                 * means two answers coming back, and the second one arrives at a
+                 * connection that is already `stable`.
+                 *
+                 * Without this the browser throws `InvalidStateError: Called in wrong
+                 * state: stable`, which is alarming, useless, and describes a situation
+                 * the code should simply shrug at. `PeerLink` has ignored exactly this
+                 * for the same reason since it was written; this path never learned to.
+                 */
+                const expected = negotiationRef.current.get(fromPeerId);
+                if (expected !== undefined && nonce !== undefined && nonce !== expected) {
+                    // Somebody else's answer: it belongs to an offer we have replaced.
+                    console.log(
+                        `[P2P] Ignoring answer from ${fromPeerId} for a superseded negotiation`
+                    );
+                    return;
+                }
+
+                if (peerConn.connection.signalingState !== "have-local-offer") {
+                    console.log(
+                        `[P2P] Ignoring stale answer from ${fromPeerId} (state: ${peerConn.connection.signalingState})`
+                    );
+                    return;
+                }
+
                 await peerConn.connection.setRemoteDescription(new RTCSessionDescription(answer));
                 console.log(`[P2P] Set remote description for ${fromPeerId}`);
                 // The answering side started trickling as soon as it set its local description,
@@ -389,7 +476,32 @@ export const useP2PStream = ({
         isHost: boolean;
     }) => {
         if (!isHost || !roomId) return;
-        
+
+        /*
+         * One negotiation per viewer at a time.
+         *
+         * This runs both when the server says somebody joined the room and when a
+         * viewer announces that it is listening — and a viewer announces on mount and
+         * again when the host says it has started sharing, because either side can be
+         * first. Landing together, those produce two offers seconds apart, each from a
+         * connection built by the line below that closes the previous one.
+         *
+         * Two offers means two answers, and the second belongs to a connection that no
+         * longer exists. The guard in `handleAnswer` keeps that from throwing, but the
+         * real fix is not to start the second negotiation: re-offering to somebody we
+         * are already mid-offer with does not help them connect, it only gives them a
+         * connection to throw away.
+         */
+        // "Never offered" is asked as a question rather than encoded as time zero: the
+        // arithmetic happens to work on a real clock, but it reads as though the first
+        // offer to anybody is on cooldown, which is the opposite of what is meant.
+        const lastOffer = lastOfferAtRef.current.get(data.peerId);
+        if (lastOffer !== undefined && Date.now() - lastOffer < REOFFER_COOLDOWN_MS) {
+            console.log(`[P2P] Already offering to ${data.peerId}; skipping duplicate`);
+            return;
+        }
+        lastOfferAtRef.current.set(data.peerId, Date.now());
+
         console.log(`[P2P] Peer joined: ${data.peerId} (${data.username})`);
         
         // Get local stream
@@ -426,6 +538,10 @@ export const useP2PStream = ({
             peerConn.connection.close();
             peerConnectionsRef.current.delete(data.peerId);
         }
+        // Somebody who has gone and come back is a new negotiation, not a duplicate of
+        // the one they left behind — so their cooldown goes with them.
+        lastOfferAtRef.current.delete(data.peerId);
+        negotiationRef.current.delete(data.peerId);
     }, []);
 
     // ============================================================================
@@ -552,6 +668,9 @@ export const useP2PStream = ({
                     for (const participant of currentParticipants) {
                         if (!participant.host && participant.socketId) {
                             console.log(`[P2P] Re-offering to existing participant ${participant.socketId}`);
+                            // Recorded so a viewer announcing itself a moment later is
+                            // treated as the duplicate it is — see `handlePeerJoined`.
+                            lastOfferAtRef.current.set(participant.socketId, Date.now());
                             closeExistingPeer(participant.socketId);
                             const pc = createPeerConnection(participant.socketId);
                             const peerConn: PeerConnection = { peerId: participant.socketId, connection: pc, pendingCandidates: [] };
@@ -599,19 +718,43 @@ export const useP2PStream = ({
     useEffect(() => {
         if (!socket || !enabled) return;
 
-        const handleOfferEvent = (data: { roomId: string; fromPeerId: string; offer: RTCSessionDescriptionInit }) => {
+        /**
+         * Is this signalling ours?
+         *
+         * These three relays are shared. A `purpose` rides along on each of them so that
+         * more than one peer connection can use the same path between the same two
+         * people — today, movie-night streaming and a game's media link at the same
+         * time. The server never interprets it: it copies it across and expects the
+         * clients to demultiplex. Streaming is the original path and sends no `purpose`,
+         * so anything that carries one belongs to somebody else.
+         *
+         * This hook did not check, and the consequences outlived the thing that caused
+         * them. Every offer the game sent was answered here too, which left a peer
+         * connection in `peerConnectionsRef` under the host's socket id holding the
+         * *game's* SDP. Nothing cleaned it up when the game closed, because as far as
+         * this hook knew it was a real viewer. The next real screen share found that
+         * entry, reused it — `handleOffer` reuses any existing connection for the peer —
+         * and applied a fresh offer to a connection negotiated for something else. The
+         * participant saw nothing until they reloaded and the map was emptied.
+         */
+        const notOurs = (data: { purpose?: string }) => data.purpose !== undefined;
+
+        const handleOfferEvent = (data: { roomId: string; fromPeerId: string; offer: RTCSessionDescriptionInit; purpose?: string; nonce?: string }) => {
+            if (notOurs(data)) return;
             if (data.roomId === roomId) {
-                handleOffer(data.fromPeerId, data.offer);
+                handleOffer(data.fromPeerId, data.offer, data.nonce);
             }
         };
 
-        const handleAnswerEvent = (data: { roomId: string; fromPeerId: string; answer: RTCSessionDescriptionInit }) => {
+        const handleAnswerEvent = (data: { roomId: string; fromPeerId: string; answer: RTCSessionDescriptionInit; purpose?: string; nonce?: string }) => {
+            if (notOurs(data)) return;
             if (data.roomId === roomId) {
-                handleAnswer(data.fromPeerId, data.answer);
+                handleAnswer(data.fromPeerId, data.answer, data.nonce);
             }
         };
 
-        const handleIceCandidateEvent = (data: { roomId: string; fromPeerId: string; candidate: RTCIceCandidateInit }) => {
+        const handleIceCandidateEvent = (data: { roomId: string; fromPeerId: string; candidate: RTCIceCandidateInit; purpose?: string }) => {
+            if (notOurs(data)) return;
             if (data.roomId === roomId) {
                 handleIceCandidate(data.fromPeerId, data.candidate);
             }
@@ -629,11 +772,40 @@ export const useP2PStream = ({
             }
         };
 
+        /**
+         * A viewer saying it is listening.
+         *
+         * The host only ever offers at two moments: when it starts sharing (walking the
+         * participant roster) and when the server says somebody *joined the room*.
+         * Neither covers a viewer whose player merely re-mounted — which is exactly
+         * what happens on the way out of a game, because the activity surface and the
+         * media player are alternatives and only one of them exists at a time.
+         *
+         * So a viewer that mounts into a room where sharing already started, or that
+         * was not reachable at the instant the host walked the roster, waits forever:
+         * the offer it needed either went to nobody or was never made, and nothing
+         * retries. Reloading appeared to fix it only because rejoining the room is a
+         * real join, which is the one signal the host does act on.
+         *
+         * This is that missing signal, carried on the announce relay the server already
+         * has. The host answers it exactly as it answers a join.
+         */
+        const handlePeerAnnouncedEvent = (data: {
+            roomId: string;
+            fromPeerId: string;
+            purpose?: string;
+        }) => {
+            if (data.purpose !== STREAM_VIEWER) return;   // not a viewer announcement
+            if (data.roomId !== roomId || !isHost) return;
+            handlePeerJoined({ peerId: data.fromPeerId, username: "", isHost: false });
+        };
+
         socket.on(SocketEvent.P2P_OFFER, handleOfferEvent);
         socket.on(SocketEvent.P2P_ANSWER, handleAnswerEvent);
         socket.on(SocketEvent.P2P_ICE_CANDIDATE, handleIceCandidateEvent);
         socket.on(SocketEvent.P2P_PEER_JOINED, handlePeerJoinedEvent);
         socket.on(SocketEvent.P2P_PEER_LEFT, handlePeerLeftEvent);
+        socket.on(SocketEvent.P2P_PEER_ANNOUNCED, handlePeerAnnouncedEvent);
 
         return () => {
             socket.off(SocketEvent.P2P_OFFER, handleOfferEvent);
@@ -641,8 +813,34 @@ export const useP2PStream = ({
             socket.off(SocketEvent.P2P_ICE_CANDIDATE, handleIceCandidateEvent);
             socket.off(SocketEvent.P2P_PEER_JOINED, handlePeerJoinedEvent);
             socket.off(SocketEvent.P2P_PEER_LEFT, handlePeerLeftEvent);
+            socket.off(SocketEvent.P2P_PEER_ANNOUNCED, handlePeerAnnouncedEvent);
         };
-    }, [socket, roomId, enabled, handleOffer, handleAnswer, handleIceCandidate, handlePeerJoined, handlePeerLeft]);
+    }, [socket, roomId, enabled, isHost, handleOffer, handleAnswer, handleIceCandidate, handlePeerJoined, handlePeerLeft]);
+
+    /**
+     * Tell the host we are listening — on mount, and again whenever it says it has
+     * started sharing.
+     *
+     * Both halves are needed because either side can be first. Mounting after the host
+     * started covers "I arrived late"; reacting to `P2P_STREAM_STARTED` covers "I was
+     * already here but the host's roster walk did not reach me". The host closes any
+     * existing connection to us before it re-offers, so an extra announcement costs a
+     * renegotiation and never a broken connection.
+     *
+     * `P2P_STREAM_STARTED` had no listener anywhere before this. The host emits it with
+     * the comment "handles newly joining peers", but nothing acted on it.
+     */
+    useEffect(() => {
+        if (!socket || !roomId || !enabled || isHost) return;
+
+        const announce = () => socket.emit(SocketEvent.P2P_ANNOUNCE, { roomId, purpose: STREAM_VIEWER });
+
+        announce();
+        socket.on(SocketEvent.P2P_STREAM_STARTED, announce);
+        return () => {
+            socket.off(SocketEvent.P2P_STREAM_STARTED, announce);
+        };
+    }, [socket, roomId, enabled, isHost]);
 
     // Listen for stream control events (consumers only)
     useEffect(() => {

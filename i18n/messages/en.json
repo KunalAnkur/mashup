@@ -293,7 +293,13 @@
     "contentModalSubtitle": "Queue something new without stopping what is playing.",
     "contentModalOwn": "Your own",
     "contentModalAddToPlaylist": "Add to playlist",
-    "contentModalNoScreenShare": "Screen sharing is not available on this device."
+    "contentModalNoScreenShare": "Screen sharing is not available on this device.",
+    "playLimit": {
+      "title": "Daily limit reached",
+      "message": "You've used your {limit} free minutes for today. Upgrade to {planName} for unlimited play.",
+      "viewerTitle": "Game paused",
+      "viewerMessage": "The host has used their {limit} free minutes for today. You can play again tomorrow, or as soon as they upgrade."
+    }
   },
   "sync": {
     "title": "Enter Source URL",
@@ -679,5 +685,21 @@
     "roomPickerTitle": "Choose a game",
     "roomPickerSubtitle": "Everyone in the room plays together. Your playlist is kept.",
     "roomPickerAction": "Play a game"
+  },
+  "nesSetup": {
+    "title": "Play NES together",
+    "subtitle": "Add a cartridge from your computer and we'll open a room with it already running. Your friend just needs the link.",
+    "dropHeading": "Drop a cartridge",
+    "dropHint": ".nes, or a .zip with one inside",
+    "ready": "Ready to play · {size}",
+    "readyArchive": "Zipped · {size} · we'll unpack it",
+    "remove": "Remove this cartridge",
+    "start": "Start playing",
+    "starting": "Opening your room…",
+    "couldNotStart": "We couldn't open the room. Check your connection and try again.",
+    "notACartridge": "That doesn't look like a NES cartridge. It should be a .nes file.",
+    "unsupportedArchive": "We can open .zip archives, but not this kind. Unzip it and add the .nes file.",
+    "tooBig": "That file is too large to be a NES cartridge.",
+    "privacy": "The cartridge stays on your computer. It is never uploaded — your friend sees the picture, not the file."
   }
 }

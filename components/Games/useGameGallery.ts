@@ -44,6 +44,23 @@ export function useGameGallery() {
         router.push("/pricing");
         return;
       }
+      /*
+       * Some games need something picked before the room exists — a file of the
+       * player's own, say. Opening a room first means whoever you invited watches you
+       * rummage through a file dialog, so those games get a page of their own first,
+       * exactly like `/stream` and `/sync` do for the other content types.
+       *
+       * Read off the manifest rather than matched on an id, because there is no list
+       * of games in this file and there must never be one. A game declares
+       * `needsSetup` and gets its page at `/games/<id>`; a game that does not is
+       * opened straight into a room, which is what has always happened.
+       */
+      if (entry.needsSetup) {
+        trackCTAClicked("games_setup", { game_id: entry.gameId });
+        router.push(`/games/${entry.gameId}`);
+        return;
+      }
+
       setOpening(entry.gameId);
       trackCTAClicked("games_start", { game_id: entry.gameId });
       openActivityRoom(entry.gameId);

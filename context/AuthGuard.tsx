@@ -232,7 +232,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const isRoomHandoffRoute =
         isStreamRoute ||
         pathname === "/sync" ||
-        pathname === "/games" ||
+        // A prefix, not an exact match: a game may have a setup page of its own under
+        // `/games/<id>` that asks for something before the room exists — a cartridge,
+        // say — and it hands off a playlist exactly like `/stream` does. Matching only
+        // `/games` meant the first such page dispatched into silence, which is the
+        // failure this comment already warned about.
+        Boolean(pathname?.startsWith("/games")) ||
         pathname === "/youtube";
 
       if (isRoomHandoffRoute && authState.isAuthenticated) {

@@ -25,6 +25,7 @@ import { productApi } from "./api/productApi";
 import { youtubeApi } from "./api/youtubeApi";
 import { subscriptionPlanApi } from "./api/subscriptionPlanApi";
 import { billingApi } from "./api/billingApi";
+import { activityPreferencesApi } from "./api/activityPreferencesApi";
 
 // 1. Combine reducers
 const rootReducer = combineReducers({
@@ -42,6 +43,7 @@ const rootReducer = combineReducers({
   [youtubeApi.reducerPath]: youtubeApi.reducer,
   [subscriptionPlanApi.reducerPath]: subscriptionPlanApi.reducer,
   [billingApi.reducerPath]: billingApi.reducer,
+  [activityPreferencesApi.reducerPath]: activityPreferencesApi.reducer,
 });
 
 // 2. Persist config
@@ -71,7 +73,8 @@ export const store = configureStore({
       productApi.middleware,
       youtubeApi.middleware,
       subscriptionPlanApi.middleware,
-      billingApi.middleware
+      billingApi.middleware,
+      activityPreferencesApi.middleware
     ),
   devTools: process.env.NODE_ENV !== "production",
 });

@@ -293,7 +293,13 @@
     "contentModalSubtitle": "Pon algo nuevo en cola sin detener lo que se reproduce.",
     "contentModalOwn": "Lo tuyo",
     "contentModalAddToPlaylist": "Añadir a la lista",
-    "contentModalNoScreenShare": "Compartir pantalla no está disponible en este dispositivo."
+    "contentModalNoScreenShare": "Compartir pantalla no está disponible en este dispositivo.",
+    "playLimit": {
+      "title": "Límite diario alcanzado",
+      "message": "Has usado tus {limit} minutos gratis de hoy. Mejora a {planName} para jugar sin límite.",
+      "viewerTitle": "Partida en pausa",
+      "viewerMessage": "El anfitrión ha usado sus {limit} minutos gratis de hoy. Podréis jugar mañana, o en cuanto mejore su plan."
+    }
   },
   "sync": {
     "title": "Ingresar URL de Origen",
@@ -679,5 +685,21 @@
     "roomPickerTitle": "Elige un juego",
     "roomPickerSubtitle": "Todos en la sala juegan juntos. Tu lista se conserva.",
     "roomPickerAction": "Jugar un juego"
+  },
+  "nesSetup": {
+    "title": "Juega a NES en compañía",
+    "subtitle": "Añade un cartucho desde tu ordenador y abriremos una sala con él ya en marcha. Tu amigo solo necesita el enlace.",
+    "dropHeading": "Suelta un cartucho",
+    "dropHint": ".nes, o un .zip que lleve uno dentro",
+    "ready": "Listo para jugar · {size}",
+    "readyArchive": "Comprimido · {size} · lo abrimos nosotros",
+    "remove": "Quitar este cartucho",
+    "start": "Empezar a jugar",
+    "starting": "Abriendo tu sala…",
+    "couldNotStart": "No hemos podido abrir la sala. Comprueba tu conexión e inténtalo de nuevo.",
+    "notACartridge": "Esto no parece un cartucho de NES. Debe ser un archivo .nes.",
+    "unsupportedArchive": "Podemos abrir archivos .zip, pero no de este tipo. Descomprímelo y añade el archivo .nes.",
+    "tooBig": "Ese archivo es demasiado grande para ser un cartucho de NES.",
+    "privacy": "El cartucho se queda en tu ordenador. Nunca se sube: tu amigo ve la imagen, no el archivo."
   }
 }

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@movmash/arcade-client':
-        specifier: ^0.1.10
-        version: 0.1.10(react@19.1.0)
+        specifier: ^0.2.0
+        version: 0.2.0(react@19.1.0)
       '@next/third-parties':
         specifier: ^16.0.8
         version: 16.1.1(next@16.0.8(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
@@ -353,8 +353,8 @@ packages:
   '@movmash/activity-sdk@0.1.2':
     resolution: {integrity: sha512-4h24r/cWX0/MpFXqO50kI5Ns2ciqV6engMSu1XEuo8R8ALVmaPbs7m50alUVWlt3HOCVL9H4Y6f5gRn4iK3wAw==, tarball: https://npm.pkg.github.com/download/@movmash/activity-sdk/0.1.2/ba1fb8700bd560cf41a8663a2c808dee260f980a}
 
-  '@movmash/arcade-client@0.1.10':
-    resolution: {integrity: sha512-YK43Op/fHJNPHai+RQc7PF3BxgZvPzHQKSkErZPQE4ApddqGhnAyMC3zEvMHM2saphGWK8RD1Hpffu16DSTsFw==, tarball: https://npm.pkg.github.com/download/@movmash/arcade-client/0.1.10/0ac247fc3c3496b62840e57ee30d84b75f5a7423}
+  '@movmash/arcade-client@0.2.0':
+    resolution: {integrity: sha512-H6xh9LCpc05LdT04Mq3j/ugj4o4+I2nxNZCavzZBC4WQj/WfSJOESW6VHi7ZYAxwmiSi0bRKBqKMlB1D4s2/QA==, tarball: https://npm.pkg.github.com/download/@movmash/arcade-client/0.2.0/c56698fe90f107f556d888e87dbfedb4a1804ad2}
     peerDependencies:
       react: '>=18'
 
@@ -363,6 +363,9 @@ packages:
 
   '@movmash/game-jigsaw@1.0.0':
     resolution: {integrity: sha512-02WbSXhWMs0rDtt/TScVoBbiE2as+4wEtNDOvDX7GvrXTZVVRgFsMxvRS2WxGaZnSF6Fq5qOtEwRlYkTtwcQeA==, tarball: https://npm.pkg.github.com/download/@movmash/game-jigsaw/1.0.0/740b458c4bdb5ea7d499cb9f79945a257036274c}
+
+  '@movmash/game-nes@0.1.0':
+    resolution: {integrity: sha512-yX6pwAVqkw+KiK3R6kg3r9NxviJAFInO+O6NH4sY+x0RjurgftvneFgJGenG6FxKxBcgdviLAPfq35IwWs2RlQ==, tarball: https://npm.pkg.github.com/download/@movmash/game-nes/0.1.0/8bdeed15f898b6a581bcf4ee76e8b228934745f0}
 
   '@movmash/game-tictactoe@1.2.0':
     resolution: {integrity: sha512-4MdgvcZFZ6H8yMtnrPTD40vKgNaHSEeyuIcg5WRBjxgJDgQ5swREHojn4rCPmQBRX7orUHyQJZ5+ZMw95DTT9Q==, tarball: https://npm.pkg.github.com/download/@movmash/game-tictactoe/1.2.0/41a75526c34eb5ecf25e64ef18f175c711777c40}
@@ -2780,11 +2783,12 @@ snapshots:
 
   '@movmash/activity-sdk@0.1.2': {}
 
-  '@movmash/arcade-client@0.1.10(react@19.1.0)':
+  '@movmash/arcade-client@0.2.0(react@19.1.0)':
     dependencies:
       '@movmash/activity-sdk': 0.1.2
       '@movmash/game-connect4': 1.0.0
       '@movmash/game-jigsaw': 1.0.0
+      '@movmash/game-nes': 0.1.0
       '@movmash/game-tictactoe': 1.2.0
       react: 19.1.0
 
@@ -2793,6 +2797,10 @@ snapshots:
       '@movmash/activity-sdk': 0.1.2
 
   '@movmash/game-jigsaw@1.0.0':
+    dependencies:
+      '@movmash/activity-sdk': 0.1.2
+
+  '@movmash/game-nes@0.1.0':
     dependencies:
       '@movmash/activity-sdk': 0.1.2
 
