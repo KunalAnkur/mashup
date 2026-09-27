@@ -12,7 +12,7 @@ import posthog from "posthog-js";
 // ============ TYPES ============
 
 type PageName = "landing" | "home" | "room" | "stream" | "sync" | "login" | "signup";
-type CTAName = "create_room" | "join_room" | "stream" | "sync" | "games" | "games_start" | "login" | "signup" | "copy_link";
+type CTAName = "create_room" | "join_room" | "stream" | "sync" | "games" | "games_start" | "games_setup" | "login" | "signup" | "copy_link";
 type RoomType = "stream" | "sync" | "activity";
 type VideoSource = "file" | "url" | "screen" | "game";
 type UserRole = "host" | "guest";
@@ -478,6 +478,96 @@ export const trackRoomLeft = (roomId: string, durationSec: number) => {
     duration_sec: durationSec,
   });
   logEvent("room_left", { room_id: roomId, duration_sec: durationSec });
+};
+
+// ============ GAME FLOW EVENTS ============
+
+/*
+ * Why these live here and not in each game
+ * ----------------------------------------
+ * A game is a separate package that must stay portable — `check-boundaries.mjs` allows
+ * it React, the SDK and the client types, and nothing else. It cannot import PostHog,
+ * and it should not: which analytics vendor the platform uses is not a game's business.
+ *
+ * So the lifecycle below is recorded by the surface that hosts the game, which means a
+ * new game is measured the day it is registered, with no analytics work of its own.
+ * `trackGameEvent` is the escape hatch for the things only a particular game knows —
+ * see `AnalyticsPort` in the SDK.
+ *
+ * `game_id` is on all of them. Without it every game is one undifferentiated blob and
+ * the only question you can answer is "do people play games", which nobody is asking.
+ */
+
+interface GameContextProps {
+  gameId: string;
+  roomId: string | null;
+  isHost: boolean;
+}
+
+const gameProps = ({ gameId, roomId, isHost }: GameContextProps) => ({
+  game_id: gameId,
+  room_id: roomId,
+  role: isHost ? "host" : ("guest" as UserRole),
+});
+
+/**
+ * The game's surface is up.
+ *
+ * Not the same as playing it: a session can sit waiting for a second player, and a
+ * game that needs a file has not been given one yet. The gap between this and
+ * `game_started` is the drop-off worth watching.
+ */
+export const trackGameOpened = (context: GameContextProps) => {
+  safeCapture("game_opened", gameProps(context));
+  logEvent("game_opened", gameProps(context));
+};
+
+/** The session went active — people are actually playing. */
+export const trackGameStarted = (context: GameContextProps) => {
+  safeCapture("game_started", gameProps(context));
+  logEvent("game_started", gameProps(context));
+};
+
+/**
+ * The game is over, or this person has gone.
+ *
+ * `reason` separates "played it through" from "closed the tab two seconds in", which
+ * a duration alone cannot: both can be short.
+ */
+export const trackGameEnded = (
+  context: GameContextProps,
+  reason: "finished" | "left",
+  durationSec: number,
+  /** True when they never got as far as playing. */
+  neverStarted: boolean,
+) => {
+  const props = {
+    ...gameProps(context),
+    reason,
+    duration_sec: durationSec,
+    never_started: neverStarted,
+  };
+  safeCapture("game_ended", props);
+  logEvent("game_ended", props);
+};
+
+/**
+ * Something only this game knows — which cartridge you picked, which difficulty.
+ *
+ * Deliberately one event name with the game's own name as a property, rather than
+ * letting a game mint event names directly. A game inventing `nes_cartridge_loaded`
+ * would put a new row in every PostHog list for everyone forever, and nothing here
+ * could stop it; this keeps the schema bounded and still lets you break down by
+ * `game_id` and `action`.
+ */
+export const trackGameEvent = (
+  context: GameContextProps,
+  action: string,
+  additionalProps?: Record<string, string | number | boolean | null>,
+) => {
+  const props = { ...gameProps(context), action, ...additionalProps };
+  safeCapture("game_event", props);
+  logEvent("game_event", props);
 };
 
 // ============ VIDEO FLOW EVENTS ============

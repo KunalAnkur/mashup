@@ -64,6 +64,7 @@ const SFU = {
   consume: "consume",
   incomingProducer: "incomingProducer",
   unpauseConsumers: "unpauseConsumers",
+  closeProducers: "closeProducers",
 } as const;
 
 interface ProducerInfo {
@@ -99,6 +100,10 @@ export class SfuMediaPort implements MediaPort {
   private device: mediasoupClient.Device | null = null;
   private sendTransport: Transport | null = null;
   private recvTransport: Transport | null = null;
+  /** Serialises `publish`, so its per-track check cannot race itself. */
+  private publishChain: Promise<void> = Promise.resolve();
+  /** The last few things that went wrong, for `__movmashMedia()`. */
+  private log: string[] = [];
   private producers: Producer[] = [];
   private consumers: Consumer[] = [];
 
@@ -131,6 +136,30 @@ export class SfuMediaPort implements MediaPort {
     });
 
     this.options.socket.on(SFU.incomingProducer, this.onIncomingProducer);
+
+    /*
+     * A viewer sets itself up straight away; it has nothing to wait for.
+     *
+     * `ensureReady` was only ever reached from three places: publishing, which is the
+     * host's path, a broadcast arriving, and a manual reconnect. So a viewer's
+     * transport existed only if somebody happened to start producing *while it was
+     * already listening* — and `incomingProducer` is a one-shot broadcast, not a
+     * retained state.
+     *
+     * Join a game already in progress and nothing is broadcast, because the producing
+     * happened before you arrived. `setup` reads `existingProducers` for exactly that
+     * case, with a comment saying a spectator would otherwise wait forever — but
+     * nothing ever called it, so the rescue could not run. The picture never came and
+     * the screen said "Joining the game" indefinitely.
+     *
+     * The host is left alone: its setup belongs with its first publish, where the
+     * stream it is going to send actually exists.
+     */
+    if (!options.isHost) {
+      void this.ensureReady().catch(() => {
+        // `ensureReady` has already reported `failed`; there is nothing to add.
+      });
+    }
   }
 
   /**
@@ -193,13 +222,31 @@ export class SfuMediaPort implements MediaPort {
       this.bindProduce(this.sendTransport);
     }
 
-    // Everyone gets a receive transport, the host included: they are in the room and a
-    // second player's audio could one day arrive this way. It costs one idle transport.
-    this.recvTransport = device.createRecvTransport({
-      ...info.recvTransportOptions,
-      iceServers: info.iceServers ?? this.options.iceServers,
-    });
-    this.bindConnect(this.recvTransport);
+    /*
+     * A receive transport, but only if the server actually made us one.
+     *
+     * It does not make one for the host. `setupForUser` branches on exactly that and
+     * returns two different shapes — `sendTransportOptions` for a host,
+     * `recvTransportOptions` for everybody else — and neither carries the other.
+     *
+     * This used to create one unconditionally, on the reasoning that a host is in the
+     * room too and a second player's audio could one day arrive this way. Spreading an
+     * absent `recvTransportOptions` produced `{}`, and mediasoup-client rejects that
+     * with `missing id` — which threw inside `setup`, so the host's port went straight
+     * to `failed` and never published. On a Crowd room that is the whole game: nobody
+     * saw anything, and the only clue was a TypeError naming a transport the host had
+     * no use for.
+     *
+     * If a host ever does need to receive, the server has to offer it first; asking
+     * mediasoup for a transport nobody allocated cannot be made to work from here.
+     */
+    if (info.recvTransportOptions) {
+      this.recvTransport = device.createRecvTransport({
+        ...info.recvTransportOptions,
+        iceServers: info.iceServers ?? this.options.iceServers,
+      });
+      this.bindConnect(this.recvTransport);
+    }
 
     // Whatever was already being produced when we arrived — a spectator who joined
     // mid-game has no `INCOMING_PRODUCER` coming, so without this they wait forever.
@@ -262,7 +309,38 @@ export class SfuMediaPort implements MediaPort {
   // Host side
   // -------------------------------------------------------------------------
 
-  async publish(stream: MediaStream, profile: MediaProfile): Promise<void> {
+  /**
+   * Publish, one call at a time.
+   *
+   * The per-track guard below is only honest if nothing else is half-way through
+   * `produce()` while it runs — and `publish` is called from an effect that legitimately
+   * fires more than once: React mounts effects twice in development on purpose, and a
+   * quality change or a fresh `media` object re-runs it in production. Two calls both
+   * clear `ensureReady`, both read an empty `producers`, and both produce the *same*
+   * video track.
+   *
+   * What that costs is worse than a duplicate. A second video producer adds a second
+   * m-line, the renegotiation reassigns an RTP header extension id that is already live
+   * on MID 0, and the browser refuses outright: "RTP extension ID reassignment not
+   * supported". The transport's connection is unusable afterwards, so every later
+   * `createOffer` fails the same way. One stray re-render and the host never streams.
+   *
+   * The Couple path had exactly this bug and was fixed by moving the check inside its
+   * queue; this is the same fix.
+   */
+  publish(stream: MediaStream, profile: MediaProfile): Promise<void> {
+    const next = this.publishChain.then(
+      () => this.doPublish(stream, profile),
+      () => this.doPublish(stream, profile),
+    );
+    this.publishChain = next.then(
+      () => undefined,
+      () => undefined,
+    );
+    return next;
+  }
+
+  private async doPublish(stream: MediaStream, profile: MediaProfile): Promise<void> {
     if (this.disposed || !this.options.isHost) return;
     this.published = { stream, profile };
 
@@ -367,10 +445,32 @@ export class SfuMediaPort implements MediaPort {
       .catch(() => this.setPhase("failed"));
   };
 
+  /**
+   * Say why something did not work.
+   *
+   * Every failure on this path is individually survivable, and collectively they are a
+   * viewer staring at "joining the game" with an empty console. Logged rather than
+   * thrown: the port carries on, and whoever is looking gets a reason.
+   */
+  private note(message: string): void {
+    console.warn(`[SfuMediaPort] ${message}`);
+    this.log.push(`${new Date().toISOString().slice(11, 19)} ${message}`);
+    if (this.log.length > 20) this.log.shift();
+  }
+
   private async consumeAll(producers: ProducerInfo[]): Promise<void> {
     const transport = this.recvTransport;
     const device = this.device;
-    if (!transport || !device || this.disposed) return;
+    if (!transport || !device || this.disposed) {
+      // Worth saying out loud: with no receive transport there is nothing to consume
+      // *with*, and the screen just says "joining" forever with no clue why.
+      this.note(
+        `cannot consume ${producers.length} producer(s): ` +
+          `${transport ? "" : "no recv transport; "}${device ? "" : "no device; "}` +
+          `${this.disposed ? "disposed" : ""}`,
+      );
+      return;
+    }
 
     const tracks: MediaStreamTrack[] = [];
 
@@ -387,16 +487,25 @@ export class SfuMediaPort implements MediaPort {
           producerId: info.producerId,
           rtpCapabilities: device.rtpCapabilities,
         });
-        if (!reply?.consumerData) continue;
+        if (!reply?.consumerData) {
+          this.note(`server refused ${info.kind} ${info.producerId}: ${reply?.error ?? "no reason given"}`);
+          continue;
+        }
 
         const consumer = await transport.consume(reply.consumerData);
         await consumer.resume();
         this.consumers.push(consumer);
         tracks.push(consumer.track);
-      } catch {
+      } catch (error) {
         // One producer failing is survivable — the rest still play, and a later
         // announcement retries the set. Losing the video producer leaves audio alone,
-        // which renders as a black screen; that is visible without a toast.
+        // which renders as a black screen.
+        //
+        // Survivable is not the same as invisible, though, and it used to be both. A
+        // silent `catch` here turned every reason this can fail — a codec the viewer
+        // cannot decode, a transport that never connected, a producer already closed —
+        // into the same blank rectangle with nothing in the console to tell them apart.
+        this.note(`failed to consume ${info.kind} ${info.producerId}: ${String(error)}`);
       }
     }
 
@@ -443,6 +552,35 @@ export class SfuMediaPort implements MediaPort {
       .catch(() => this.setPhase("failed"));
   }
 
+  /**
+   * What this port is actually doing, for `__movmashMedia()`.
+   *
+   * The SFU path has a long chain — transport info, a device, a transport, a consume
+   * per producer, an unpause — and until now every link in it failed the same way from
+   * the outside: a viewer waiting, and nothing in the console. This says which link.
+   */
+  describe(): Promise<unknown[]> {
+    return Promise.resolve([
+      {
+        route: "sfu",
+        isHost: this.options.isHost,
+        phase: this.phase,
+        // Null here on a viewer means `setup` never ran — the commonest cause of a
+        // picture that never arrives, and invisible without asking.
+        setupStarted: this.ready !== null,
+        deviceLoaded: this.device !== null,
+        sendTransport: this.sendTransport?.id ?? null,
+        recvTransport: this.recvTransport?.id ?? null,
+        recvConnectionState: this.recvTransport?.connectionState ?? null,
+        sendConnectionState: this.sendTransport?.connectionState ?? null,
+        producing: this.producers.map((producer) => producer.kind),
+        consuming: this.consumers.map((consumer) => consumer.kind),
+        remoteTracks: this.remote?.getTracks().map((track) => track.kind) ?? [],
+        problems: this.log,
+      },
+    ]);
+  }
+
   async stats(): Promise<MediaStats> {
     const source = this.producers.find((p) => p.kind === "video") ?? this.consumers[0];
     if (!source) return { ...EMPTY_STATS };
@@ -472,6 +610,30 @@ export class SfuMediaPort implements MediaPort {
   }
 
   private teardownSfu(): void {
+    /*
+     * Tell the server first, while we still know what we made.
+     *
+     * Closing a transport here is purely local — mediasoup-client sends nothing — so a
+     * producer we walk away from stays open on the server until this socket
+     * disconnects. That is how a room that has played a game, shared a screen and gone
+     * back to the game hands the next viewer a producer whose client vanished minutes
+     * ago: the consumer is created, the track exists, and no frame ever arrives.
+     *
+     * Only our own ids. This socket also carries the room's screen share, and closing
+     * "everything this peer has" would take that down with it.
+     */
+    const mine = this.producers.map((producer) => producer.id);
+    if (mine.length > 0) {
+      try {
+        this.options.socket.emit(SFU.closeProducers, {
+          roomId: this.options.roomId,
+          producerIds: mine,
+        });
+      } catch {
+        // A socket already gone cannot be told, and `cleanupPeer` covers that case.
+      }
+    }
+
     for (const consumer of this.consumers) {
       try {
         consumer.close();

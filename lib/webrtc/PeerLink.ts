@@ -312,7 +312,39 @@ export class PeerLink {
       this.options.signaller.sendAnswer(this.socketId, answer);
 
       await this.flushCandidates();
+
+      // An answer can only describe m-lines the *offer* already had. Anything we added
+      // before this peer offered is therefore still unnegotiated, and will stay that
+      // way forever unless we offer it ourselves.
+      if (this.hasUnsentTracks()) await this.renegotiate({});
     });
+  }
+
+  /**
+   * Do we hold a track the far side has never been told about?
+   *
+   * A transceiver with no `mid` has not appeared in a negotiated description. This is
+   * the one signal that distinguishes "we published and it went out" from "we
+   * published into a connection that only ever answered".
+   *
+   * It exists because of a real black screen: a spectator who joined *after* the host
+   * had already published got a connection that reached `live` and carried no video.
+   * `connect()` publishes into the new link immediately, and a fresh link has no local
+   * description, so `publish` correctly declines to renegotiate — it expects `open()`
+   * to carry the tracks. But `open()` only runs on the offering side, which is decided
+   * by comparing user ids. When it fell the other way the host answered instead, the
+   * tracks never entered a description, and nothing ever asked again. There is no
+   * `onnegotiationneeded` handler anywhere in this class to catch it.
+   *
+   * Checked after answering rather than on a handler so it is symmetric: only the side
+   * actually holding unsent tracks offers, and only once the negotiation that prompted
+   * it has completed, so it cannot cause glare.
+   */
+  private hasUnsentTracks(): boolean {
+    if (!this.pc) return false;
+    return this.pc
+      .getTransceivers()
+      .some((transceiver) => transceiver.mid === null && transceiver.sender.track !== null);
   }
 
   acceptAnswer(answer: RTCSessionDescriptionInit): Promise<void> {

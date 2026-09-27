@@ -94,7 +94,24 @@ export class ActivityPeerMesh {
     this.options = options;
     this.iceServers = options.iceServers;
     this.attachSignalling();
-    this.announce();
+
+    // `restart: true` on the very first announce, deliberately.
+    //
+    // A port that has just been constructed holds no links at all, so anyone out there
+    // holding a link to *us* is holding a dead one — our peer connections went with the
+    // page. Saying so is correct in every case this runs: a first join (nobody has
+    // anything to discard, so it costs nothing), a refresh, or a remount.
+    //
+    // Without it a refresh was a 10-20 second stare at "connecting". The peer's
+    // `connect()` found its existing link, re-addressed it to our new socket, and
+    // returned — but that link's `RTCPeerConnection` belonged to the browser we had
+    // just thrown away. Nothing happened until ICE gave up on it: roughly ten seconds
+    // to reach `disconnected`, then the grace period, then a restart.
+    //
+    // Note the contrast with {@link onSocketConnect}, which announces *without* it: a
+    // dropped socket does not destroy a peer connection, so there the right move is to
+    // re-address rather than rebuild.
+    this.announce(false, true);
   }
 
   // -------------------------------------------------------------------------
@@ -230,6 +247,10 @@ export class ActivityPeerMesh {
    * Our peers are still holding the old one and would signal into a void. Announcing
    * again re-addresses us on their side — `connect` re-points an existing link rather
    * than replacing it, so a connection that survived the blip is kept.
+   *
+   * Deliberately *without* `restart`. A socket dropping says nothing about the peer
+   * connection, which rides its own transport and usually sails straight through;
+   * tearing it down here would turn a blip nobody noticed into a visible reconnection.
    */
   private onSocketConnect = () => this.announce();
 

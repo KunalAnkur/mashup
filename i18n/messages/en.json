@@ -685,5 +685,21 @@
     "roomPickerTitle": "Choose a game",
     "roomPickerSubtitle": "Everyone in the room plays together. Your playlist is kept.",
     "roomPickerAction": "Play a game"
+  },
+  "nesSetup": {
+    "title": "Play NES together",
+    "subtitle": "Add a cartridge from your computer and we'll open a room with it already running. Your friend just needs the link.",
+    "dropHeading": "Drop a cartridge",
+    "dropHint": ".nes, or a .zip with one inside",
+    "ready": "Ready to play · {size}",
+    "readyArchive": "Zipped · {size} · we'll unpack it",
+    "remove": "Remove this cartridge",
+    "start": "Start playing",
+    "starting": "Opening your room…",
+    "couldNotStart": "We couldn't open the room. Check your connection and try again.",
+    "notACartridge": "That doesn't look like a NES cartridge. It should be a .nes file.",
+    "unsupportedArchive": "We can open .zip archives, but not this kind. Unzip it and add the .nes file.",
+    "tooBig": "That file is too large to be a NES cartridge.",
+    "privacy": "The cartridge stays on your computer. It is never uploaded — your friend sees the picture, not the file."
   }
 }

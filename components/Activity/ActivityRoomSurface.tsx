@@ -3,6 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActivitySurface, useActivitySession } from "@movmash/arcade-client";
+import { takeHandoff } from "@/lib/activity/handoff";
+import {
+  trackGameEnded,
+  trackGameEvent,
+  trackGameOpened,
+  trackGameStarted,
+} from "@/lib/analytics/events";
 import { ImSpinner2 } from "react-icons/im";
 import { LuArrowLeft, LuMessageCircle } from "react-icons/lu";
 
@@ -217,6 +224,89 @@ export function ActivityRoomSurface() {
    * on the server with nobody watching it. The next game picked in this room then
    * resumes that one instead, so choosing a different game reopened the old one.
    */
+  /*
+   * What a game session looked like, recorded from out here.
+   *
+   * Out here rather than in each game because a game is a separate, portable package
+   * that cannot import an analytics vendor and should not want to. The consequence
+   * worth having is that a new game is measured the day it is registered, with no
+   * analytics work of its own — and the three events below mean the same thing for all
+   * of them, so they can be compared.
+   *
+   * The pair that matters is `game_opened` against `game_started`: the surface being up
+   * is not the same as anybody playing. A session can sit waiting for a second player,
+   * and a game that needs a file has not been given one. Everything that goes wrong
+   * with a game in its first week lives in that gap.
+   */
+  const analyticsContext = useMemo(
+    () => ({ gameId: gameId ?? "", roomId: roomState.roomId ?? null, isHost }),
+    [gameId, roomState.roomId, isHost],
+  );
+
+  const openedAtRef = useRef<number | null>(null);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    if (!gameId) return;
+    openedAtRef.current = Date.now();
+    startedRef.current = false;
+    trackGameOpened({ gameId, roomId: roomState.roomId ?? null, isHost });
+    // Deliberately keyed on the game and the room alone. Re-firing this because a
+    // re-render changed `isHost` would inflate the top of the funnel with events that
+    // describe no new session.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameId, roomState.roomId]);
+
+  useEffect(() => {
+    if (!gameId || startedRef.current || session.status !== "active") return;
+    startedRef.current = true;
+    trackGameStarted({ gameId, roomId: roomState.roomId ?? null, isHost });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameId, session.status, roomState.roomId]);
+
+  /**
+   * One ending per session, whether the game finished or the person simply left.
+   *
+   * Held in a ref and fired from an unmount cleanup because the interesting case —
+   * closing the tab on a game you never started — has no render left to observe it.
+   */
+  const endRef = useRef<(reason: "finished" | "left") => void>(() => {});
+  endRef.current = (reason) => {
+    if (!gameId || openedAtRef.current === null) return;
+    const seconds = Math.round((Date.now() - openedAtRef.current) / 1000);
+    openedAtRef.current = null;
+    trackGameEnded(
+      { gameId, roomId: roomState.roomId ?? null, isHost },
+      reason,
+      seconds,
+      !startedRef.current,
+    );
+  };
+
+  useEffect(() => {
+    if (session.status === "finished") endRef.current("finished");
+  }, [session.status]);
+
+  useEffect(() => () => endRef.current("left"), []);
+
+  /** A game's own events, tagged with which game and which room they came from. */
+  const analyticsPort = useMemo(
+    () => ({
+      track: (action: string, properties?: Record<string, string | number | boolean | null>) =>
+        trackGameEvent(analyticsContext, action, properties),
+    }),
+    [analyticsContext],
+  );
+
+  /**
+   * The cartridge picked on `/games/nes`, for the game to collect once.
+   *
+   * Stable for the life of this surface: `take` is consuming, so handing the game a
+   * new object on every render would not give it a second payload, but it would make
+   * anything that depends on the port's identity re-run for no reason.
+   */
+  const handoffPort = useMemo(() => ({ take: takeHandoff }), []);
+
   const handleExitGame = useCallback(() => {
     session.leave();
     removeActivity();
@@ -349,6 +439,8 @@ export function ActivityRoomSurface() {
         session={session}
         media={media ?? undefined}
         preferences={preferences}
+        handoff={handoffPort}
+        analytics={analyticsPort}
         me={me}
         tokens={activityDesignTokens}
         locale={locale}
