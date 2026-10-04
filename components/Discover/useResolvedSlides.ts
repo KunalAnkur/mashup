@@ -7,6 +7,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 // AFFILIATE GIFT (disabled)
 // import { useGetProductsQuery } from "@/lib/store/api/productApi";
 import { coverOf } from "@/components/Games/cover";
+import { isListedGame } from "@/components/Games/hiddenGames";
 import type { DiscoverSlide } from "@/lib/discover";
 
 /**
@@ -26,7 +27,9 @@ export function useResolvedSlides(slides: DiscoverSlide[]): DiscoverSlide[] {
   // const { data: products } = useGetProductsQuery();
 
   return useMemo(() => {
-    const catalog = getCatalog({ locale, includeLocked: true });
+    const catalog = getCatalog({ locale, includeLocked: true }).filter((entry) =>
+      isListedGame(entry.gameId),
+    );
 
     return slides
       .map((slide): DiscoverSlide | null => {

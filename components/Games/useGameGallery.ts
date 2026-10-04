@@ -9,6 +9,7 @@ import { RootState } from "@/lib/store";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useOpenActivityRoom } from "@/components/Activity/useOpenActivityRoom";
 import { trackCTAClicked } from "@/lib/analytics";
+import { isListedGame } from "@/components/Games/hiddenGames";
 
 /**
  * The catalogue, the viewer's tier, and what happens when a card is pressed.
@@ -34,7 +35,10 @@ export function useGameGallery() {
       : "free";
 
   const games = useMemo<CatalogEntry[]>(
-    () => getCatalog({ locale, tier, includeLocked: true }),
+    () =>
+      getCatalog({ locale, tier, includeLocked: true }).filter((entry) =>
+        isListedGame(entry.gameId),
+      ),
     [locale, tier],
   );
 
