@@ -1,8 +1,9 @@
 "use client";
 
-import { useTranslations } from "@/i18n/I18nProvider";
-import type { PlayTogetherPost } from "@/lib/blog/playTogether";
-import { BLOG_ORIGIN } from "@/lib/discover/feed";
+import { isRtlLocale } from "@/i18n/config";
+import { useLocale, useTranslations } from "@/i18n/I18nProvider";
+import { guidesFor, type PlayTogetherPosts } from "@/lib/blog/playTogether";
+import { blogHref } from "@/lib/discover/feed";
 import {
   dashGamesCatalogGridClass,
   dashGuideCardClass,
@@ -19,18 +20,20 @@ import {
 /**
  * Guides for the games above, from the blog.
  *
- * A client component only because the heading needs `useTranslations`; the posts
- * themselves are fetched on the server and passed in, so they are in the first HTML and
- * the section never appears late and pushes the catalogue up.
+ * A client component because the heading needs `useTranslations` and the guides are
+ * picked by the reader's language; the posts themselves are fetched on the server and
+ * passed in — every language's — so they arrive with the page and the section never
+ * appears late and pushes the catalogue up.
  *
  * Renders nothing at all when there are no posts — which is also what happens when
  * Sanity is unreachable. An absent section is invisible; an empty titled one is a bug
  * the visitor can see.
  */
-export function GamesReading({ posts }: { posts: PlayTogetherPost[] }) {
+export function GamesReading({ posts }: { posts: PlayTogetherPosts }) {
   const t = useTranslations("games");
+  const { language, posts: guides } = guidesFor(posts, useLocale());
 
-  if (posts.length === 0) return null;
+  if (guides.length === 0) return null;
 
   return (
     <section>
@@ -38,7 +41,7 @@ export function GamesReading({ posts }: { posts: PlayTogetherPost[] }) {
         <h2 className={dashSectionHeadTitleClass}>{t("reading.title")}</h2>
         {/* A plain anchor, not next/link: the blog is a different origin to the app. */}
         <a
-          href={`${BLOG_ORIGIN}/blog`}
+          href={blogHref(language)}
           target="_blank"
           rel="noopener noreferrer"
           className={dashSectionHeadLinkClass}
@@ -48,7 +51,7 @@ export function GamesReading({ posts }: { posts: PlayTogetherPost[] }) {
       </div>
 
       <div className={dashGamesCatalogGridClass}>
-        {posts.map((post) => (
+        {guides.map((post) => (
           <a
             key={post.slug}
             href={post.href}
@@ -75,7 +78,14 @@ export function GamesReading({ posts }: { posts: PlayTogetherPost[] }) {
               </div>
             ) : null}
 
-            <div className={dashGuideCardMetaClass}>
+            {/* The guides can be English on a page that is not. Their words keep their
+                own language and direction: on the Arabic page the clamp's "…" otherwise
+                lands at the wrong end and eats the start of the second line. */}
+            <div
+              className={dashGuideCardMetaClass}
+              lang={language}
+              dir={isRtlLocale(language) ? "rtl" : "ltr"}
+            >
               <h3 className={dashGuideCardTitleClass}>{post.title}</h3>
               {post.excerpt ? (
                 <p className={dashGuideCardExcerptClass}>{post.excerpt}</p>

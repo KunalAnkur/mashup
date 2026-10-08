@@ -59,7 +59,17 @@ export type DiscoverAction =
    */
   | { kind: "watch"; url: string }
   /** Goes somewhere: a blog post, a product page, a route in the app. */
-  | { kind: "link"; href: string; external?: boolean };
+  | {
+      kind: "link";
+      href: string;
+      /**
+       * The same destination in each language it exists in — a blog post and its
+       * translations. Read it with `hrefOf`; `href` is where a reader goes when nothing
+       * here is for them.
+       */
+      hrefByLocale?: Localized;
+      external?: boolean;
+    };
 
 // ---------------------------------------------------------------------------
 // What a slide looks like
