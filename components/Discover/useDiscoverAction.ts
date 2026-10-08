@@ -4,12 +4,13 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 
+import { useI18n } from "@/i18n/I18nProvider";
 import { RootState } from "@/lib/store";
 import { setPlaylist, setRefers } from "@/lib/store/slices/roomSlice";
 import { useGetUrlMetadataMutation } from "@/lib/store/api/urlApi";
 import { useOpenActivityRoom } from "@/components/Activity/useOpenActivityRoom";
 import { trackDiscoverSlideClicked } from "@/lib/analytics";
-import { isBoosted, type DiscoverSlide } from "@/lib/discover";
+import { hrefOf, isBoosted, type DiscoverSlide } from "@/lib/discover";
 
 /**
  * What pressing a slide does.
@@ -26,6 +27,7 @@ import { isBoosted, type DiscoverSlide } from "@/lib/discover";
 export function useDiscoverAction() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { locale } = useI18n();
   const openActivityRoom = useOpenActivityRoom();
   const [getUrlMetadata] = useGetUrlMetadataMutation();
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
@@ -92,14 +94,15 @@ export function useDiscoverAction() {
         }
 
         case "link": {
-          const { href, external } = slide.action;
-          if (external) window.open(href, "_blank", "noopener,noreferrer");
+          // A translated post opens in the reader's language; see `hrefOf`.
+          const href = hrefOf(slide.action, locale);
+          if (slide.action.external) window.open(href, "_blank", "noopener,noreferrer");
           else router.push(href);
           return;
         }
       }
     },
-    [pending, openActivityRoom, getUrlMetadata, dispatch, isAuthenticated, router],
+    [pending, openActivityRoom, getUrlMetadata, dispatch, isAuthenticated, router, locale],
   );
 
   return { run, pending };

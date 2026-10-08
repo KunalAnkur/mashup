@@ -71,7 +71,13 @@ interface SanitySlide {
   gameId?: string;
   watchUrl?: string;
   productId?: string;
-  post?: { slug?: string; imageUrl?: string };
+  post?: {
+    slug?: string;
+    language?: string;
+    imageUrl?: string;
+    /** Every language the post exists in, itself included. An unpublished one arrives as null. */
+    versions?: ({ language?: string; slug?: string } | null)[] | null;
+  };
   title?: Localized;
   description?: Localized;
   ctaLabel?: Localized;
@@ -90,10 +96,21 @@ interface SanitySlide {
 /**
  * Asset dimensions come back with the URL so a slide can reserve its box before the art
  * arrives; without them every carousel reflows as it loads.
+ *
+ * A post brings its translations with it. The Studio keeps them in one
+ * `translation.metadata` document per article, which is the only thing that knows a
+ * Turkish post and an English one are the same piece. `coalesce` counts a post written
+ * before the blog had languages as English.
  */
 const QUERY = `*[_type == "discoverSlide" && defined(source)]{
   _id, source, gameId, watchUrl, productId,
-  "post": post->{ "slug": slug.current, "imageUrl": mainImage.asset->url },
+  "post": post->{
+    "slug": slug.current,
+    "language": coalesce(language, "en"),
+    "imageUrl": mainImage.asset->url,
+    "versions": *[_type == "translation.metadata" && references(^._id)][0]
+      .translations[].value->{ "language": coalesce(language, "en"), "slug": slug.current }
+  },
   title, description, ctaLabel, eyebrow, meta,
   "imageUrl": image.asset->url,
   "imageWidth": image.asset->metadata.dimensions.width,
@@ -237,10 +254,27 @@ function actionOf(raw: SanitySlide): DiscoverAction | null {
       return raw.gameId ? { kind: "game", gameId: raw.gameId } : null;
     case "watch":
       return raw.watchUrl ? { kind: "watch", url: raw.watchUrl } : null;
-    case "read":
-      return raw.post?.slug
-        ? { kind: "link", href: `${BLOG_ORIGIN}/blog/${raw.post.slug}`, external: true }
-        : null;
+    case "read": {
+      const post = raw.post;
+      if (!post?.slug) return null;
+
+      // Carried whole, like the slide's words: the reader's language is only known in
+      // the browser, so that is where one of these is picked.
+      const hrefByLocale = Object.fromEntries(
+        (post.versions ?? []).flatMap((version) =>
+          version?.language && version.slug
+            ? [[version.language, blogHref(version.language, version.slug)]]
+            : [],
+        ),
+      );
+
+      return {
+        kind: "link",
+        href: blogHref(post.language ?? "en", post.slug),
+        ...(Object.keys(hrefByLocale).length > 1 ? { hrefByLocale } : {}),
+        external: true,
+      };
+    }
     // AFFILIATE GIFT (disabled)
     // case "gift":
     //   // The product page itself is resolved in the browser, where the product list
@@ -253,6 +287,16 @@ function actionOf(raw: SanitySlide): DiscoverAction | null {
 
 /** Where posts are published. The app is app.movmash.com; the blog is not. */
 export const BLOG_ORIGIN = process.env.NEXT_PUBLIC_SITE_ORIGIN ?? "https://movmash.com";
+
+/**
+ * The blog in one language, or one of its posts when given the slug.
+ *
+ * The site's own rule, repeated here because the two do not share code: English lives at
+ * the root and every other language under its prefix (`/tr/blog/…`). A slug belongs to
+ * its language — the Turkish post has a Turkish slug — so the two always travel together.
+ */
+export const blogHref = (language: string, slug?: string): string =>
+  `${BLOG_ORIGIN}${language === "en" ? "" : `/${language}`}/blog${slug ? `/${slug}` : ""}`;
 
 /**
  * Only what the author uploaded, plus the article image a `read` slide inherits from its

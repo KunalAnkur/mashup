@@ -1,4 +1,4 @@
-import type { Localized } from "./types";
+import type { DiscoverAction, Localized } from "./types";
 
 /**
  * The best available string for a locale.
@@ -14,4 +14,18 @@ export function textOf(value: Localized | undefined, locale: string): string {
   if (exact) return exact;
   const english = value["en"]?.trim();
   return english ?? "";
+}
+
+/**
+ * Where a link leads for a locale.
+ *
+ * A translated post in the reader's language, then in English — the same order as the
+ * words above — and after that the one address the slide was given, which is all there
+ * is for anything that has no translations.
+ */
+export function hrefOf(
+  action: Extract<DiscoverAction, { kind: "link" }>,
+  locale: string,
+): string {
+  return textOf(action.hrefByLocale, locale) || action.href;
 }
