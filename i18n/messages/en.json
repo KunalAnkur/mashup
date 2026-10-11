@@ -452,6 +452,7 @@
       "hostNextStep": "We'll sign you in with Google, then open your room right away.",
       "checkoutTitle": "Continue with Google",
       "checkoutDescription": "Checkout is only available for full accounts. Your guest session can browse pricing, but you'll need to continue with Google before payment.",
+      "checkoutDescriptionSignedOut": "Sign in with Google to continue. It takes a few seconds, and you keep the plan you just picked.",
       "checkoutNextStep": "We'll sign you in with Google inside Movmash, then continue directly into checkout."
     },
     "login": {
@@ -516,6 +517,7 @@
     "currentPlanLabel": "Current plan",
     "switchPlanLabel": "Switch plan",
     "downgradeToFreeLabel": "Cancel your plan to switch",
+    "fixPaymentLabel": "Fix your payment first",
     "title": "Choose your plan",
     "subtitle": "Free is enough to try Movmash. Couple and Crowd remove the daily limit and add video calls.",
     "billingToggle": {
@@ -575,6 +577,9 @@
     "freePlanHint": "You are on the free plan. Upgrade any time.",
     "pendingChangeBanner": "Moving to {plan} on {date}",
     "undoPendingChange": "Undo",
+    "updatePaymentMethod": "Update payment method",
+    "openingPaymentUpdate": "Opening…",
+    "onHoldNotice": "We couldn't renew your {plan} plan, so your account is on Free for now. Update your payment method to get it back.",
     "features": {
       "participants": "{count} people per room",
       "watchLimitDaily": "{minutes} minutes of watch time per day",
@@ -584,18 +589,22 @@
     "cancelModal": {
       "title": "Cancel {plan}?",
       "message": "Your {plan} plan will stay active until the current billing period ends.",
+      "onHoldMessage": "We'll stop trying to charge your card and close your {plan} plan. Your account stays on Free.",
       "keepPlan": "Keep plan",
       "cancelling": "Cancelling..."
     },
     "toast": {
       "cancelSuccess": "Your plan will stop renewing at the end of the current billing period.",
+      "cancelOnHoldSuccess": "Your plan is cancelled and we've stopped trying to charge your card.",
       "cancelFailedTitle": "Subscription cancellation failed",
       "cancelFailedDefault": "Unable to cancel your subscription right now.",
       "pendingChangeCancelled": "Scheduled plan change cancelled.",
       "pendingChangeCancelFailed": "Unable to cancel the scheduled change right now.",
       "reactivateSuccess": "Your plan will continue to renew as usual.",
       "reactivateFailedTitle": "Reactivation failed",
-      "reactivateFailedDefault": "Unable to reactivate your subscription right now."
+      "reactivateFailedDefault": "Unable to reactivate your subscription right now.",
+      "paymentUpdateFailedTitle": "Couldn't open the payment page",
+      "paymentUpdateFailedDefault": "Please try again in a moment."
     },
     "transactions": {
       "title": "Payment activity",

@@ -1,16 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LuArrowRight, LuCheck, LuHeart, LuSparkles, LuUsers } from "react-icons/lu";
 import { EntryPageHeader } from "@/components/UI";
 import StartPremiumCheckoutButton from "@/components/Billing/StartPremiumCheckoutButton";
 import PlanChangeConfirmModal from "@/components/Billing/PlanChangeConfirmModal";
 import { useTranslations } from "@/i18n/I18nProvider";
+import type { RootState } from "@/lib/store";
 import { useGetSubscriptionPlansQuery } from "@/lib/store/api/subscriptionPlanApi";
 import { useGetMySubscriptionQuery } from "@/lib/store/api/userApi";
 import { formatPlanPrice, hasActivePaidSubscription } from "@/utils/subscription";
-import { SubscriptionTier } from "@/types/subscriptionTypes";
+import { SubscriptionStatus, SubscriptionTier } from "@/types/subscriptionTypes";
 import {
   appEntryActionButtonBaseClass,
   appEntryPageContentWrapClass,
@@ -81,11 +84,22 @@ export default function PricingPage() {
   // state people land on rather than one they have to discover.
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
   const { data: catalogPlans, isLoading, isError } = useGetSubscriptionPlansQuery();
-  const { data: mySubscription } = useGetMySubscriptionQuery();
+  // The page is readable signed out, and asking for "my subscription" without a token
+  // only earns a 401.
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const isAuthLoading = useSelector((state: RootState) => state.auth.loading);
+  const { data: mySubscription, isLoading: isSubscriptionLoading } = useGetMySubscriptionQuery(
+    undefined,
+    { skip: !isAuthenticated },
+  );
   const [changeTarget, setChangeTarget] = useState<{ slug: string; name: string } | null>(null);
 
   const subscription = mySubscription?.data;
   const isOnPaidPlan = hasActivePaidSubscription(subscription);
+  // Their last renewal was declined and the plan is on hold. A fresh checkout here would
+  // start a second subscription while the first is still being retried, so the paid cards
+  // point at the fix instead.
+  const isOnHold = subscription?.status === SubscriptionStatus.ON_HOLD;
   const currentPlanSlug = subscription?.plan?.slug;
 
   const freePlan = catalogPlans?.find((p) => p.tier === SubscriptionTier.FREE);
@@ -95,6 +109,56 @@ export default function PricingPage() {
   const crowdPlan = catalogPlans?.find(
     (p) => p.tier === SubscriptionTier.CROWD && p.billing_cycle === billingCycle,
   );
+
+  /**
+   * `?plan=<slug>` — the visitor already chose. The landing page's pricing cards link here
+   * with the plan they were showing, and making that visitor find the same card and press
+   * the same button again is a second decision nobody asked them to make. So the page
+   * switches to that plan's billing cycle and presses its button for them: a sign-in prompt
+   * if they are signed out, checkout if they are not.
+   *
+   * Read from the address bar once, on mount. It is not live state — it is an instruction
+   * that is carried out and then discarded.
+   */
+  const router = useRouter();
+  const [requestedPlanSlug, setRequestedPlanSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get("plan");
+    if (slug) setRequestedPlanSlug(slug);
+  }, []);
+
+  const requestedPlan = requestedPlanSlug
+    ? catalogPlans?.find(
+        (p) => p.slug === requestedPlanSlug && p.tier !== SubscriptionTier.FREE,
+      )
+    : undefined;
+  const requestedBillingCycle = requestedPlan?.billing_cycle;
+
+  // The cards only show one billing cycle at a time, so show the one that was asked for.
+  useEffect(() => {
+    if (requestedBillingCycle === "monthly" || requestedBillingCycle === "yearly") {
+      setBillingCycle(requestedBillingCycle);
+    }
+  }, [requestedBillingCycle]);
+
+  // Hold off until it is known who is looking. Someone already on a paid plan gets no
+  // checkout button at all (see the CTA branches below), so for them this quietly does
+  // nothing — but only once their subscription has actually loaded.
+  const autoStartPlanSlug =
+    requestedPlan && !isAuthLoading && !(isAuthenticated && isSubscriptionLoading)
+      ? requestedPlan.slug
+      : null;
+
+  // Drop the parameter as the checkout starts. Left in place, pressing Back on Dodo's page
+  // would land here, start the checkout again, and trap them in a loop.
+  const handleAutoStart = useCallback(() => {
+    setRequestedPlanSlug(null);
+    const params = new URLSearchParams(window.location.search);
+    params.delete("plan");
+    const query = params.toString();
+    router.replace(query ? `/pricing?${query}` : "/pricing", { scroll: false });
+  }, [router]);
 
   const plans = useMemo(() => {
     if (!freePlan || !couplePlan || !crowdPlan) return [];
@@ -322,6 +386,14 @@ export default function PricingPage() {
                               >
                                 {t("currentPlanLabel")}
                               </span>
+                            ) : isOnHold && plan.isPaid ? (
+                              <Link
+                                href="/subscription"
+                                className={`${appEntryActionButtonBaseClass} ${appEntrySecondaryButtonClass} ${pricingCtaClassName}`}
+                              >
+                                <span>{t("fixPaymentLabel")}</span>
+                                <LuArrowRight className="text-base" />
+                              </Link>
                             ) : isOnPaidPlan && !plan.isPaid ? (
                               // Moving to Free isn't a Dodo plan change (Free has no Dodo
                               // product) — it's a cancellation. Send them to /subscription,
@@ -348,6 +420,8 @@ export default function PricingPage() {
                                 label={plan.ctaLabel}
                                 planSlug={plan.slug}
                                 planName={plan.name}
+                                autoStart={plan.slug === autoStartPlanSlug}
+                                onAutoStart={handleAutoStart}
                               />
                             ) : (
                               <Link

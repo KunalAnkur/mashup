@@ -16,7 +16,10 @@ export enum SubscriptionStatus {
   CANCELLED = 'cancelled',
   EXPIRED = 'expired',
   TRIAL = 'trial',
-  PENDING = 'pending'
+  PENDING = 'pending',
+  // A renewal charge was declined and the grace period has run out. The account is on Free
+  // until a payment goes through — see `on_hold_plan` on UserSubscription.
+  ON_HOLD = 'on_hold'
 }
 
 export enum BillingCycle {
@@ -86,6 +89,8 @@ export interface UserSubscription {
   plan: SubscriptionPlan;
   pending_plan?: PendingPlan | null;
   pending_change_effective_at?: Date | string | null;
+  /** Only while status is ON_HOLD: the paid plan a new payment method would bring back. */
+  on_hold_plan?: PendingPlan | null;
 }
 
 export interface SubscriptionState {

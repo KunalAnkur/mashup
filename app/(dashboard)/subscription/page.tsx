@@ -20,6 +20,7 @@ import {
   subPlanGlowClass,
   subPlanCadenceClass,
   subPlanGhostActionClass,
+  subPlanNeutralActionClass,
   subPlanIconClass,
   subPlanNameClass,
   subPlanFooterClass,
@@ -43,6 +44,7 @@ import {
 import {
   useCancelChangePlanMutation,
   useGetMyTransactionsQuery,
+  useUpdatePaymentMethodMutation,
 } from "@/lib/store/api/billingApi";
 import { setSubscription } from "@/lib/store/slices/subscriptionSlice";
 import { useTranslations } from "@/i18n/I18nProvider";
@@ -90,6 +92,8 @@ export default function SubscriptionPage() {
     useReactivateMySubscriptionMutation();
   const [cancelChangePlan, { isLoading: isCancellingChange }] =
     useCancelChangePlanMutation();
+  const [updatePaymentMethod, { isLoading: isOpeningPaymentUpdate }] =
+    useUpdatePaymentMethodMutation();
   const { data: transactionsData, isLoading: isLoadingTransactions } =
     useGetMyTransactionsQuery();
 
@@ -106,6 +110,14 @@ export default function SubscriptionPage() {
   const isCancellationScheduled =
     subscription?.status === SubscriptionStatus.CANCELLED;
   const canCancel = isPaid && !isCancellationScheduled;
+  // A renewal charge was declined and the grace period is over: the account is on Free and
+  // the only thing worth offering is the way to fix the card. `plan` is the Free plan in
+  // this state; the one they were paying for arrives as `on_hold_plan`.
+  const isOnHold = subscription?.status === SubscriptionStatus.ON_HOLD;
+  const onHoldPlanName = getTierDisplayName(subscription?.on_hold_plan?.tier);
+  // Also offered on a healthy renewing plan, so an expiring card can be swapped before it
+  // fails. Not on one that is already set to cancel — there is no next charge to prepare for.
+  const canUpdatePaymentMethod = isOnHold || canCancel;
   const cancellationDate = formatDate(subscription?.end_date);
   // Same field, different meaning depending on auto_renew: end_date is when the plan lapses
   // if cancelled, or when it renews if not.
@@ -159,12 +171,28 @@ export default function SubscriptionPage() {
     }
   };
 
+  const handleUpdatePaymentMethod = async () => {
+    try {
+      const response = await updatePaymentMethod({
+        returnUrl: new URL("/subscription", window.location.origin).toString(),
+      }).unwrap();
+      window.location.href = response.data.url;
+    } catch (updateError: unknown) {
+      const message = getApiErrorMessage(updateError, t("toast.paymentUpdateFailedDefault"));
+      showError(t("toast.paymentUpdateFailedTitle"), message);
+    }
+  };
+
   const handleCancelSubscription = async () => {
     try {
       const response = await cancelMySubscription().unwrap();
       dispatch(setSubscription(response.data));
       setShowCancelConfirm(false);
-      showSuccess(t("toast.cancelSuccess"));
+      // An on-hold plan ends on the spot — there is no billing period left to wait out — so
+      // it gets its own confirmation rather than "stops renewing at the end of the period".
+      showSuccess(t(isOnHold ? "toast.cancelOnHoldSuccess" : "toast.cancelSuccess"));
+      // The card above is drawn from the query, which the mutation does not refresh.
+      await refetch();
     } catch (cancelError: unknown) {
       const message = getApiErrorMessage(cancelError, t("toast.cancelFailedDefault"));
       showError(t("toast.cancelFailedTitle"), message);
@@ -239,7 +267,9 @@ export default function SubscriptionPage() {
                         supersedes both. */}
                     <div className={subPlanFooterClass}>
                       <p className={subPlanFooterTextClass}>
-                        {pendingPlan && pendingChangeDate ? (
+                        {isOnHold ? (
+                          t("onHoldNotice", { plan: onHoldPlanName })
+                        ) : pendingPlan && pendingChangeDate ? (
                           <>
                             {t("pendingChangeBanner", {
                               plan: getTierDisplayName(pendingPlan.tier),
@@ -279,12 +309,46 @@ export default function SubscriptionPage() {
                       </p>
 
                       <div className={subPlanActionsClass}>
-                        <Link href="/pricing" className={subPlanPrimaryActionClass}>
-                          <span>{t("viewPlans")}</span>
-                          <LuArrowRight className="text-[13px]" />
-                        </Link>
+                        {/* On hold, fixing the card is the one thing to do, so it takes the
+                            primary slot and the plan list is left out: buying a second plan
+                            here would leave the first one being retried alongside it. */}
+                        {isOnHold ? (
+                          <button
+                            type="button"
+                            onClick={handleUpdatePaymentMethod}
+                            disabled={isOpeningPaymentUpdate}
+                            className={subPlanPrimaryActionClass}
+                          >
+                            <span>
+                              {isOpeningPaymentUpdate
+                                ? t("openingPaymentUpdate")
+                                : t("updatePaymentMethod")}
+                            </span>
+                            <LuArrowRight className="text-[13px]" />
+                          </button>
+                        ) : (
+                          <Link href="/pricing" className={subPlanPrimaryActionClass}>
+                            <span>{t("viewPlans")}</span>
+                            <LuArrowRight className="text-[13px]" />
+                          </Link>
+                        )}
 
-                        {canCancel ? (
+                        {canUpdatePaymentMethod && !isOnHold ? (
+                          <button
+                            type="button"
+                            onClick={handleUpdatePaymentMethod}
+                            disabled={isOpeningPaymentUpdate}
+                            className={subPlanNeutralActionClass}
+                          >
+                            {isOpeningPaymentUpdate
+                              ? t("openingPaymentUpdate")
+                              : t("updatePaymentMethod")}
+                          </button>
+                        ) : null}
+
+                        {/* On hold too: someone who no longer wants the plan needs a way
+                            to stop the card being retried. */}
+                        {canCancel || isOnHold ? (
                           <button
                             type="button"
                             onClick={() => setShowCancelConfirm(true)}
@@ -320,8 +384,12 @@ export default function SubscriptionPage() {
       >
         <ModalConfirmContent
           icon={<LuCrown size={18} className="text-current" />}
-          title={t("cancelModal.title", { plan: tierDisplayName })}
-          message={t("cancelModal.message", { plan: tierDisplayName })}
+          title={t("cancelModal.title", { plan: isOnHold ? onHoldPlanName : tierDisplayName })}
+          message={
+            isOnHold
+              ? t("cancelModal.onHoldMessage", { plan: onHoldPlanName })
+              : t("cancelModal.message", { plan: tierDisplayName })
+          }
           cancelLabel={t("cancelModal.keepPlan")}
           confirmLabel={isCancelling ? t("cancelModal.cancelling") : t("cancelPlan")}
           onCancel={() => setShowCancelConfirm(false)}

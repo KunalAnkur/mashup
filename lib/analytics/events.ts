@@ -642,6 +642,16 @@ export const trackInviteSent = (roomId: string, method: InviteMethod) => {
   logEvent("invite_sent", { room_id: roomId, method });
 };
 
+/**
+ * Track the invite prompt opening for a host who is alone in a new room. The denominator
+ * for `room_link_copied` and `invite_sent`: without it there is no telling whether hosts
+ * ignore the prompt or never saw it.
+ */
+export const trackInvitePromptShown = (roomId: string) => {
+  safeCapture("invite_prompt_shown", { room_id: roomId });
+  logEvent("invite_prompt_shown", { room_id: roomId });
+};
+
 // ============ PRODUCT EVENTS ============
 
 /** Track when a room-page product link is opened */
@@ -788,6 +798,77 @@ export const trackUpgradeClicked = (
     room_id: roomId || undefined,
   });
   logEvent("upgrade_clicked", { context, room_id: roomId });
+};
+
+// ============ CHECKOUT EVENTS ============
+
+/**
+ * `upgrade_clicked` says someone wanted a plan; these three say what became of it. Without
+ * them the only trace of a sale in PostHog was a pageview of /pricing/success, which cannot
+ * say which plan was bought or how many people left for Dodo and never came back.
+ *
+ * The plan is remembered across the trip to Dodo's hosted page in sessionStorage, because
+ * the return URL carries a status and nothing about what was in the cart.
+ */
+const CHECKOUT_PLAN_STORAGE_KEY = "movmash_checkout_plan";
+
+const readCheckoutPlan = (): string | undefined => {
+  if (typeof window === "undefined") return undefined;
+  try {
+    return window.sessionStorage.getItem(CHECKOUT_PLAN_STORAGE_KEY) || undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const clearCheckoutPlan = () => {
+  try {
+    window.sessionStorage.removeItem(CHECKOUT_PLAN_STORAGE_KEY);
+  } catch {
+    // Storage unavailable (private mode) — nothing to clear.
+  }
+};
+
+/**
+ * Track a checkout session being opened, just before the redirect to Dodo.
+ *
+ * `entry` is how the buyer got to the button: `plan_link` when a link that already named
+ * the plan started it for them (the landing page's pricing cards), `pricing_page` when
+ * they pressed it themselves.
+ */
+export const trackCheckoutStarted = (
+  planSlug: string,
+  entry: "pricing_page" | "plan_link" = "pricing_page",
+) => {
+  try {
+    window.sessionStorage.setItem(CHECKOUT_PLAN_STORAGE_KEY, planSlug);
+  } catch {
+    // The event still fires; only the plan on the return leg is lost.
+  }
+  safeCapture("checkout_started", { plan_slug: planSlug, entry });
+  logEvent("checkout_started", { plan_slug: planSlug, entry });
+};
+
+/**
+ * Track the buyer landing back on /pricing/success. `status` is Dodo's own word for the
+ * payment, so a still-processing return can be told apart from a settled one.
+ */
+export const trackCheckoutCompleted = (status: string) => {
+  const planSlug = readCheckoutPlan();
+  // A refresh of the success page must not count as a second sale.
+  if (!planSlug) return;
+  clearCheckoutPlan();
+  safeCapture("checkout_completed", { plan_slug: planSlug, status: status || undefined });
+  logEvent("checkout_completed", { plan_slug: planSlug, status });
+};
+
+/** Track the buyer landing on /pricing/failure — a declined or abandoned payment. */
+export const trackCheckoutFailed = (status?: string) => {
+  const planSlug = readCheckoutPlan();
+  if (!planSlug) return;
+  clearCheckoutPlan();
+  safeCapture("checkout_failed", { plan_slug: planSlug, status: status || undefined });
+  logEvent("checkout_failed", { plan_slug: planSlug, status });
 };
 
 // ============ ERROR TRACKING ============
@@ -953,6 +1034,7 @@ export const analytics = {
   // Sharing
   trackRoomLinkCopied,
   trackInviteSent,
+  trackInvitePromptShown,
 
   // Products
   trackProductOpened,
@@ -960,6 +1042,11 @@ export const analytics = {
   // Home discover carousel
   trackDiscoverSlideViewed,
   trackDiscoverSlideClicked,
+
+  // Checkout
+  trackCheckoutStarted,
+  trackCheckoutCompleted,
+  trackCheckoutFailed,
 
   // Error
   trackError,

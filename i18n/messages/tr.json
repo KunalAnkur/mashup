@@ -452,6 +452,7 @@
       "hostNextStep": "Seni Google ile oturum açtıracağız, ardından odanı hemen açacağız.",
       "checkoutTitle": "Google ile devam et",
       "checkoutDescription": "Ödeme yalnızca tam hesaplar için kullanılabilir. Misafir oturumunla fiyatlara göz atabilirsin, ancak ödemeden önce Google ile devam etmen gerekir.",
+      "checkoutDescriptionSignedOut": "Devam etmek için Google ile giriş yap. Birkaç saniye sürer ve az önce seçtiğin plan korunur.",
       "checkoutNextStep": "Seni Movmash içinde Google ile oturum açtıracağız, ardından doğrudan ödemeye geçeceğiz."
     },
     "login": {
@@ -516,6 +517,7 @@
     "currentPlanLabel": "Mevcut plan",
     "switchPlanLabel": "Planı değiştir",
     "downgradeToFreeLabel": "Geçmek için planını iptal et",
+    "fixPaymentLabel": "Önce ödemeni düzelt",
     "title": "Planını seç",
     "subtitle": "Movmash'i denemek için Ücretsiz yeterli. Couple ve Crowd günlük limiti kaldırır ve görüntülü aramayı ekler.",
     "billingToggle": {
@@ -575,6 +577,9 @@
     "freePlanHint": "Ücretsiz plandasın. İstediğin zaman yükseltebilirsin.",
     "pendingChangeBanner": "{date} tarihinde {plan} planına geçilecek",
     "undoPendingChange": "Geri al",
+    "updatePaymentMethod": "Ödeme yöntemini güncelle",
+    "openingPaymentUpdate": "Açılıyor…",
+    "onHoldNotice": "{plan} planını yenileyemedik, bu yüzden hesabın şimdilik Ücretsiz planda. Planını geri almak için ödeme yöntemini güncelle.",
     "features": {
       "participants": "Oda başına {count} kişi",
       "watchLimitDaily": "Günde {minutes} dakika izleme süresi",
@@ -584,18 +589,22 @@
     "cancelModal": {
       "title": "{plan} iptal edilsin mi?",
       "message": "{plan} planın, mevcut fatura döneminin sonuna kadar aktif kalacak.",
+      "onHoldMessage": "Kartından ödeme almayı denemeyi bırakacağız ve {plan} planını kapatacağız. Hesabın Ücretsiz planda kalır.",
       "keepPlan": "Planı koru",
       "cancelling": "İptal ediliyor..."
     },
     "toast": {
       "cancelSuccess": "Planın, mevcut fatura döneminin sonunda yenilenmeyi durduracak.",
+      "cancelOnHoldSuccess": "Planın iptal edildi ve kartından ödeme almayı denemeyi bıraktık.",
       "cancelFailedTitle": "Abonelik iptali başarısız oldu",
       "cancelFailedDefault": "Aboneliğin şu anda iptal edilemiyor.",
       "pendingChangeCancelled": "Planlanan plan değişikliği iptal edildi.",
       "pendingChangeCancelFailed": "Planlanan değişiklik şu anda iptal edilemiyor.",
       "reactivateSuccess": "Planın her zamanki gibi yenilenmeye devam edecek.",
       "reactivateFailedTitle": "Yeniden etkinleştirme başarısız oldu",
-      "reactivateFailedDefault": "Aboneliğin şu anda yeniden etkinleştirilemiyor."
+      "reactivateFailedDefault": "Aboneliğin şu anda yeniden etkinleştirilemiyor.",
+      "paymentUpdateFailedTitle": "Ödeme sayfası açılamadı",
+      "paymentUpdateFailedDefault": "Lütfen birazdan tekrar dene."
     },
     "transactions": {
       "title": "Ödeme geçmişi",

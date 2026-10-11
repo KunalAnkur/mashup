@@ -452,6 +452,7 @@
       "hostNextStep": "Te conectaremos con Google y abriremos tu sala de inmediato.",
       "checkoutTitle": "Continuar con Google",
       "checkoutDescription": "El pago solo está disponible para cuentas completas. Tu sesión de invitado puede ver los precios, pero necesitarás continuar con Google antes de pagar.",
+      "checkoutDescriptionSignedOut": "Inicia sesión con Google para continuar. Tarda unos segundos y conservas el plan que acabas de elegir.",
       "checkoutNextStep": "Te conectaremos con Google dentro de Movmash y continuaremos directamente al pago."
     },
     "login": {
@@ -516,6 +517,7 @@
     "currentPlanLabel": "Plan actual",
     "switchPlanLabel": "Cambiar plan",
     "downgradeToFreeLabel": "Cancela tu plan para cambiar",
+    "fixPaymentLabel": "Primero corrige tu pago",
     "title": "Elige tu plan",
     "subtitle": "Con Free basta para probar Movmash. Couple y Crowd quitan el límite diario y añaden videollamadas.",
     "billingToggle": {
@@ -575,6 +577,9 @@
     "freePlanHint": "Estás en el plan gratuito. Puedes mejorarlo cuando quieras.",
     "pendingChangeBanner": "Pasarás al plan {plan} el {date}",
     "undoPendingChange": "Deshacer",
+    "updatePaymentMethod": "Actualizar método de pago",
+    "openingPaymentUpdate": "Abriendo…",
+    "onHoldNotice": "No pudimos renovar tu plan {plan}, así que tu cuenta está en el plan Gratis por ahora. Actualiza tu método de pago para recuperarlo.",
     "features": {
       "participants": "{count} personas por sala",
       "watchLimitDaily": "{minutes} minutos de visualización al día",
@@ -584,18 +589,22 @@
     "cancelModal": {
       "title": "¿Cancelar {plan}?",
       "message": "Tu plan {plan} seguirá activo hasta que termine el periodo de facturación actual.",
+      "onHoldMessage": "Dejaremos de intentar cobrar a tu tarjeta y cerraremos tu plan {plan}. Tu cuenta seguirá en el plan Gratis.",
       "keepPlan": "Mantener plan",
       "cancelling": "Cancelando..."
     },
     "toast": {
       "cancelSuccess": "Tu plan dejará de renovarse al final del periodo de facturación actual.",
+      "cancelOnHoldSuccess": "Tu plan se canceló y dejamos de intentar cobrar a tu tarjeta.",
       "cancelFailedTitle": "No se pudo cancelar la suscripción",
       "cancelFailedDefault": "No es posible cancelar tu suscripción en este momento.",
       "pendingChangeCancelled": "Cambio de plan programado cancelado.",
       "pendingChangeCancelFailed": "No es posible cancelar el cambio programado en este momento.",
       "reactivateSuccess": "Tu plan seguirá renovándose con normalidad.",
       "reactivateFailedTitle": "No se pudo reactivar la suscripción",
-      "reactivateFailedDefault": "No es posible reactivar tu suscripción en este momento."
+      "reactivateFailedDefault": "No es posible reactivar tu suscripción en este momento.",
+      "paymentUpdateFailedTitle": "No se pudo abrir la página de pago",
+      "paymentUpdateFailedDefault": "Inténtalo de nuevo en un momento."
     },
     "transactions": {
       "title": "Actividad de pagos",

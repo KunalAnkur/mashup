@@ -1,13 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import {
   appEntryActionButtonBaseClass,
   appEntryPrimaryButtonClass,
   appEntrySecondaryButtonClass,
 } from "@/components/UI/classTokens";
+import { trackCheckoutFailed } from "@/lib/analytics";
 
 export default function FailurePage() {
+  useEffect(() => {
+    const status = new URLSearchParams(window.location.search).get("status") || "";
+    trackCheckoutFailed(status.toLowerCase());
+  }, []);
+
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-6">
       <div className="max-w-xl w-full rounded-2xl border border-white/10 bg-black/30 p-8 text-center">

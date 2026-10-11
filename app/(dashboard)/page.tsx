@@ -26,8 +26,12 @@ const Page = async () => {
   return (
     <div className={dashHomeGridClass}>
       <div className={dashHomeMainColClass}>
-        <DiscoverCarousel slides={slides} />
+        {/* Actions lead. A first-time visitor arrives wanting to start a watch party, and
+            these four tiles are how; with the carousel on top they sat below the fold on a
+            laptop and about one visitor in ten who saw a slide ever pressed one. The
+            carousel still follows, as the answer to "what else can we do". */}
         <SourceSelection />
+        <DiscoverCarousel slides={slides} />
         <GamesPreviewSection />
       </div>
       <div className={dashHomeRailColClass}>

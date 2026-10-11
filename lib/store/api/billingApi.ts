@@ -100,6 +100,18 @@ export const billingApi = createApi({
         method: "POST",
       }),
     }),
+    // Returns a Dodo-hosted page for replacing the card on the current subscription. For a
+    // subscription on hold, completing it also settles the declined charge.
+    updatePaymentMethod: builder.mutation<
+      { success: boolean; data: { url: string } },
+      { returnUrl: string }
+    >({
+      query: ({ returnUrl }) => ({
+        url: "/update-payment-method",
+        method: "POST",
+        body: { return_url: returnUrl },
+      }),
+    }),
     getMyTransactions: builder.query<TransactionHistoryResponse, void>({
       query: () => ({
         url: "/transactions",
@@ -111,6 +123,7 @@ export const billingApi = createApi({
 });
 
 export const {
+  useUpdatePaymentMethodMutation,
   useLazyPreviewChangePlanQuery,
   useChangePlanMutation,
   useCancelChangePlanMutation,

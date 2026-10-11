@@ -452,6 +452,7 @@
       "hostNextStep": "سنسجّل دخولك عبر Google، ثم نفتح غرفتك على الفور.",
       "checkoutTitle": "المتابعة باستخدام Google",
       "checkoutDescription": "الدفع متاح فقط للحسابات الكاملة. يمكن لجلستك كضيف تصفح الأسعار، لكن عليك المتابعة عبر Google قبل الدفع.",
+      "checkoutDescriptionSignedOut": "سجّل الدخول عبر Google للمتابعة. يستغرق ذلك بضع ثوانٍ، وتبقى الخطة التي اخترتها كما هي.",
       "checkoutNextStep": "سنسجّل دخولك عبر Google داخل Movmash، ثم ننتقل مباشرة إلى الدفع."
     },
     "login": {
@@ -516,6 +517,7 @@
     "currentPlanLabel": "الخطة الحالية",
     "switchPlanLabel": "تبديل الخطة",
     "downgradeToFreeLabel": "ألغِ خطتك للتبديل",
+    "fixPaymentLabel": "أصلح الدفع أولًا",
     "title": "اختر خطتك",
     "subtitle": "الخطة المجانية تكفي لتجربة Movmash. تزيل خطتا Couple وCrowd الحد اليومي وتضيفان مكالمات الفيديو.",
     "billingToggle": {
@@ -575,6 +577,9 @@
     "freePlanHint": "أنت على الخطة المجانية. يمكنك الترقية في أي وقت.",
     "pendingChangeBanner": "سيتم الانتقال إلى {plan} في {date}",
     "undoPendingChange": "تراجع",
+    "updatePaymentMethod": "تحديث طريقة الدفع",
+    "openingPaymentUpdate": "جارٍ الفتح…",
+    "onHoldNotice": "لم نتمكن من تجديد خطة {plan}، لذلك حسابك على الخطة المجانية حاليًا. حدّث طريقة الدفع لاستعادتها.",
     "features": {
       "participants": "{count} أشخاص لكل غرفة",
       "watchLimitDaily": "{minutes} دقيقة مشاهدة يومياً",
@@ -584,18 +589,22 @@
     "cancelModal": {
       "title": "إلغاء {plan}؟",
       "message": "ستبقى خطة {plan} نشطة حتى نهاية فترة الفوترة الحالية.",
+      "onHoldMessage": "سنتوقف عن محاولة الخصم من بطاقتك وسنغلق خطة {plan}. سيبقى حسابك على الخطة المجانية.",
       "keepPlan": "الاحتفاظ بالخطة",
       "cancelling": "جارٍ الإلغاء..."
     },
     "toast": {
       "cancelSuccess": "ستتوقف خطتك عن التجديد في نهاية فترة الفوترة الحالية.",
+      "cancelOnHoldSuccess": "تم إلغاء خطتك وتوقفنا عن محاولة الخصم من بطاقتك.",
       "cancelFailedTitle": "فشل إلغاء الاشتراك",
       "cancelFailedDefault": "تعذّر إلغاء اشتراكك في الوقت الحالي.",
       "pendingChangeCancelled": "تم إلغاء تغيير الخطة المجدول.",
       "pendingChangeCancelFailed": "تعذّر إلغاء التغيير المجدول في الوقت الحالي.",
       "reactivateSuccess": "ستستمر خطتك في التجديد كالمعتاد.",
       "reactivateFailedTitle": "فشلت إعادة التفعيل",
-      "reactivateFailedDefault": "تعذّرت إعادة تفعيل اشتراكك في الوقت الحالي."
+      "reactivateFailedDefault": "تعذّرت إعادة تفعيل اشتراكك في الوقت الحالي.",
+      "paymentUpdateFailedTitle": "تعذّر فتح صفحة الدفع",
+      "paymentUpdateFailedDefault": "يرجى المحاولة مرة أخرى بعد قليل."
     },
     "transactions": {
       "title": "نشاط الدفع",

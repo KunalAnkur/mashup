@@ -164,8 +164,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       // const authRoutes = ["/login", "/signup"];
       const authRoutes = ["/login"];
       const isAuthRoute = authRoutes.includes(pathname);
-      const requiresAuthentication =
-        pathname === "/pricing" || pathname === "/subscription";
+      // `/pricing` is deliberately not here. It is where the landing page's upgrade buttons
+      // point, so a visitor who has never signed in must be able to read the plans first;
+      // the sign-in prompt belongs on the checkout button, not in front of the price list.
+      const requiresAuthentication = pathname === "/subscription";
       const redirectParam = searchParams?.get("redirect");
       const safeRedirect =
         redirectParam && redirectParam.startsWith("/") ? redirectParam : null;

@@ -8,6 +8,7 @@ import {
   appEntryPrimaryButtonClass,
   appEntrySecondaryButtonClass,
 } from "@/components/UI/classTokens";
+import { trackCheckoutCompleted } from "@/lib/analytics";
 
 export default function SuccessPage() {
   const router = useRouter();
@@ -24,6 +25,10 @@ export default function SuccessPage() {
       router.replace(`/pricing/failure${qs ? `?${qs}` : ""}`);
     }
   }, [isFailure, qs, router]);
+
+  useEffect(() => {
+    if (!isFailure) trackCheckoutCompleted(status);
+  }, [isFailure, status]);
 
   if (isFailure) {
     return null;

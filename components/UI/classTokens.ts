@@ -552,6 +552,11 @@ export const subPlanPrimaryActionClass =
 export const subPlanGhostActionClass =
   "inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-white/10 px-4 text-[12.5px] font-semibold text-white/58 transition-colors duration-200 hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-50";
 
+// Same shape as the ghost action without its red hover. That hover says "this ends
+// something", which is right for Cancel and wrong for a neutral secondary action.
+export const subPlanNeutralActionClass =
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-white/10 px-4 text-[12.5px] font-semibold text-white/58 transition-colors duration-200 hover:border-white/20 hover:bg-white/[0.05] hover:text-white/86 disabled:cursor-not-allowed disabled:opacity-50";
+
 // --- purchase history -------------------------------------------------------
 
 export const subHistoryCardClass = "overflow-hidden rounded-dashMd bg-dashSurface";

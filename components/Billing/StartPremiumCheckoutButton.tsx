@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { RootState } from "@/lib/store";
 import GuestSignInModal from "@/components/Billing/GuestSignInModal";
@@ -12,7 +12,11 @@ import {
 import { LuArrowRight } from "react-icons/lu";
 import { showError, showInfo } from "@/utils/toast";
 import { SubscriptionStatus } from "@/types/subscriptionTypes";
+import { useLazyGetMySubscriptionQuery } from "@/lib/store/api/userApi";
+import { setSubscription } from "@/lib/store/slices/subscriptionSlice";
+import { hasActivePaidSubscription } from "@/utils/subscription";
 import { useTranslations } from "@/i18n/I18nProvider";
+import { trackCheckoutStarted } from "@/lib/analytics";
 
 type Props = {
   className?: string;
@@ -23,6 +27,13 @@ type Props = {
   planName?: string;
   successUrl?: string;
   cancelUrl?: string;
+  /**
+   * Press the button on the visitor's behalf, once. Set when they arrived by a link that
+   * already named this plan, so the click that brought them here is the only one they owe.
+   */
+  autoStart?: boolean;
+  /** Called as the automatic press fires, so the caller can retire whatever asked for it. */
+  onAutoStart?: () => void;
 };
 
 export default function StartPremiumCheckoutButton({
@@ -32,8 +43,12 @@ export default function StartPremiumCheckoutButton({
   planName,
   successUrl,
   cancelUrl,
+  autoStart = false,
+  onAutoStart,
 }: Props) {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const [getMySubscription] = useLazyGetMySubscriptionQuery();
   const tCommon = useTranslations("common");
   const tToast = useTranslations("toast");
   const tGuest = useTranslations("auth.guestSignIn");
@@ -44,6 +59,9 @@ export default function StartPremiumCheckoutButton({
   );
   const [loading, setLoading] = useState(false);
   const [showGuestUpgradeModal, setShowGuestUpgradeModal] = useState(false);
+  // Signed out entirely, as opposed to browsing as a guest: same prompt, different reason.
+  const isSignedOut = !authState.isAuthenticated || !authState.token;
+  const autoStartedRef = useRef(false);
 
   const resolveCallbackUrl = useCallback(
     (fallbackPath: string, override?: string) => {
@@ -90,6 +108,7 @@ export default function StartPremiumCheckoutButton({
         }
         const checkoutUrl: string | undefined = json?.data?.checkout_url;
         if (!checkoutUrl) throw new Error(tToast("checkoutUrlMissing"));
+        trackCheckoutStarted(planSlug, autoStartedRef.current ? "plan_link" : "pricing_page");
         window.location.href = checkoutUrl;
       } catch (error: any) {
         showError(
@@ -104,8 +123,11 @@ export default function StartPremiumCheckoutButton({
   );
 
   const handleClick = useCallback(async () => {
-    if (!authState.isAuthenticated || !authState.token) {
-      router.push(`/login?redirect=${encodeURIComponent("/pricing")}`);
+    // Sign in here, in place, and carry straight on into checkout for the plan they picked.
+    // Sending them to /login dropped the choice: they came back to the price list and had
+    // to find the same button again.
+    if (isSignedOut) {
+      setShowGuestUpgradeModal(true);
       return;
     }
 
@@ -132,17 +154,23 @@ export default function StartPremiumCheckoutButton({
 
     await startCheckout(authState.token);
   }, [
-    authState.isAuthenticated,
     authState.token,
     authState.user,
+    isSignedOut,
     resolvedLabel,
     planName,
     planSlug,
     tToast,
-    router,
     startCheckout,
     subscription,
   ]);
+
+  useEffect(() => {
+    if (!autoStart || autoStartedRef.current) return;
+    autoStartedRef.current = true;
+    onAutoStart?.();
+    void handleClick();
+  }, [autoStart, handleClick, onAutoStart]);
 
   return (
     <>
@@ -160,9 +188,29 @@ export default function StartPremiumCheckoutButton({
         open={showGuestUpgradeModal}
         onClose={() => setShowGuestUpgradeModal(false)}
         title={tGuest("checkoutTitle")}
-        description={tGuest("checkoutDescription")}
+        description={tGuest(isSignedOut ? "checkoutDescriptionSignedOut" : "checkoutDescription")}
         nextStepText={tGuest("checkoutNextStep")}
         onAuthenticated={async (nextToken) => {
+          // The Google account they just chose may already be paying — a subscriber who was
+          // signed out, or a guest attaching an account that has a plan. Sign-in does not
+          // return the subscription, so look before opening a second checkout for them.
+          try {
+            const existing = (await getMySubscription().unwrap())?.data;
+            if (existing) dispatch(setSubscription(existing));
+            if (hasActivePaidSubscription(existing)) {
+              showInfo(tToast("alreadySubscribed", { plan: existing.plan?.name ?? "" }));
+              return;
+            }
+            // Their plan is on hold after a declined renewal. A new checkout would start a
+            // second subscription while the first is still being retried; the fix for the
+            // first one lives on the subscription page.
+            if (existing?.status === SubscriptionStatus.ON_HOLD) {
+              router.push("/subscription");
+              return;
+            }
+          } catch {
+            // No subscription on record reads as an error here; a new buyer carries on.
+          }
           await startCheckout(nextToken);
         }}
       />

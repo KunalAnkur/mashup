@@ -19,6 +19,7 @@ import PlaybackBlockedModal from "@/components/Modals/PlaybackBlockedModal";
 import { isMobile } from "react-device-detect";
 import { LuChevronDown } from "react-icons/lu";
 import { RoomContentModal } from "@/components/Room/RoomContentModal";
+import HostInvitePrompt from "@/components/Room/HostInvitePrompt";
 import { usePlaylistActions } from "@/hooks/usePlaylistActions";
 import { setPanelCollapsed } from "@/lib/store/slices/roomSlice";
 import { useTranslations } from "@/i18n/I18nProvider";
@@ -205,6 +206,8 @@ const Page = () => {
         limit={roomState.settings.playbackBlockedInfo?.limit ?? 0}
         planName={roomState.settings.playbackBlockedInfo?.planName ?? "Free"}
       />
+
+      <HostInvitePrompt />
 
       <RoomContentModal
         open={contentModalOpen}
