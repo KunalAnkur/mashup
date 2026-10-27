@@ -285,6 +285,12 @@ export const pricingPaidBadgeSurfaceClass = "bg-rose-500/10 text-rose-100";
 export const pricingSavingsBadgeClass =
   "inline-flex items-center rounded-full bg-emerald-400/15 px-2 py-0.5 text-[11px] font-semibold leading-4 text-emerald-300";
 
+// One answer in the cancel flow's "why are you leaving?" list, and the chosen one.
+export const cancelReasonOptionClass =
+  "flex w-full items-center gap-3 rounded-xl bg-white/[0.04] px-3.5 py-2.5 text-left text-[13px] text-white/80 ring-1 ring-white/[0.06] transition-colors hover:bg-white/[0.07]";
+export const cancelReasonOptionActiveClass =
+  "flex w-full items-center gap-3 rounded-xl bg-pink-500/10 px-3.5 py-2.5 text-left text-[13px] font-medium text-white ring-1 ring-pink-400/50";
+
 // The priced plan inside an upgrade prompt: the featured pricing card's pink wash and ring,
 // without its lift and wide glow, which crowd a modal.
 export const upgradeOfferSurfaceClass =

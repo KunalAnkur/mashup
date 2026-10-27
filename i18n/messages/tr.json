@@ -648,6 +648,42 @@
         "90d": "Son 90 gün",
         "year": "Bu yıl"
       }
+    },
+    "cancelFlow": {
+      "reasonTitle": "Gitmeden önce",
+      "reasonSubtitle": "İptal etmenin asıl nedeni nedir? Movmash'i geliştirmemize yardımcı olur.",
+      "reasons": {
+        "together": "Artık aynı yerdeyiz",
+        "not_using": "Yeterince kullanmıyoruz",
+        "price": "Çok pahalı",
+        "technical": "Bir şey düzgün çalışmadı",
+        "missing_feature": "İhtiyacımız olan bir şey eksik",
+        "other": "Başka bir neden"
+      },
+      "notePlaceholder": "Biraz daha anlat (isteğe bağlı)",
+      "continue": "Devam et",
+      "pauseTitle": "Bunun yerine ara vermeye ne dersin?",
+      "pauseMessage": "{plan} planını koru ve bir süre ödeme yapma. Her şey açık kalır ve ara bitene kadar ücret alınmaz.",
+      "monthOptions": {
+        "1": "1 ay",
+        "2": "2 ay",
+        "3": "3 ay"
+      },
+      "pauseCta": "Ödemeleri {duration} duraklat",
+      "freeMonthTitle": "Gelecek ay bizden",
+      "freeMonthMessage": "{plan} planında kal, bir sonraki ödemeni atlayalım. Başka hiçbir şey değişmez.",
+      "freeMonthCta": "Ücretsiz bir ay al",
+      "nextPaymentOn": "Bir sonraki ödemen {date} tarihinde olacak.",
+      "yearlyHint": "Her ay daha az mı ödemek istiyorsun?",
+      "yearlyLink": "Yıllığa geç, yaklaşık yarı fiyatına öde",
+      "cancelAnyway": "Hayır teşekkürler, planımı iptal et",
+      "applying": "Uygulanıyor...",
+      "toast": {
+        "paused": "Ödemeler duraklatıldı. Bir sonraki ödemen {date} tarihinde.",
+        "freeMonth": "Gelecek ayın ücretsiz. Bir sonraki ödemen {date} tarihinde.",
+        "offerFailedTitle": "Teklif uygulanamadı",
+        "offerFailedDefault": "Lütfen tekrar dene ya da istersen iptal et."
+      }
     }
   },
   "planChange": {

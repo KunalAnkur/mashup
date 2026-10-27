@@ -803,6 +803,46 @@ export const trackUpgradeClicked = (
   logEvent("upgrade_clicked", { context, room_id: roomId, plan_slug: planSlug });
 };
 
+// ============ CANCEL FLOW EVENTS ============
+
+/**
+ * The cancel flow, end to end: opened, the reason given, the save offer shown, and what the
+ * subscriber did with it. `reason` is one of the flow's fixed keys, so churn can be split by
+ * cause; any free text they add travels to guardian with the cancellation, not to PostHog.
+ */
+export type CancelReason =
+  | "together"
+  | "not_using"
+  | "price"
+  | "technical"
+  | "missing_feature"
+  | "other";
+export type RetentionOfferKind = "pause" | "free_month";
+
+export const trackCancelFlowStarted = (planSlug?: string) => {
+  safeCapture("cancel_flow_started", { plan_slug: planSlug });
+  logEvent("cancel_flow_started", { plan_slug: planSlug });
+};
+
+export const trackRetentionOfferShown = (offer: RetentionOfferKind, reason: CancelReason) => {
+  safeCapture("retention_offer_shown", { offer, reason });
+  logEvent("retention_offer_shown", { offer, reason });
+};
+
+export const trackRetentionOfferAccepted = (
+  offer: RetentionOfferKind,
+  reason: CancelReason,
+  months: number
+) => {
+  safeCapture("retention_offer_accepted", { offer, reason, months });
+  logEvent("retention_offer_accepted", { offer, reason, months });
+};
+
+export const trackSubscriptionCancelled = (reason: CancelReason | null, planSlug?: string) => {
+  safeCapture("subscription_cancelled", { reason: reason ?? undefined, plan_slug: planSlug });
+  logEvent("subscription_cancelled", { reason, plan_slug: planSlug });
+};
+
 // ============ CHECKOUT EVENTS ============
 
 /**

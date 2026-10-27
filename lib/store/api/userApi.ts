@@ -93,10 +93,24 @@ export const userApi = createApi({
       }),
       transformResponse: normalizeSubscriptionResponse,
     }),
-    cancelMySubscription: builder.mutation<GetSubscriptionResponse, void>({
-      query: () => ({
+    cancelMySubscription: builder.mutation<GetSubscriptionResponse, { reason?: string } | void>({
+      query: (body) => ({
         url: "/subscription/cancel",
         method: "POST",
+        body: body ?? {},
+      }),
+      transformResponse: normalizeSubscriptionResponse,
+    }),
+    // The cancel flow's save offer: move the next payment out by a free month or a 1–3 month
+    // pause. The plan stays on; guardian refuses it after the first time.
+    applyRetentionOffer: builder.mutation<
+      GetSubscriptionResponse,
+      { offer: "pause" | "free_month"; months?: number; reason: string }
+    >({
+      query: (body) => ({
+        url: "/subscription/retention-offer",
+        method: "POST",
+        body,
       }),
       transformResponse: normalizeSubscriptionResponse,
     }),
@@ -124,5 +138,6 @@ export const {
   useLazyGetMySubscriptionQuery,
   useCancelMySubscriptionMutation,
   useReactivateMySubscriptionMutation,
+  useApplyRetentionOfferMutation,
   useUpdateMarketingPreferenceMutation,
 } = userApi;

@@ -4,11 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { LuArrowRight, LuClock, LuCrown, LuMonitor, LuSparkles, LuUsers } from "react-icons/lu";
-import { Modal, ModalConfirmContent } from "@/components/UI";
 import {
   appPulseSurfaceClass,
   appSectionTitleTextClass,
-  appWhiteBorderClass,
   dashPageContentWrapClass,
   dashPageTitleWrapClass,
   pricingPaidCardSurfaceClass,
@@ -35,9 +33,9 @@ import {
   subPlanPrimaryActionClass,
 } from "@/components/UI/classTokens";
 import { PurchaseHistory } from "@/components/Subscription/PurchaseHistory";
+import CancelPlanFlow from "@/components/Subscription/CancelPlanFlow";
 import { RootState } from "@/lib/store";
 import {
-  useCancelMySubscriptionMutation,
   useGetMySubscriptionQuery,
   useReactivateMySubscriptionMutation,
 } from "@/lib/store/api/userApi";
@@ -86,8 +84,6 @@ export default function SubscriptionPage() {
   const { data, isLoading, refetch } = useGetMySubscriptionQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
-  const [cancelMySubscription, { isLoading: isCancelling }] =
-    useCancelMySubscriptionMutation();
   const [reactivateMySubscription, { isLoading: isReactivating }] =
     useReactivateMySubscriptionMutation();
   const [cancelChangePlan, { isLoading: isCancellingChange }] =
@@ -189,20 +185,10 @@ export default function SubscriptionPage() {
     }
   };
 
-  const handleCancelSubscription = async () => {
-    try {
-      const response = await cancelMySubscription().unwrap();
-      dispatch(setSubscription(response.data));
-      setShowCancelConfirm(false);
-      // An on-hold plan ends on the spot — there is no billing period left to wait out — so
-      // it gets its own confirmation rather than "stops renewing at the end of the period".
-      showSuccess(t(isOnHold ? "toast.cancelOnHoldSuccess" : "toast.cancelSuccess"));
-      // The card above is drawn from the query, which the mutation does not refresh.
-      await refetch();
-    } catch (cancelError: unknown) {
-      const message = getApiErrorMessage(cancelError, t("toast.cancelFailedDefault"));
-      showError(t("toast.cancelFailedTitle"), message);
-    }
+  const handleSubscriptionUpdated = async (next: NonNullable<typeof subscription>) => {
+    dispatch(setSubscription(next));
+    // The card above is drawn from the query, which the mutations do not refresh.
+    await refetch();
   };
 
   const handleReactivateSubscription = async () => {
@@ -380,29 +366,15 @@ export default function SubscriptionPage() {
           </div>
         </div>
 
-      <Modal
+      <CancelPlanFlow
         open={showCancelConfirm}
         onClose={() => setShowCancelConfirm(false)}
-        closeOnBackdropClick={!isCancelling}
-        closeOnEscape={!isCancelling}
-        overlayClassName="z-[99999]"
-        panelClassName={`max-w-sm ${appWhiteBorderClass} rounded-2xl bg-[linear-gradient(180deg,rgba(30,30,40,0.98),rgba(18,18,24,0.98))] shadow-2xl backdrop-blur-2xl`}
-      >
-        <ModalConfirmContent
-          icon={<LuCrown size={18} className="text-current" />}
-          title={t("cancelModal.title", { plan: isOnHold ? onHoldPlanName : tierDisplayName })}
-          message={
-            isOnHold
-              ? t("cancelModal.onHoldMessage", { plan: onHoldPlanName })
-              : t("cancelModal.message", { plan: tierDisplayName })
-          }
-          cancelLabel={t("cancelModal.keepPlan")}
-          confirmLabel={isCancelling ? t("cancelModal.cancelling") : t("cancelPlan")}
-          onCancel={() => setShowCancelConfirm(false)}
-          onConfirm={handleCancelSubscription}
-          confirmDisabled={isCancelling}
-        />
-      </Modal>
+        subscription={subscription}
+        planName={isOnHold ? onHoldPlanName : tierDisplayName}
+        isOnHold={isOnHold}
+        formatDate={formatDate}
+        onUpdated={handleSubscriptionUpdated}
+      />
     </>
   );
 }

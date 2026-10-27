@@ -648,6 +648,42 @@
         "90d": "Last 90 days",
         "year": "This year"
       }
+    },
+    "cancelFlow": {
+      "reasonTitle": "Before you go",
+      "reasonSubtitle": "What's the main reason you're cancelling? It helps us make Movmash better.",
+      "reasons": {
+        "together": "We're in the same place now",
+        "not_using": "We don't use it enough",
+        "price": "It's too expensive",
+        "technical": "Something wasn't working",
+        "missing_feature": "It's missing something we need",
+        "other": "Something else"
+      },
+      "notePlaceholder": "Tell us a little more (optional)",
+      "continue": "Continue",
+      "pauseTitle": "Take a break instead?",
+      "pauseMessage": "Keep your {plan} plan and skip payments for a while. Everything stays on, and you won't be charged until the break ends.",
+      "monthOptions": {
+        "1": "1 month",
+        "2": "2 months",
+        "3": "3 months"
+      },
+      "pauseCta": "Pause payments for {duration}",
+      "freeMonthTitle": "Have your next month on us",
+      "freeMonthMessage": "Stay on {plan} and we'll skip your next payment. Nothing else changes.",
+      "freeMonthCta": "Get a free month",
+      "nextPaymentOn": "Your next payment will be on {date}.",
+      "yearlyHint": "Want to pay less every month?",
+      "yearlyLink": "Switch to yearly and save about half",
+      "cancelAnyway": "No thanks, cancel my plan",
+      "applying": "Applying...",
+      "toast": {
+        "paused": "Payments paused. Your next payment is on {date}.",
+        "freeMonth": "Your next month is free. Your next payment is on {date}.",
+        "offerFailedTitle": "Couldn't apply the offer",
+        "offerFailedDefault": "Please try again, or cancel if you'd prefer."
+      }
     }
   },
   "planChange": {

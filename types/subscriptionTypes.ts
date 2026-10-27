@@ -98,6 +98,8 @@ export interface UserSubscription {
    */
   billed_price?: number | null;
   billed_currency?: string | null;
+  /** The cancel flow may offer to move the next payment out (monthly plans, once per customer). */
+  retention_offer_available?: boolean;
 }
 
 export interface SubscriptionState {
