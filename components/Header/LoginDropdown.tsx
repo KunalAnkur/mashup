@@ -174,7 +174,7 @@ const LoginDropdown = ({ onClose, id, ariaLabel, panelClassName, compact = false
         </Fragment>
       ))}
       <div className="px-3 pb-3 pt-2">
-        <p className="text-center text-[9px] leading-relaxed text-white/28">
+        <p className="text-center text-[9px] leading-relaxed text-white/45">
           By continuing you agree to our{" "}
           <a href="https://movmash.com/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white/50 transition-colors">
             Terms

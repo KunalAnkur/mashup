@@ -275,7 +275,17 @@ export const pricingPaidCardSurfaceClass =
 export const pricingPaidIconSurfaceClass =
   "bg-gradient-to-br from-rose-500 via-pink-500 to-fuchsia-500 text-white shadow-[0_18px_36px_rgba(244,63,94,0.2)]";
 
-export const pricingPaidBadgeSurfaceClass = "bg-rose-500/12 text-rose-100";
+// The plan we recommend (`is_popular` from guardian): a stronger ring and a pink glow so it
+// is the obvious choice, lifted on desktop where the three cards sit side by side.
+export const pricingFeaturedCardSurfaceClass =
+  "bg-[linear-gradient(180deg,rgba(236,72,153,0.16)_0%,rgba(244,63,94,0.06)_32%,rgba(255,255,255,0.025)_100%)] ring-2 ring-pink-500/60 shadow-[0_30px_80px_rgba(236,72,153,0.22)] lg:-translate-y-2";
+
+// Colour opacity modifiers only work on Tailwind's default scale (…10, 15, 20…) in this app;
+// an off-scale value like /12 compiles to nothing.
+export const pricingPaidBadgeSurfaceClass = "bg-rose-500/10 text-rose-100";
+
+export const pricingSavingsBadgeClass =
+  "inline-flex items-center rounded-full bg-emerald-400/15 px-2 py-0.5 text-[11px] font-semibold leading-4 text-emerald-300";
 
 export const appSyncTooltipSurfaceClass =
   "rounded-dashSm border border-dashBorder bg-dashSurface px-3 py-2 text-[11px] text-dashTextDim shadow-xl shadow-black/25";

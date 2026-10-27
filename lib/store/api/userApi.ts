@@ -48,6 +48,8 @@ function normalizeSubscriptionResponse(
         ...response.data.plan,
         price: Number(response.data.plan.price),
       },
+      billed_price:
+        response.data.billed_price != null ? Number(response.data.billed_price) : null,
     },
   };
 }

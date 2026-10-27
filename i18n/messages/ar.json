@@ -545,7 +545,6 @@
       "features": {
         "videoCall": "مكالمة فيديو وصوت أثناء المشاهدة",
         "participants": "{count} أشخاص لكل غرفة",
-        "unlimitedWatch": "وقت مشاهدة غير محدود",
         "screenShare": "مشاركة شاشة بجودة {quality}"
       },
       "cta": "الترقية إلى Couple"
@@ -556,13 +555,17 @@
       "features": {
         "videoCall": "مكالمة فيديو وصوت أثناء المشاهدة",
         "participants": "حتى {count} أشخاص لكل غرفة",
-        "unlimitedWatch": "وقت مشاهدة غير محدود",
         "screenShare": "مشاركة شاشة بجودة {quality}"
       },
       "cta": "الترقية إلى Crowd"
     },
     "billedYearly": "{amount} تُدفع سنويًا",
-    "popularBadge": "الأكثر شيوعًا"
+    "popularBadge": "الأكثر شيوعًا",
+    "noDailyLimit": "بلا حد يومي — أكمل الفيلم حتى النهاية",
+    "everyGame": "كل الألعاب مشمولة",
+    "saveUpTo": "وفّر حتى {percent}%",
+    "savePercent": "وفّر {percent}%",
+    "reassurance": "ألغِ في أي وقت · دفع آمن · تُحسب الضرائب عند الدفع"
   },
   "subscription": {
     "title": "الاشتراك",

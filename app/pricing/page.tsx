@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LuArrowRight, LuCheck, LuHeart, LuSparkles, LuUsers } from "react-icons/lu";
+import { LuArrowRight, LuCheck, LuHeart, LuShieldCheck, LuSparkles, LuUsers } from "react-icons/lu";
 import { EntryPageHeader } from "@/components/UI";
 import StartPremiumCheckoutButton from "@/components/Billing/StartPremiumCheckoutButton";
 import PlanChangeConfirmModal from "@/components/Billing/PlanChangeConfirmModal";
@@ -23,9 +23,12 @@ import {
   appEntrySecondaryButtonClass,
   appFlexibleViewportPageClass,
   appPulseSurfaceClass,
+  appScrollbarHideClass,
+  pricingFeaturedCardSurfaceClass,
   pricingPaidBadgeSurfaceClass,
   pricingPaidCardSurfaceClass,
   pricingPaidIconSurfaceClass,
+  pricingSavingsBadgeClass,
 } from "@/components/UI/classTokens";
 
 type BillingCycle = "monthly" | "yearly";
@@ -42,31 +45,35 @@ const pricingIconWrapClassName =
 const pricingValueRowClassName = "mt-6 flex items-end gap-2.5";
 const pricingValueClassName =
   "font-parkinsans text-[2.35rem] font-semibold leading-none tracking-[-0.05em] text-white md:text-[2.7rem]";
-const pricingValueMetaClassName = "pb-1 text-[13px] text-white/42";
+const pricingValueMetaClassName = "pb-1 text-[13px] text-white/40";
 const pricingCompareAtClass =
-  "pb-1 font-parkinsans text-[1.6rem] font-semibold leading-none tracking-[-0.04em] text-white/28 line-through md:text-[1.85rem]";
-const pricingBilledNoteClass = "mt-1.5 text-[12px] leading-tight text-white/38";
+  "pb-1 font-parkinsans text-[1.6rem] font-semibold leading-none tracking-[-0.04em] text-white/30 line-through md:text-[1.85rem]";
+const pricingBilledRowClass = "mt-1.5 flex flex-wrap items-center gap-2";
+const pricingBilledNoteClass = "text-[12px] leading-tight text-white/40";
 const pricingPopularBadgeClass =
   "inline-flex items-center rounded-full bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-fuchsia-500/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-pink-200 ring-1 ring-pink-400/25";
 const pricingDescriptionClassName =
   "mt-3 max-w-[30rem] text-[13px] leading-6 text-white/60 md:text-sm md:leading-6";
 const pricingFeaturesClassName = "mt-6 space-y-2.5";
 const pricingFeatureItemClassName =
-  "flex items-start gap-3 text-[13px] leading-5 text-white/72 md:text-sm md:leading-6";
+  "flex items-start gap-3 text-[13px] leading-5 text-white/70 md:text-sm md:leading-6";
+// The one line that is the reason to buy this plan: first, brighter and bolder.
+const pricingFeatureHighlightClassName = "font-semibold text-white";
 const pricingFeatureIconClassName =
-  "mt-0.5 flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/78";
+  "mt-0.5 flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/80";
+const pricingFeatureHighlightIconClassName =
+  "mt-0.5 flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-fuchsia-500 text-white";
 // mt-auto pins the CTA to the card bottom regardless of how many features are listed.
 const pricingCtaWrapClassName = "mt-auto pt-6";
 const pricingCtaClassName =
   "!h-11 w-full !rounded-[1.15rem] text-sm font-parkinsans";
 
+// ring-white/10, not /8: an off-scale opacity compiled to nothing and left `ring-1` on
+// Tailwind's default blue, which made Free the most outlined card on the page.
 const freeCardClassName =
-  "bg-white/[0.024] ring-1 ring-white/8 shadow-[0_22px_54px_rgba(0,0,0,0.18)]";
-const freeIconClassName = "bg-white/[0.06] text-white/78";
-const freeBadgeClassName = "bg-white/[0.05] text-white/72";
-
-const coupleCardClassName = pricingPaidCardSurfaceClass;
-const crowdCardClassName = `${pricingPaidCardSurfaceClass} ring-2`;
+  "bg-white/[0.024] ring-1 ring-white/10 shadow-[0_22px_54px_rgba(0,0,0,0.18)]";
+const freeIconClassName = "bg-white/[0.06] text-white/80";
+const freeBadgeClassName = "bg-white/[0.05] text-white/70";
 
 const billingToggleShellClassName =
   "mx-auto inline-flex items-center gap-1 rounded-full bg-white/[0.04] p-1";
@@ -74,7 +81,9 @@ const billingToggleButtonClassName =
   "rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors duration-200";
 const billingToggleActiveClassName =
   "bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 text-white";
-const billingToggleInactiveClassName = "text-white/56 hover:text-white/80";
+const pricingSavingsOnActiveToggleClass =
+  "inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold leading-4 text-white";
+const billingToggleInactiveClassName = "text-white/55 hover:text-white/80";
 
 const skeletonCardClassName = `${pricingCardClassName} ${appPulseSurfaceClass} h-[420px]`;
 
@@ -160,8 +169,19 @@ export default function PricingPage() {
     router.replace(query ? `/pricing?${query}` : "/pricing", { scroll: false });
   }, [router]);
 
+  // The biggest yearly saving, for the toggle — it is what makes switching worth a click.
+  const maxYearlySavings = useMemo(() => {
+    const yearly = (catalogPlans ?? []).filter(
+      (p) => p.billing_cycle === "yearly" && p.tier !== SubscriptionTier.FREE,
+    );
+    const best = Math.max(0, ...yearly.map((p) => p.savings_percent ?? 0));
+    return best > 0 ? best : null;
+  }, [catalogPlans]);
+
   const plans = useMemo(() => {
     if (!freePlan || !couplePlan || !crowdPlan) return [];
+
+    type Feature = { text: string; highlight?: boolean };
 
     // Every paid plan shows a per-month figure so tiers compare like for like; the yearly
     // one strikes through the monthly rate it undercuts. All values come from guardian.
@@ -178,9 +198,35 @@ export default function PricingPage() {
               amount: formatPlanPrice(plan.billed_amount ?? plan.price, plan.currency),
             })
           : null,
-      savingsPercent: plan.savings_percent ?? null,
+      savingsPercent: plan.billing_cycle === "yearly" ? plan.savings_percent ?? null : null,
       isPopular: plan.is_popular === true,
     });
+
+    // People pay at the moment the free daily limit stops their film, so on a plan without
+    // one, that is said plainly rather than as "unlimited watch time".
+    const watchTime = (plan: typeof couplePlan): string =>
+      plan.features.max_watch_minutes_per_day === -1
+        ? t("noDailyLimit")
+        : t("free.features.dailyLimit", { minutes: plan.features.max_watch_minutes_per_day });
+
+    const coupleFeatures: Feature[] = [
+      { text: watchTime(couplePlan), highlight: true },
+      { text: t("couple.features.videoCall") },
+      { text: t("couple.features.screenShare", { quality: couplePlan.features.screen_share_quality }) },
+      { text: t("couple.features.participants", { count: couplePlan.features.max_room_participants }) },
+      { text: t("everyGame") },
+    ];
+    // Room size is what Crowd adds over Couple, so it leads there.
+    const crowdFeatures: Feature[] = [
+      {
+        text: t("crowd.features.participants", { count: crowdPlan.features.max_room_participants }),
+        highlight: true,
+      },
+      { text: watchTime(crowdPlan) },
+      { text: t("crowd.features.videoCall") },
+      { text: t("crowd.features.screenShare", { quality: crowdPlan.features.screen_share_quality }) },
+      { text: t("everyGame") },
+    ];
 
     return [
       {
@@ -200,10 +246,11 @@ export default function PricingPage() {
         badgeClassName: freeBadgeClassName,
         cardClassName: freeCardClassName,
         features: [
-          t("free.features.participants", { count: freePlan.features.max_room_participants }),
-          t("free.features.dailyLimit", { minutes: freePlan.features.max_watch_minutes_per_day }),
-          t("free.features.screenShare", { quality: freePlan.features.screen_share_quality }),
-        ],
+          { text: t("free.features.participants", { count: freePlan.features.max_room_participants }) },
+          { text: t("free.features.dailyLimit", { minutes: freePlan.features.max_watch_minutes_per_day }) },
+          { text: t("free.features.screenShare", { quality: freePlan.features.screen_share_quality }) },
+          { text: t("everyGame") },
+        ] as Feature[],
         ctaLabel: t("free.cta"),
         isPaid: false as const,
       },
@@ -217,13 +264,8 @@ export default function PricingPage() {
         icon: LuHeart,
         iconClassName: pricingPaidIconSurfaceClass,
         badgeClassName: pricingPaidBadgeSurfaceClass,
-        cardClassName: coupleCardClassName,
-        features: [
-          t("couple.features.videoCall"),
-          t("couple.features.participants", { count: couplePlan.features.max_room_participants }),
-          t("couple.features.unlimitedWatch"),
-          t("couple.features.screenShare", { quality: couplePlan.features.screen_share_quality }),
-        ],
+        cardClassName: pricingPaidCardSurfaceClass,
+        features: coupleFeatures,
         ctaLabel: t("couple.cta"),
         isPaid: true as const,
       },
@@ -237,38 +279,42 @@ export default function PricingPage() {
         icon: LuUsers,
         iconClassName: pricingPaidIconSurfaceClass,
         badgeClassName: pricingPaidBadgeSurfaceClass,
-        cardClassName: crowdCardClassName,
-        features: [
-          t("crowd.features.videoCall"),
-          t("crowd.features.participants", { count: crowdPlan.features.max_room_participants }),
-          t("crowd.features.unlimitedWatch"),
-          t("crowd.features.screenShare", { quality: crowdPlan.features.screen_share_quality }),
-        ],
+        cardClassName: pricingPaidCardSurfaceClass,
+        features: crowdFeatures,
         ctaLabel: t("crowd.cta"),
         isPaid: true as const,
       },
-    ];
-  }, [billingCycle, couplePlan, crowdPlan, freePlan, t]);
+    ].map((plan) => ({
+      ...plan,
+      // The recommended plan carries the page: its own surface, and first on a phone, where
+      // the cards stack and Free would otherwise fill the whole first screen.
+      cardClassName: plan.isPopular
+        ? `${pricingFeaturedCardSurfaceClass} order-first lg:order-none`
+        : plan.cardClassName,
+    }));
+  }, [couplePlan, crowdPlan, freePlan, t]);
 
   return (
     <div className={appFlexibleViewportPageClass}>
       <div className={appEntryPageShellClass}>
         <EntryPageHeader title={t("kicker")} fixed showBrandOnSubpage />
 
+        {/* The page scrolls inside the centred column, not the window, so a visible bar would
+            sit beside the cards rather than at the screen edge. Wheel and touch still scroll. */}
         <main
-          className={`flex-1 overflow-y-auto overflow-x-hidden ${appEntryPageFixedHeaderOffsetClass}`}
+          className={`flex-1 overflow-y-auto overflow-x-hidden ${appScrollbarHideClass} ${appEntryPageFixedHeaderOffsetClass}`}
         >
           <div className={appEntryPageInsetClass}>
             <div className={appEntryPageContentWrapClass}>
               <section className="mx-auto max-w-6xl space-y-6 pb-6 pt-4 md:space-y-7 md:pb-8 md:pt-7">
                 <section className="mx-auto max-w-2xl text-center">
-                  <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/68">
+                  <div className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">
                     {t("kicker")}
                   </div>
                   <h1 className="mt-3.5 font-parkinsans text-[2.55rem] font-semibold leading-tight tracking-[-0.04em] text-white md:text-[3rem]">
                     {t("title")}
                   </h1>
-                  <p className="mx-auto mt-2.5 max-w-xl text-[13px] leading-6 text-white/58 md:text-[15px] md:leading-7">
+                  <p className="mx-auto mt-2.5 max-w-xl text-[13px] leading-6 text-white/60 md:text-[15px] md:leading-7">
                     {t("subtitle")}
                   </p>
 
@@ -285,7 +331,21 @@ export default function PricingPage() {
                             : billingToggleInactiveClassName
                         }`}
                       >
-                        {t("billingToggle.yearly")}
+                        <span className="inline-flex items-center gap-2">
+                          {t("billingToggle.yearly")}
+                          {maxYearlySavings && (
+                            // On the active (pink) button green clashes; white reads cleanly.
+                            <span
+                              className={
+                                billingCycle === "yearly"
+                                  ? pricingSavingsOnActiveToggleClass
+                                  : pricingSavingsBadgeClass
+                              }
+                            >
+                              {t("saveUpTo", { percent: maxYearlySavings })}
+                            </span>
+                          )}
+                        </span>
                       </button>
                       <button
                         type="button"
@@ -301,7 +361,7 @@ export default function PricingPage() {
                     </div>
                     {/* Say what a yearly plan actually commits you to before checkout, not
                         after (MOVMASH.md D3). */}
-                    <span className="text-[11px] leading-relaxed text-white/44">
+                    <span className="text-[11px] leading-relaxed text-white/45">
                       {billingCycle === "yearly"
                         ? t("billingToggle.yearlyTerms")
                         : t("billingToggle.monthlyTerms")}
@@ -310,7 +370,7 @@ export default function PricingPage() {
                 </section>
 
                 {isError && (
-                  <p className="text-center text-sm text-white/56">{t("loadError")}</p>
+                  <p className="text-center text-sm text-white/55">{t("loadError")}</p>
                 )}
 
                 {isLoading || plans.length === 0 ? (
@@ -363,18 +423,36 @@ export default function PricingPage() {
                             <span className={pricingValueMetaClassName}>{plan.valueMeta}</span>
                           </div>
                           {plan.billedNote && (
-                            <p className={pricingBilledNoteClass}>{plan.billedNote}</p>
+                            <div className={pricingBilledRowClass}>
+                              <p className={pricingBilledNoteClass}>{plan.billedNote}</p>
+                              {plan.savingsPercent ? (
+                                <span className={pricingSavingsBadgeClass}>
+                                  {t("savePercent", { percent: plan.savingsPercent })}
+                                </span>
+                              ) : null}
+                            </div>
                           )}
 
                           <p className={pricingDescriptionClassName}>{plan.description}</p>
 
                           <ul className={pricingFeaturesClassName}>
                             {plan.features.map((feature) => (
-                              <li key={feature} className={pricingFeatureItemClassName}>
-                                <span className={pricingFeatureIconClassName}>
+                              <li
+                                key={feature.text}
+                                className={`${pricingFeatureItemClassName} ${
+                                  feature.highlight ? pricingFeatureHighlightClassName : ""
+                                }`}
+                              >
+                                <span
+                                  className={
+                                    feature.highlight
+                                      ? pricingFeatureHighlightIconClassName
+                                      : pricingFeatureIconClassName
+                                  }
+                                >
                                   <LuCheck className="h-3 w-3" />
                                 </span>
-                                <span>{feature}</span>
+                                <span>{feature.text}</span>
                               </li>
                             ))}
                           </ul>
@@ -417,6 +495,8 @@ export default function PricingPage() {
                             ) : plan.isPaid ? (
                               <StartPremiumCheckoutButton
                                 className={pricingCtaClassName}
+                                // One loud button on the page: the recommended plan's.
+                                variant={plan.isPopular ? "primary" : "secondary"}
                                 label={plan.ctaLabel}
                                 planSlug={plan.slug}
                                 planName={plan.name}
@@ -437,6 +517,14 @@ export default function PricingPage() {
                       );
                     })}
                   </section>
+                )}
+
+                {plans.length > 0 && (
+                  <p className="text-center text-[12px] leading-5 text-white/45">
+                    {/* Inline, so it stays with the first word when the line wraps on a phone. */}
+                    <LuShieldCheck className="me-1.5 inline h-3.5 w-3.5 align-[-3px] text-emerald-300/80" />
+                    {t("reassurance")}
+                  </p>
                 )}
               </section>
             </div>

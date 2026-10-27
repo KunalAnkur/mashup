@@ -22,6 +22,15 @@ export default {
         dashTextDim: "var(--dash-text-dim)",
         dashTextMute: "var(--dash-text-mute)",
       },
+      // Tailwind's colour opacity modifier only accepts values that exist in `theme.opacity`,
+      // and the default scale jumps 5 → 10 → 15 → 20. Everything off that scale — `text-white/42`,
+      // `bg-rose-500/12`, `ring-white/8` and the rest written across this codebase — silently
+      // compiled to nothing, so secondary text rendered at full white and `ring-1` fell back to
+      // Tailwind's default blue. Opening the scale to every integer makes the classes mean
+      // what they say. Same fix as spotlight's tailwind.config.ts.
+      opacity: Object.fromEntries(
+        Array.from({ length: 101 }, (_, value) => [value, `${value / 100}`]),
+      ),
       fontFamily: {
         parkinsans: ["var(--parkinsans)", "sans-serif"],
       },

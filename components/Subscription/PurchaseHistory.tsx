@@ -325,7 +325,7 @@ export function PurchaseHistory({
                     ) : (
                       // A charge that never completed has no receipt, and neither do rows
                       // written before the invoice column existed.
-                      <span className="text-[12.5px] text-white/28">
+                      <span className="text-[12.5px] text-white/40">
                         {t("transactions.noInvoice")}
                       </span>
                     )}

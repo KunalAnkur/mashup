@@ -545,7 +545,6 @@
       "features": {
         "videoCall": "Videollamada y llamada de voz mientras ves",
         "participants": "{count} personas por sala",
-        "unlimitedWatch": "Tiempo de visualización ilimitado",
         "screenShare": "Compartir pantalla en {quality}"
       },
       "cta": "Mejorar a Couple"
@@ -556,13 +555,17 @@
       "features": {
         "videoCall": "Videollamada y llamada de voz mientras ves",
         "participants": "Hasta {count} personas por sala",
-        "unlimitedWatch": "Tiempo de visualización ilimitado",
         "screenShare": "Compartir pantalla en {quality}"
       },
       "cta": "Mejorar a Crowd"
     },
     "billedYearly": "{amount} facturado anualmente",
-    "popularBadge": "Popular"
+    "popularBadge": "Más popular",
+    "noDailyLimit": "Sin límite diario: termina la película entera",
+    "everyGame": "Todos los juegos incluidos",
+    "saveUpTo": "Ahorra hasta un {percent} %",
+    "savePercent": "Ahorra un {percent} %",
+    "reassurance": "Cancela cuando quieras · Pago seguro · Los impuestos se calculan al pagar"
   },
   "subscription": {
     "title": "Suscripción",

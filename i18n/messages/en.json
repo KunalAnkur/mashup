@@ -545,7 +545,6 @@
       "features": {
         "videoCall": "Video + voice call while you watch",
         "participants": "{count} people per room",
-        "unlimitedWatch": "Unlimited watch time",
         "screenShare": "{quality} screen sharing"
       },
       "cta": "Upgrade to Couple"
@@ -556,13 +555,17 @@
       "features": {
         "videoCall": "Video + voice call while you watch",
         "participants": "Up to {count} people per room",
-        "unlimitedWatch": "Unlimited watch time",
         "screenShare": "{quality} screen sharing"
       },
       "cta": "Upgrade to Crowd"
     },
     "billedYearly": "{amount} billed yearly",
-    "popularBadge": "Popular"
+    "popularBadge": "Most popular",
+    "noDailyLimit": "No daily limit — finish the whole movie",
+    "everyGame": "Every game included",
+    "saveUpTo": "Save up to {percent}%",
+    "savePercent": "Save {percent}%",
+    "reassurance": "Cancel anytime · Secure checkout · Taxes calculated at checkout"
   },
   "subscription": {
     "title": "Subscription",

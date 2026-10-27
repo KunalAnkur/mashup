@@ -123,6 +123,12 @@ export default function SubscriptionPage() {
   // if cancelled, or when it renews if not.
   const renewalDate = formatDate(subscription?.end_date);
   const plan = subscription?.plan;
+  // A subscriber's own price, not the plan's current one: they keep what they signed up at
+  // when a plan is repriced.
+  const displayPrice =
+    subscription?.billed_price != null
+      ? { amount: subscription.billed_price, currency: subscription.billed_currency }
+      : { amount: plan?.price, currency: plan?.currency };
   const tierDisplayName = getTierDisplayName(subscription?.tier);
   const pendingPlan = subscription?.pending_plan;
   const pendingChangeDate = formatDate(subscription?.pending_change_effective_at);
@@ -244,7 +250,7 @@ export default function SubscriptionPage() {
 
                       <div className={subPlanPriceRowClass}>
                         <span className={subPlanPriceClass}>
-                          {formatPlanPrice(plan.price, plan.currency)}
+                          {formatPlanPrice(displayPrice.amount, displayPrice.currency)}
                         </span>
                         <span className={subPlanCadenceClass}>/{plan.billing_cycle}</span>
                       </div>

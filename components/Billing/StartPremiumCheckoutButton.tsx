@@ -8,6 +8,7 @@ import GuestSignInModal from "@/components/Billing/GuestSignInModal";
 import {
   appEntryActionButtonBaseClass,
   appEntryPrimaryButtonClass,
+  appEntrySecondaryButtonClass,
 } from "@/components/UI/classTokens";
 import { LuArrowRight } from "react-icons/lu";
 import { showError, showInfo } from "@/utils/toast";
@@ -34,6 +35,8 @@ type Props = {
   autoStart?: boolean;
   /** Called as the automatic press fires, so the caller can retire whatever asked for it. */
   onAutoStart?: () => void;
+  /** "secondary" for a plan that sits beside the recommended one, so only one button shouts. */
+  variant?: "primary" | "secondary";
 };
 
 export default function StartPremiumCheckoutButton({
@@ -45,6 +48,7 @@ export default function StartPremiumCheckoutButton({
   cancelUrl,
   autoStart = false,
   onAutoStart,
+  variant = "primary",
 }: Props) {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -178,7 +182,9 @@ export default function StartPremiumCheckoutButton({
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className={`${appEntryActionButtonBaseClass} ${appEntryPrimaryButtonClass} w-full ${className ?? ""}`}
+        className={`${appEntryActionButtonBaseClass} ${
+          variant === "secondary" ? appEntrySecondaryButtonClass : appEntryPrimaryButtonClass
+        } w-full ${className ?? ""}`}
       >
         <span>{loading ? tCommon("processing") : resolvedLabel}</span>
         <LuArrowRight className="text-base" />

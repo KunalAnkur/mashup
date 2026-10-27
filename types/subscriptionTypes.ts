@@ -91,6 +91,13 @@ export interface UserSubscription {
   pending_change_effective_at?: Date | string | null;
   /** Only while status is ON_HOLD: the paid plan a new payment method would bring back. */
   on_hold_plan?: PendingPlan | null;
+  /**
+   * What this subscriber is actually charged each period, before tax. Differs from
+   * `plan.price` once a plan is repriced (existing subscribers keep their price) or when the
+   * charge is in the customer's own currency. Absent when unknown: show `plan.price` then.
+   */
+  billed_price?: number | null;
+  billed_currency?: string | null;
 }
 
 export interface SubscriptionState {
