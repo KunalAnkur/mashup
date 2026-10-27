@@ -230,12 +230,13 @@
     "joinMyWatchParty": "¡Únete a mi fiesta de visualización!",
     "joinMyWatchPartyOnMovmash": "¡Únete a mi fiesta de visualización en Movmash!",
     "watchLimit": {
-      "title": "Límite diario alcanzado",
-      "message": "Has usado tus {limit} minutos gratuitos de tiempo de visualización de hoy. Actualiza a {planName} para tiempo de visualización ilimitado.",
-      "upgradeCta": "Actualizar Ahora",
+      "title": "Se acabaron tus minutos gratis de hoy",
+      "message": "Has usado tus {limit} minutos gratis de hoy. Couple no tiene límite diario, así que puedes terminar la película ahora.",
       "viewerTitle": "Reproducción pausada",
-      "viewerMessage": "El anfitrión ha usado sus {limit} minutos gratuitos de hoy. La reproducción se reanudará mañana, o en cuanto actualice su plan.",
-      "gotIt": "Entendido"
+      "viewerMessage": "El anfitrión ha usado sus {limit} minutos gratis de hoy. La reproducción se reanudará en cuanto mejore su plan, o cuando vuelvan los minutos.",
+      "gotIt": "Entendido",
+      "resetsAt": "Los minutos gratis vuelven a las {time}",
+      "notNow": "Ahora no"
     },
     "callUpsell": {
       "title": "Llamadas de video y audio",
@@ -275,14 +276,13 @@
       "roomFullMessage": "Tu sala alcanzó su límite de participantes. Un plan mayor te permite organizar fiestas con más gente.",
       "guestRoomFullTitle": "La sala está llena",
       "guestRoomFullMessage": "Esta sala está llena. El anfitrión necesita un plan mayor para dejar entrar a más gente.",
-      "benefitsHeading": "Qué incluye",
       "upgradeNow": "Ver planes",
       "benefits": {
-        "videoCalls": "Videollamada + voz mientras ves",
-        "unlimitedWatch": "Tiempo de visualización ilimitado",
-        "morePeople": "Más personas por sala",
-        "quality": "Pantalla compartida en 1080p"
-      }
+        "videoCalls": "Videollamada + voz mientras ves"
+      },
+      "continueYearly": "Continuar con el plan anual",
+      "continueMonthly": "Continuar con el plan mensual",
+      "payMonthly": "O paga {price} al mes"
     },
     "reconnectingBanner": "Reconectando...",
     "connectionLostReload": "No se pudo reconectar. Actualiza la página.",
@@ -295,10 +295,10 @@
     "contentModalAddToPlaylist": "Añadir a la lista",
     "contentModalNoScreenShare": "Compartir pantalla no está disponible en este dispositivo.",
     "playLimit": {
-      "title": "Límite diario alcanzado",
-      "message": "Has usado tus {limit} minutos gratis de hoy. Mejora a {planName} para jugar sin límite.",
+      "title": "Se acabaron tus minutos gratis de hoy",
+      "message": "Has usado tus {limit} minutos gratis de hoy. Couple no tiene límite diario, así que puedes seguir jugando ahora.",
       "viewerTitle": "Partida en pausa",
-      "viewerMessage": "El anfitrión ha usado sus {limit} minutos gratis de hoy. Podréis jugar mañana, o en cuanto mejore su plan."
+      "viewerMessage": "El anfitrión ha usado sus {limit} minutos gratis de hoy. Podréis volver a jugar en cuanto mejore su plan, o cuando vuelvan los minutos."
     }
   },
   "sync": {

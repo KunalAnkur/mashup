@@ -280,12 +280,15 @@ export const pricingPaidIconSurfaceClass =
 export const pricingFeaturedCardSurfaceClass =
   "bg-[linear-gradient(180deg,rgba(236,72,153,0.16)_0%,rgba(244,63,94,0.06)_32%,rgba(255,255,255,0.025)_100%)] ring-2 ring-pink-500/60 shadow-[0_30px_80px_rgba(236,72,153,0.22)] lg:-translate-y-2";
 
-// Colour opacity modifiers only work on Tailwind's default scale (…10, 15, 20…) in this app;
-// an off-scale value like /12 compiles to nothing.
 export const pricingPaidBadgeSurfaceClass = "bg-rose-500/10 text-rose-100";
 
 export const pricingSavingsBadgeClass =
   "inline-flex items-center rounded-full bg-emerald-400/15 px-2 py-0.5 text-[11px] font-semibold leading-4 text-emerald-300";
+
+// The priced plan inside an upgrade prompt: the featured pricing card's pink wash and ring,
+// without its lift and wide glow, which crowd a modal.
+export const upgradeOfferSurfaceClass =
+  "rounded-2xl bg-[linear-gradient(180deg,rgba(236,72,153,0.14)_0%,rgba(244,63,94,0.05)_40%,rgba(255,255,255,0.025)_100%)] p-4 ring-1 ring-pink-500/40";
 
 export const appSyncTooltipSurfaceClass =
   "rounded-dashSm border border-dashBorder bg-dashSurface px-3 py-2 text-[11px] text-dashTextDim shadow-xl shadow-black/25";

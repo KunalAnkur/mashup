@@ -20,7 +20,7 @@ type InviteMethod = "copy_link" | "whatsapp" | "telegram" | "share_api";
 type ErrorArea = "room" | "video_sync" | "upload" | "network" | "auth";
 type AuthMethod = "google" | "google_one_tap" | "guest" | "email";
 type ProductSurface = "carousel" | "bottom_sheet";
-type UpgradePromptContext =
+export type UpgradePromptContext =
   | "daily_limit"
   | "room_full"
   | "watch_time_session"
@@ -791,13 +791,16 @@ export const trackUpgradeModalShown = (context: UpgradePromptContext, roomId?: s
  *  UpgradePromptContext with trackUpgradeModalShown so shown→clicked is a real funnel. */
 export const trackUpgradeClicked = (
   context: UpgradePromptContext,
-  roomId?: string | null
+  roomId?: string | null,
+  /** The plan the button opened, when the prompt offered one rather than the price list. */
+  planSlug?: string
 ) => {
   safeCapture("upgrade_clicked", {
     context,
     room_id: roomId || undefined,
+    plan_slug: planSlug,
   });
-  logEvent("upgrade_clicked", { context, room_id: roomId });
+  logEvent("upgrade_clicked", { context, room_id: roomId, plan_slug: planSlug });
 };
 
 // ============ CHECKOUT EVENTS ============

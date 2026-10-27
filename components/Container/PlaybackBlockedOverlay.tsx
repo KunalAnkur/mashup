@@ -54,7 +54,7 @@ const PlaybackBlockedOverlay = ({ variant = "watch" }: PlaybackBlockedOverlayPro
       </h3>
       <p className={playbackBlockedOverlayBodyClass}>
         {isHost
-          ? t(`${group}.message`, { limit: info.limit, planName: info.planName })
+          ? t(`${group}.message`, { limit: info.limit })
           : t(`${group}.viewerMessage`, { limit: info.limit })}
       </p>
     </div>

@@ -192,19 +192,23 @@ const Page = () => {
         isOpen={roomState.settings.upgradeSubscriptionModal}
         onClose={handleCloseUpgradeModal}
         message={roomState.settings.upgradeSubscriptionMessage}
-        // Only "games" is forwarded. The store also records "watch_time_session", which
-        // the modal has no copy for — it keeps falling back to the room_full wording it
-        // has always shown for that case, and still reports its own value to analytics.
+        // A per-session watch cap is a watch-time problem, so it gets the watch-limit copy and
+        // the plan that removes it; analytics still records it under its own name.
         context={
-          roomState.settings.upgradeSubscriptionContext === "games" ? "games" : "room_full"
+          roomState.settings.upgradeSubscriptionContext === "games"
+            ? "games"
+            : roomState.settings.upgradeSubscriptionContext === "watch_time_session"
+              ? "watch_limit"
+              : "room_full"
         }
+        analyticsContext={roomState.settings.upgradeSubscriptionContext ?? "room_full"}
       />
 
       {/* Daily watch-limit block — non-dismissable, unlike the modal above */}
       <PlaybackBlockedModal
         isOpen={roomState.settings.isPlaybackBlocked}
         limit={roomState.settings.playbackBlockedInfo?.limit ?? 0}
-        planName={roomState.settings.playbackBlockedInfo?.planName ?? "Free"}
+        variant={isActivityRoom ? "play" : "watch"}
       />
 
       <HostInvitePrompt />

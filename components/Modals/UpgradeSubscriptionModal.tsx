@@ -1,10 +1,15 @@
 "use client";
 import { useEffect } from "react";
-import { LuSparkles, LuCheck, LuInfo } from "react-icons/lu";
+import { LuSparkles, LuInfo } from "react-icons/lu";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-import { trackUpgradeModalShown, trackUpgradeClicked } from "@/lib/analytics";
+import { trackUpgradeModalShown, type UpgradePromptContext } from "@/lib/analytics";
+import { SubscriptionTier } from "@/types/subscriptionTypes";
+import UpgradePlanOffer, {
+  type UpgradeOfferLead,
+  type UpgradeOfferTier,
+} from "@/components/Modals/UpgradePlanOffer";
 import {
   Modal,
   ModalHeader,
@@ -14,7 +19,6 @@ import {
   modalConfirmSurfaceClass,
   modalBalancedContentClass,
   modalSubtleCloseButtonClass,
-  modalDiscardActionButtonClass,
 } from "@/components/UI";
 
 interface UpgradeSubscriptionModalProps {
@@ -25,6 +29,9 @@ interface UpgradeSubscriptionModalProps {
   /** What the user was trying to do. Drives the copy — asking about calls should not be
    *  told the room is full, which is what happened when every caller shared one message. */
   context?: "room_full" | "calls" | "watch_limit" | "games";
+  /** What analytics records, when it is more specific than `context` (a per-session watch
+   *  cap shows the watch-limit copy but is its own funnel). Defaults to `context`. */
+  analyticsContext?: UpgradePromptContext;
 }
 
 const UpgradeSubscriptionModal = ({
@@ -33,10 +40,14 @@ const UpgradeSubscriptionModal = ({
   message,
   isHost: isHostProp,
   context = "room_full",
+  analyticsContext: analyticsContextProp,
 }: UpgradeSubscriptionModalProps) => {
   const tCommon = useTranslations("common");
   const t = useTranslations("room.upgrade");
   const roomState = useSelector((state: RootState) => state.room);
+  const currentTier = useSelector(
+    (state: RootState) => state.subscription.subscription?.plan?.tier,
+  );
 
   // Determine if user is host (from prop or room state)
   const isHost = isHostProp !== undefined ? isHostProp : roomState.host;
@@ -57,10 +68,7 @@ const UpgradeSubscriptionModal = ({
   const displayMessage = message || copy.message;
   const modalTitle = copy.title;
   const modalIcon = isHost ? <LuSparkles size={18} /> : <LuInfo size={18} />;
-  const analyticsContext =
-    context === "room_full"
-      ? roomState.settings.upgradeSubscriptionContext || "room_full"
-      : context;
+  const analyticsContext = analyticsContextProp ?? context;
 
   useEffect(() => {
     if (isOpen) {
@@ -69,22 +77,21 @@ const UpgradeSubscriptionModal = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const handleUpgrade = () => {
-    trackUpgradeClicked(analyticsContext, roomState.roomId);
-    // New tab, not router.push: every context here fires from inside a live room, and
-    // navigating away drops the host out of the watch party to go read pricing.
-    window.open("/pricing", "_blank", "noopener,noreferrer");
-    onClose();
-  };
-
-  // Benefits shared by every paid plan. Deliberately no participant count: that number
-  // differs per tier and has already changed once, so /pricing is where it belongs.
-  const paidPlanBenefits = [
-    t("benefits.videoCalls"),
-    t("benefits.unlimitedWatch"),
-    t("benefits.morePeople"),
-    t("benefits.quality"),
-  ];
+  // The plan that fixes what they hit. A full room needs Crowd: Couple holds two people, the
+  // same as Free, so offering it there would sell a fix that does not fix anything. Everything
+  // else is unlocked by Couple, the cheaper of the two. A Crowd host whose room is full is
+  // already on the biggest plan, so they get the message and nothing to buy.
+  const offer: { tier: UpgradeOfferTier; lead: UpgradeOfferLead } | null = (() => {
+    if (!isHost) return null;
+    if (context === "room_full") {
+      return currentTier === SubscriptionTier.CROWD
+        ? null
+        : { tier: SubscriptionTier.CROWD, lead: "people" };
+    }
+    const lead: UpgradeOfferLead =
+      context === "watch_limit" ? "watch_time" : context === "calls" ? "calls" : "games";
+    return { tier: SubscriptionTier.COUPLE, lead };
+  })();
 
   return (
     <Modal
@@ -115,50 +122,22 @@ const UpgradeSubscriptionModal = ({
             {displayMessage}
           </p>
 
-          {/* Paid-plan benefits — only the host can act on them */}
-          {isHost && (
-            <div className="mb-4 space-y-2 rounded-xl bg-white/[0.045] p-4 md:mb-5">
-              <h4 className="mb-3 text-sm font-semibold text-white">
-                {t("benefitsHeading")}
-              </h4>
-              {paidPlanBenefits.map((feature, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-pink-500/20 via-rose-500/20 to-purple-500/20">
-                    <LuCheck size={12} className="text-pink-400" />
-                  </div>
-                  <span className="text-xs text-white/80">{feature}</span>
-                </div>
-              ))}
-            </div>
+          {offer ? (
+            <UpgradePlanOffer
+              tier={offer.tier}
+              lead={offer.lead}
+              context={analyticsContext}
+              roomId={roomState.roomId}
+              onChosen={onClose}
+            />
+          ) : (
+            <button
+              onClick={onClose}
+              className={`${modalBrandActionButtonClass} w-full`}
+            >
+              {tCommon("close")}
+            </button>
           )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-2 md:gap-3">
-            {isHost ? (
-              <>
-                <button
-                  onClick={onClose}
-                  className={`${modalDiscardActionButtonClass} flex-1`}
-                >
-                  {tCommon("cancel")}
-                </button>
-                <button
-                  onClick={handleUpgrade}
-                  className={`${modalBrandActionButtonClass} flex flex-1 items-center justify-center gap-1.5 font-semibold`}
-                >
-                  <LuSparkles size={16} />
-                  <span>{t("upgradeNow")}</span>
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={onClose}
-                className={`${modalBrandActionButtonClass} w-full`}
-              >
-                {tCommon("close")}
-              </button>
-            )}
-          </div>
         </div>
       </div>
     </Modal>

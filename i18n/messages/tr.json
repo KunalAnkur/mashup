@@ -230,12 +230,13 @@
     "joinMyWatchParty": "İzleme partime katıl!",
     "joinMyWatchPartyOnMovmash": "Movmash'ta izleme partime katıl!",
     "watchLimit": {
-      "title": "Günlük limite ulaşıldı",
-      "message": "Bugün için {limit} dakikalık ücretsiz izleme sürenizi kullandınız. Sınırsız izleme süresi için {planName} planına yükseltin.",
-      "upgradeCta": "Şimdi Yükselt",
+      "title": "Bugünkü ücretsiz dakikaların doldu",
+      "message": "Bugünkü {limit} ücretsiz dakikanın tamamını kullandın. Couple'da günlük sınır yok, filmi hemen bitirebilirsin.",
       "viewerTitle": "Oynatma duraklatıldı",
-      "viewerMessage": "Oda sahibi bugünkü {limit} ücretsiz dakikasını kullandı. Oynatma yarın veya o yükseltme yaptığı anda devam eder.",
-      "gotIt": "Anladım"
+      "viewerMessage": "Oda sahibi bugünkü {limit} ücretsiz dakikasını kullandı. Oynatma, o yükseltme yaptığı anda ya da dakikalar yenilendiğinde devam eder.",
+      "gotIt": "Anladım",
+      "resetsAt": "Ücretsiz dakikaların yenilenme saati: {time}",
+      "notNow": "Şimdi değil"
     },
     "callUpsell": {
       "title": "Görüntülü ve sesli arama",
@@ -275,14 +276,13 @@
       "roomFullMessage": "Odan katılımcı sınırına ulaştı. Daha büyük bir plan ile daha fazla kişiyle izleme partisi düzenleyebilirsin.",
       "guestRoomFullTitle": "Oda dolu",
       "guestRoomFullMessage": "Bu oda dolu. Daha fazla kişinin katılması için oda sahibinin daha büyük bir plana ihtiyacı var.",
-      "benefitsHeading": "Neler elde edersin",
       "upgradeNow": "Planları gör",
       "benefits": {
-        "videoCalls": "İzlerken görüntülü + sesli arama",
-        "unlimitedWatch": "Sınırsız izleme süresi",
-        "morePeople": "Oda başına daha fazla kişi",
-        "quality": "1080p ekran paylaşımı"
-      }
+        "videoCalls": "İzlerken görüntülü + sesli arama"
+      },
+      "continueYearly": "Yıllık ile devam et",
+      "continueMonthly": "Aylık ile devam et",
+      "payMonthly": "Ya da aylık {price} öde"
     },
     "reconnectingBanner": "Yeniden bağlanılıyor...",
     "connectionLostReload": "Yeniden bağlanılamadı. Lütfen sayfayı yenileyin.",
@@ -295,10 +295,10 @@
     "contentModalAddToPlaylist": "Listeye ekle",
     "contentModalNoScreenShare": "Ekran paylaşımı bu cihazda kullanılamıyor.",
     "playLimit": {
-      "title": "Günlük sınıra ulaşıldı",
-      "message": "Bugünkü {limit} ücretsiz dakikanı kullandın. Sınırsız oyun için {planName} planına geç.",
+      "title": "Bugünkü ücretsiz dakikaların doldu",
+      "message": "Bugünkü {limit} ücretsiz dakikanın tamamını kullandın. Couple'da günlük sınır yok, hemen oynamaya devam edebilirsin.",
       "viewerTitle": "Oyun duraklatıldı",
-      "viewerMessage": "Oda sahibi bugünkü {limit} ücretsiz dakikasını kullandı. Yarın ya da onlar yükseltir yükseltmez yeniden oynayabilirsin."
+      "viewerMessage": "Oda sahibi bugünkü {limit} ücretsiz dakikasını kullandı. O yükseltir yükseltmez ya da dakikalar yenilendiğinde yeniden oynayabilirsin."
     }
   },
   "sync": {
