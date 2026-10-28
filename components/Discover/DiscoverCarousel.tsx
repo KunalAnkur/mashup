@@ -5,6 +5,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { LuArrowRight, LuChevronLeft, LuChevronRight, LuGamepad2, LuPlay } from "react-icons/lu";
 import { ImSpinner2 } from "react-icons/im";
 
+import { isRtlLocale } from "@/i18n/config";
 import { useI18n, useTranslations } from "@/i18n/I18nProvider";
 import { trackDiscoverSlideViewed } from "@/lib/analytics";
 import { fitOf, isBoosted, orderSlides, textOf, type DiscoverSlide } from "@/lib/discover";
@@ -45,7 +46,14 @@ export function DiscoverCarousel({ slides }: { slides: DiscoverSlide[] }) {
   const resolved = useResolvedSlides(slides);
   const { run, pending } = useDiscoverAction();
 
-  const [emblaRef, embla] = useEmblaCarousel({ loop: true, align: "start" });
+  // Embla lays its slides out the way the page reads but moves them left-to-right unless
+  // told otherwise: in Arabic every slide after the first slid off the wrong side and the
+  // hero went blank.
+  const [emblaRef, embla] = useEmblaCarousel({
+    loop: true,
+    align: "start",
+    direction: isRtlLocale(locale) ? "rtl" : "ltr",
+  });
   const [selected, setSelected] = useState(0);
   const [paused, setPaused] = useState(false);
 
