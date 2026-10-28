@@ -901,14 +901,17 @@ export const dashDiscoverCtaClass =
 
 export const dashDiscoverMetaClass = "text-[12px] font-medium text-white/55";
 
+// `end`, not `right`: the copy sits at the start of the slide, so in Arabic it is on the right
+// and these have to be on the left, or the dots land on the button.
 export const dashDiscoverDotsClass =
-  "absolute bottom-8 right-7 flex items-center gap-1.5 max-[760px]:bottom-7 max-[760px]:right-5";
+  "absolute bottom-8 end-7 flex items-center gap-1.5 max-[760px]:bottom-7 max-[760px]:end-5";
 
 export const dashDiscoverArrowsClass =
-  "absolute right-6 top-6 flex gap-2 opacity-0 transition-opacity duration-200 group-hover/hero:opacity-100 max-[760px]:hidden";
+  "absolute end-6 top-6 flex gap-2 opacity-0 transition-opacity duration-200 group-hover/hero:opacity-100 max-[760px]:hidden";
 
+/** Turned round in Arabic, where "next" is to the left. */
 export const dashDiscoverArrowClass =
-  "flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/70";
+  "flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/70 rtl:rotate-180";
 
 // ---------------------------------------------------------------------------
 // Home dashboard layout — the two-column split (main content + right rail)
