@@ -18,6 +18,8 @@ export interface PaymentTransactionSummary {
   direction: PlanChangeDirection | null;
   /** Hosted receipt. Null for a charge that never completed, and for older rows. */
   invoiceUrl: string | null;
+  /** Why a failed charge failed, already customer-safe. Null unless status is failed. */
+  failureMessage: string | null;
   createdAt: string;
 }
 

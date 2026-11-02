@@ -26,6 +26,7 @@ import {
   subHistoryCardClass,
   subHistoryCellClass,
   subHistoryEmptyClass,
+  subHistoryFailureReasonClass,
   subHistoryHeadCellClass,
   subHistoryHeadRowClass,
   subHistoryIconClass,
@@ -295,6 +296,11 @@ export function PurchaseHistory({
                         <span className="truncate font-medium text-white/88">
                           {describe(tx)}
                         </span>
+                        {tx.status === PaymentStatus.FAILED && tx.failureMessage ? (
+                          <span className={subHistoryFailureReasonClass}>
+                            {tx.failureMessage}
+                          </span>
+                        ) : null}
                       </span>
                     </div>
                   </td>

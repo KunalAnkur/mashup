@@ -628,6 +628,14 @@ export const subHistoryPagerButtonClass =
 
 export const subHistoryEmptyClass = "px-4 py-10 text-center text-[12.5px] text-white/42";
 
+/** The reason under a failed row's description. Wraps rather than truncates — it is the point. */
+export const subHistoryFailureReasonClass =
+  "mt-0.5 max-w-[360px] whitespace-normal text-[11.5px] leading-snug text-rose-200/70";
+
+/** The decline reason on /pricing/failure, once guardian has recorded the charge. */
+export const pricingFailureReasonClass =
+  "mt-4 rounded-xl border border-rose-400/20 bg-rose-500/[0.08] px-4 py-3 text-left text-[14px] leading-relaxed text-rose-100/90";
+
 export const appTransactionStatusBadgeClass =
   "inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]";
 
