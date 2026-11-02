@@ -714,6 +714,15 @@ export const dashRailLeftClass =
 
 export const dashLogoRowClass = "flex items-center gap-2.5 px-1.5 pt-1 pb-4 shrink-0";
 
+// The rail is overflow-hidden and every section in it is shrink-0, so on a short window
+// (a laptop with the browser chrome showing, or Watch Together expanded) the account zone at
+// the foot was simply clipped off — no avatar, no Upgrade, no way to reach the profile menu.
+// Nav + cozy card now sit in this region, which takes whatever height the logo and account
+// zone leave and scrolls when that isn't enough, so the account zone is always on screen.
+// On a tall window nothing changes: the cozy card's mt-auto still pins it to the bottom.
+export const dashRailScrollClass =
+  "flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain scrollbar-hide";
+
 export const dashLogoWordClass = "text-[17px] font-bold tracking-[-0.01em] text-dashText";
 
 export const dashNavClass = "flex flex-col gap-0.5 shrink-0";

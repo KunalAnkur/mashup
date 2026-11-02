@@ -32,6 +32,7 @@ import {
   dashRailLeftClass,
   dashLogoRowClass,
   dashLogoWordClass,
+  dashRailScrollClass,
   dashNavClass,
   dashNavItemBaseClass,
   dashNavItemActiveClass,
@@ -109,110 +110,112 @@ const DashboardSidebar = () => {
         <span className={dashLogoWordClass}>{tHome("brand")}</span>
       </Link>
 
-      <nav className={dashNavClass}>
-        <button
-          type="button"
-          onClick={() => router.push("/")}
-          className={`${dashNavItemBaseClass} ${isHome ? dashNavItemActiveClass : dashNavItemHoverClass}`}
-        >
-          <LuHouse size={18} className={isHome ? "text-pink-600" : undefined} />
-          {t("home")}
-        </button>
+      <div className={dashRailScrollClass}>
+        <nav className={dashNavClass}>
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className={`${dashNavItemBaseClass} ${isHome ? dashNavItemActiveClass : dashNavItemHoverClass}`}
+          >
+            <LuHouse size={18} className={isHome ? "text-pink-600" : undefined} />
+            {t("home")}
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setWatchTogetherOpen((v) => !v)}
-          className={`${dashNavItemBaseClass} ${dashNavItemHoverClass}`}
-        >
-          <LuRadio size={18} />
-          {t("watchTogether")}
-          <LuChevronDown
-            size={15}
-            className={`${dashNavChevClass} ${watchTogetherOpen ? "rotate-180" : ""}`}
-          />
-        </button>
-        <div
-          className={dashSubmenuOuterClass}
-          style={{ gridTemplateRows: watchTogetherOpen ? "1fr" : "0fr" }}
-        >
-          <div className="overflow-hidden">
-            <div className={dashSubmenuListClass}>
-              {/* The rail is hidden under 760px, but a tablet can be wide enough to show it and
-                  still have no getDisplayMedia — so this follows the capability, not the width. */}
-              {canScreenShare && (
+          <button
+            type="button"
+            onClick={() => setWatchTogetherOpen((v) => !v)}
+            className={`${dashNavItemBaseClass} ${dashNavItemHoverClass}`}
+          >
+            <LuRadio size={18} />
+            {t("watchTogether")}
+            <LuChevronDown
+              size={15}
+              className={`${dashNavChevClass} ${watchTogetherOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          <div
+            className={dashSubmenuOuterClass}
+            style={{ gridTemplateRows: watchTogetherOpen ? "1fr" : "0fr" }}
+          >
+            <div className="overflow-hidden">
+              <div className={dashSubmenuListClass}>
+                {/* The rail is hidden under 760px, but a tablet can be wide enough to show it and
+                    still have no getDisplayMedia — so this follows the capability, not the width. */}
+                {canScreenShare && (
+                  <button
+                    type="button"
+                    onClick={() => go("/stream/screen", "stream")}
+                    className={`${dashSubmenuItemClass} ${isScreenShare ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
+                  >
+                    <LuMonitor size={15} />
+                    {tHome("screenShare")}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => go("/stream/screen", "stream")}
-                  className={`${dashSubmenuItemClass} ${isScreenShare ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
+                  onClick={() => go("/stream", "stream")}
+                  className={`${dashSubmenuItemClass} ${isFileShare ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
                 >
-                  <LuMonitor size={15} />
-                  {tHome("screenShare")}
+                  <LuFileUp size={15} />
+                  {tHome("fileShare")}
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => go("/stream", "stream")}
-                className={`${dashSubmenuItemClass} ${isFileShare ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
-              >
-                <LuFileUp size={15} />
-                {tHome("fileShare")}
-              </button>
-              <button
-                type="button"
-                onClick={() => go("/sync", "sync")}
-                className={`${dashSubmenuItemClass} ${isAddUrl ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
-              >
-                <LuLink2 size={15} />
-                {tHome("addUrl")}
-              </button>
-              <button
-                type="button"
-                onClick={() => go("/youtube", "sync")}
-                className={`${dashSubmenuItemClass} ${isYoutube ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
-              >
-                <LuYoutube size={15} />
-                {tHome("youtube")}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => go("/sync", "sync")}
+                  className={`${dashSubmenuItemClass} ${isAddUrl ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
+                >
+                  <LuLink2 size={15} />
+                  {tHome("addUrl")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go("/youtube", "sync")}
+                  className={`${dashSubmenuItemClass} ${isYoutube ? dashSubmenuItemActiveClass : dashSubmenuItemDefaultClass}`}
+                >
+                  <LuYoutube size={15} />
+                  {tHome("youtube")}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <button
-          type="button"
-          onClick={() => go("/games", "games")}
-          className={`${dashNavItemBaseClass} ${isGames ? dashNavItemActiveClass : dashNavItemHoverClass}`}
-        >
-          <LuGamepad2 size={18} className={isGames ? "text-pink-600" : undefined} />
-          {t("game")}
-          <span className={dashNavItemBadgeClass}>NEW</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => go("/games", "games")}
+            className={`${dashNavItemBaseClass} ${isGames ? dashNavItemActiveClass : dashNavItemHoverClass}`}
+          >
+            <LuGamepad2 size={18} className={isGames ? "text-pink-600" : undefined} />
+            {t("game")}
+            <span className={dashNavItemBadgeClass}>NEW</span>
+          </button>
 
-        <a
-          href="https://movmash.com/about"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${dashNavItemBaseClass} ${dashNavItemHoverClass}`}
-        >
-          <LuInfo size={18} />
-          {t("about")}
-        </a>
-      </nav>
+          <a
+            href="https://movmash.com/about"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${dashNavItemBaseClass} ${dashNavItemHoverClass}`}
+          >
+            <LuInfo size={18} />
+            {t("about")}
+          </a>
+        </nav>
 
-      <div className={dashCozyCardClass}>
-        <div className={dashCozyArtClass}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={sidebarIllustration}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className={dashCozyImgClass}
-          />
-          <div className={dashCozyScrimClass} />
-        </div>
-        <div className={dashCozyCopyClass}>
-          <h3 className={dashCozyTitleClass}>{t("cozyTitle")}</h3>
-          <p className={dashCozyDescriptionClass}>{t("cozyDescription")}</p>
+        <div className={dashCozyCardClass}>
+          <div className={dashCozyArtClass}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={sidebarIllustration}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className={dashCozyImgClass}
+            />
+            <div className={dashCozyScrimClass} />
+          </div>
+          <div className={dashCozyCopyClass}>
+            <h3 className={dashCozyTitleClass}>{t("cozyTitle")}</h3>
+            <p className={dashCozyDescriptionClass}>{t("cozyDescription")}</p>
+          </div>
         </div>
       </div>
 
