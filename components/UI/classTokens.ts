@@ -718,14 +718,22 @@ export const dashLogoRowClass = "flex items-center gap-2.5 px-1.5 pt-1 pb-4 shri
 // (a laptop with the browser chrome showing, or Watch Together expanded) the account zone at
 // the foot was simply clipped off — no avatar, no Upgrade, no way to reach the profile menu.
 // Nav + cozy card now sit in this region, which takes whatever height the logo and account
-// zone leave and scrolls when that isn't enough, so the account zone is always on screen.
-// On a tall window nothing changes: the cozy card's mt-auto still pins it to the bottom.
+// zone leave, so the account zone is always on screen.
+//
+// The cozy card is decorative, so when it doesn't fit it is dropped rather than scrolled to.
+// That is done in CSS with a wrapping flex column: the region has a fixed height, so a card
+// that would overflow wraps into a second column, which sits at x=100% (content-start, and
+// both children are w-full) and is clipped by overflow-x-hidden. A height media query can't
+// do this — the nav is ~210px taller with Watch Together expanded, so any fixed breakpoint is
+// wrong in one of the two states. On a tall window nothing changes: the card's mt-auto still
+// pins it to the bottom. overflow-y-auto only matters on a window too short for the nav itself.
 export const dashRailScrollClass =
-  "flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain scrollbar-hide";
+  "flex min-h-0 flex-1 flex-col flex-wrap content-start overflow-x-hidden overflow-y-auto overscroll-contain scrollbar-hide";
 
 export const dashLogoWordClass = "text-[17px] font-bold tracking-[-0.01em] text-dashText";
 
-export const dashNavClass = "flex flex-col gap-0.5 shrink-0";
+// w-full: required by dashRailScrollClass's wrap layout (see there).
+export const dashNavClass = "flex w-full flex-col gap-0.5 shrink-0";
 
 // py-2 rather than py-2.5: the active item is the only nav row that paints a background,
 // so its padding is what the eye reads as the row's height, and at 10px the highlight sat
@@ -751,7 +759,9 @@ export const dashSubmenuItemActiveClass =
   "text-dashText bg-[linear-gradient(100deg,rgba(225,29,72,0.28),rgba(219,39,119,0.24),rgba(192,38,211,0.22))]";
 
 // No background/border at all — just the image and its caption, no card underneath them.
-export const dashCozyCardClass = "mt-auto flex shrink-0 flex-col overflow-hidden rounded-2xl";
+// w-full: required by dashRailScrollClass's wrap layout, which hides this card when it
+// doesn't fit (see there).
+export const dashCozyCardClass = "mt-auto flex w-full shrink-0 flex-col overflow-hidden rounded-2xl";
 
 // Art on top, copy underneath, rather than copy laid over the art: the title runs to
 // three lines in a narrow sidebar, and over an illustration with two faces in the
