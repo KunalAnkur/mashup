@@ -86,9 +86,13 @@ const PlayerControls = ({
     const showDuration = !isMobile && !hideControls.includes(ControlComponents.DURATION);
     const showVolume = !isMobile && !hideControls.includes(ControlComponents.VOLUME);
     const showFullscreen = !isMobile && !hideControls.includes(ControlComponents.FULLSCREEN);
-    // Included so the pill still appears for a player that has nothing else in it —
-    // an audio-only or chromeless mount would otherwise drop this control silently.
-    const canChangeContent = showChangeContent && !!onChangeContent;
+    // Desktop only, like every other control in this pill: on mobile, ProgressBar's row above
+    // the seek bar already carries change-content and hide-controls, and letting them through
+    // here put a second copy of both in a pill under the seek bar.
+    // Counted in hasRightPill so the pill still appears for a player that has nothing else in
+    // it — an audio-only or chromeless mount would otherwise drop this control silently.
+    const canChangeContent = !isMobile && showChangeContent && !!onChangeContent;
+    const showHideControls = !isMobile && showHidingControlsBtn;
     const hasRightPill = showVolume || showFullscreen || canChangeContent;
     return (
         <div className=" flex items-center justify-between gap-2">
@@ -149,7 +153,7 @@ const PlayerControls = ({
                         </div>
                     )}
 
-                    {showHidingControlsBtn && <CtrlBtn onClick={() => onHiddingFullControls?.()} title={"Hide controls"}>
+                    {showHideControls && <CtrlBtn onClick={() => onHiddingFullControls?.()} title={"Hide controls"}>
                         <MdPlayDisabled size={24} />
                     </CtrlBtn>}
 

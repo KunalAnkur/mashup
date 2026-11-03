@@ -153,7 +153,10 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         : "opacity-0 group-hover/progress:opacity-100";
     const displayProgress = isDragging && dragPercent !== null ? dragPercent : progress;
 
-    const showTopRow = isMobile && (showTime || showFullscreen);
+    // This row is the only home change-content has on mobile (PlayerControls' pill is
+    // desktop-only), so it has to appear for it even on a player showing no time or fullscreen.
+    const canChangeContent = showChangeContent && !!onChangeContent;
+    const showTopRow = isMobile && (showTime || showFullscreen || canChangeContent);
     const currentTime = formatVideoTime((displayProgress / 100) * duration || 0);
     const totalTime = formatVideoTime(duration || 0);
     const topRowJustify = showTime || showFullscreen
@@ -192,7 +195,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                         <FaStore />
                     </button>} */}
                     <div className="flex gap-2 items-center">
-                        {showChangeContent && onChangeContent && (
+                        {canChangeContent && (
                             <button
                                 type="button"
                                 onClick={onChangeContent}
