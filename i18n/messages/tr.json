@@ -488,6 +488,14 @@
     "funFact": "Bilgi:",
     "funFactText": "HTTP 404, sunucunun istenen sayfayı bulamadığı anlamına gelir."
   },
+  "errorPage": {
+    "title": "Bir şeyler ters gitti",
+    "description": "Movmash beklenmedik bir sorunla karşılaştı ve bu sayfayı gösteremedi. Bize bildirildi. Tekrar denemek genellikle sorunu çözer.",
+    "tryAgain": "Tekrar dene",
+    "goHome": "Ana Sayfa",
+    "reference": "Referans:",
+    "updating": "En son sürüme güncelleniyor…"
+  },
   "feedback": {
     "title": "Geri Bildirim",
     "helpUsImprove": "Gelişmemize yardımcı olun",

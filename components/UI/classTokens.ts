@@ -212,6 +212,11 @@ export const appNotFoundBodyClass =
 export const appNotFoundActionRowClass =
   "mt-1 flex w-full max-w-md flex-col gap-2.5 sm:flex-row";
 
+// app/error.tsx: full-height and centred on its own, since it deliberately renders without
+// DashboardShell (the shell may be what crashed).
+export const appErrorPageWrapClass =
+  "flex min-h-[100dvh] w-full items-center justify-center px-4 py-10";
+
 export const appNotFoundFootnoteClass =
   "max-w-xl text-xs leading-6 text-white/40 sm:text-sm";
 

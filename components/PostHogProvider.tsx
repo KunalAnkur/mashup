@@ -20,6 +20,10 @@ if (typeof window !== "undefined") {
       capture_pageview: false, // Manual capture for SPA
       capture_pageleave: true,
       persistence: "localStorage",
+      // Error Tracking: uncaught errors and unhandled promise rejections become `$exception`
+      // events. Errors React catches in app/error.tsx or app/global-error.tsx don't reach
+      // these handlers; those boundaries report them through lib/analytics/errorReporting.ts.
+      capture_exceptions: true,
       loaded: (ph) => {
         // Register global properties on every event
         ph.register({

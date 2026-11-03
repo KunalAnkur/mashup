@@ -488,6 +488,14 @@
     "funFact": "Info:",
     "funFactText": "HTTP 404 means the server could not find the page you requested."
   },
+  "errorPage": {
+    "title": "Something went wrong",
+    "description": "Movmash hit an unexpected problem and couldn't show this page. We've been notified. Trying again usually fixes it.",
+    "tryAgain": "Try again",
+    "goHome": "Go Home",
+    "reference": "Reference:",
+    "updating": "Updating to the latest version…"
+  },
   "feedback": {
     "title": "Feedback",
     "helpUsImprove": "Help us improve",
