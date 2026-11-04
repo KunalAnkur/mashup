@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { cookies } from "next/headers";
-import { defaultLocale, locales, isRtlLocale, type Locale } from "@/i18n/config";
+import { cookies, headers } from "next/headers";
+import { defaultLocale, locales, isRtlLocale, localeFromAcceptLanguage, type Locale } from "@/i18n/config";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import * as constants from "../constants";
 import OrganizationSchema from "@/components/SEO/OrganizationSchema";
@@ -104,7 +104,12 @@ export default async function RootLayout({
       locale = localeCookie.value as Locale;
       console.log('[layout.tsx] - Using cookie locale:', locale);
     } else {
-      console.log('[layout.tsx] - Using default locale:', locale);
+      // No choice made yet: follow the browser's language when we have it. Not written to the
+      // cookie (a layout can't set one), so it is re-derived per request until the user picks a
+      // language in the selector, which then wins.
+      const headerStore = await headers();
+      locale = localeFromAcceptLanguage(headerStore.get('accept-language')) ?? defaultLocale;
+      console.log('[layout.tsx] - Using browser locale (Accept-Language):', locale);
     }
   } catch (error) {
     console.log('[layout.tsx] - Cookie read error:', error);

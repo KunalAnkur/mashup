@@ -1,6 +1,9 @@
 // app/ClientRoot.tsx
 "use client";
 
+// Side effect only, and first: guards the DOM against browser page translation before React
+// renders anything. See lib/domTranslationGuard.ts.
+import "@/lib/domTranslationGuard";
 import { ReactNode, useEffect, useState } from "react";
 import { SocketProvider } from "@/context/SocketContext"; // adjust the path
 import { store, persistor } from '@/lib/store';

@@ -1,6 +1,6 @@
 "use client";
 
-import posthog from "posthog-js";
+import posthog, { type CaptureResult } from "posthog-js";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
 import { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -9,6 +9,18 @@ import { RootState } from "@/lib/store";
 import { persistFirstTouchAttribution } from "@/lib/analytics";
 
 // ============ INITIALIZE POSTHOG ============
+
+/**
+ * Drops "Script error." exceptions. That is all a browser reveals about an error thrown in a
+ * cross-origin script (Google sign-in on /login, in practice): no message, no stack, nothing to
+ * act on. Left in, they bury real issues in Error tracking.
+ */
+function dropOpaqueScriptErrors(event: CaptureResult | null): CaptureResult | null {
+  if (!event || event.event !== "$exception") return event;
+  const list = event.properties?.$exception_list as Array<{ value?: string }> | undefined;
+  const message = list?.[0]?.value ?? event.properties?.$exception_message;
+  return typeof message === "string" && message.trim() === "Script error." ? null : event;
+}
 
 if (typeof window !== "undefined") {
   const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -24,6 +36,7 @@ if (typeof window !== "undefined") {
       // events. Errors React catches in app/error.tsx or app/global-error.tsx don't reach
       // these handlers; those boundaries report them through lib/analytics/errorReporting.ts.
       capture_exceptions: true,
+      before_send: dropOpaqueScriptErrors,
       loaded: (ph) => {
         // Register global properties on every event
         ph.register({
