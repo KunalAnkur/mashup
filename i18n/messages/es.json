@@ -757,5 +757,14 @@
     "unsupportedArchive": "Podemos abrir archivos .zip, pero no de este tipo. Descomprímelo y añade el archivo .nes.",
     "tooBig": "Ese archivo es demasiado grande para ser un cartucho de NES.",
     "privacy": "El cartucho se queda en tu ordenador. Nunca se sube: tu amigo ve la imagen, no el archivo."
+  },
+  "unsubscribe": {
+    "workingTitle": "Cancelando la suscripción…",
+    "workingMessage": "Un momento.",
+    "doneTitle": "Te has dado de baja",
+    "doneMessage": "Ya no recibirás más correos de novedades de Movmash. Puedes volver a activarlos cuando quieras en tus ajustes.",
+    "invalidTitle": "Este enlace no funciona",
+    "invalidMessage": "El enlace para darte de baja está roto o incompleto. También puedes desactivar los correos en los ajustes de Movmash.",
+    "backHome": "Ir a Movmash"
   }
 }
