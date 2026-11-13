@@ -15,6 +15,7 @@ import { showError, showSuccess } from "@/utils/toast";
 import { useTranslations } from "@/i18n/I18nProvider";
 import { trackLogin, trackSignup } from "@/lib/analytics";
 import { zincGlassStrongBorderedSurfaceClass } from "@/components/UI/classTokens";
+import { MARKETING_POPUP_SNOOZE_KEY } from "@/components/Modals/WelcomeMarketingModal";
 
 
 const guestContinueButtonClass =
@@ -79,6 +80,11 @@ const LoginContainer = () => {
 
   const handleGoogleAuthSuccess = async (userInfo: GoogleAuthUserInfo) => {
     try {
+      // An unticked box means "not asked yet", not "no": the "Stay in the loop?" popup asks again,
+      // but on a later visit, not seconds after they left the box empty.
+      if (!marketingOptIn) {
+        try { sessionStorage.setItem(MARKETING_POPUP_SNOOZE_KEY, "1"); } catch {}
+      }
       const response = await authProvider({
         email: userInfo.email,
         name: userInfo.name,
@@ -86,8 +92,9 @@ const LoginContainer = () => {
         sub: userInfo.sub,
         provider_name: "google",
         // Guardian only records this when the account is created — signing in again with
-        // the box unchecked will not opt an existing user out.
-        marketing_emails_opt_in: marketingOptIn,
+        // the box unchecked will not opt an existing user out. Unticked is sent as nothing,
+        // which Guardian stores as null (never asked), so the popup can still ask later.
+        marketing_emails_opt_in: marketingOptIn ? true : undefined,
       }).unwrap();
 
       dispatch(setUser(response));
@@ -155,6 +162,20 @@ const LoginContainer = () => {
 
         {/* Authentication Buttons */}
         <div className="flex flex-col gap-3.5 w-full">
+          {/* Marketing opt-in — unchecked by default (GDPR). Only recorded for new accounts.
+              Sits above the Google button so it is seen before the click that creates the account. */}
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-pink-500/20 bg-pink-500/[0.06] px-3.5 py-3 transition-colors hover:border-pink-500/35">
+            <input
+              type="checkbox"
+              checked={marketingOptIn}
+              onChange={(e) => setMarketingOptIn(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-pink-500"
+            />
+            <span className="text-sm leading-snug text-white/85">
+              {tAuth("marketingOptIn")}
+            </span>
+          </label>
+
           {/* Google Button */}
           <GoogleButton
             name={tCommon("continueWithGoogle")}
@@ -163,19 +184,6 @@ const LoginContainer = () => {
               console.log("Google authentication failed");
             }}
           />
-
-          {/* Marketing opt-in — unchecked by default (GDPR). Only recorded for new accounts. */}
-          <label className="flex cursor-pointer items-start gap-2.5 px-0.5">
-            <input
-              type="checkbox"
-              checked={marketingOptIn}
-              onChange={(e) => setMarketingOptIn(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-pink-500"
-            />
-            <span className="text-xs leading-relaxed text-white/60">
-              {tAuth("marketingOptIn")}
-            </span>
-          </label>
 
           {/* Guest sign-in, and the separator that introduces it, only for an invite. */}
           {offerGuestAccount && (

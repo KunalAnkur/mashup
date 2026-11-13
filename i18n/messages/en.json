@@ -201,8 +201,8 @@
       "updateFailed": "Update failed",
       "updateFailedDescription": "We couldn't update your profile. Please try again.",
       "saveChanges": "Save Changes",
-      "marketingEmails": "News & updates",
-      "marketingEmailsDesc": "Updates on new features and tips"
+      "marketingEmails": "Discounts & news",
+      "marketingEmailsDesc": "Special-day discounts, new games, blog posts"
     },
     "leaveParty": "Leave Party?",
     "leavePartyMessage": "Are you sure you want to leave this party? You'll need the room ID to rejoin.",
@@ -464,7 +464,7 @@
       "and": "and",
       "privacyPolicy": "Privacy Policy",
       "agreementSuffix": ".",
-      "marketingOptIn": "Send me occasional news and tips about Movmash."
+      "marketingOptIn": "💌 Email me special-occasion discounts and ideas for long-distance couples"
     },
     "signup": {
       "username": "Username",
@@ -511,13 +511,16 @@
     }
   },
   "marketing": {
-    "title": "Stay in the loop?",
-    "message": "Get notified about new features and watch party tips. Unsubscribe anytime.",
-    "noThanks": "No thanks",
-    "yesNotifyMe": "Yes, notify me",
+    "title": "Don't miss the discounts 💌",
+    "perkDiscounts": "🎁 Exclusive discounts for New Year's and Valentine's Day",
+    "perkGames": "🎮 Be the first to hear about new games",
+    "perkIdeas": "💑 Watch-together ideas for long-distance couples",
+    "footnote": "A few emails a month · Unsubscribe anytime",
+    "noThanks": "Not now",
+    "yesNotifyMe": "Yes, send them",
     "saving": "Saving…",
-    "settingsLabel": "News & updates",
-    "settingsDescription": "Updates on new features and watch party tips"
+    "settingsLabel": "Discounts & news",
+    "settingsDescription": "Special-day discounts, new games, blog posts"
   },
   "pricing": {
     "kicker": "Pricing",

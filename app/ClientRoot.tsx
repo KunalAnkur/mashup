@@ -18,7 +18,7 @@ import { PostHogProvider } from "@/components/PostHogProvider";
 import { Toaster } from 'react-hot-toast';
 import LocalePersistence from "@/components/LanguageSelector/LocalePersistence";
 import { setFocused } from "@/lib/store/slices/roomSlice";
-import WelcomeMarketingModal from "@/components/Modals/WelcomeMarketingModal";
+import WelcomeMarketingModal, { MARKETING_POPUP_SNOOZE_KEY } from "@/components/Modals/WelcomeMarketingModal";
 import { RootState } from "@/lib/store";
 
 // Mounted inside Provider+PersistGate so it can read Redux state
@@ -33,6 +33,9 @@ function MarketingModalTrigger() {
             !user.isGuestUser &&
             user.marketingEmailsOptIn === null
         ) {
+            let snoozed = false;
+            try { snoozed = sessionStorage.getItem(MARKETING_POPUP_SNOOZE_KEY) === "1"; } catch {}
+            if (snoozed) return;
             // Small delay so the page renders before the modal pops
             const t = setTimeout(() => setOpen(true), 800);
             return () => clearTimeout(t);
