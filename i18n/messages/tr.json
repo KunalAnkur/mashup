@@ -757,5 +757,14 @@
     "unsupportedArchive": ".zip arşivlerini açabiliriz ama bu türü açamayız. Arşivi çıkar ve .nes dosyasını ekle.",
     "tooBig": "Bu dosya bir NES kartuşu olamayacak kadar büyük.",
     "privacy": "Kartuş bilgisayarında kalır. Hiçbir zaman yüklenmez — arkadaşın dosyayı değil, görüntüyü görür."
+  },
+  "unsubscribe": {
+    "workingTitle": "Abonelikten çıkılıyor…",
+    "workingMessage": "Bir saniye.",
+    "doneTitle": "Abonelikten çıktın",
+    "doneMessage": "Movmash'ten artık haber maili almayacaksın. İstersen ayarlarından tekrar açabilirsin.",
+    "invalidTitle": "Bu link çalışmıyor",
+    "invalidMessage": "Abonelikten çıkma linki bozuk ya da eksik. Mailleri Movmash ayarlarından da kapatabilirsin.",
+    "backHome": "Movmash'e git"
   }
 }

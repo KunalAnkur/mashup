@@ -757,5 +757,14 @@
     "unsupportedArchive": "We can open .zip archives, but not this kind. Unzip it and add the .nes file.",
     "tooBig": "That file is too large to be a NES cartridge.",
     "privacy": "The cartridge stays on your computer. It is never uploaded — your friend sees the picture, not the file."
+  },
+  "unsubscribe": {
+    "workingTitle": "Unsubscribing…",
+    "workingMessage": "One moment.",
+    "doneTitle": "You're unsubscribed",
+    "doneMessage": "You won't get any more news emails from Movmash. You can turn them back on any time in your settings.",
+    "invalidTitle": "This link doesn't work",
+    "invalidMessage": "The unsubscribe link is broken or incomplete. You can turn emails off in your Movmash settings instead.",
+    "backHome": "Go to Movmash"
   }
 }
