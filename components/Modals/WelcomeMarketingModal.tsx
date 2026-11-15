@@ -1,7 +1,7 @@
 "use client";
 
 import { useDispatch } from "react-redux";
-import { LuBell, LuCheck } from "react-icons/lu";
+import { LuGift, LuCheck } from "react-icons/lu";
 import { setMarketingOptIn } from "@/lib/store/slices/authSlice";
 import { useUpdateMarketingPreferenceMutation } from "@/lib/store/api/userApi";
 import { useTranslations } from "@/i18n/I18nProvider";
@@ -14,11 +14,13 @@ import {
   modalConfirmActionsClass,
   modalConfirmContentBodyClass,
   modalConfirmHeaderClass,
-  modalConfirmMessageClass,
   modalConfirmSurfaceClass,
   modalDiscardActionButtonClass,
   modalSubtleCloseButtonClass,
 } from "@/components/UI";
+
+// Set by the login page when the opt-in box was left empty, so this popup waits for a later visit.
+export const MARKETING_POPUP_SNOOZE_KEY = "movmash_marketing_popup_snoozed";
 
 interface WelcomeMarketingModalProps {
   isOpen: boolean;
@@ -55,7 +57,7 @@ const WelcomeMarketingModal = ({ isOpen, onClose }: WelcomeMarketingModalProps) 
           className={modalConfirmHeaderClass}
           icon={
             <div className={modalAccentIconWrapClass}>
-              <LuBell size={18} />
+              <LuGift size={18} />
             </div>
           }
           title={t("title")}
@@ -64,9 +66,16 @@ const WelcomeMarketingModal = ({ isOpen, onClose }: WelcomeMarketingModalProps) 
           closeButtonClassName={modalSubtleCloseButtonClass}
         />
         <div className={modalConfirmContentBodyClass}>
-          <p className={modalConfirmMessageClass}>
-            {t("message")}
-          </p>
+          <ul className="mb-4 flex flex-col gap-2">
+            {(["perkDiscounts", "perkGames", "perkIdeas"] as const).map((key) => (
+              <li
+                key={key}
+                className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2.5 text-sm leading-snug text-white/90"
+              >
+                {t(key)}
+              </li>
+            ))}
+          </ul>
           <div className={modalConfirmActionsClass}>
             <button
               type="button"
@@ -86,6 +95,7 @@ const WelcomeMarketingModal = ({ isOpen, onClose }: WelcomeMarketingModalProps) 
               <span>{isLoading ? t("saving") : t("yesNotifyMe")}</span>
             </button>
           </div>
+          <p className="mt-3 text-center text-[11px] text-white/45">{t("footnote")}</p>
         </div>
       </div>
     </Modal>

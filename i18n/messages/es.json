@@ -201,8 +201,8 @@
       "updateFailed": "Error al actualizar",
       "updateFailedDescription": "No pudimos actualizar tu perfil. Inténtalo de nuevo.",
       "saveChanges": "Guardar Cambios",
-      "marketingEmails": "Noticias y novedades",
-      "marketingEmailsDesc": "Novedades y consejos"
+      "marketingEmails": "Descuentos y novedades",
+      "marketingEmailsDesc": "Descuentos en fechas especiales, juegos nuevos, artículos del blog"
     },
     "leaveParty": "¿Dejar la Fiesta?",
     "leavePartyMessage": "¿Estás seguro de que quieres dejar esta fiesta? Necesitarás el ID de la sala para volver a unirte.",
@@ -464,7 +464,7 @@
       "and": "y la",
       "privacyPolicy": "Política de privacidad",
       "agreementSuffix": " de Movmash.",
-      "marketingOptIn": "Envíame novedades y consejos ocasionales sobre Movmash."
+      "marketingOptIn": "💌 Quiero recibir descuentos en fechas especiales e ideas para parejas a distancia"
     },
     "signup": {
       "username": "Nombre de usuario",
@@ -511,13 +511,16 @@
     }
   },
   "marketing": {
-    "title": "¿Mantenerse informado?",
-    "message": "Recibe notificaciones sobre nuevas funciones y consejos para fiestas de cine. Cancela cuando quieras.",
-    "noThanks": "No, gracias",
-    "yesNotifyMe": "Sí, notifícame",
+    "title": "No te pierdas los descuentos 💌",
+    "perkDiscounts": "🎁 Descuentos exclusivos en Año Nuevo y San Valentín",
+    "perkGames": "🎮 Entérate primero de los juegos nuevos",
+    "perkIdeas": "💑 Ideas para ver juntos en pareja a distancia",
+    "footnote": "Unos pocos correos al mes · Date de baja cuando quieras",
+    "noThanks": "Ahora no",
+    "yesNotifyMe": "Sí, envíamelos",
     "saving": "Guardando…",
-    "settingsLabel": "Noticias y novedades",
-    "settingsDescription": "Novedades sobre funciones y consejos de Watch Party"
+    "settingsLabel": "Descuentos y novedades",
+    "settingsDescription": "Descuentos en fechas especiales, juegos nuevos, artículos del blog"
   },
   "pricing": {
     "kicker": "Precios",
