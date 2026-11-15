@@ -37,6 +37,8 @@ type Props = {
   onAutoStart?: () => void;
   /** "secondary" for a plan that sits beside the recommended one, so only one button shouts. */
   variant?: "primary" | "secondary";
+  /** A Dodo discount code (from a campaign email link) to apply at checkout. */
+  discountCode?: string;
 };
 
 export default function StartPremiumCheckoutButton({
@@ -49,6 +51,7 @@ export default function StartPremiumCheckoutButton({
   autoStart = false,
   onAutoStart,
   variant = "primary",
+  discountCode,
 }: Props) {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -104,6 +107,7 @@ export default function StartPremiumCheckoutButton({
             plan_slug: planSlug,
             success_url: resolveCallbackUrl("/pricing/success", successUrl),
             cancel_url: resolveCallbackUrl("/pricing/failure", cancelUrl),
+            ...(discountCode ? { discount_code: discountCode } : {}),
           }),
         });
         const json = await resp.json();
@@ -123,7 +127,7 @@ export default function StartPremiumCheckoutButton({
         setLoading(false);
       }
     },
-    [authState.token, cancelUrl, planSlug, resolveCallbackUrl, router, successUrl, tToast],
+    [authState.token, cancelUrl, discountCode, planSlug, resolveCallbackUrl, router, successUrl, tToast],
   );
 
   const handleClick = useCallback(async () => {
