@@ -131,10 +131,19 @@ export default function PricingPage() {
    */
   const router = useRouter();
   const [requestedPlanSlug, setRequestedPlanSlug] = useState<string | null>(null);
+  // `&code=<CODE>` rides along from a campaign email (`?plan=couple-yearly&code=NEWYEAR25`):
+  // the checkout for that plan opens with the code already applied. Unlike `plan` it stays in
+  // the address bar, so someone who backs out of Dodo and presses the button again keeps it.
+  const [promo, setPromo] = useState<{ planSlug: string; code: string } | null>(null);
 
   useEffect(() => {
-    const slug = new URLSearchParams(window.location.search).get("plan");
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get("plan");
     if (slug) setRequestedPlanSlug(slug);
+    const code = params.get("code");
+    if (slug && code && /^[A-Za-z0-9_-]{3,40}$/.test(code)) {
+      setPromo({ planSlug: slug, code: code.toUpperCase() });
+    }
   }, []);
 
   const requestedPlan = requestedPlanSlug
@@ -502,6 +511,7 @@ export default function PricingPage() {
                                 planName={plan.name}
                                 autoStart={plan.slug === autoStartPlanSlug}
                                 onAutoStart={handleAutoStart}
+                                discountCode={promo?.planSlug === plan.slug ? promo.code : undefined}
                               />
                             ) : (
                               <Link
